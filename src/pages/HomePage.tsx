@@ -7,7 +7,7 @@ import { useAppContext } from '@/lib/context/AppContext';
 import { Loader2, FileDown, Save, Check, Edit, Calendar, Plus, CheckCircle, X, ArrowRight, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DailyReport, CarWashRecord, Employee, Appointment, EmployeeRole } from '@/lib/types';
-import { carWashService, dailyReportService, appointmentService } from '@/lib/services/firebaseService';
+import { carWashService, dailyReportService, appointmentService, dailyRolesService } from '@/lib/services/firebaseService';
 import { generateDailyReportDocx } from '@/lib/utils';
 import { saveAs } from 'file-saver';
 import { Packer } from 'docx';
@@ -149,11 +149,18 @@ const HomePage: React.FC = () => {
     try {
       setLoading(prev => ({ ...prev, savingShift: true }));
 
+      // Сохраняем ежедневные роли в базе данных
+      const success = await dailyRolesService.saveDailyRoles(selectedDate, employeeRoles);
+      if (!success) {
+        console.warn('Не удалось сохранить ежедневные роли, но продолжаем');
+      }
+
       // Если отчет уже существует, обновляем сотрудников
       if (currentReport) {
         const updatedReport = {
           ...currentReport,
-          employeeIds: shiftEmployees
+          employeeIds: shiftEmployees,
+          dailyEmployeeRoles: employeeRoles
         };
 
         // Сохраняем в базе данных
@@ -172,7 +179,8 @@ const HomePage: React.FC = () => {
           employeeIds: shiftEmployees,
           records: [],
           totalCash: 0,
-          totalNonCash: 0
+          totalNonCash: 0,
+          dailyEmployeeRoles: employeeRoles
         };
 
         await dailyReportService.updateReport(newReport);
@@ -184,7 +192,7 @@ const HomePage: React.FC = () => {
 
       setIsShiftLocked(true);
       setIsEditingShift(false);
-      toast.success('Состав смены сохранен');
+      toast.success('Состав смены и роли сотрудников сохранены');
     } catch (error) {
       console.error('Ошибка при сохранении состава смены:', error);
       toast.error('Не удалось сохранить состав смены');
@@ -209,6 +217,24 @@ const HomePage: React.FC = () => {
           if (report.employeeIds && report.employeeIds.length > 0) {
             setShiftEmployees(report.employeeIds);
             setIsShiftLocked(true);
+
+            // Загружаем ежедневные роли из отчета или из базы данных
+            if (report.dailyEmployeeRoles) {
+              setEmployeeRoles(report.dailyEmployeeRoles);
+            } else {
+              // Если в отчете нет ролей, пытаемся загрузить из dailyRoles коллекции
+              const dailyRoles = await dailyRolesService.getDailyRoles(selectedDate);
+              if (dailyRoles) {
+                setEmployeeRoles(dailyRoles);
+              } else {
+                // Если ролей нет нигде, устанавливаем роли по умолчанию (мойщик)
+                const defaultRoles: Record<string, EmployeeRole> = {};
+                report.employeeIds.forEach(empId => {
+                  defaultRoles[empId] = 'washer';
+                });
+                setEmployeeRoles(defaultRoles);
+              }
+            }
           }
 
           // Если в отчете уже есть записи, блокируем изменение смены

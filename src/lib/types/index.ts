@@ -50,6 +50,7 @@ export interface DailyReport {
   records: CarWashRecord[]; // Записи о помывках за день
   totalCash: number; // Сумма наличных платежей
   totalNonCash: number; // Сумма безналичных платежей
+  dailyEmployeeRoles?: Record<string, EmployeeRole>; // Ежедневные роли сотрудников (employeeId -> role)
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 
@@ -78,6 +79,8 @@ export interface MinimumPaymentSettings {
   percentageWasher: number; // Процент от выручки для мойщика
   minimumPaymentAdmin: number; // Минимальная оплата за день для админа
   percentageAdmin: number; // Процент от выручки для админа
+  adminCashPercentage: number; // Процент админа от кассы
+  adminCarWashPercentage: number; // Процент админа от вымытых машин
 }
 
 // Тип для настроек темы

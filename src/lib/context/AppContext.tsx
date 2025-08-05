@@ -18,7 +18,9 @@ const initialState: AppState = {
     minimumPaymentWasher: 0,
     percentageWasher: 10,
     minimumPaymentAdmin: 0,
-    percentageAdmin: 5
+    percentageAdmin: 5,
+    adminCashPercentage: 3,
+    adminCarWashPercentage: 2
   }
 };
 
@@ -223,6 +225,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
             }
           });
           console.log(`Метод расчета зарплаты загружен из базы данных: ${salarySettings.method}`);
+        }
+
+        // Загружаем настройки минимальной оплаты из базы данных
+        const minimumPaymentSettings = await settingsService.getMinimumPaymentSettings();
+        if (minimumPaymentSettings) {
+          dispatch({
+            type: 'SET_MINIMUM_PAYMENT_SETTINGS',
+            payload: minimumPaymentSettings
+          });
+          console.log('Настройки минимальной оплаты загружены из базы данных:', minimumPaymentSettings);
         }
       } catch (error) {
         console.error('Ошибка при загрузке данных при запуске:', error);

@@ -992,12 +992,27 @@ const SalaryCalculationSettings: React.FC = () => {
   };
 
   // Обработчик сохранения настроек минимальной оплаты
-  const handleSaveMinimumSettings = () => {
-    dispatch({
-      type: 'SET_MINIMUM_PAYMENT_SETTINGS',
-      payload: minimumSettings
-    });
-    toast.success('Настройки минимальной оплаты сохранены');
+  const handleSaveMinimumSettings = async () => {
+    setLoading(true);
+    try {
+      // Сохраняем настройки в базе данных
+      const success = await settingsService.saveMinimumPaymentSettings(minimumSettings);
+
+      if (success) {
+        dispatch({
+          type: 'SET_MINIMUM_PAYMENT_SETTINGS',
+          payload: minimumSettings
+        });
+        toast.success('Настройки минимальной оплаты сохранены');
+      } else {
+        throw new Error('Не удалось сохранить настройки в базе данных');
+      }
+    } catch (error) {
+      console.error('Ошибка при сохранении настроек минимальной оплаты:', error);
+      toast.error('Ошибка при сохранении настроек минимальной оплаты');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -1189,13 +1204,60 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
+                    % админа от кассы (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={minimumSettings.adminCashPercentage}
+                    onChange={(e) => setMinimumSettings({
+                      ...minimumSettings,
+                      adminCashPercentage: Number.parseFloat(e.target.value) || 0
+                    })}
+                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="3"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
+                    % админа от вымытых машин (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={minimumSettings.adminCarWashPercentage}
+                    onChange={(e) => setMinimumSettings({
+                      ...minimumSettings,
+                      adminCarWashPercentage: Number.parseFloat(e.target.value) || 0
+                    })}
+                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="2"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+              </div>
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleSaveMinimumSettings}
-                className="w-full px-3 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs"
+                disabled={loading}
+                className="w-full px-3 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs disabled:opacity-70 flex items-center justify-center gap-1"
               >
-                Сохранить настройки
+                {loading ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Сохранение...
+                  </>
+                ) : (
+                  'Сохранить настройки'
+                )}
               </motion.button>
             </div>
           </motion.div>

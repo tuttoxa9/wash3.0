@@ -5,7 +5,7 @@ import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isA
 import { ru } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Calendar as CalendarIcon, X, Filter, Building } from 'lucide-react';
-import { carWashService } from '@/lib/services/firebaseService';
+import { carWashService, dailyRolesService } from '@/lib/services/firebaseService';
 import type { CarWashRecord, Employee } from '@/lib/types';
 import { toast } from 'sonner';
 import OrganizationsReport from '@/components/OrganizationsReport';
@@ -34,6 +34,7 @@ const ReportsPage: React.FC = () => {
   const [records, setRecords] = useState<CarWashRecord[]>([]);
   const [earningsReport, setEarningsReport] = useState<EarningsReport[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
+  const [dailyRoles, setDailyRoles] = useState<Record<string, Record<string, string>>>({});
 
   // Date picker state
   const [activeDatePicker, setActiveDatePicker] = useState<'main' | 'start' | 'end' | null>(null);
@@ -99,10 +100,24 @@ const ReportsPage: React.FC = () => {
           carWashService.getByDate(date)
         );
 
-        const recordsResults = await Promise.all(recordsPromises);
+        // Fetch daily roles for each date
+        const rolesPromises = dateRange.map(date =>
+          dailyRolesService.getDailyRoles(date).then(roles => ({ date, roles: roles || {} }))
+        );
+
+        const [recordsResults, rolesResults] = await Promise.all([
+          Promise.all(recordsPromises),
+          Promise.all(rolesPromises)
+        ]);
+
         const allRecords = recordsResults.flat();
+        const rolesMap: Record<string, Record<string, string>> = {};
+        rolesResults.forEach(({ date, roles }) => {
+          rolesMap[date] = roles;
+        });
 
         setRecords(allRecords);
+        setDailyRoles(rolesMap);
       } catch (error) {
         console.error('Error loading records:', error);
         toast.error('Ошибка при загрузке данных');
@@ -115,9 +130,9 @@ const ReportsPage: React.FC = () => {
   }, [startDate, endDate]);
 
   // Функция для расчета зарплаты
-  const getSalaryAmount = (totalRevenue: number, employeeCount = 1, employeeRole: 'admin' | 'washer' | null = null) => {
+  const getSalaryAmount = (totalRevenue: number, employeeCount = 1, employeeRole: 'admin' | 'washer' | null = null, date?: string) => {
     // Определяем дату для периода отчета
-    const reportDate = periodType === 'day' ? startDate.toISOString().split('T')[0] : '';
+    const reportDate = date || (periodType === 'day' ? startDate.toISOString().split('T')[0] : '');
 
     // Получаем метод расчета зарплаты для этой даты
     const shouldUseCurrentMethod = periodType === 'day' && reportDate >= state.salaryCalculationDate;
@@ -141,15 +156,31 @@ const ReportsPage: React.FC = () => {
       // Минимальная оплата + процент с учетом ролей
       if (employeeRole) {
         if (employeeRole === 'washer') {
-          const earnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-          const salary = Math.max(earnings, state.minimumPaymentSettings.minimumPaymentWasher);
+          // Базовый расчёт для мойщика
+          const basePercentage = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+          const salary = Math.max(basePercentage, state.minimumPaymentSettings.minimumPaymentWasher);
           return {
             totalAmount: salary * employeeCount,
             perEmployee: salary
           };
         } else if (employeeRole === 'admin') {
-          const earnings = totalRevenue * (state.minimumPaymentSettings.percentageAdmin / 100);
-          const salary = Math.max(earnings, state.minimumPaymentSettings.minimumPaymentAdmin);
+          // Специальный расчёт для админа с учетом новых настроек
+          let adminEarnings = 0;
+
+          // Процент от общей выручки (базовый)
+          const baseEarnings = totalRevenue * (state.minimumPaymentSettings.percentageAdmin / 100);
+
+          // Дополнительный процент от кассы (наличные)
+          const cashRevenue = records.filter(r => r.paymentMethod.type === 'cash').reduce((sum, r) => sum + r.price, 0);
+          const cashBonus = cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
+
+          // Дополнительный процент от каждой вымытой машины
+          const totalRecords = records.length;
+          const carWashBonus = totalRecords * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
+
+          adminEarnings = baseEarnings + cashBonus + carWashBonus;
+          const salary = Math.max(adminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
+
           return {
             totalAmount: salary * employeeCount,
             perEmployee: salary
@@ -157,7 +188,7 @@ const ReportsPage: React.FC = () => {
         }
       }
 
-      // Fallback если роль не определена
+      // Fallback если роль не определена - используем как мойщик
       const earnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
       const salary = Math.max(earnings, state.minimumPaymentSettings.minimumPaymentWasher);
       return {
@@ -279,19 +310,42 @@ const ReportsPage: React.FC = () => {
         });
       }
 
-      // Calculate salary for each employee
-      const salaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, results.length);
-      if (state.salaryCalculationMethod === 'percentage' || periodType !== 'day' || (periodType === 'day' && startDate.toISOString().split('T')[0] < state.salaryCalculationDate)) {
-        // For percentage or old method, divide total salary equally
+      // Calculate salary for each employee with daily roles
+      const reportDate = periodType === 'day' ? startDate.toISOString().split('T')[0] : '';
+      const shouldUseCurrentMethod = periodType === 'day' && reportDate >= state.salaryCalculationDate;
+      const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+
+      if (methodToUse === 'percentage') {
+        // For percentage method, divide total salary equally
+        const salaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, results.length);
         results.forEach(r => {
           r.calculatedEarnings = salaryInfo.perEmployee;
         });
-      } else {
-        // For new method 60+10% or minimumWithPercentage, calculate individually
+      } else if (methodToUse === 'fixedPlusPercentage') {
+        // For fixed + percentage method, calculate for each employee
         results.forEach(r => {
-          const totalRevForEmployee = r.totalCash + r.totalNonCash + r.totalOrganizations;
-          const indivSalaryInfo = getSalaryAmount(totalRevForEmployee, 1, 'washer');
+          const indivSalaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, 1, 'washer', reportDate);
           r.calculatedEarnings = indivSalaryInfo.perEmployee;
+        });
+      } else if (methodToUse === 'minimumWithPercentage') {
+        // For minimum + percentage method, calculate based on daily roles
+        results.forEach(r => {
+          // Get employee role for the date range (if single day) or default to 'washer'
+          let employeeRole: 'admin' | 'washer' = 'washer';
+
+          if (periodType === 'day' && dailyRoles[reportDate]) {
+            employeeRole = dailyRoles[reportDate][r.employeeId] as 'admin' | 'washer' || 'washer';
+          }
+
+          const totalRevForEmployee = r.totalCash + r.totalNonCash + r.totalOrganizations;
+          const indivSalaryInfo = getSalaryAmount(totalRevForEmployee, 1, employeeRole, reportDate);
+          r.calculatedEarnings = indivSalaryInfo.perEmployee;
+        });
+      } else {
+        // Fallback to percentage method
+        const salaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, results.length);
+        results.forEach(r => {
+          r.calculatedEarnings = salaryInfo.perEmployee;
         });
       }
 
@@ -619,8 +673,15 @@ const ReportsPage: React.FC = () => {
                   const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
 
                   // Рассчитываем зарплату сотрудника с использованием функции
-                  // В отчётах роль по умолчанию - мойщик, но можно расширить в будущем
-                  const { perEmployee } = getSalaryAmount(totalRevenueEmp, 1, 'washer'); // передаем 1, так как это для одного сотрудника
+                  // Определяем роль сотрудника из ежедневных ролей
+                  const reportDate = periodType === 'day' ? startDate.toISOString().split('T')[0] : '';
+                  let employeeRole: 'admin' | 'washer' = 'washer';
+
+                  if (periodType === 'day' && dailyRoles[reportDate]) {
+                    employeeRole = dailyRoles[reportDate][report.employeeId] as 'admin' | 'washer' || 'washer';
+                  }
+
+                  const { perEmployee } = getSalaryAmount(totalRevenueEmp, 1, employeeRole, reportDate);
 
                   return (
                     <div key={report.employeeId} className="grid grid-cols-6 px-4 py-2">

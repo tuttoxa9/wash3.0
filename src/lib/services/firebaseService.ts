@@ -679,5 +679,109 @@ export const settingsService = {
       logFirebaseError('Ошибка при получении метода расчета зарплаты', error);
       return null;
     }
+  },
+
+  // Сохранить настройки минимальной оплаты
+  async saveMinimumPaymentSettings(settings: any): Promise<boolean> {
+    try {
+      console.log('Сохранение настроек минимальной оплаты:', settings);
+      const settingsRef = doc(db, 'settings', 'minimumPayment');
+
+      await setDoc(settingsRef, {
+        ...settings,
+        updatedAt: serverTimestamp()
+      });
+
+      console.log('Настройки минимальной оплаты успешно сохранены в базе данных');
+      return true;
+    } catch (error) {
+      logFirebaseError('Ошибка при сохранении настроек минимальной оплаты', error);
+      return false;
+    }
+  },
+
+  // Получить настройки минимальной оплаты
+  async getMinimumPaymentSettings(): Promise<any | null> {
+    try {
+      const settingsRef = doc(db, 'settings', 'minimumPayment');
+      const snapshot = await getDoc(settingsRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        return {
+          minimumPaymentWasher: data.minimumPaymentWasher || 0,
+          percentageWasher: data.percentageWasher || 10,
+          minimumPaymentAdmin: data.minimumPaymentAdmin || 0,
+          percentageAdmin: data.percentageAdmin || 5,
+          adminCashPercentage: data.adminCashPercentage || 3,
+          adminCarWashPercentage: data.adminCarWashPercentage || 2
+        };
+      }
+
+      return null;
+    } catch (error) {
+      logFirebaseError('Ошибка при получении настроек минимальной оплаты', error);
+      return null;
+    }
+  }
+};
+
+// Сервис для работы с ежедневными ролями сотрудников
+export const dailyRolesService = {
+  // Сохранить ежедневные роли сотрудников
+  async saveDailyRoles(date: string, employeeRoles: Record<string, string>): Promise<boolean> {
+    try {
+      console.log(`Сохранение ежедневных ролей для даты ${date}:`, employeeRoles);
+      const rolesRef = doc(db, 'dailyRoles', date);
+
+      await setDoc(rolesRef, {
+        date,
+        employeeRoles,
+        updatedAt: serverTimestamp()
+      });
+
+      console.log('Ежедневные роли успешно сохранены в базе данных');
+      return true;
+    } catch (error) {
+      logFirebaseError('Ошибка при сохранении ежедневных ролей', error);
+      return false;
+    }
+  },
+
+  // Получить ежедневные роли сотрудников
+  async getDailyRoles(date: string): Promise<Record<string, string> | null> {
+    try {
+      const rolesRef = doc(db, 'dailyRoles', date);
+      const snapshot = await getDoc(rolesRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        return data.employeeRoles || {};
+      }
+
+      return null;
+    } catch (error) {
+      logFirebaseError('Ошибка при получении ежедневных ролей', error);
+      return null;
+    }
+  },
+
+  // Обновить роль конкретного сотрудника на определенную дату
+  async updateEmployeeRole(date: string, employeeId: string, role: string): Promise<boolean> {
+    try {
+      console.log(`Обновление роли сотрудника ${employeeId} на дату ${date}: ${role}`);
+
+      // Получаем текущие роли
+      const currentRoles = await this.getDailyRoles(date) || {};
+
+      // Обновляем роль конкретного сотрудника
+      currentRoles[employeeId] = role;
+
+      // Сохраняем обновленные роли
+      return await this.saveDailyRoles(date, currentRoles);
+    } catch (error) {
+      logFirebaseError('Ошибка при обновлении роли сотрудника', error);
+      return false;
+    }
   }
 };
