@@ -5,6 +5,7 @@ import RecordsPage from '@/pages/RecordsPage';
 import SettingsPage from '@/pages/SettingsPage';
 import ReportsPage from '@/pages/ReportsPage';
 import { AppProvider } from '@/lib/context/AppContext';
+import { NotificationProvider } from '@/lib/context/NotificationContext';
 
 const router = createBrowserRouter([
   {
@@ -34,7 +35,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <AppProvider>
-      <RouterProvider router={router} />
+      <NotificationProvider>
+        <RouterProvider router={router} />
+      </NotificationProvider>
     </AppProvider>
   );
 }

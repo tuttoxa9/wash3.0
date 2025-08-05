@@ -7,8 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Calendar as CalendarIcon, X, Filter, Building } from 'lucide-react';
 import { carWashService, dailyRolesService } from '@/lib/services/firebaseService';
 import type { CarWashRecord, Employee } from '@/lib/types';
-import { toast } from 'sonner';
+import { useToast } from '@/lib/hooks/useToast';
 import OrganizationsReport from '@/components/OrganizationsReport';
+import EmployeeRecordsModal from '@/components/EmployeeRecordsModal';
 
 type PeriodType = 'day' | 'week' | 'month' | 'custom';
 
@@ -25,6 +26,7 @@ interface EarningsReport {
 
 const ReportsPage: React.FC = () => {
   const { state } = useAppContext();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [periodType, setPeriodType] = useState<PeriodType>('day');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -35,6 +37,10 @@ const ReportsPage: React.FC = () => {
   const [earningsReport, setEarningsReport] = useState<EarningsReport[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [dailyRoles, setDailyRoles] = useState<Record<string, Record<string, string>>>({});
+
+  // Modal state
+  const [selectedEmployeeForModal, setSelectedEmployeeForModal] = useState<Employee | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Date picker state
   const [activeDatePicker, setActiveDatePicker] = useState<'main' | 'start' | 'end' | null>(null);
@@ -747,9 +753,25 @@ const ReportsPage: React.FC = () => {
                     perEmployee = salaryInfo.perEmployee;
                   }
 
+                  const handleEmployeeClick = () => {
+                    const employee = state.employees.find(e => e.id === report.employeeId);
+                    if (employee) {
+                      // Фильтруем записи для этого сотрудника
+                      const employeeRecords = records.filter(record =>
+                        record.employeeIds.includes(report.employeeId)
+                      );
+                      setSelectedEmployeeForModal(employee);
+                      setIsModalOpen(true);
+                    }
+                  };
+
                   return (
-                    <div key={report.employeeId} className="grid grid-cols-6 px-4 py-2">
-                      <div>{report.employeeName}</div>
+                    <div
+                      key={report.employeeId}
+                      className="grid grid-cols-6 px-4 py-2 hover:bg-muted/30 cursor-pointer transition-colors"
+                      onClick={handleEmployeeClick}
+                    >
+                      <div className="text-primary hover:text-primary/80 font-medium">{report.employeeName}</div>
                       <div className="text-right">{report.totalCash.toFixed(2)}</div>
                       <div className="text-right">{report.totalNonCash.toFixed(2)}</div>
                       <div className="text-right">{report.totalOrganizations.toFixed(2)}</div>
@@ -792,6 +814,22 @@ const ReportsPage: React.FC = () => {
           <OrganizationsReport />
         </TabsContent>
       </Tabs>
+
+      {/* Модальное окно с записями сотрудника */}
+      {selectedEmployeeForModal && (
+        <EmployeeRecordsModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedEmployeeForModal(null);
+          }}
+          employee={selectedEmployeeForModal}
+          records={records.filter(record =>
+            record.employeeIds.includes(selectedEmployeeForModal.id)
+          )}
+          periodLabel={formatDateRange()}
+        />
+      )}
     </div>
   );
 };

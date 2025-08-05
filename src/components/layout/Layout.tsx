@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 import { Toaster } from 'sonner';
+import NotificationPanel from '@/components/NotificationPanel';
 
 const Layout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -23,15 +24,23 @@ const Layout: React.FC = () => {
       {/* Основной контент */}
       <main className="flex-1 overflow-auto p-4 md:p-6">
         {/* Шапка для мобильных устройств */}
-        <div className="flex md:hidden items-center mb-4">
-          <button
-            onClick={toggleMobileSidebar}
-            className="p-2 mr-2 rounded-xl hover:bg-secondary"
-            aria-label="Открыть меню"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-          <h1 className="text-xl font-bold gradient-heading">Detail Lab</h1>
+        <div className="flex md:hidden items-center justify-between mb-4">
+          <div className="flex items-center">
+            <button
+              onClick={toggleMobileSidebar}
+              className="p-2 mr-2 rounded-xl hover:bg-secondary"
+              aria-label="Открыть меню"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <h1 className="text-xl font-bold gradient-heading">Detail Lab</h1>
+          </div>
+          <NotificationPanel />
+        </div>
+
+        {/* Шапка для десктопа */}
+        <div className="hidden md:flex justify-end mb-4">
+          <NotificationPanel />
         </div>
 
         {/* Содержимое страницы */}

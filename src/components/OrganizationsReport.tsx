@@ -5,7 +5,7 @@ import { format, parseISO } from 'date-fns';
 import { Building, Calendar, Loader2, FileDown, X } from 'lucide-react';
 import { carWashService } from '@/lib/services/firebaseService';
 import type { CarWashRecord, Organization } from '@/lib/types';
-import { toast } from 'sonner';
+import { useToast } from '@/lib/hooks/useToast';
 import { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, TextRun, AlignmentType, BorderStyle } from 'docx';
 import { Packer } from 'docx';
 import { saveAs } from 'file-saver';
@@ -15,6 +15,7 @@ type OrganizationsReportProps = {}
 
 const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
   const { state } = useAppContext();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
   const [records, setRecords] = useState<CarWashRecord[]>([]);
@@ -226,7 +227,6 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
               }),
 
               new Paragraph({
-                text: `Отчет сформирован: ${format(new Date(), 'dd.MM.yyyy HH:mm:ss', { locale: ru })}`,
                 spacing: { before: 100, after: 400 },
                 alignment: AlignmentType.RIGHT,
                 children: [new TextRun({ text: `Отчет сформирован: ${format(new Date(), 'dd.MM.yyyy HH:mm:ss', { locale: ru })}`, size: 18 })]
