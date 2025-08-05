@@ -984,7 +984,12 @@ const HomePage: React.FC = () => {
                         </div>
                         {workingEmployees && workingEmployees.length > 0 && (
                           <div className="border-t border-border mt-4 pt-4">
-                            {state.salaryCalculationMethod === 'minimumWithPercentage' && methodToUse === 'minimumWithPercentage' ? (
+                            {(() => {
+                              const reportDate = selectedDate;
+                              const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
+                              const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+                              return state.salaryCalculationMethod === 'minimumWithPercentage' && methodToUse === 'minimumWithPercentage';
+                            })() ? (
                               <div>
                                 <p className="text-sm text-muted-foreground mb-2">
                                   Индивидуальные зарплаты:
