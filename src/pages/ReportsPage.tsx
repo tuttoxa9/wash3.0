@@ -336,13 +336,7 @@ const ReportsPage: React.FC = () => {
       const shouldUseCurrentMethod = periodType === 'day' && reportDate >= state.salaryCalculationDate;
       const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
-      console.log('Метод расчёта зарплаты:', {
-        reportDate,
-        salaryCalculationDate: state.salaryCalculationDate,
-        shouldUseCurrentMethod,
-        currentMethod: state.salaryCalculationMethod,
-        methodToUse
-      });
+
 
       if (methodToUse === 'percentage') {
         // For percentage method, divide total salary equally
@@ -365,6 +359,17 @@ const ReportsPage: React.FC = () => {
           if (periodType === 'day' && dailyRoles[reportDate]) {
             employeeRole = dailyRoles[reportDate][r.employeeId] as 'admin' | 'washer' || 'washer';
           }
+
+          // ОТЛАДКА ОПРЕДЕЛЕНИЯ РОЛИ
+          console.log(`Определение роли для ${r.employeeName}:`, {
+            employeeId: r.employeeId,
+            periodType,
+            reportDate,
+            'dailyRoles существует': !!dailyRoles[reportDate],
+            'роли для даты': dailyRoles[reportDate],
+            'роль из dailyRoles': dailyRoles[reportDate] ? dailyRoles[reportDate][r.employeeId] : 'нет данных',
+            'итоговая employeeRole': employeeRole
+          });
 
           if (employeeRole === 'admin') {
             // Специальный расчет для админа
@@ -392,15 +397,22 @@ const ReportsPage: React.FC = () => {
             const totalAdminEarnings = baseCashBonus + carWashBonus;
 
             // Отладочная информация
-            console.log(`Админ ${r.employeeName}:`, {
+            console.log(`ДЕТАЛЬНЫЙ РАСЧЁТ для админа ${r.employeeName}:`, {
               totalRevenueAll,
-              adminCount,
               adminCashPercentage: state.minimumPaymentSettings.adminCashPercentage,
+              'totalRevenueAll * adminCashPercentage / 100': totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100),
+              adminCount,
+              'adminCount > 0': adminCount > 0,
               baseCashBonus,
               carWashBonus,
               totalAdminEarnings,
               minimumPaymentAdmin: state.minimumPaymentSettings.minimumPaymentAdmin,
-              finalSalary: Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin)
+              finalSalary: Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin),
+              'Результаты всех сотрудников': results.map(res => ({
+                id: res.employeeId,
+                name: res.employeeName,
+                role: dailyRoles[reportDate] ? dailyRoles[reportDate][res.employeeId] : 'undefined'
+              }))
             });
 
             r.calculatedEarnings = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
@@ -408,6 +420,15 @@ const ReportsPage: React.FC = () => {
             // Расчет для мойщика - процент от суммы машин, которые лично помыл
             const washerPersonalRevenue = r.totalCash + r.totalNonCash + r.totalOrganizations;
             const washerEarnings = washerPersonalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+
+            console.log(`РАСЧЁТ ДЛЯ МОЙЩИКА ${r.employeeName}:`, {
+              washerPersonalRevenue,
+              percentageWasher: state.minimumPaymentSettings.percentageWasher,
+              washerEarnings,
+              minimumPaymentWasher: state.minimumPaymentSettings.minimumPaymentWasher,
+              finalSalary: Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher)
+            });
+
             r.calculatedEarnings = Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher);
           }
         });
