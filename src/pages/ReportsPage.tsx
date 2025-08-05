@@ -336,6 +336,14 @@ const ReportsPage: React.FC = () => {
       const shouldUseCurrentMethod = periodType === 'day' && reportDate >= state.salaryCalculationDate;
       const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
+      console.log('Метод расчёта зарплаты:', {
+        reportDate,
+        salaryCalculationDate: state.salaryCalculationDate,
+        shouldUseCurrentMethod,
+        currentMethod: state.salaryCalculationMethod,
+        methodToUse
+      });
+
       if (methodToUse === 'percentage') {
         // For percentage method, divide total salary equally
         const salaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, results.length);
