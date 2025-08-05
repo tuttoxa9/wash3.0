@@ -17,7 +17,8 @@ const initialState: AppState = {
   minimumPaymentSettings: {
     minimumPaymentWasher: 0,
     percentageWasher: 10,
-    minimumPaymentAdmin: 0
+    minimumPaymentAdmin: 0,
+    percentageAdmin: 5
   }
 };
 

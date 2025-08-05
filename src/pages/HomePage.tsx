@@ -929,21 +929,31 @@ const HomePage: React.FC = () => {
                         const adminCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'admin').length;
                         const washerCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'washer').length;
 
-                        // Базовый расчет - процент от выручки для мойщика
-                        const washerEarnings = revenue * (state.minimumPaymentSettings.percentageWasher / 100);
-
                         let totalWasherPay = 0;
                         let totalAdminPay = 0;
 
                         // Расчет для мойщиков
                         if (washerCount > 0) {
+                          // Процент от ВСЕХ машин для мойщиков (не только наличных)
+                          const totalRevenue = currentReport.totalCash + currentReport.totalNonCash + (currentReport.records?.reduce((sum, record) => {
+                            return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                          }, 0) || 0);
+
+                          const washerEarnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
                           const washerPayPerPerson = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
                           totalWasherPay = washerPayPerPerson * washerCount;
                         }
 
-                        // Расчет для админов (только минималка)
+                        // Расчет для админов
                         if (adminCount > 0) {
-                          totalAdminPay = state.minimumPaymentSettings.minimumPaymentAdmin * adminCount;
+                          // Процент от ВСЕХ машин для админов + минимальная оплата если нужно
+                          const totalRevenue = currentReport.totalCash + currentReport.totalNonCash + (currentReport.records?.reduce((sum, record) => {
+                            return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                          }, 0) || 0);
+
+                          const adminEarnings = totalRevenue * (state.minimumPaymentSettings.percentageAdmin / 100);
+                          const adminPayPerPerson = Math.max(adminEarnings / adminCount, state.minimumPaymentSettings.minimumPaymentAdmin);
+                          totalAdminPay = adminPayPerPerson * adminCount;
                         }
 
                         totalAmount = totalWasherPay + totalAdminPay;
@@ -974,15 +984,51 @@ const HomePage: React.FC = () => {
                         </div>
                         {workingEmployees && workingEmployees.length > 0 && (
                           <div className="border-t border-border mt-4 pt-4">
-                            <p className="text-sm text-muted-foreground mb-2">
-                              На каждого сотрудника:
-                            </p>
-                            <div className="font-medium">
-                              {salaryCalculation.perEmployee.toFixed(2)} BYN
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-2 italic">
-                              {salaryCalculation.formula}
-                            </p>
+                            {state.salaryCalculationMethod === 'minimumWithPercentage' && methodToUse === 'minimumWithPercentage' ? (
+                              <div>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                  Индивидуальные зарплаты:
+                                </p>
+                                <div className="space-y-1">
+                                  {workingEmployees.map(employee => {
+                                    const role = employeeRoles[employee.id] || 'washer';
+                                    const totalRevenue = currentReport.totalCash + currentReport.totalNonCash + (currentReport.records?.reduce((sum, record) => {
+                                      return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                                    }, 0) || 0);
+
+                                    let individualSalary = 0;
+                                    if (role === 'washer') {
+                                      const washerCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'washer').length;
+                                      const washerEarnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+                                      individualSalary = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
+                                    } else if (role === 'admin') {
+                                      const adminCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'admin').length;
+                                      const adminEarnings = totalRevenue * (state.minimumPaymentSettings.percentageAdmin / 100);
+                                      individualSalary = Math.max(adminEarnings / adminCount, state.minimumPaymentSettings.minimumPaymentAdmin);
+                                    }
+
+                                    return (
+                                      <div key={employee.id} className="flex justify-between text-sm">
+                                        <span>{employee.name} ({role === 'admin' ? 'Админ' : 'Мойщик'})</span>
+                                        <span className="font-medium">{individualSalary.toFixed(2)} BYN</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                  На каждого сотрудника:
+                                </p>
+                                <div className="font-medium">
+                                  {salaryCalculation.perEmployee.toFixed(2)} BYN
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-2 italic">
+                                  {salaryCalculation.formula}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </>

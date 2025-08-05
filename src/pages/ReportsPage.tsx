@@ -19,6 +19,7 @@ interface EarningsReport {
   calculatedEarnings: number;
   totalCash: number;
   totalNonCash: number;
+  totalOrganizations: number;
   recordsCount: number;
 }
 
@@ -114,7 +115,7 @@ const ReportsPage: React.FC = () => {
   }, [startDate, endDate]);
 
   // Функция для расчета зарплаты
-  const getSalaryAmount = (totalRevenue: number, employeeCount = 1) => {
+  const getSalaryAmount = (totalRevenue: number, employeeCount = 1, employeeRole: 'admin' | 'washer' | null = null) => {
     // Определяем дату для периода отчета
     const reportDate = periodType === 'day' ? startDate.toISOString().split('T')[0] : '';
 
@@ -129,13 +130,47 @@ const ReportsPage: React.FC = () => {
         totalAmount: totalSalary,
         perEmployee: employeeCount > 0 ? totalSalary / employeeCount : totalSalary
       };
+    } else if (methodToUse === 'fixedPlusPercentage') {
+      // 60 руб + 10% от общей выручки для КАЖДОГО сотрудника
+      const perEmployee = 60 + (totalRevenue * 0.1);
+      return {
+        totalAmount: perEmployee * employeeCount,
+        perEmployee
+      };
+    } else if (methodToUse === 'minimumWithPercentage') {
+      // Минимальная оплата + процент с учетом ролей
+      if (employeeRole) {
+        if (employeeRole === 'washer') {
+          const earnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+          const salary = Math.max(earnings, state.minimumPaymentSettings.minimumPaymentWasher);
+          return {
+            totalAmount: salary * employeeCount,
+            perEmployee: salary
+          };
+        } else if (employeeRole === 'admin') {
+          const earnings = totalRevenue * (state.minimumPaymentSettings.percentageAdmin / 100);
+          const salary = Math.max(earnings, state.minimumPaymentSettings.minimumPaymentAdmin);
+          return {
+            totalAmount: salary * employeeCount,
+            perEmployee: salary
+          };
+        }
+      }
+
+      // Fallback если роль не определена
+      const earnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+      const salary = Math.max(earnings, state.minimumPaymentSettings.minimumPaymentWasher);
+      return {
+        totalAmount: salary * employeeCount,
+        perEmployee: salary
+      };
     }
 
-    // 60 руб + 10% от общей выручки для КАЖДОГО сотрудника
-    const perEmployee = 60 + (totalRevenue * 0.1);
+    // Fallback на старый метод
+    const totalSalary = totalRevenue * 0.27;
     return {
-      totalAmount: perEmployee * employeeCount,
-      perEmployee
+      totalAmount: totalSalary,
+      perEmployee: employeeCount > 0 ? totalSalary / employeeCount : totalSalary
     };
   };
 
@@ -166,6 +201,7 @@ const ReportsPage: React.FC = () => {
         name: string;
         totalCash: number;
         totalNonCash: number;
+        totalOrganizations: number;
         recordsCount: number;
       }>();
 
@@ -176,6 +212,7 @@ const ReportsPage: React.FC = () => {
           name: state.employees.find(e => e.id === selectedEmployeeId)?.name || 'Неизвестный',
           totalCash: 0,
           totalNonCash: 0,
+          totalOrganizations: 0,
           recordsCount: 0
         });
       } else {
@@ -186,6 +223,7 @@ const ReportsPage: React.FC = () => {
             name: state.employees.find(e => e.id === empId)?.name || 'Неизвестный',
             totalCash: 0,
             totalNonCash: 0,
+            totalOrganizations: 0,
             recordsCount: 0
           });
         });
@@ -210,6 +248,8 @@ const ReportsPage: React.FC = () => {
               empData.totalCash += valuePerEmployee;
             } else if (record.paymentMethod.type === 'card') {
               empData.totalNonCash += valuePerEmployee;
+            } else if (record.paymentMethod.type === 'organization') {
+              empData.totalOrganizations += valuePerEmployee;
             }
             empData.recordsCount++;
           }
@@ -219,11 +259,13 @@ const ReportsPage: React.FC = () => {
       const results: EarningsReport[] = [];
       let totalCashAll = 0;
       let totalNonCashAll = 0;
+      let totalOrganizationsAll = 0;
 
       for (const [_, employee] of employeeMap.entries()) {
-        const totalEarnings = employee.totalCash + employee.totalNonCash;
+        const totalEarnings = employee.totalCash + employee.totalNonCash + employee.totalOrganizations;
         totalCashAll += employee.totalCash;
         totalNonCashAll += employee.totalNonCash;
+        totalOrganizationsAll += employee.totalOrganizations;
 
         results.push({
           employeeId: employee.id,
@@ -232,21 +274,23 @@ const ReportsPage: React.FC = () => {
           calculatedEarnings: 0, // will calculate below
           totalCash: employee.totalCash,
           totalNonCash: employee.totalNonCash,
+          totalOrganizations: employee.totalOrganizations,
           recordsCount: employee.recordsCount,
         });
       }
 
       // Calculate salary for each employee
-      const salaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll, results.length);
+      const salaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, results.length);
       if (state.salaryCalculationMethod === 'percentage' || periodType !== 'day' || (periodType === 'day' && startDate.toISOString().split('T')[0] < state.salaryCalculationDate)) {
         // For percentage or old method, divide total salary equally
         results.forEach(r => {
           r.calculatedEarnings = salaryInfo.perEmployee;
         });
       } else {
-        // For new method 60+10%, calculate individually
+        // For new method 60+10% or minimumWithPercentage, calculate individually
         results.forEach(r => {
-          const indivSalaryInfo = getSalaryAmount(r.totalCash + r.totalNonCash, 1);
+          const totalRevForEmployee = r.totalCash + r.totalNonCash + r.totalOrganizations;
+          const indivSalaryInfo = getSalaryAmount(totalRevForEmployee, 1, 'washer');
           r.calculatedEarnings = indivSalaryInfo.perEmployee;
         });
       }
@@ -254,7 +298,7 @@ const ReportsPage: React.FC = () => {
       // Sort by calculated earnings descending
       results.sort((a, b) => b.calculatedEarnings - a.calculatedEarnings);
 
-      setTotalRevenue(totalCashAll + totalNonCashAll);
+      setTotalRevenue(totalCashAll + totalNonCashAll + totalOrganizationsAll);
 
       return results;
     };
@@ -545,6 +589,10 @@ const ReportsPage: React.FC = () => {
 
                   if (methodToUse === 'percentage') {
                     return '27% от общей выручки, делится поровну между сотрудниками';
+                  } else if (methodToUse === 'fixedPlusPercentage') {
+                    return '60 руб. + 10% от общей выручки для каждого сотрудника';
+                  } else if (methodToUse === 'minimumWithPercentage') {
+                    return 'Минимальная оплата + процент с учетом ролей (мойщик/админ)';
                   }
                   return '60 руб. + 10% от общей выручки для каждого сотрудника';
                 })()}
@@ -558,25 +606,28 @@ const ReportsPage: React.FC = () => {
             </div>
 
             <div className="border rounded-md overflow-hidden">
-              <div className="grid grid-cols-5 bg-muted/50 px-4 py-2 border-b">
+              <div className="grid grid-cols-6 bg-muted/50 px-4 py-2 border-b">
                 <div className="font-medium text-sm">Сотрудник</div>
                 <div className="font-medium text-sm text-right">Наличные (BYN)</div>
                 <div className="font-medium text-sm text-right">Карта (BYN)</div>
+                <div className="font-medium text-sm text-right">Безнал (BYN)</div>
                 <div className="font-medium text-sm text-right">Всего (BYN)</div>
                 <div className="font-medium text-sm text-right">Зарплата (BYN)</div>
               </div>
               <div className="divide-y">
                 {earningsReport.map(report => {
-                  const totalRevenueEmp = report.totalCash + report.totalNonCash;
+                  const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
 
                   // Рассчитываем зарплату сотрудника с использованием функции
-                  const { perEmployee } = getSalaryAmount(totalRevenueEmp, 1); // передаем 1, так как это для одного сотрудника
+                  // В отчётах роль по умолчанию - мойщик, но можно расширить в будущем
+                  const { perEmployee } = getSalaryAmount(totalRevenueEmp, 1, 'washer'); // передаем 1, так как это для одного сотрудника
 
                   return (
-                    <div key={report.employeeId} className="grid grid-cols-5 px-4 py-2">
+                    <div key={report.employeeId} className="grid grid-cols-6 px-4 py-2">
                       <div>{report.employeeName}</div>
                       <div className="text-right">{report.totalCash.toFixed(2)}</div>
                       <div className="text-right">{report.totalNonCash.toFixed(2)}</div>
+                      <div className="text-right">{report.totalOrganizations.toFixed(2)}</div>
                       <div className="text-right">{totalRevenueEmp.toFixed(2)}</div>
                       <div className="text-right font-medium">{perEmployee.toFixed(2)}</div>
                     </div>
