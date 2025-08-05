@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ChevronDown, ChevronRight, Calendar, Clock, Car, Service, CreditCard, Users } from 'lucide-react';
+import { X, ChevronDown, ChevronRight, Calendar, Clock, Car, Wrench, CreditCard, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -226,7 +226,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
                                       </div>
 
                                       <div className="flex items-center gap-2">
-                                        <Service className="w-4 h-4 text-muted-foreground" />
+                                        <Wrench className="w-4 h-4 text-muted-foreground" />
                                         <span className="font-medium">Услуга:</span>
                                         <span>{record.service}</span>
                                       </div>
