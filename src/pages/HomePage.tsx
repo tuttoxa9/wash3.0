@@ -972,13 +972,27 @@ const HomePage: React.FC = () => {
 
                         // Расчет для админов
                         if (adminCount > 0) {
-                          // Процент от ВСЕХ машин для админов + минимальная оплата если нужно
-                          const totalRevenue = currentReport.totalCash + currentReport.totalNonCash + (currentReport.records?.reduce((sum, record) => {
-                            return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
-                          }, 0) || 0);
+                          // Админ получает только процент от кассы + процент от машин которые он лично помыл
+                          const cashRevenue = currentReport.totalCash;
 
-                          const adminEarnings = totalRevenue * (state.minimumPaymentSettings.percentageAdmin / 100);
-                          const adminPayPerPerson = Math.max(adminEarnings / adminCount, state.minimumPaymentSettings.minimumPaymentAdmin);
+                          // Базовый процент с кассы для всех админов
+                          const baseCashBonus = cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
+
+                          // Процент от вымытых машин получает только если участвовал в мойке
+                          let carWashBonus = 0;
+                          if (currentReport.records) {
+                            currentReport.records.forEach(record => {
+                              const adminIds = record.employeeIds.filter(empId => employeeRoles[empId] === 'admin');
+                              if (adminIds.length > 0) {
+                                // Если админ участвовал в мойке - получает свой процент от стоимости машины
+                                const carWashBonusPerAdmin = (record.price / record.employeeIds.length) * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
+                                carWashBonus += carWashBonusPerAdmin * adminIds.length;
+                              }
+                            });
+                          }
+
+                          const totalAdminEarnings = baseCashBonus + carWashBonus;
+                          const adminPayPerPerson = Math.max(totalAdminEarnings / adminCount, state.minimumPaymentSettings.minimumPaymentAdmin);
                           totalAdminPay = adminPayPerPerson * adminCount;
                         }
 
@@ -1034,8 +1048,24 @@ const HomePage: React.FC = () => {
                                       individualSalary = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
                                     } else if (role === 'admin') {
                                       const adminCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'admin').length;
-                                      const adminEarnings = totalRevenue * (state.minimumPaymentSettings.percentageAdmin / 100);
-                                      individualSalary = Math.max(adminEarnings / adminCount, state.minimumPaymentSettings.minimumPaymentAdmin);
+
+                                      // Админ получает процент от кассы + процент от машин которые он лично помыл
+                                      const cashRevenue = currentReport.totalCash;
+                                      const baseCashBonus = (cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount;
+
+                                      // Процент от вымытых машин для конкретного админа
+                                      let carWashBonus = 0;
+                                      if (currentReport.records) {
+                                        currentReport.records.forEach(record => {
+                                          if (record.employeeIds.includes(employee.id)) {
+                                            const carWashBonusForRecord = (record.price / record.employeeIds.length) * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
+                                            carWashBonus += carWashBonusForRecord;
+                                          }
+                                        });
+                                      }
+
+                                      const totalAdminEarnings = baseCashBonus + carWashBonus;
+                                      individualSalary = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
                                     }
 
                                     return (
