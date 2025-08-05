@@ -351,84 +351,61 @@ const ReportsPage: React.FC = () => {
           r.calculatedEarnings = indivSalaryInfo.perEmployee;
         });
       } else if (methodToUse === 'minimumWithPercentage') {
-        // For minimum + percentage method, calculate based on daily roles
+        // Расчёт с учётом ролей админ/мойщик
         results.forEach(r => {
-          // Get employee role for the date range (if single day) or default to 'washer'
+          // Определяем роль сотрудника
           let employeeRole: 'admin' | 'washer' = 'washer';
 
-          if (periodType === 'day' && dailyRoles[reportDate]) {
-            employeeRole = dailyRoles[reportDate][r.employeeId] as 'admin' | 'washer' || 'washer';
+          // Проверяем роль в dailyRoles для текущей даты
+          if (periodType === 'day' && dailyRoles[reportDate] && dailyRoles[reportDate][r.employeeId]) {
+            employeeRole = dailyRoles[reportDate][r.employeeId] as 'admin' | 'washer';
+          } else {
+            // Если роли для даты нет, пытаемся получить из глобального состояния сотрудников
+            const employee = state.employees.find(emp => emp.id === r.employeeId);
+            if (employee && employee.role) {
+              employeeRole = employee.role;
+            }
           }
 
-          // ОТЛАДКА ОПРЕДЕЛЕНИЯ РОЛИ
-          console.log(`Определение роли для ${r.employeeName}:`, {
-            employeeId: r.employeeId,
-            periodType,
-            reportDate,
-            'dailyRoles существует': !!dailyRoles[reportDate],
-            'роли для даты': dailyRoles[reportDate],
-            'роль из dailyRoles': dailyRoles[reportDate] ? dailyRoles[reportDate][r.employeeId] : 'нет данных',
-            'итоговая employeeRole': employeeRole
-          });
-
           if (employeeRole === 'admin') {
-            // Специальный расчет для админа
-            const totalRevenueAll = totalCashAll + totalNonCashAll + totalOrganizationsAll; // Вся выручка
+            // РАСЧЁТ ДЛЯ АДМИНА
+            const totalRevenueAll = totalCashAll + totalNonCashAll + totalOrganizationsAll;
+
+            // Количество админов для деления базового процента
             const adminCount = results.filter(res => {
-              if (periodType === 'day' && dailyRoles[reportDate]) {
-                return dailyRoles[reportDate][res.employeeId] === 'admin';
+              let resRole: 'admin' | 'washer' = 'washer';
+              if (periodType === 'day' && dailyRoles[reportDate] && dailyRoles[reportDate][res.employeeId]) {
+                resRole = dailyRoles[reportDate][res.employeeId] as 'admin' | 'washer';
+              } else {
+                const resEmployee = state.employees.find(emp => emp.id === res.employeeId);
+                if (resEmployee && resEmployee.role) {
+                  resRole = resEmployee.role;
+                }
               }
-              return false;
+              return resRole === 'admin';
             }).length;
 
-            // Базовый процент с всей выручки (делится между всеми админами)
-            const baseCashBonus = adminCount > 0 ? (totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount : 0;
+            // 1. Базовый процент от общей выручки (делится между всеми админами)
+            const baseCashBonus = adminCount > 0 ?
+              (totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount :
+              totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100);
 
-            // Процент от машин, которые лично помыл этот админ
+            // 2. Процент от машин, которые лично помыл этот админ
             let carWashBonus = 0;
             records.forEach(record => {
               if (record.employeeIds.includes(r.employeeId)) {
-                // Доля админа от стоимости машины
                 const adminShare = record.price / record.employeeIds.length;
                 carWashBonus += adminShare * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
               }
             });
 
             const totalAdminEarnings = baseCashBonus + carWashBonus;
-
-            // Отладочная информация
-            console.log(`ДЕТАЛЬНЫЙ РАСЧЁТ для админа ${r.employeeName}:`, {
-              totalRevenueAll,
-              adminCashPercentage: state.minimumPaymentSettings.adminCashPercentage,
-              'totalRevenueAll * adminCashPercentage / 100': totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100),
-              adminCount,
-              'adminCount > 0': adminCount > 0,
-              baseCashBonus,
-              carWashBonus,
-              totalAdminEarnings,
-              minimumPaymentAdmin: state.minimumPaymentSettings.minimumPaymentAdmin,
-              finalSalary: Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin),
-              'Результаты всех сотрудников': results.map(res => ({
-                id: res.employeeId,
-                name: res.employeeName,
-                role: dailyRoles[reportDate] ? dailyRoles[reportDate][res.employeeId] : 'undefined'
-              }))
-            });
-
             r.calculatedEarnings = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
+
           } else {
-            // Расчет для мойщика - процент от суммы машин, которые лично помыл
+            // РАСЧЁТ ДЛЯ МОЙЩИКА
             const washerPersonalRevenue = r.totalCash + r.totalNonCash + r.totalOrganizations;
             const washerEarnings = washerPersonalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-
-            console.log(`РАСЧЁТ ДЛЯ МОЙЩИКА ${r.employeeName}:`, {
-              washerPersonalRevenue,
-              percentageWasher: state.minimumPaymentSettings.percentageWasher,
-              washerEarnings,
-              minimumPaymentWasher: state.minimumPaymentSettings.minimumPaymentWasher,
-              finalSalary: Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher)
-            });
-
             r.calculatedEarnings = Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher);
           }
         });
