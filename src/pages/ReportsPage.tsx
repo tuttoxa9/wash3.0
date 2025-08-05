@@ -169,9 +169,9 @@ const ReportsPage: React.FC = () => {
           // Специальный расчёт для админа с учетом настроек
           let adminEarnings = 0;
 
-          // Процент от кассы (наличные) - всегда получает
-          const cashRevenue = records.filter(r => r.paymentMethod.type === 'cash').reduce((sum, r) => sum + r.price, 0);
-          const cashBonus = cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
+          // Процент от всей выручки (наличные + безнал + организации) - всегда получает
+          const totalRevenue = records.reduce((sum, r) => sum + r.price, 0);
+          const cashBonus = totalRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
 
           // Процент от вымытых машин - только если участвовал в мойке
           // Здесь нужен employee ID, но его нет в параметрах функции
@@ -358,7 +358,7 @@ const ReportsPage: React.FC = () => {
 
           if (employeeRole === 'admin') {
             // Специальный расчет для админа
-            const cashRevenue = totalCashAll; // Весь доход от наличных
+            const totalRevenueAll = totalCashAll + totalNonCashAll + totalOrganizationsAll; // Вся выручка
             const adminCount = results.filter(res => {
               if (periodType === 'day' && dailyRoles[reportDate]) {
                 return dailyRoles[reportDate][res.employeeId] === 'admin';
@@ -366,12 +366,12 @@ const ReportsPage: React.FC = () => {
               return false;
             }).length;
 
-            // Базовый процент с кассы (делится между всеми админами)
-            const baseCashBonus = adminCount > 0 ? (cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount : 0;
+            // Базовый процент с всей выручки (делится между всеми админами)
+            const baseCashBonus = adminCount > 0 ? (totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount : 0;
 
             // Процент от машин, которые лично помыл этот админ
             let carWashBonus = 0;
-            filteredRecords.forEach(record => {
+            records.forEach(record => {
               if (record.employeeIds.includes(r.employeeId)) {
                 // Доля админа от стоимости машины
                 const adminShare = record.price / record.employeeIds.length;
@@ -707,7 +707,7 @@ const ReportsPage: React.FC = () => {
 
                   if (methodToUse === 'minimumWithPercentage' && employeeRole === 'admin') {
                     // Специальный расчет для админа
-                    const cashRevenue = earningsReport.reduce((sum, r) => sum + r.totalCash, 0);
+                    const totalRevenueAll = earningsReport.reduce((sum, r) => sum + r.totalCash + r.totalNonCash + r.totalOrganizations, 0);
                     const adminCount = earningsReport.filter(r => {
                       if (periodType === 'day' && dailyRoles[reportDate]) {
                         return dailyRoles[reportDate][r.employeeId] === 'admin';
@@ -715,12 +715,12 @@ const ReportsPage: React.FC = () => {
                       return false;
                     }).length;
 
-                    // Базовый процент с кассы (делится между всеми админами)
-                    const baseCashBonus = adminCount > 0 ? (cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount : 0;
+                    // Базовый процент с всей выручки (делится между всеми админами)
+                    const baseCashBonus = adminCount > 0 ? (totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount : 0;
 
                     // Процент от машин, которые лично помыл этот админ
                     let carWashBonus = 0;
-                    filteredRecords.forEach(record => {
+                    records.forEach(record => {
                       if (record.employeeIds.includes(report.employeeId)) {
                         // Доля админа от стоимости машины
                         const adminShare = record.price / record.employeeIds.length;

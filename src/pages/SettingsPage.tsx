@@ -676,79 +676,7 @@ const SettingsPage: React.FC = () => {
               {/* Новый блок: Настройки расчета заработной платы */}
               <SalaryCalculationSettings />
 
-              {/* Раздел Управление данными */}
-              <motion.div
-                className="p-3 border border-border rounded-lg"
-                whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                transition={{ duration: 0.2 }}
-              >
-                <h3 className="text-sm font-medium mb-2 text-destructive">Управление данными</h3>
-                <p className="text-xs text-muted-foreground mb-3">
-                  <span className="font-bold">Внимание!</span> Эти операции необратимы.
-                </p>
 
-                <AnimatePresence>
-                  {showConfirmation ? (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="bg-destructive/10 border border-destructive rounded-lg p-3 mb-3"
-                    >
-                      <div className="flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="font-medium text-destructive mb-1 text-sm">Подтверждение удаления</h4>
-                          <p className="mb-3 text-xs">
-                            Вы уверены, что хотите удалить <span className="font-bold">ВСЕ данные</span>?
-                            Будут удалены сотрудники, услуги и записи о мойках.
-                          </p>
-                          <div className="flex gap-2">
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => setShowConfirmation(false)}
-                              className="px-2 py-1 rounded-md border border-input hover:bg-secondary/50 transition-colors text-xs"
-                              disabled={loading.clearDatabase}
-                            >
-                              Отмена
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={handleClearDatabase}
-                              className="flex items-center justify-center gap-1 px-2 py-1 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-70 text-xs"
-                              disabled={loading.clearDatabase}
-                            >
-                              {loading.clearDatabase ? (
-                                <>
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                  Удаление...
-                                </>
-                              ) : (
-                                <>
-                                  <Trash className="w-3 h-3" />
-                                  Да, удалить всё
-                                </>
-                              )}
-                            </motion.button>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => setShowConfirmation(true)}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors text-xs w-full justify-center"
-                    >
-                      <Trash className="w-3 h-3" />
-                      <span>Удалить все данные</span>
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-              </motion.div>
 
               {/* Проверка соединения с Firebase */}
               <motion.div
@@ -910,6 +838,80 @@ const SettingsPage: React.FC = () => {
 
               {/* Блок Организации (переместили сюда из левой колонки) */}
               <OrganizationsSettings />
+
+              {/* Раздел Управление данными */}
+              <motion.div
+                className="p-3 border border-border rounded-lg"
+                whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
+                transition={{ duration: 0.2 }}
+              >
+                <h3 className="text-sm font-medium mb-2 text-destructive">Управление данными</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  <span className="font-bold">Внимание!</span> Эти операции необратимы.
+                </p>
+
+                <AnimatePresence>
+                  {showConfirmation ? (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="bg-destructive/10 border border-destructive rounded-lg p-3 mb-3"
+                    >
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="font-medium text-destructive mb-1 text-sm">Подтверждение удаления</h4>
+                          <p className="mb-3 text-xs">
+                            Вы уверены, что хотите удалить <span className="font-bold">ВСЕ данные</span>?
+                            Будут удалены сотрудники, услуги и записи о мойках.
+                          </p>
+                          <div className="flex gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => setShowConfirmation(false)}
+                              className="px-2 py-1 rounded-md border border-input hover:bg-secondary/50 transition-colors text-xs"
+                              disabled={loading.clearDatabase}
+                            >
+                              Отмена
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={handleClearDatabase}
+                              className="flex items-center justify-center gap-1 px-2 py-1 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-70 text-xs"
+                              disabled={loading.clearDatabase}
+                            >
+                              {loading.clearDatabase ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Удаление...
+                                </>
+                              ) : (
+                                <>
+                                  <Trash className="w-3 h-3" />
+                                  Да, удалить всё
+                                </>
+                              )}
+                            </motion.button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setShowConfirmation(true)}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors text-xs w-full justify-center"
+                    >
+                      <Trash className="w-3 h-3" />
+                      <span>Удалить все данные</span>
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </div>
           </div>
         </motion.div>
