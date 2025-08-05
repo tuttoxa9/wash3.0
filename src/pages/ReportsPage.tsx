@@ -265,23 +265,20 @@ const ReportsPage: React.FC = () => {
         });
 
         // Добавляем всех админов за период (даже если они не мыли машины)
-        if (periodType === 'day') {
-          const reportDate = startDate.toISOString().split('T')[0];
-          if (dailyRoles[reportDate]) {
-            Object.entries(dailyRoles[reportDate]).forEach(([empId, role]) => {
-              if (role === 'admin' && !employeeMap.has(empId)) {
-                employeeMap.set(empId, {
-                  id: empId,
-                  name: state.employees.find(e => e.id === empId)?.name || 'Неизвестный',
-                  totalCash: 0,
-                  totalNonCash: 0,
-                  totalOrganizations: 0,
-                  recordsCount: 0
-                });
-              }
-            });
-          }
-        }
+        Object.entries(dailyRoles).forEach(([date, roles]) => {
+          Object.entries(roles).forEach(([empId, role]) => {
+            if (role === 'admin' && !employeeMap.has(empId)) {
+              employeeMap.set(empId, {
+                id: empId,
+                name: state.employees.find(e => e.id === empId)?.name || 'Неизвестный',
+                totalCash: 0,
+                totalNonCash: 0,
+                totalOrganizations: 0,
+                recordsCount: 0
+              });
+            }
+          });
+        });
       }
 
       // Process records
@@ -827,6 +824,7 @@ const ReportsPage: React.FC = () => {
             record.employeeIds.includes(selectedEmployeeForModal.id)
           )}
           periodLabel={formatDateRange()}
+          dailyRoles={dailyRoles}
         />
       )}
     </div>

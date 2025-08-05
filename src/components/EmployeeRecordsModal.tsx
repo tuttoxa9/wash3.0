@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import type { CarWashRecord, Employee } from '@/lib/types';
+import { useAppContext } from '@/lib/context/AppContext';
 
 interface EmployeeRecordsModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface EmployeeRecordsModalProps {
   employee: Employee;
   records: CarWashRecord[];
   periodLabel: string;
+  dailyRoles?: Record<string, Record<string, string>>;
 }
 
 const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
@@ -18,8 +20,10 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   onClose,
   employee,
   records,
-  periodLabel
+  periodLabel,
+  dailyRoles = {}
 }) => {
+  const { state } = useAppContext();
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
 
   const toggleRecordExpansion = (recordId: string) => {
@@ -63,6 +67,47 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }
+  };
+
+  // Функция для расчёта заработка сотрудника от конкретной записи
+  const calculateEmployeeEarnings = (record: CarWashRecord, employeeId: string) => {
+    const recordDate = typeof record.date === 'string' ? record.date : format(record.date, 'yyyy-MM-dd');
+
+    // Определяем роль сотрудника на дату записи
+    const employeeRole = dailyRoles[recordDate]?.[employeeId] || 'washer';
+
+    // Определяем метод расчета зарплаты
+    const shouldUseCurrentMethod = recordDate >= state.salaryCalculationDate;
+    const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+
+    if (methodToUse === 'minimumWithPercentage') {
+      if (employeeRole === 'washer') {
+        // Мойщик получает процент от стоимости услуги
+        const washerShare = record.price / record.employeeIds.length;
+        const washerEarnings = washerShare * (state.minimumPaymentSettings.percentageWasher / 100);
+        return washerEarnings;
+      } else if (employeeRole === 'admin') {
+        // Админ получает процент только если он участвовал в мойке этого авто
+        if (record.employeeIds.includes(employeeId)) {
+          const adminShare = record.price / record.employeeIds.length;
+          const adminEarnings = adminShare * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
+          return adminEarnings;
+        }
+        return 0; // Админ не участвовал в мойке этого авто
+      }
+    } else if (methodToUse === 'percentage') {
+      // 27% от общей выручки - но от конкретного авто считаем пропорционально
+      const employeeShare = record.price / record.employeeIds.length;
+      return employeeShare * 0.27;
+    } else if (methodToUse === 'fixedPlusPercentage') {
+      // 10% от выручки за авто для сотрудника
+      const employeeShare = record.price / record.employeeIds.length;
+      return employeeShare * 0.1;
+    }
+
+    // Fallback
+    const employeeShare = record.price / record.employeeIds.length;
+    return employeeShare * 0.27;
   };
 
   // Группировка записей по дням
@@ -201,7 +246,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
                                 <div className="text-right">
                                   <div className="font-medium">{record.price.toFixed(2)} BYN</div>
                                   <div className="text-xs text-muted-foreground">
-                                    {((employeeShare / record.price) * 100).toFixed(1)}% ({employeeShare.toFixed(2)} BYN)
+                                    Заработок: {calculateEmployeeEarnings(record, employee.id).toFixed(2)} BYN
                                   </div>
                                 </div>
                               </div>
@@ -259,6 +304,13 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
                                         <span className="font-medium">Доля сотрудника:</span>
                                         <span className="ml-2 text-lg font-bold text-green-600">
                                           {((employeeShare / record.price) * 100).toFixed(1)}% ({employeeShare.toFixed(2)} BYN)
+                                        </span>
+                                      </div>
+
+                                      <div>
+                                        <span className="font-medium">Заработок сотрудника:</span>
+                                        <span className="ml-2 text-lg font-bold text-blue-600">
+                                          {calculateEmployeeEarnings(record, employee.id).toFixed(2)} BYN
                                         </span>
                                       </div>
                                     </div>
