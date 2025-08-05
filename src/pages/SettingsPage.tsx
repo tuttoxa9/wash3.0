@@ -305,9 +305,9 @@ const OrganizationsSettings: React.FC = () => {
         </h3>
 
         {loading.fetchOrgs ? (
-          <div className="flex items-center text-xs text-muted-foreground">
-            <Loader2 className="w-3 h-3 animate-spin mr-1" />
-            Загрузка...
+          <div className="flex flex-col items-center justify-center py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-primary mb-2" />
+            <span className="text-xs text-muted-foreground">Загрузка организаций...</span>
           </div>
         ) : (
           <motion.button
@@ -819,9 +819,14 @@ const SettingsPage: React.FC = () => {
                   <h3 className="text-sm font-medium">Сотрудники</h3>
 
                   {loading.fetchEmployees ? (
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                      Загрузка...
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
+                      <span className="text-xs text-muted-foreground">Загрузка сотрудников...</span>
+                      <div className="flex gap-1 mt-2">
+                        <div className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                      </div>
                     </div>
                   ) : (
                     <motion.button

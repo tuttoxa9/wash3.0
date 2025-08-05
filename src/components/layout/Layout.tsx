@@ -31,7 +31,7 @@ const Layout: React.FC = () => {
           >
             <Menu className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-bold gradient-heading">Химчистка 8</h1>
+          <h1 className="text-xl font-bold gradient-heading">Detail Lab</h1>
         </div>
 
         {/* Содержимое страницы */}

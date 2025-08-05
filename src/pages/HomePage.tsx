@@ -588,9 +588,14 @@ const HomePage: React.FC = () => {
           {/* Таблица записей */}
           <div className="card-with-shadow overflow-hidden">
             {loading.dailyReport ? (
-              <div className="flex items-center justify-center p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-primary mr-2" />
-                <p>Загрузка данных...</p>
+              <div className="flex flex-col items-center justify-center p-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
+                <p className="text-muted-foreground">Загрузка данных...</p>
+                <div className="flex gap-1 mt-2">
+                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                </div>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -1501,8 +1506,9 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
 
       <div className="overflow-y-auto">
         {loading ? (
-          <div className="flex justify-center items-center py-4">
-            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+          <div className="flex flex-col justify-center items-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
+            <span className="text-xs text-muted-foreground">Загрузка записей...</span>
           </div>
         ) : (
           <>

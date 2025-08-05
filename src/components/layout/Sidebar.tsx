@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
         <div className="flex flex-col h-full">
           {/* Шапка сайдбара */}
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-xl font-bold gradient-heading">Химчистка 8</h1>
+            <h1 className="text-xl font-bold gradient-heading">Detail Lab</h1>
             <button
               onClick={toggleMobileSidebar}
               className="p-1 rounded-lg hover:bg-secondary md:hidden"
@@ -128,8 +128,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
           {/* Футер сайдбара */}
           <div className="mt-6 text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} Химчистка 8</p>
-            <p className="mt-1">v1.9.0</p>
+            <p>© {new Date().getFullYear()} Detail Lab</p>
+            <p className="mt-1">0.9a</p>
           </div>
         </div>
       </aside>
