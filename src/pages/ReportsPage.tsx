@@ -206,9 +206,11 @@ const ReportsPage: React.FC = () => {
         relevantEmployeeIds.forEach(empId => {
           const empData = employeeMap.get(empId);
           if (empData) {
-            record.paymentMethod.type === 'cash'
-              ? empData.totalCash += valuePerEmployee
-              : empData.totalNonCash += valuePerEmployee;
+            if (record.paymentMethod.type === 'cash') {
+              empData.totalCash += valuePerEmployee;
+            } else if (record.paymentMethod.type === 'card') {
+              empData.totalNonCash += valuePerEmployee;
+            }
             empData.recordsCount++;
           }
         });
@@ -559,7 +561,7 @@ const ReportsPage: React.FC = () => {
               <div className="grid grid-cols-5 bg-muted/50 px-4 py-2 border-b">
                 <div className="font-medium text-sm">Сотрудник</div>
                 <div className="font-medium text-sm text-right">Наличные (BYN)</div>
-                <div className="font-medium text-sm text-right">Безнал (BYN)</div>
+                <div className="font-medium text-sm text-right">Карта (BYN)</div>
                 <div className="font-medium text-sm text-right">Всего (BYN)</div>
                 <div className="font-medium text-sm text-right">Зарплата (BYN)</div>
               </div>

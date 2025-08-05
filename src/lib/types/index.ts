@@ -3,6 +3,7 @@ export interface Employee {
   id: string;
   name: string;
   position?: string;
+  role?: EmployeeRole; // Роль сотрудника
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 
@@ -66,7 +67,17 @@ export interface Appointment {
 }
 
 // Тип для метода расчета зарплаты
-export type SalaryCalculationMethod = 'percentage' | 'fixedPlusPercentage';
+export type SalaryCalculationMethod = 'percentage' | 'fixedPlusPercentage' | 'minimumWithPercentage';
+
+// Тип для роли сотрудника
+export type EmployeeRole = 'washer' | 'admin';
+
+// Интерфейс для настроек минимальной оплаты
+export interface MinimumPaymentSettings {
+  minimumPaymentWasher: number; // Минимальная оплата за день для мойщика
+  percentageWasher: number; // Процент от выручки для мойщика
+  minimumPaymentAdmin: number; // Минимальная оплата за день для админа
+}
 
 // Тип для настроек темы
 export type ThemeMode = 'light' | 'dark' | 'black';
@@ -82,6 +93,7 @@ export interface AppState {
   theme: ThemeMode; // Текущая тема приложения
   salaryCalculationMethod: SalaryCalculationMethod; // Метод расчета зарплаты
   salaryCalculationDate: string; // Дата изменения метода расчета зарплаты в формате YYYY-MM-DD
+  minimumPaymentSettings: MinimumPaymentSettings; // Настройки минимальной оплаты
 }
 
 // Типы действий для редьюсера
@@ -103,4 +115,5 @@ export type AppAction =
   | { type: 'ADD_APPOINTMENT'; payload: Appointment }
   | { type: 'UPDATE_APPOINTMENT'; payload: Appointment }
   | { type: 'REMOVE_APPOINTMENT'; payload: string } // payload - id записи
-  | { type: 'SET_SALARY_CALCULATION_METHOD'; payload: { method: SalaryCalculationMethod, date: string } };
+  | { type: 'SET_SALARY_CALCULATION_METHOD'; payload: { method: SalaryCalculationMethod, date: string } }
+  | { type: 'SET_MINIMUM_PAYMENT_SETTINGS'; payload: MinimumPaymentSettings };

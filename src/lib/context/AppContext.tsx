@@ -1,5 +1,5 @@
 import { createContext, useReducer, useContext, type ReactNode, useEffect } from 'react';
-import type { AppState, AppAction, DailyReport, ThemeMode, Organization, Appointment, SalaryCalculationMethod } from '../types';
+import type { AppState, AppAction, DailyReport, ThemeMode, Organization, Appointment, SalaryCalculationMethod, MinimumPaymentSettings } from '../types';
 import { format } from 'date-fns';
 import { employeeService, organizationService, serviceService, appointmentService, settingsService } from '@/lib/services/firebaseService';
 
@@ -13,7 +13,12 @@ const initialState: AppState = {
   currentDate: format(new Date(), 'yyyy-MM-dd'),
   theme: 'light',
   salaryCalculationMethod: 'percentage', // По умолчанию - процентный метод (27%)
-  salaryCalculationDate: format(new Date(), 'yyyy-MM-dd') // Текущая дата как дата изменения метода
+  salaryCalculationDate: format(new Date(), 'yyyy-MM-dd'), // Текущая дата как дата изменения метода
+  minimumPaymentSettings: {
+    minimumPaymentWasher: 0,
+    percentageWasher: 10,
+    minimumPaymentAdmin: 0
+  }
 };
 
 // Создаем контекст
@@ -79,7 +84,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       );
 
       const totalNonCash = updatedRecords.reduce(
-        (sum, rec) => sum + (rec.paymentMethod.type !== 'cash' ? rec.price : 0),
+        (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
         0
       );
 
@@ -134,6 +139,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
         salaryCalculationMethod: action.payload.method,
         salaryCalculationDate: action.payload.date
       };
+    case 'SET_MINIMUM_PAYMENT_SETTINGS':
+      // Сохраняем настройки минимальной оплаты в localStorage
+      localStorage.setItem('minimumPaymentSettings', JSON.stringify(action.payload));
+      return {
+        ...state,
+        minimumPaymentSettings: action.payload
+      };
     default:
       return state;
   }
@@ -154,12 +166,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Восстанавливаем метод расчета зарплаты из localStorage
   const savedSalaryMethod = localStorage.getItem('salaryCalculationMethod') as SalaryCalculationMethod | null;
   const savedSalaryDate = localStorage.getItem('salaryCalculationDate') as string | null;
+  const savedMinimumPaymentSettings = localStorage.getItem('minimumPaymentSettings');
+
+  let parsedMinimumPaymentSettings = initialState.minimumPaymentSettings;
+  if (savedMinimumPaymentSettings) {
+    try {
+      parsedMinimumPaymentSettings = JSON.parse(savedMinimumPaymentSettings);
+    } catch (error) {
+      console.error('Ошибка при парсинге настроек минимальной оплаты:', error);
+    }
+  }
 
   const initialStateWithSaved = {
     ...initialState,
     theme: savedTheme || initialState.theme,
     salaryCalculationMethod: savedSalaryMethod || initialState.salaryCalculationMethod,
-    salaryCalculationDate: savedSalaryDate || initialState.salaryCalculationDate
+    salaryCalculationDate: savedSalaryDate || initialState.salaryCalculationDate,
+    minimumPaymentSettings: parsedMinimumPaymentSettings
   };
 
   const [state, dispatch] = useReducer(appReducer, initialStateWithSaved);

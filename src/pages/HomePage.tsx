@@ -6,7 +6,7 @@ import 'react-day-picker/dist/style.css';
 import { useAppContext } from '@/lib/context/AppContext';
 import { Loader2, FileDown, Save, Check, Edit, Calendar, Plus, CheckCircle, X, ArrowRight, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { DailyReport, CarWashRecord, Employee, Appointment } from '@/lib/types';
+import type { DailyReport, CarWashRecord, Employee, Appointment, EmployeeRole } from '@/lib/types';
 import { carWashService, dailyReportService, appointmentService } from '@/lib/services/firebaseService';
 import { generateDailyReportDocx } from '@/lib/utils';
 import { saveAs } from 'file-saver';
@@ -23,6 +23,7 @@ const HomePage: React.FC = () => {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [shiftEmployees, setShiftEmployees] = useState<string[]>([]);
+  const [employeeRoles, setEmployeeRoles] = useState<Record<string, EmployeeRole>>({});
   const [isShiftLocked, setIsShiftLocked] = useState(false);
   const [isEditingShift, setIsEditingShift] = useState(false);
   const [selectedDate, setSelectedDate] = useState(state.currentDate); // Track the selected date
@@ -116,9 +117,26 @@ const HomePage: React.FC = () => {
 
     if (shiftEmployees.includes(employeeId)) {
       setShiftEmployees(shiftEmployees.filter(id => id !== employeeId));
+      // Удаляем роль сотрудника при удалении из смены
+      const newRoles = { ...employeeRoles };
+      delete newRoles[employeeId];
+      setEmployeeRoles(newRoles);
     } else {
       setShiftEmployees([...shiftEmployees, employeeId]);
+      // Устанавливаем роль по умолчанию как мойщик
+      setEmployeeRoles({
+        ...employeeRoles,
+        [employeeId]: 'washer'
+      });
     }
+  };
+
+  // Обработчик изменения роли сотрудника
+  const handleEmployeeRoleChange = (employeeId: string, role: EmployeeRole) => {
+    setEmployeeRoles({
+      ...employeeRoles,
+      [employeeId]: role
+    });
   };
 
   // Начало смены - зафиксировать сотрудников
@@ -211,6 +229,7 @@ const HomePage: React.FC = () => {
     setIsShiftLocked(false);
     setIsEditingShift(false);
     setShiftEmployees([]);
+    setEmployeeRoles({});
   }, [selectedDate, dispatch]);
 
   // Handle clicks outside the calendar to close it
@@ -369,7 +388,7 @@ const HomePage: React.FC = () => {
           );
 
           const totalNonCash = updatedReport.records.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type !== 'cash' ? rec.price : 0),
+            (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
             0
           );
 
@@ -417,7 +436,7 @@ const HomePage: React.FC = () => {
           );
 
           const totalNonCash = updatedRecords.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type !== 'cash' ? rec.price : 0),
+            (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
             0
           );
 
@@ -449,7 +468,7 @@ const HomePage: React.FC = () => {
       <div className="flex flex-col gap-3 md:gap-4">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
           <h2 className="text-xl md:text-2xl font-semibold">
-            Ведомость ежедневная выполненных работ ООО Автомойка МО
+            Ведомость ежедневная выполненных работ
           </h2>
 
           <div className="flex flex-wrap gap-2">
@@ -544,20 +563,63 @@ const HomePage: React.FC = () => {
 
           {(!isShiftLocked || isEditingShift) && (
             <>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {state.employees.map(employee => (
-                  <button
-                    key={employee.id}
-                    onClick={() => handleEmployeeSelection(employee.id)}
-                    className={`px-3 py-1 rounded-lg text-xs transition-colors ${
-                      shiftEmployees.includes(employee.id)
-                        ? 'bg-primary text-white'
-                        : 'bg-secondary/50 hover:bg-secondary'
-                    }`}
-                  >
-                    {employee.name}
-                  </button>
-                ))}
+              <div className="space-y-3 mb-3">
+                <div className="flex flex-wrap gap-2">
+                  {state.employees.map(employee => (
+                    <button
+                      key={employee.id}
+                      onClick={() => handleEmployeeSelection(employee.id)}
+                      className={`px-3 py-1 rounded-lg text-xs transition-colors ${
+                        shiftEmployees.includes(employee.id)
+                          ? 'bg-primary text-white'
+                          : 'bg-secondary/50 hover:bg-secondary'
+                      }`}
+                    >
+                      {employee.name}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Выбор ролей для выбранных сотрудников */}
+                {shiftEmployees.length > 0 && state.salaryCalculationMethod === 'minimumWithPercentage' && (
+                  <div className="p-3 border border-border rounded-lg bg-muted/20">
+                    <h4 className="text-xs font-medium mb-2">Назначение ролей сотрудников:</h4>
+                    <div className="space-y-2">
+                      {shiftEmployees.map(employeeId => {
+                        const employee = state.employees.find(emp => emp.id === employeeId);
+                        if (!employee) return null;
+
+                        return (
+                          <div key={employeeId} className="flex items-center justify-between">
+                            <span className="text-xs font-medium">{employee.name}</span>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
+                                className={`px-2 py-1 rounded text-xs transition-colors ${
+                                  employeeRoles[employeeId] === 'washer'
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-secondary/50 hover:bg-secondary'
+                                }`}
+                              >
+                                Мойщик
+                              </button>
+                              <button
+                                onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
+                                className={`px-2 py-1 rounded text-xs transition-colors ${
+                                  employeeRoles[employeeId] === 'admin'
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-secondary/50 hover:bg-secondary'
+                                }`}
+                              >
+                                Админ
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button
@@ -787,13 +849,28 @@ const HomePage: React.FC = () => {
                     <span className="font-medium">{currentReport.totalCash.toFixed(2)} BYN</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Безнал - </span>
+                    <span>Карта - </span>
                     <span className="font-medium">{currentReport.totalNonCash.toFixed(2)} BYN</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Безнал - </span>
+                    <span className="font-medium">{(() => {
+                      // Подсчитываем сумму за организации
+                      const orgSum = currentReport.records?.reduce((sum, record) => {
+                        return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                      }, 0) || 0;
+                      return orgSum.toFixed(2);
+                    })()} BYN</span>
                   </div>
                   <div className="border-t border-border mt-4 pt-4 flex justify-between">
                     <span className="font-medium">Всего:</span>
                     <span className="font-bold">
-                      {(currentReport.totalCash + currentReport.totalNonCash).toFixed(2)} BYN
+                      {(() => {
+                        const orgSum = currentReport.records?.reduce((sum, record) => {
+                          return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                        }, 0) || 0;
+                        return (currentReport.totalCash + currentReport.totalNonCash + orgSum).toFixed(2);
+                      })()} BYN
                     </span>
                   </div>
                 </div>
@@ -809,7 +886,9 @@ const HomePage: React.FC = () => {
                       <p className="text-sm">
                         {state.salaryCalculationMethod === 'percentage' ?
                           'Расчет ЗП: 27% от общей выручки, делится поровну между сотрудниками' :
-                          'Расчет ЗП: 60р + 10% от общей выручки для каждого сотрудника'
+                          state.salaryCalculationMethod === 'fixedPlusPercentage' ?
+                          'Расчет ЗП: 60р + 10% от общей выручки для каждого сотрудника' :
+                          'Расчет ЗП: минимальная оплата + процент с учетом ролей'
                         }
                       </p>
                       <div className="absolute top-full left-5 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-popover"></div>
@@ -835,19 +914,49 @@ const HomePage: React.FC = () => {
                         perEmployee = empCount > 0 ? totalAmount / empCount : 0;
                         description = '27% от общей выручки';
                         formula = `(${revenue.toFixed(2)} BYN × 27%) ÷ ${empCount} сотрудников`;
-                      } else {
+                      } else if (methodToUse === 'fixedPlusPercentage') {
                         // 60 руб + 10% от общей выручки для каждого сотрудника
                         perEmployee = 60 + revenue * 0.1;
                         totalAmount = perEmployee * empCount;
                         description = '60р + 10% от общей выручки';
                         formula = `60 BYN + (${revenue.toFixed(2)} BYN × 10%)`;
+                      } else if (methodToUse === 'minimumWithPercentage') {
+                        // Минимальная оплата + процент с учетом ролей
+                        description = 'Минимальная оплата + процент';
+                        formula = 'Расчет с учетом ролей и минимальной оплаты';
+
+                        // Расчет для каждого сотрудника индивидуально в зависимости от роли
+                        const adminCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'admin').length;
+                        const washerCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'washer').length;
+
+                        // Базовый расчет - процент от выручки для мойщика
+                        const washerEarnings = revenue * (state.minimumPaymentSettings.percentageWasher / 100);
+
+                        let totalWasherPay = 0;
+                        let totalAdminPay = 0;
+
+                        // Расчет для мойщиков
+                        if (washerCount > 0) {
+                          const washerPayPerPerson = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
+                          totalWasherPay = washerPayPerPerson * washerCount;
+                        }
+
+                        // Расчет для админов (только минималка)
+                        if (adminCount > 0) {
+                          totalAdminPay = state.minimumPaymentSettings.minimumPaymentAdmin * adminCount;
+                        }
+
+                        totalAmount = totalWasherPay + totalAdminPay;
+                        perEmployee = empCount > 0 ? totalAmount / empCount : 0;
                       }
 
                       return { totalAmount, perEmployee, description, formula };
                     };
 
                     // Используем нашу функцию для расчета
-                    const totalRevenue = currentReport.totalCash + currentReport.totalNonCash;
+                    const totalRevenue = currentReport.totalCash + currentReport.totalNonCash + (currentReport.records?.reduce((sum, record) => {
+                      return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                    }, 0) || 0);
                     const employeeCount = workingEmployees.length;
 
                     // Получаем расчет зарплаты с учетом метода

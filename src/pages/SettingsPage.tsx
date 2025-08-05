@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { useAppContext } from '@/lib/context/AppContext';
 import { employeeService, serviceService, databaseService, organizationService, settingsService } from '@/lib/services/firebaseService';
-import type { Employee, ThemeMode, Organization, SalaryCalculationMethod } from '@/lib/types';
+import type { Employee, ThemeMode, Organization, SalaryCalculationMethod, MinimumPaymentSettings } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Компонент для ввода пароля
@@ -923,6 +923,7 @@ const SalaryCalculationSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [savingError, setSavingError] = useState<string | null>(null);
+  const [minimumSettings, setMinimumSettings] = useState<MinimumPaymentSettings>(state.minimumPaymentSettings);
 
   // Загрузка метода расчета зарплаты из базы данных при монтировании компонента
   useEffect(() => {
@@ -973,7 +974,9 @@ const SalaryCalculationSettings: React.FC = () => {
 
         const methodDescription = method === 'percentage'
           ? '27% от общей выручки'
-          : '60 руб. + 10% от общей выручки';
+          : method === 'fixedPlusPercentage'
+          ? '60 руб. + 10% от общей выручки'
+          : 'Минимальная оплата + процент';
 
         toast.success(`Метод расчета зарплаты изменен на: ${methodDescription}`);
       } else {
@@ -986,6 +989,15 @@ const SalaryCalculationSettings: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Обработчик сохранения настроек минимальной оплаты
+  const handleSaveMinimumSettings = () => {
+    dispatch({
+      type: 'SET_MINIMUM_PAYMENT_SETTINGS',
+      payload: minimumSettings
+    });
+    toast.success('Настройки минимальной оплаты сохранены');
   };
 
   return (
@@ -1058,17 +1070,127 @@ const SalaryCalculationSettings: React.FC = () => {
               Фиксированная ставка 60 руб. плюс 10% от общей выручки за день, сумма делится поровну между сотрудниками в смену.
             </p>
           </div>
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={() => handleSalaryMethodChange('minimumWithPercentage')}
+          className={`p-3 border rounded-lg flex items-start transition-colors ${
+            state.salaryCalculationMethod === 'minimumWithPercentage'
+              ? 'border-primary bg-primary/5'
+              : 'border-border hover:bg-secondary/10'
+          }`}
+          disabled={loading}
+        >
+          <div className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center ${
+            state.salaryCalculationMethod === 'minimumWithPercentage'
+              ? 'border-primary' : 'border-input'
+          }`}>
+            {state.salaryCalculationMethod === 'minimumWithPercentage' && (
+              <div className="w-3 h-3 rounded-full bg-primary"></div>
+            )}
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-sm">Минимальная оплата + процент</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Если сотрудник не заработал минимальную оплату за день, доплачивается до минималки. Если заработал больше, то только процент от машин.
+            </p>
+          </div>
           {loading && (
             <Loader2 className="w-4 h-4 animate-spin ml-2 text-primary" />
           )}
         </motion.button>
+
+        {/* Настройки для минимальной оплаты */}
+        {state.salaryCalculationMethod === 'minimumWithPercentage' && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="pl-8 pr-3 py-3 border-l-2 border-primary/30 bg-primary/5 rounded-r-lg"
+          >
+            <h4 className="text-sm font-medium mb-3">Настройки минимальной оплаты</h4>
+
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
+                    Минимальная оплата мойщика за день
+                  </label>
+                  <input
+                    type="number"
+                    value={minimumSettings.minimumPaymentWasher}
+                    onChange={(e) => setMinimumSettings({
+                      ...minimumSettings,
+                      minimumPaymentWasher: Number.parseFloat(e.target.value) || 0
+                    })}
+                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="0"
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
+                    Процент мойщика (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={minimumSettings.percentageWasher}
+                    onChange={(e) => setMinimumSettings({
+                      ...minimumSettings,
+                      percentageWasher: Number.parseFloat(e.target.value) || 0
+                    })}
+                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="10"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">
+                  Минимальная оплата админа за день
+                </label>
+                <input
+                  type="number"
+                  value={minimumSettings.minimumPaymentAdmin}
+                  onChange={(e) => setMinimumSettings({
+                    ...minimumSettings,
+                    minimumPaymentAdmin: Number.parseFloat(e.target.value) || 0
+                  })}
+                  className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                  placeholder="0"
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSaveMinimumSettings}
+                className="w-full px-3 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs"
+              >
+                Сохранить настройки
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border">
         <p>
-          <span className="font-medium">Текущий метод:</span> {state.salaryCalculationMethod === 'percentage'
-            ? '27% от общей выручки'
-            : '60 руб. + 10% от общей выручки'}
+          <span className="font-medium">Текущий метод:</span> {
+            state.salaryCalculationMethod === 'percentage'
+              ? '27% от общей выручки'
+              : state.salaryCalculationMethod === 'fixedPlusPercentage'
+              ? '60 руб. + 10% от общей выручки'
+              : 'Минимальная оплата + процент'
+          }
         </p>
         <p className="mt-1">
           <span className="font-medium">Дата изменения:</span> {format(parseISO(state.salaryCalculationDate), 'dd.MM.yyyy')}
