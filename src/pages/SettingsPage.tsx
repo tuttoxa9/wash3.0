@@ -1166,22 +1166,25 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">
-                  Минимальная оплата админа за день
-                </label>
-                <input
-                  type="number"
-                  value={minimumSettings.minimumPaymentAdmin}
-                  onChange={(e) => setMinimumSettings({
-                    ...minimumSettings,
-                    minimumPaymentAdmin: Number.parseFloat(e.target.value) || 0
-                  })}
-                  className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                  placeholder="0"
-                  step="0.01"
-                  min="0"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
+                    Минимальная оплата админа за день
+                  </label>
+                  <input
+                    type="number"
+                    value={minimumSettings.minimumPaymentAdmin}
+                    onChange={(e) => setMinimumSettings({
+                      ...minimumSettings,
+                      minimumPaymentAdmin: Number.parseFloat(e.target.value) || 0
+                    })}
+                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="0"
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+                <div></div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

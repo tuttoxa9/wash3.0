@@ -580,86 +580,9 @@ const ReportsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="card-with-shadow">
-            <div className="flex justify-between items-center mb-1 p-4 pb-3 border-b">
-              <h3 className="text-lg font-semibold flex items-center">
-                Результаты расчета
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  ({formatDateRange()})
-                </span>
-              </h3>
 
-              {selectedEmployeeId && (
-                <button
-                  onClick={clearEmployeeFilter}
-                  className="flex items-center gap-1 text-sm px-2 py-1 bg-muted hover:bg-muted/80 rounded-lg transition-colors"
-                >
-                  <X className="w-3 h-3" />
-                  Снять фильтр
-                </button>
-              )}
-            </div>
 
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-primary mr-2" />
-                <p>Загрузка данных...</p>
-              </div>
-            ) : earningsReport.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="py-3 px-4 text-left">Сотрудник</th>
-                      <th className="py-3 px-4 text-right">Общая стоимость услуг (BYN)</th>
-                      <th className="py-3 px-4 text-right">Расчетный заработок (BYN)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {earningsReport.map(report => (
-                      <tr
-                        key={report.employeeId}
-                        className={`border-b border-border hover:bg-muted/30 cursor-pointer ${
-                          selectedEmployeeId === report.employeeId ? 'bg-muted/40' : ''
-                        }`}
-                        onClick={() => handleEmployeeSelect(report.employeeId)}
-                      >
-                        <td className="py-3 px-4 flex items-center">
-                          {report.employeeName}
-                          {selectedEmployeeId === report.employeeId && (
-                            <span className="ml-2 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-primary text-xs text-white">
-                              <Filter className="w-3 h-3 mr-0.5" />
-                              Фильтр
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-right">{report.totalServiceValue.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-right font-medium">{report.calculatedEarnings.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                    {/* If showing all employees, add a total row */}
-                    {!selectedEmployeeId && earningsReport.length > 1 && (
-                      <tr className="border-b border-border bg-muted/30 font-semibold">
-                        <td className="py-3 px-4">Итого:</td>
-                        <td className="py-3 px-4 text-right">
-                          {earningsReport.reduce((sum, item) => sum + item.totalServiceValue, 0).toFixed(2)}
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          {earningsReport.reduce((sum, item) => sum + item.calculatedEarnings, 0).toFixed(2)}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="py-8 text-center text-muted-foreground">
-                {records.length === 0
-                  ? 'Нет данных за выбранный период'
-                  : 'Нет данных для выбранных сотрудников'}
-              </div>
-            )}
-          </div>
+
 
           {/* Итоговая таблица по сотрудникам */}
           <div className="mt-4">
