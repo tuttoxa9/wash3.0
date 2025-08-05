@@ -382,6 +382,19 @@ const ReportsPage: React.FC = () => {
             });
 
             const totalAdminEarnings = baseCashBonus + carWashBonus;
+
+            // Отладочная информация
+            console.log(`Админ ${r.employeeName}:`, {
+              totalRevenueAll,
+              adminCount,
+              adminCashPercentage: state.minimumPaymentSettings.adminCashPercentage,
+              baseCashBonus,
+              carWashBonus,
+              totalAdminEarnings,
+              minimumPaymentAdmin: state.minimumPaymentSettings.minimumPaymentAdmin,
+              finalSalary: Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin)
+            });
+
             r.calculatedEarnings = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
           } else {
             // Расчет для мойщика - процент от суммы машин, которые лично помыл
@@ -698,43 +711,8 @@ const ReportsPage: React.FC = () => {
                   const shouldUseCurrentMethod = periodType === 'day' && reportDate >= state.salaryCalculationDate;
                   const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
-                  let perEmployee = 0;
-
-                  if (methodToUse === 'minimumWithPercentage' && employeeRole === 'admin') {
-                    // Специальный расчет для админа
-                    const totalRevenueAll = earningsReport.reduce((sum, r) => sum + r.totalCash + r.totalNonCash + r.totalOrganizations, 0);
-                    const adminCount = earningsReport.filter(r => {
-                      if (periodType === 'day' && dailyRoles[reportDate]) {
-                        return dailyRoles[reportDate][r.employeeId] === 'admin';
-                      }
-                      return false;
-                    }).length;
-
-                    // Базовый процент с всей выручки (делится между всеми админами)
-                    const baseCashBonus = adminCount > 0 ? (totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount : 0;
-
-                    // Процент от машин, которые лично помыл этот админ
-                    let carWashBonus = 0;
-                    records.forEach(record => {
-                      if (record.employeeIds.includes(report.employeeId)) {
-                        // Доля админа от стоимости машины
-                        const adminShare = record.price / record.employeeIds.length;
-                        carWashBonus += adminShare * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
-                      }
-                    });
-
-                    const totalAdminEarnings = baseCashBonus + carWashBonus;
-                    perEmployee = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
-                  } else if (methodToUse === 'minimumWithPercentage' && employeeRole === 'washer') {
-                    // Расчет для мойщика - процент от суммы машин, которые лично помыл
-                    const washerPersonalRevenue = report.totalCash + report.totalNonCash + report.totalOrganizations;
-                    const washerEarnings = washerPersonalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-                    perEmployee = Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher);
-                  } else {
-                    // Используем стандартный расчет
-                    const salaryInfo = getSalaryAmount(totalRevenueEmp, 1, employeeRole, reportDate);
-                    perEmployee = salaryInfo.perEmployee;
-                  }
+                  // Используем уже рассчитанное значение calculatedEarnings из useEffect
+                  let perEmployee = report.calculatedEarnings;
 
                   const handleEmployeeClick = () => {
                     const employee = state.employees.find(e => e.id === report.employeeId);
