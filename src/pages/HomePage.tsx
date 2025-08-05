@@ -421,6 +421,9 @@ const HomePage: React.FC = () => {
           updatedReport.totalCash = totalCash;
           updatedReport.totalNonCash = totalNonCash;
 
+          // Сохраняем обновленный отчет в базе данных
+          await dailyReportService.updateReport(updatedReport);
+
           // Обновляем состояние
           dispatch({
             type: 'SET_DAILY_REPORT',
