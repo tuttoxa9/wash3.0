@@ -369,25 +369,30 @@ const ReportsPage: React.FC = () => {
             // Базовый процент с кассы (делится между всеми админами)
             const baseCashBonus = adminCount > 0 ? (cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount : 0;
 
-            // Процент от вымытых машин - только если участвовал в мойке
+            // Процент от машин, которые лично помыл этот админ
             let carWashBonus = 0;
-            if (r.recordsCount > 0) {
-              // Этот админ участвовал в мойке машин
-              filteredRecords.forEach(record => {
-                if (record.employeeIds.includes(r.employeeId)) {
-                  const carWashBonusForRecord = (record.price / record.employeeIds.length) * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
-                  carWashBonus += carWashBonusForRecord;
-                }
-              });
-            }
+            filteredRecords.forEach(record => {
+              if (record.employeeIds.includes(r.employeeId)) {
+                // Доля админа от стоимости машины
+                const adminShare = record.price / record.employeeIds.length;
+                carWashBonus += adminShare * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
+              }
+            });
 
             const totalAdminEarnings = baseCashBonus + carWashBonus;
             r.calculatedEarnings = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
           } else {
-            // Расчет для мойщика
-            const totalRevForEmployee = r.totalCash + r.totalNonCash + r.totalOrganizations;
-            const basePercentage = totalRevForEmployee * (state.minimumPaymentSettings.percentageWasher / 100);
-            r.calculatedEarnings = Math.max(basePercentage, state.minimumPaymentSettings.minimumPaymentWasher);
+            // Расчет для мойщика - процент от общей выручки
+            const washerCount = results.filter(res => {
+              if (periodType === 'day' && dailyRoles[reportDate]) {
+                return dailyRoles[reportDate][res.employeeId] === 'washer';
+              }
+              return true; // Если роли не указаны, считаем мойщиком
+            }).length;
+
+            const totalRevenue = totalCashAll + totalNonCashAll + totalOrganizationsAll;
+            const washerEarnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+            r.calculatedEarnings = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
           }
         });
       } else {
@@ -713,19 +718,29 @@ const ReportsPage: React.FC = () => {
                     // Базовый процент с кассы (делится между всеми админами)
                     const baseCashBonus = adminCount > 0 ? (cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount : 0;
 
-                    // Процент от вымытых машин - только если участвовал в мойке
+                    // Процент от машин, которые лично помыл этот админ
                     let carWashBonus = 0;
-                    if (report.recordsCount > 0) {
-                      filteredRecords.forEach(record => {
-                        if (record.employeeIds.includes(report.employeeId)) {
-                          const carWashBonusForRecord = (record.price / record.employeeIds.length) * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
-                          carWashBonus += carWashBonusForRecord;
-                        }
-                      });
-                    }
+                    filteredRecords.forEach(record => {
+                      if (record.employeeIds.includes(report.employeeId)) {
+                        // Доля админа от стоимости машины
+                        const adminShare = record.price / record.employeeIds.length;
+                        carWashBonus += adminShare * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
+                      }
+                    });
 
                     const totalAdminEarnings = baseCashBonus + carWashBonus;
                     perEmployee = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
+                  } else if (methodToUse === 'minimumWithPercentage' && employeeRole === 'washer') {
+                    // Расчет для мойщика - процент от общей выручки
+                    const washerCount = earningsReport.filter(r => {
+                      if (periodType === 'day' && dailyRoles[reportDate]) {
+                        return dailyRoles[reportDate][r.employeeId] === 'washer';
+                      }
+                      return true;
+                    }).length;
+
+                    const washerEarnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+                    perEmployee = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
                   } else {
                     // Используем стандартный расчет
                     const salaryInfo = getSalaryAmount(totalRevenueEmp, 1, employeeRole, reportDate);

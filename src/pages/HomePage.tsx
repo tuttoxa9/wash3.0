@@ -470,6 +470,9 @@ const HomePage: React.FC = () => {
           updatedReport.totalCash = totalCash;
           updatedReport.totalNonCash = totalNonCash;
 
+          // Сохраняем обновленный отчет в базе данных
+          await dailyReportService.updateReport(updatedReport);
+
           // Обновляем состояние
           dispatch({
             type: 'SET_DAILY_REPORT',
@@ -960,11 +963,12 @@ const HomePage: React.FC = () => {
 
                         // Расчет для мойщиков
                         if (washerCount > 0) {
-                          // Процент от ВСЕХ машин для мойщиков (не только наличных)
+                          // Процент от ВСЕХ машин для мойщиков
                           const totalRevenue = currentReport.totalCash + currentReport.totalNonCash + (currentReport.records?.reduce((sum, record) => {
                             return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
                           }, 0) || 0);
 
+                          // Каждый мойщик получает процент от общей выручки или минимальную оплату
                           const washerEarnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
                           const washerPayPerPerson = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
                           totalWasherPay = washerPayPerPerson * washerCount;
@@ -972,28 +976,37 @@ const HomePage: React.FC = () => {
 
                         // Расчет для админов
                         if (adminCount > 0) {
-                          // Админ получает только процент от кассы + процент от машин которые он лично помыл
                           const cashRevenue = currentReport.totalCash;
 
-                          // Базовый процент с кассы для всех админов
+                          // Процент от кассы для всех админов (делится между ними)
                           const baseCashBonus = cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
 
-                          // Процент от вымытых машин получает только если участвовал в мойке
-                          let carWashBonus = 0;
-                          if (currentReport.records) {
-                            currentReport.records.forEach(record => {
-                              const adminIds = record.employeeIds.filter(empId => employeeRoles[empId] === 'admin');
-                              if (adminIds.length > 0) {
-                                // Если админ участвовал в мойке - получает свой процент от стоимости машины
-                                const carWashBonusPerAdmin = (record.price / record.employeeIds.length) * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
-                                carWashBonus += carWashBonusPerAdmin * adminIds.length;
-                              }
-                            });
-                          }
+                          // Индивидуальный расчет для каждого админа
+                          let totalAdminEarnings = 0;
+                          shiftEmployees.forEach(empId => {
+                            if (employeeRoles[empId] === 'admin') {
+                              // Доля от процента с кассы
+                              const adminCashShare = baseCashBonus / adminCount;
 
-                          const totalAdminEarnings = baseCashBonus + carWashBonus;
-                          const adminPayPerPerson = Math.max(totalAdminEarnings / adminCount, state.minimumPaymentSettings.minimumPaymentAdmin);
-                          totalAdminPay = adminPayPerPerson * adminCount;
+                              // Процент от машин, которые лично помыл этот админ
+                              let carWashBonus = 0;
+                              if (currentReport.records) {
+                                currentReport.records.forEach(record => {
+                                  if (record.employeeIds.includes(empId)) {
+                                    // Доля админа от стоимости машины
+                                    const adminShare = record.price / record.employeeIds.length;
+                                    carWashBonus += adminShare * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
+                                  }
+                                });
+                              }
+
+                              const adminTotalEarnings = adminCashShare + carWashBonus;
+                              const adminFinalPay = Math.max(adminTotalEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
+                              totalAdminEarnings += adminFinalPay;
+                            }
+                          });
+
+                          totalAdminPay = totalAdminEarnings;
                         }
 
                         totalAmount = totalWasherPay + totalAdminPay;
@@ -1048,18 +1061,19 @@ const HomePage: React.FC = () => {
                                       individualSalary = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
                                     } else if (role === 'admin') {
                                       const adminCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'admin').length;
-
-                                      // Админ получает процент от кассы + процент от машин которые он лично помыл
                                       const cashRevenue = currentReport.totalCash;
+
+                                      // Доля от процента с кассы (делится между всеми админами)
                                       const baseCashBonus = (cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount;
 
-                                      // Процент от вымытых машин для конкретного админа
+                                      // Процент от машин, которые лично помыл этот админ
                                       let carWashBonus = 0;
                                       if (currentReport.records) {
                                         currentReport.records.forEach(record => {
                                           if (record.employeeIds.includes(employee.id)) {
-                                            const carWashBonusForRecord = (record.price / record.employeeIds.length) * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
-                                            carWashBonus += carWashBonusForRecord;
+                                            // Доля админа от стоимости машины
+                                            const adminShare = record.price / record.employeeIds.length;
+                                            carWashBonus += adminShare * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
                                           }
                                         });
                                       }
