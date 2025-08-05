@@ -384,17 +384,10 @@ const ReportsPage: React.FC = () => {
             const totalAdminEarnings = baseCashBonus + carWashBonus;
             r.calculatedEarnings = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
           } else {
-            // Расчет для мойщика - процент от общей выручки
-            const washerCount = results.filter(res => {
-              if (periodType === 'day' && dailyRoles[reportDate]) {
-                return dailyRoles[reportDate][res.employeeId] === 'washer';
-              }
-              return true; // Если роли не указаны, считаем мойщиком
-            }).length;
-
-            const totalRevenue = totalCashAll + totalNonCashAll + totalOrganizationsAll;
-            const washerEarnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-            r.calculatedEarnings = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
+            // Расчет для мойщика - процент от суммы машин, которые лично помыл
+            const washerPersonalRevenue = r.totalCash + r.totalNonCash + r.totalOrganizations;
+            const washerEarnings = washerPersonalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+            r.calculatedEarnings = Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher);
           }
         });
       } else {
@@ -733,16 +726,10 @@ const ReportsPage: React.FC = () => {
                     const totalAdminEarnings = baseCashBonus + carWashBonus;
                     perEmployee = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
                   } else if (methodToUse === 'minimumWithPercentage' && employeeRole === 'washer') {
-                    // Расчет для мойщика - процент от общей выручки
-                    const washerCount = earningsReport.filter(r => {
-                      if (periodType === 'day' && dailyRoles[reportDate]) {
-                        return dailyRoles[reportDate][r.employeeId] === 'washer';
-                      }
-                      return true;
-                    }).length;
-
-                    const washerEarnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-                    perEmployee = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
+                    // Расчет для мойщика - процент от суммы машин, которые лично помыл
+                    const washerPersonalRevenue = report.totalCash + report.totalNonCash + report.totalOrganizations;
+                    const washerEarnings = washerPersonalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+                    perEmployee = Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher);
                   } else {
                     // Используем стандартный расчет
                     const salaryInfo = getSalaryAmount(totalRevenueEmp, 1, employeeRole, reportDate);
@@ -795,8 +782,9 @@ const ReportsPage: React.FC = () => {
                   <div className="font-medium">Итого зарплата:</div>
                   <div className="font-bold text-lg">
                     {(() => {
-                      const { totalAmount } = getSalaryAmount(totalRevenue, earningsReport.length);
-                      return totalAmount.toFixed(2);
+                      // Суммируем индивидуальные зарплаты всех сотрудников
+                      const totalSalarySum = earningsReport.reduce((sum, report) => sum + report.calculatedEarnings, 0);
+                      return totalSalarySum.toFixed(2);
                     })()} BYN
                   </div>
                 </div>

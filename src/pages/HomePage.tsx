@@ -966,10 +966,24 @@ const HomePage: React.FC = () => {
 
                         // Расчет для мойщиков
                         if (washerCount > 0) {
-                          // Каждый мойщик получает процент от общей выручки или минимальную оплату
-                          const washerEarnings = revenue * (state.minimumPaymentSettings.percentageWasher / 100);
-                          const washerPayPerPerson = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
-                          totalWasherPay = washerPayPerPerson * washerCount;
+                          // Каждый мойщик получает процент от стоимости машин, которые лично помыл
+                          shiftEmployees.forEach(empId => {
+                            if (employeeRoles[empId] === 'washer') {
+                              let washerPersonalRevenue = 0;
+                              if (currentReport.records) {
+                                currentReport.records.forEach(record => {
+                                  if (record.employeeIds.includes(empId)) {
+                                    // Доля мойщика от стоимости машины
+                                    const washerShare = record.price / record.employeeIds.length;
+                                    washerPersonalRevenue += washerShare;
+                                  }
+                                });
+                              }
+                              const washerEarnings = washerPersonalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+                              const washerPayForThis = Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher);
+                              totalWasherPay += washerPayForThis;
+                            }
+                          });
                         }
 
                         // Расчет для админов
@@ -1052,9 +1066,19 @@ const HomePage: React.FC = () => {
 
                                     let individualSalary = 0;
                                     if (role === 'washer') {
-                                      const washerCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'washer').length;
-                                      const washerEarnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-                                      individualSalary = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
+                                      // Рассчитываем доход от машин, которые лично помыл этот мойщик
+                                      let washerPersonalRevenue = 0;
+                                      if (currentReport.records) {
+                                        currentReport.records.forEach(record => {
+                                          if (record.employeeIds.includes(employee.id)) {
+                                            // Доля мойщика от стоимости машины
+                                            const washerShare = record.price / record.employeeIds.length;
+                                            washerPersonalRevenue += washerShare;
+                                          }
+                                        });
+                                      }
+                                      const washerEarnings = washerPersonalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+                                      individualSalary = Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher);
                                     } else if (role === 'admin') {
                                       const adminCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'admin').length;
 
