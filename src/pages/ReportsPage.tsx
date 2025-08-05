@@ -176,7 +176,6 @@ const ReportsPage: React.FC = () => {
           let adminEarnings = 0;
 
           // Процент от всей выручки (наличные + безнал + организации) - всегда получает
-          const totalRevenue = records.reduce((sum, r) => sum + r.price, 0);
           const cashBonus = totalRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
 
           // Процент от вымытых машин - только если участвовал в мойке

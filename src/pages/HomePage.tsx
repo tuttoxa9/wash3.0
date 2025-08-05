@@ -963,29 +963,22 @@ const HomePage: React.FC = () => {
 
                         // Расчет для мойщиков
                         if (washerCount > 0) {
-                          // Процент от ВСЕХ машин для мойщиков
-                          const totalRevenue = currentReport.totalCash + currentReport.totalNonCash + (currentReport.records?.reduce((sum, record) => {
-                            return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
-                          }, 0) || 0);
-
                           // Каждый мойщик получает процент от общей выручки или минимальную оплату
-                          const washerEarnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+                          const washerEarnings = revenue * (state.minimumPaymentSettings.percentageWasher / 100);
                           const washerPayPerPerson = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
                           totalWasherPay = washerPayPerPerson * washerCount;
                         }
 
                         // Расчет для админов
                         if (adminCount > 0) {
-                          const cashRevenue = currentReport.totalCash;
-
-                          // Процент от кассы для всех админов (делится между ними)
-                          const baseCashBonus = cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
+                          // Процент от всей выручки для всех админов (делится между ними)
+                          const baseCashBonus = revenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
 
                           // Индивидуальный расчет для каждого админа
                           let totalAdminEarnings = 0;
                           shiftEmployees.forEach(empId => {
                             if (employeeRoles[empId] === 'admin') {
-                              // Доля от процента с кассы
+                              // Доля от процента с общей выручки
                               const adminCashShare = baseCashBonus / adminCount;
 
                               // Процент от машин, которые лично помыл этот админ
@@ -1061,10 +1054,9 @@ const HomePage: React.FC = () => {
                                       individualSalary = Math.max(washerEarnings / washerCount, state.minimumPaymentSettings.minimumPaymentWasher);
                                     } else if (role === 'admin') {
                                       const adminCount = shiftEmployees.filter(empId => employeeRoles[empId] === 'admin').length;
-                                      const cashRevenue = currentReport.totalCash;
 
-                                      // Доля от процента с кассы (делится между всеми админами)
-                                      const baseCashBonus = (cashRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount;
+                                      // Доля от процента с общей выручки (делится между всеми админами)
+                                      const baseCashBonus = (totalRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount;
 
                                       // Процент от машин, которые лично помыл этот админ
                                       let carWashBonus = 0;

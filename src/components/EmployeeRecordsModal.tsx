@@ -199,9 +199,9 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
                                 </div>
 
                                 <div className="text-right">
-                                  <div className="font-medium">{employeeShare.toFixed(2)} BYN</div>
+                                  <div className="font-medium">{record.price.toFixed(2)} BYN</div>
                                   <div className="text-xs text-muted-foreground">
-                                    из {record.price.toFixed(2)} BYN
+                                    {((employeeShare / record.price) * 100).toFixed(1)}% ({employeeShare.toFixed(2)} BYN)
                                   </div>
                                 </div>
                               </div>
@@ -258,7 +258,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
                                       <div>
                                         <span className="font-medium">Доля сотрудника:</span>
                                         <span className="ml-2 text-lg font-bold text-green-600">
-                                          {employeeShare.toFixed(2)} BYN
+                                          {((employeeShare / record.price) * 100).toFixed(1)}% ({employeeShare.toFixed(2)} BYN)
                                         </span>
                                       </div>
                                     </div>
