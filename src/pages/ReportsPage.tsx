@@ -91,7 +91,9 @@ const ReportsPage: React.FC = () => {
         const currentDate = new Date(startDate);
 
         while (isBefore(currentDate, endDate) || isEqual(currentDate, endDate)) {
-          dateRange.push(format(currentDate, 'yyyy-MM-dd'));
+          if (!isNaN(currentDate.getTime())) {
+            dateRange.push(format(currentDate, 'yyyy-MM-dd'));
+          }
           currentDate.setDate(currentDate.getDate() + 1);
         }
 
@@ -164,11 +166,8 @@ const ReportsPage: React.FC = () => {
             perEmployee: salary
           };
         } else if (employeeRole === 'admin') {
-          // Специальный расчёт для админа с учетом новых настроек
+          // Специальный расчёт для админа с учетом настроек
           let adminEarnings = 0;
-
-          // Процент от общей выручки (базовый)
-          const baseEarnings = totalRevenue * (state.minimumPaymentSettings.percentageAdmin / 100);
 
           // Дополнительный процент от кассы (наличные)
           const cashRevenue = records.filter(r => r.paymentMethod.type === 'cash').reduce((sum, r) => sum + r.price, 0);
@@ -178,7 +177,7 @@ const ReportsPage: React.FC = () => {
           const totalRecords = records.length;
           const carWashBonus = totalRecords * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
 
-          adminEarnings = baseEarnings + cashBonus + carWashBonus;
+          adminEarnings = cashBonus + carWashBonus;
           const salary = Math.max(adminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
 
           return {
@@ -380,26 +379,63 @@ const ReportsPage: React.FC = () => {
 
   // Format date range for display
   const formatDateRange = () => {
-    if (periodType === 'day') {
-      return format(startDate, 'dd.MM.yyyy');
-    } else {
-      return `${format(startDate, 'dd.MM.yyyy')} - ${format(endDate, 'dd.MM.yyyy')}`;
+    try {
+      if (periodType === 'day') {
+        return startDate && !isNaN(startDate.getTime()) ? format(startDate, 'dd.MM.yyyy') : 'Неверная дата';
+      } else {
+        const startFormatted = startDate && !isNaN(startDate.getTime()) ? format(startDate, 'dd.MM.yyyy') : 'Неверная дата';
+        const endFormatted = endDate && !isNaN(endDate.getTime()) ? format(endDate, 'dd.MM.yyyy') : 'Неверная дата';
+        return `${startFormatted} - ${endFormatted}`;
+      }
+    } catch (error) {
+      console.warn('Error formatting date range:', error);
+      return 'Ошибка формата даты';
     }
   };
 
   // Date change handlers
   const handleMainDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(new Date(e.target.value));
+    const value = e.target.value;
+    if (value) {
+      try {
+        const date = parseISO(value);
+        if (date && !isNaN(date.getTime())) {
+          setSelectedDate(date);
+        }
+      } catch (error) {
+        console.warn('Invalid date value:', value);
+      }
+    }
     setActiveDatePicker(null);
   };
 
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStartDate(new Date(e.target.value));
+    const value = e.target.value;
+    if (value) {
+      try {
+        const date = parseISO(value);
+        if (date && !isNaN(date.getTime())) {
+          setStartDate(date);
+        }
+      } catch (error) {
+        console.warn('Invalid date value:', value);
+      }
+    }
     setActiveDatePicker(null);
   };
 
   const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEndDate(new Date(e.target.value));
+    const value = e.target.value;
+    if (value) {
+      try {
+        const date = parseISO(value);
+        if (date && !isNaN(date.getTime())) {
+          setEndDate(date);
+        }
+      } catch (error) {
+        console.warn('Invalid date value:', value);
+      }
+    }
     setActiveDatePicker(null);
   };
 
@@ -472,13 +508,13 @@ const ReportsPage: React.FC = () => {
                         onClick={() => setActiveDatePicker('main')}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                        <span className="flex-1">{format(selectedDate, 'dd.MM.yyyy')}</span>
+                        <span className="flex-1">{selectedDate && !isNaN(selectedDate.getTime()) ? format(selectedDate, 'dd.MM.yyyy') : 'Неверная дата'}</span>
                       </div>
                       {activeDatePicker === 'main' && (
                         <div className="absolute top-full left-0 mt-1 z-10 bg-card rounded-md shadow-md border border-border p-1">
                           <input
                             type="date"
-                            value={format(selectedDate, 'yyyy-MM-dd')}
+                            value={selectedDate && !isNaN(selectedDate.getTime()) ? format(selectedDate, 'yyyy-MM-dd') : ''}
                             onChange={handleMainDateChange}
                             className="w-full p-2 outline-none bg-background rounded-md"
                             autoFocus
@@ -498,13 +534,13 @@ const ReportsPage: React.FC = () => {
                           onClick={() => setActiveDatePicker('start')}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                          <span className="flex-1">{format(startDate, 'dd.MM.yyyy')}</span>
+                          <span className="flex-1">{startDate && !isNaN(startDate.getTime()) ? format(startDate, 'dd.MM.yyyy') : 'Неверная дата'}</span>
                         </div>
                         {activeDatePicker === 'start' && (
                           <div className="absolute top-full left-0 mt-1 z-10 bg-card rounded-md shadow-md border border-border p-1">
                             <input
                               type="date"
-                              value={format(startDate, 'yyyy-MM-dd')}
+                              value={startDate && !isNaN(startDate.getTime()) ? format(startDate, 'yyyy-MM-dd') : ''}
                               onChange={handleStartDateChange}
                               className="w-full p-2 outline-none bg-background rounded-md"
                               autoFocus
@@ -522,13 +558,13 @@ const ReportsPage: React.FC = () => {
                           onClick={() => setActiveDatePicker('end')}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                          <span className="flex-1">{format(endDate, 'dd.MM.yyyy')}</span>
+                          <span className="flex-1">{endDate && !isNaN(endDate.getTime()) ? format(endDate, 'dd.MM.yyyy') : 'Неверная дата'}</span>
                         </div>
                         {activeDatePicker === 'end' && (
                           <div className="absolute top-full left-0 mt-1 z-10 bg-card rounded-md shadow-md border border-border p-1">
                             <input
                               type="date"
-                              value={format(endDate, 'yyyy-MM-dd')}
+                              value={endDate && !isNaN(endDate.getTime()) ? format(endDate, 'yyyy-MM-dd') : ''}
                               onChange={handleEndDateChange}
                               className="w-full p-2 outline-none bg-background rounded-md"
                               autoFocus
@@ -652,10 +688,15 @@ const ReportsPage: React.FC = () => {
                 })()}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {periodType === 'day' && startDate >= parseISO(state.salaryCalculationDate) ?
-                  'На основе текущих настроек' :
-                  'На основе метода, действующего на указанную дату'
-                }
+                {(() => {
+                  try {
+                    return periodType === 'day' && startDate && !isNaN(startDate.getTime()) && startDate >= parseISO(state.salaryCalculationDate) ?
+                      'На основе текущих настроек' :
+                      'На основе метода, действующего на указанную дату';
+                  } catch (error) {
+                    return 'На основе метода, действующего на указанную дату';
+                  }
+                })()}
               </p>
             </div>
 

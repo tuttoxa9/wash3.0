@@ -78,7 +78,6 @@ export interface MinimumPaymentSettings {
   minimumPaymentWasher: number; // Минимальная оплата за день для мойщика
   percentageWasher: number; // Процент от выручки для мойщика
   minimumPaymentAdmin: number; // Минимальная оплата за день для админа
-  percentageAdmin: number; // Процент от выручки для админа
   adminCashPercentage: number; // Процент админа от кассы
   adminCarWashPercentage: number; // Процент админа от вымытых машин
 }
