@@ -361,23 +361,23 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
               <p>Загрузка данных...</p>
             </div>
           ) : records.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto mobile-table">
+              <table className="w-full min-w-[600px]">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="py-3 px-4 text-left">Дата</th>
-                    <th className="py-3 px-4 text-left">Время</th>
-                    <th className="py-3 px-4 text-left">Авто</th>
-                    <th className="py-3 px-4 text-left">Услуга</th>
-                    <th className="py-3 px-4 text-right">Стоимость</th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">Дата</th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">Время</th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">Авто</th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">Услуга</th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-right text-xs sm:text-sm font-medium">Стоимость</th>
                   </tr>
                 </thead>
                 <tbody>
                   {records.map(record => (
                     <tr key={record.id} className="border-b border-border hover:bg-muted/30">
-                      <td className="py-3 px-4">{formatDate(record.date)}</td>
-                      <td className="py-3 px-4">{record.time}</td>
-                      <td className="py-3 px-4">{record.carInfo}</td>
+                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{formatDate(record.date)}</td>
+                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{record.time}</td>
+                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{record.carInfo}</td>
                       <td className="py-3 px-4">{record.service}</td>
                       <td className="py-3 px-4 text-right font-medium">{record.price.toFixed(2)}</td>
                     </tr>

@@ -334,3 +334,64 @@ h1, h2, h3, h4, h5, h6 {
     @apply hover:bg-secondary/80;
   }
 }
+
+/* Дополнительные мобильные улучшения */
+@media (max-width: 768px) {
+  /* Улучшенная адаптация таблиц */
+  .mobile-table {
+    @apply block overflow-x-auto whitespace-nowrap;
+  }
+
+  .mobile-table th,
+  .mobile-table td {
+    @apply min-w-[120px] px-2 py-3;
+  }
+
+  /* Адаптивные карточки */
+  .mobile-card {
+    @apply p-3 rounded-lg shadow-sm border bg-card;
+  }
+
+  /* Адаптивные модальные окна */
+  .mobile-modal {
+    @apply mx-2 my-4 max-h-[90vh] overflow-y-auto;
+  }
+
+  /* Улучшенные формы */
+  .mobile-form {
+    @apply space-y-4;
+  }
+
+  .mobile-form-row {
+    @apply flex flex-col space-y-2;
+  }
+
+  /* Адаптивные кнопки */
+  .mobile-button {
+    @apply min-h-[44px] text-base font-medium;
+  }
+
+  /* Улучшенные уведомления */
+  .mobile-notification {
+    @apply mx-2 rounded-lg;
+  }
+}
+
+/* Стили для очень маленьких экранов */
+@media (max-width: 375px) {
+  .mobile-table th,
+  .mobile-table td {
+    @apply min-w-[100px] px-1 py-2 text-sm;
+  }
+
+  .mobile-card {
+    @apply p-2 text-sm;
+  }
+}
+
+/* Стили для улучшения доступности на мобильных */
+@media (hover: none) and (pointer: coarse) {
+  button, .clickable {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}

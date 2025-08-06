@@ -64,7 +64,7 @@ const NotificationPanel: React.FC = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors"
+        className="relative mobile-button p-2 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors touch-manipulation"
       >
         <Bell className="w-5 h-5" />
         {notifications.length > 0 && (
@@ -86,7 +86,7 @@ const NotificationPanel: React.FC = () => {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 top-full mt-2 w-96 max-h-96 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden"
+            className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-h-[70vh] bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden mobile-notification"
           >
             {/* Заголовок */}
             <div className="flex items-center justify-between p-4 border-b border-border">

@@ -1,6 +1,6 @@
 import type React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download } from 'lucide-react';
 import { useAppContext } from '@/lib/context/AppContext';
 import type { ThemeMode } from '@/lib/types';
 
@@ -16,6 +16,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
     dispatch({ type: 'SET_THEME', payload: newTheme });
   };
 
+  const handleInstallPWA = () => {
+    const deferredPrompt = (window as any).deferredPrompt;
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('PWA установлено');
+        }
+        (window as any).deferredPrompt = null;
+      });
+    } else {
+      // Для iOS показываем инструкцию
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        alert('Для установки приложения: нажмите кнопку "Поделиться" в Safari, затем "На экран Домой"');
+      } else {
+        alert('Приложение уже установлено или не поддерживается на вашем устройстве');
+      }
+    }
+  };
+
   return (
     <>
       {/* Мобильная подложка (фон) */}
@@ -28,17 +48,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
       {/* Сайдбар */}
       <aside
-        className={`fixed top-0 left-0 z-50 w-72 sm:w-80 md:w-64 h-screen bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-3 sm:p-4 border-r border-border/40 shadow-lg transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:z-0 ${
+        className={`fixed top-0 left-0 z-50 w-[85vw] max-w-[320px] sm:w-80 md:w-64 h-screen bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-3 sm:p-4 border-r border-border/40 shadow-xl transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:z-0 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Шапка сайдбара */}
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-xl font-bold gradient-heading">Detail Lab</h1>
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">Detail Lab</h1>
             <button
               onClick={toggleMobileSidebar}
-              className="p-1 rounded-lg hover:bg-secondary md:hidden"
+              className="mobile-button p-2 rounded-lg hover:bg-secondary md:hidden touch-manipulation active:scale-95 transition-transform"
               aria-label="Закрыть меню"
             >
               <X className="w-5 h-5" />
@@ -90,8 +110,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             </NavLink>
           </nav>
 
+          {/* Кнопка установки PWA */}
+          <div className="mt-auto mb-4">
+            <button
+              onClick={handleInstallPWA}
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 transition-colors"
+            >
+              <Download className="w-5 h-5 text-primary" />
+              <span className="text-sm font-medium text-primary">Установить приложение</span>
+            </button>
+          </div>
+
           {/* Переключатель темы */}
-          <div className="pt-4 mt-6 border-t border-border/60">
+          <div className="pt-4 border-t border-border/60">
             <p className="text-sm text-muted-foreground mb-3">Тема оформления</p>
             <div className="flex gap-2">
               <button

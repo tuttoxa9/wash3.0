@@ -58,7 +58,7 @@ const Modal: React.FC<ModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-transparent"
+          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-transparent"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -76,7 +76,7 @@ const Modal: React.FC<ModalProps> = ({
           {/* Контент модального окна с анимацией появления из точки клика */}
           <motion.div
             ref={modalRef}
-            className={`relative z-10 bg-card text-card-foreground rounded-2xl shadow-lg w-full max-h-[90vh] overflow-y-auto ${className}`}
+            className={`mobile-modal relative z-10 bg-card text-card-foreground rounded-2xl shadow-lg w-full max-w-lg sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto ${className}`}
             style={{
               originX: origin.x,
               originY: origin.y

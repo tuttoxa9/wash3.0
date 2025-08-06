@@ -350,15 +350,15 @@ const RecordsPage: React.FC = () => {
     >
       {/* Заголовок и статистика */}
       <div className="space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Записи</h2>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Управление записями на автомойку</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground truncate">Записи</h2>
+            <p className="text-muted-foreground mt-1 text-sm">Управление записями на автомойку</p>
           </div>
 
           <button
             onClick={handleAddAppointment}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors shadow-sm touch-manipulation"
+            className="mobile-button inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors shadow-sm touch-manipulation active:scale-95"
           >
             <Plus className="w-4 h-4" />
             Новая запись
@@ -366,9 +366,9 @@ const RecordsPage: React.FC = () => {
         </div>
 
         {/* Статистика */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
           <motion.div
-            className="card-with-shadow p-4 text-center"
+            className="mobile-card p-3 sm:p-4 text-center"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
@@ -377,7 +377,7 @@ const RecordsPage: React.FC = () => {
           </motion.div>
 
           <motion.div
-            className="card-with-shadow p-4 text-center"
+            className="mobile-card p-3 sm:p-4 text-center"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
@@ -386,7 +386,7 @@ const RecordsPage: React.FC = () => {
           </motion.div>
 
           <motion.div
-            className="card-with-shadow p-4 text-center"
+            className="mobile-card p-3 sm:p-4 text-center"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
@@ -395,7 +395,7 @@ const RecordsPage: React.FC = () => {
           </motion.div>
 
           <motion.div
-            className="card-with-shadow p-4 text-center"
+            className="mobile-card p-3 sm:p-4 text-center"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
@@ -404,7 +404,7 @@ const RecordsPage: React.FC = () => {
           </motion.div>
 
           <motion.div
-            className="card-with-shadow p-4 text-center"
+            className="mobile-card p-3 sm:p-4 text-center"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >
@@ -413,7 +413,7 @@ const RecordsPage: React.FC = () => {
           </motion.div>
 
           <motion.div
-            className="card-with-shadow p-4 text-center"
+            className="mobile-card p-3 sm:p-4 text-center"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
           >

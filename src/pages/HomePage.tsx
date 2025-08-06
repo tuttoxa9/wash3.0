@@ -499,8 +499,8 @@ const HomePage: React.FC = () => {
     <div className="space-y-5">
       {/* Заголовок */}
       <div className="flex flex-col gap-3 md:gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
-          <h2 className="text-xl md:text-2xl font-semibold">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold truncate">
             Ведомость ежедневная выполненных работ
           </h2>
 
@@ -508,7 +508,7 @@ const HomePage: React.FC = () => {
             <button
               onClick={exportToWord}
               disabled={loading.exporting || !currentReport}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/90 transition-colors disabled:opacity-50 text-sm"
+              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/90 transition-colors disabled:opacity-50 text-sm touch-manipulation"
             >
               {loading.exporting ? (
                 <>
@@ -527,7 +527,7 @@ const HomePage: React.FC = () => {
                 setAppointmentToConvert(null); // Явно сбрасываем данные предзаполнения
                 toggleModal(e);
               }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors text-sm"
+              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors text-sm touch-manipulation"
             >
               <Plus className="w-4 h-4" />
               Добавить помытую машину
@@ -693,17 +693,17 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto mobile-table">
                 <table className="w-full min-w-[700px]">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">№</th>
-                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Время</th>
-                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Авто</th>
-                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Услуга</th>
-                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-right text-xs sm:text-sm">Стоимость</th>
-                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Оплата</th>
-                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Действия</th>
+                      <th className="py-2 px-1 sm:px-2 md:py-3 md:px-4 text-left text-xs sm:text-sm font-medium">№</th>
+                      <th className="py-2 px-1 sm:px-2 md:py-3 md:px-4 text-left text-xs sm:text-sm font-medium">Время</th>
+                      <th className="py-2 px-1 sm:px-2 md:py-3 md:px-4 text-left text-xs sm:text-sm font-medium">Авто</th>
+                      <th className="py-2 px-1 sm:px-2 md:py-3 md:px-4 text-left text-xs sm:text-sm font-medium">Услуга</th>
+                      <th className="py-2 px-1 sm:px-2 md:py-3 md:px-4 text-right text-xs sm:text-sm font-medium">Стоимость</th>
+                      <th className="py-2 px-1 sm:px-2 md:py-3 md:px-4 text-left text-xs sm:text-sm font-medium">Оплата</th>
+                      <th className="py-2 px-1 sm:px-2 md:py-3 md:px-4 text-left text-xs sm:text-sm font-medium">Действия</th>
                     </tr>
                   </thead>
                   <tbody>
