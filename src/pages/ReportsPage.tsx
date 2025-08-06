@@ -674,13 +674,13 @@ const ReportsPage: React.FC = () => {
             </div>
 
             <div className="border rounded-md overflow-hidden">
-              <div className="grid grid-cols-6 bg-muted/50 px-4 py-2 border-b">
-                <div className="font-medium text-sm">Сотрудник</div>
-                <div className="font-medium text-sm text-right">Наличные (BYN)</div>
-                <div className="font-medium text-sm text-right">Карта (BYN)</div>
-                <div className="font-medium text-sm text-right">Безнал (BYN)</div>
-                <div className="font-medium text-sm text-right">Всего (BYN)</div>
-                <div className="font-medium text-sm text-right">Зарплата (BYN)</div>
+              <div className="grid grid-cols-6 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
+                <div className="font-medium text-xs md:text-sm">Сотрудник</div>
+                <div className="font-medium text-xs md:text-sm text-right">Нал</div>
+                <div className="font-medium text-xs md:text-sm text-right">Карт</div>
+                <div className="font-medium text-xs md:text-sm text-right">Безнал</div>
+                <div className="font-medium text-xs md:text-sm text-right">Всего</div>
+                <div className="font-medium text-xs md:text-sm text-right">ЗП</div>
               </div>
               <div className="divide-y">
                 {earningsReport.map(report => {
@@ -716,20 +716,20 @@ const ReportsPage: React.FC = () => {
                   return (
                     <div
                       key={report.employeeId}
-                      className="grid grid-cols-6 px-4 py-2 hover:bg-muted/30 cursor-pointer transition-colors"
+                      className="grid grid-cols-6 px-2 md:px-4 py-1.5 md:py-2 hover:bg-muted/30 cursor-pointer transition-colors"
                       onClick={handleEmployeeClick}
                     >
-                      <div className="text-primary hover:text-primary/80 font-medium">{report.employeeName}</div>
-                      <div className="text-right">{report.totalCash.toFixed(2)}</div>
-                      <div className="text-right">{report.totalNonCash.toFixed(2)}</div>
-                      <div className="text-right">{report.totalOrganizations.toFixed(2)}</div>
-                      <div className="text-right">{totalRevenueEmp.toFixed(2)}</div>
-                      <div className="text-right font-medium">{perEmployee.toFixed(2)}</div>
+                      <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate" title={report.employeeName}>{report.employeeName}</div>
+                      <div className="text-right text-xs md:text-sm">{report.totalCash.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm">{report.totalNonCash.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm">{report.totalOrganizations.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm">{totalRevenueEmp.toFixed(2)}</div>
+                      <div className="text-right font-medium text-xs md:text-sm">{perEmployee.toFixed(2)}</div>
                     </div>
                   );
                 })}
                 {earningsReport.length === 0 && (
-                  <div className="px-4 py-6 text-center text-muted-foreground">
+                  <div className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
                     Нет данных для выбранного периода и фильтра
                   </div>
                 )}

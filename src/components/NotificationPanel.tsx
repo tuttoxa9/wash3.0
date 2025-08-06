@@ -107,7 +107,7 @@ const NotificationPanel: React.FC = () => {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setIsOpen(false)}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-white black:text-gray-300 black:hover:text-white"
                 >
                   <X className="w-4 h-4" />
                 </motion.button>
@@ -152,7 +152,7 @@ const NotificationPanel: React.FC = () => {
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => removeNotification(notification.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-white black:text-gray-300 black:hover:text-white"
                         >
                           <X className="w-3 h-3" />
                         </motion.button>

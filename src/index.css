@@ -344,7 +344,17 @@ h1, h2, h3, h4, h5, h6 {
 
   .mobile-table th,
   .mobile-table td {
-    @apply min-w-[120px] px-2 py-3;
+    @apply min-w-[80px] px-1 py-1.5;
+  }
+
+  .mobile-table th:first-child,
+  .mobile-table td:first-child {
+    @apply min-w-[50px];
+  }
+
+  .mobile-table th:last-child,
+  .mobile-table td:last-child {
+    @apply min-w-[60px];
   }
 
   /* Адаптивные карточки */
@@ -381,7 +391,17 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 375px) {
   .mobile-table th,
   .mobile-table td {
-    @apply min-w-[100px] px-1 py-2 text-sm;
+    @apply min-w-[60px] px-0.5 py-1 text-xs;
+  }
+
+  .mobile-table th:first-child,
+  .mobile-table td:first-child {
+    @apply min-w-[30px];
+  }
+
+  .mobile-table th:last-child,
+  .mobile-table td:last-child {
+    @apply min-w-[40px];
   }
 
   .mobile-card {

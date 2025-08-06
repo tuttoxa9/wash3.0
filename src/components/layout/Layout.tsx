@@ -1,13 +1,54 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import NotificationPanel from '@/components/NotificationPanel';
+import { useNotifications } from '@/lib/context/NotificationContext';
 
 const Layout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { addNotification } = useNotifications();
+
+  // Перехват всех toast сообщений
+  useEffect(() => {
+    const originalToast = {
+      success: toast.success,
+      error: toast.error,
+      info: toast.info,
+      warning: toast.warning
+    };
+
+    // Переопределяем функции toast
+    toast.success = (message: string) => {
+      addNotification({ type: 'success', title: message });
+      return originalToast.success(message);
+    };
+
+    toast.error = (message: string) => {
+      addNotification({ type: 'error', title: message });
+      return originalToast.error(message);
+    };
+
+    toast.info = (message: string) => {
+      addNotification({ type: 'info', title: message });
+      return originalToast.info(message);
+    };
+
+    toast.warning = (message: string) => {
+      addNotification({ type: 'warning', title: message });
+      return originalToast.warning(message);
+    };
+
+    return () => {
+      // Восстанавливаем оригинальные функции
+      toast.success = originalToast.success;
+      toast.error = originalToast.error;
+      toast.info = originalToast.info;
+      toast.warning = originalToast.warning;
+    };
+  }, [addNotification]);
 
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(prev => !prev);
@@ -55,8 +96,16 @@ const Layout: React.FC = () => {
         </div>
       </main>
 
-      {/* Тостер для уведомлений */}
-      <Toaster position="top-right" richColors />
+      {/* Тостер для уведомлений - скрытые уведомления */}
+      <Toaster
+        position="top-right"
+        richColors
+        visibleToasts={0}
+        toastOptions={{
+          duration: 1,
+          style: { display: 'none' }
+        }}
+      />
     </div>
   );
 };
