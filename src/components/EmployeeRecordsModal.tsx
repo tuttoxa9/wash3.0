@@ -319,7 +319,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className={`w-full max-w-6xl max-h-[95vh] rounded-2xl shadow-2xl overflow-hidden ${
+          className={`w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg overflow-hidden ${
             state.theme === 'dark'
               ? 'bg-slate-900 border border-slate-700'
               : state.theme === 'black'
@@ -328,468 +328,281 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Заголовок аналитики */}
-          <div className={`p-6 border-b ${
+          {/* Компактный заголовок */}
+          <div className={`p-3 border-b flex items-center justify-between ${
             state.theme === 'dark'
-              ? 'border-slate-700 bg-slate-800/50'
+              ? 'border-slate-700'
               : state.theme === 'black'
-              ? 'border-gray-800 bg-gray-900/50'
-              : 'border-gray-200 bg-gray-50/50'
+              ? 'border-gray-800'
+              : 'border-gray-200'
           }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl ${
-                  state.theme === 'dark'
-                    ? 'bg-blue-500/10 text-blue-400'
-                    : state.theme === 'black'
-                    ? 'bg-blue-500/20 text-blue-300'
-                    : 'bg-blue-50 text-blue-600'
-                }`}>
-                  <BarChart3 className="w-8 h-8" />
-                </div>
-                <div>
-                  <h2 className={`text-2xl font-bold ${
-                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    Детальная аналитика
-                  </h2>
-                  <div className={`text-lg font-medium ${
-                    state.theme === 'dark' ? 'text-blue-300' : state.theme === 'black' ? 'text-blue-400' : 'text-blue-600'
-                  }`}>
-                    {employee.name}
-                  </div>
-                  <p className={`text-sm ${
-                    state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    Период: {periodLabel}
-                  </p>
-                </div>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onClose}
-                className={`p-3 rounded-xl transition-colors ${
-                  state.theme === 'dark'
-                    ? 'hover:bg-slate-700 text-gray-300'
-                    : state.theme === 'black'
-                    ? 'hover:bg-gray-800 text-gray-400'
-                    : 'hover:bg-gray-100 text-gray-500'
-                }`}
-              >
-                <X className="w-6 h-6" />
-              </motion.button>
-            </div>
-          </div>
-
-          {/* Содержимое аналитики */}
-          <div className="overflow-y-auto max-h-[calc(95vh-120px)] p-6">
-            {/* Основные KPI - увеличенные и более информативные */}
-            <div className="mb-8">
-              <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${
+            <div>
+              <h2 className={`text-lg font-semibold ${
                 state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
               }`}>
-                <Target className="w-5 h-5 text-blue-500" />
-                Ключевые показатели
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className={`p-6 rounded-2xl border ${
-                  state.theme === 'dark'
-                    ? 'bg-blue-500/10 border-blue-500/20'
-                    : state.theme === 'black'
-                    ? 'bg-blue-500/5 border-blue-500/30'
-                    : 'bg-blue-50 border-blue-200'
-                }`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Car className={`w-6 h-6 ${
-                      state.theme === 'dark' ? 'text-blue-400' : state.theme === 'black' ? 'text-blue-300' : 'text-blue-600'
-                    }`} />
-                    <div className={`text-sm font-medium ${
-                      state.theme === 'dark' ? 'text-blue-300' : state.theme === 'black' ? 'text-blue-400' : 'text-blue-600'
-                    }`}>
-                      Автомобили
-                    </div>
-                  </div>
-                  <div className={`text-3xl font-bold ${
-                    state.theme === 'dark' ? 'text-blue-400' : state.theme === 'black' ? 'text-blue-300' : 'text-blue-700'
-                  }`}>
-                    {statistics.totalRecords}
-                  </div>
-                  <div className={`text-sm ${
-                    state.theme === 'dark' ? 'text-blue-300' : state.theme === 'black' ? 'text-blue-400' : 'text-blue-600'
-                  }`}>
-                    машин помыто
-                  </div>
-                </div>
+                Аналитика: {employee.name}
+              </h2>
+              <p className={`text-sm ${
+                state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+              }`}>
+                {periodLabel}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className={`p-1 rounded-md transition-colors ${
+                state.theme === 'dark'
+                  ? 'hover:bg-slate-700 text-gray-400'
+                  : state.theme === 'black'
+                  ? 'hover:bg-gray-800 text-gray-500'
+                  : 'hover:bg-gray-100 text-gray-500'
+              }`}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
-                <div className={`p-6 rounded-2xl border ${
-                  state.theme === 'dark'
-                    ? 'bg-green-500/10 border-green-500/20'
-                    : state.theme === 'black'
-                    ? 'bg-green-500/5 border-green-500/30'
-                    : 'bg-green-50 border-green-200'
+          {/* Компактное содержимое */}
+          <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-3">
+            {/* Основные показатели - компактные */}
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              <div className={`p-2 rounded-md text-center ${
+                state.theme === 'dark'
+                  ? 'bg-slate-800'
+                  : state.theme === 'black'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-50'
+              }`}>
+                <div className={`text-lg font-bold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                 }`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <TrendingUp className={`w-6 h-6 ${
-                      state.theme === 'dark' ? 'text-green-400' : state.theme === 'black' ? 'text-green-300' : 'text-green-600'
-                    }`} />
-                    <div className={`text-sm font-medium ${
-                      state.theme === 'dark' ? 'text-green-300' : state.theme === 'black' ? 'text-green-400' : 'text-green-600'
-                    }`}>
-                      Заработок
-                    </div>
-                  </div>
-                  <div className={`text-3xl font-bold ${
-                    state.theme === 'dark' ? 'text-green-400' : state.theme === 'black' ? 'text-green-300' : 'text-green-700'
-                  }`}>
-                    {statistics.totalEarnings.toFixed(0)}
-                  </div>
-                  <div className={`text-sm ${
-                    state.theme === 'dark' ? 'text-green-300' : state.theme === 'black' ? 'text-green-400' : 'text-green-600'
-                  }`}>
-                    BYN заработано
-                  </div>
+                  {statistics.totalRecords}
                 </div>
-
-                <div className={`p-6 rounded-2xl border ${
-                  state.theme === 'dark'
-                    ? 'bg-purple-500/10 border-purple-500/20'
-                    : state.theme === 'black'
-                    ? 'bg-purple-500/5 border-purple-500/30'
-                    : 'bg-purple-50 border-purple-200'
+                <div className={`text-xs ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
                 }`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Wrench className={`w-6 h-6 ${
-                      state.theme === 'dark' ? 'text-purple-400' : state.theme === 'black' ? 'text-purple-300' : 'text-purple-600'
-                    }`} />
-                    <div className={`text-sm font-medium ${
-                      state.theme === 'dark' ? 'text-purple-300' : state.theme === 'black' ? 'text-purple-400' : 'text-purple-600'
-                    }`}>
-                      Услуги
-                    </div>
-                  </div>
-                  <div className={`text-3xl font-bold ${
-                    state.theme === 'dark' ? 'text-purple-400' : state.theme === 'black' ? 'text-purple-300' : 'text-purple-700'
-                  }`}>
-                    {Object.keys(statistics.serviceStats).length}
-                  </div>
-                  <div className={`text-sm ${
-                    state.theme === 'dark' ? 'text-purple-300' : state.theme === 'black' ? 'text-purple-400' : 'text-purple-600'
-                  }`}>
-                    видов услуг
-                  </div>
+                  Машин
                 </div>
+              </div>
 
-                <div className={`p-6 rounded-2xl border ${
-                  state.theme === 'dark'
-                    ? 'bg-orange-500/10 border-orange-500/20'
-                    : state.theme === 'black'
-                    ? 'bg-orange-500/5 border-orange-500/30'
-                    : 'bg-orange-50 border-orange-200'
+              <div className={`p-2 rounded-md text-center ${
+                state.theme === 'dark'
+                  ? 'bg-slate-800'
+                  : state.theme === 'black'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-50'
+              }`}>
+                <div className={`text-lg font-bold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                 }`}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <DollarSign className={`w-6 h-6 ${
-                      state.theme === 'dark' ? 'text-orange-400' : state.theme === 'black' ? 'text-orange-300' : 'text-orange-600'
-                    }`} />
-                    <div className={`text-sm font-medium ${
-                      state.theme === 'dark' ? 'text-orange-300' : state.theme === 'black' ? 'text-orange-400' : 'text-orange-600'
-                    }`}>
-                      Среднее
-                    </div>
-                  </div>
-                  <div className={`text-3xl font-bold ${
-                    state.theme === 'dark' ? 'text-orange-400' : state.theme === 'black' ? 'text-orange-300' : 'text-orange-700'
-                  }`}>
-                    {(statistics.totalEarnings / Math.max(statistics.totalRecords, 1)).toFixed(0)}
-                  </div>
-                  <div className={`text-sm ${
-                    state.theme === 'dark' ? 'text-orange-300' : state.theme === 'black' ? 'text-orange-400' : 'text-orange-600'
-                  }`}>
-                    BYN в среднем
-                  </div>
+                  {statistics.totalEarnings.toFixed(0)}
+                </div>
+                <div className={`text-xs ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  Заработок
+                </div>
+              </div>
+
+              <div className={`p-2 rounded-md text-center ${
+                state.theme === 'dark'
+                  ? 'bg-slate-800'
+                  : state.theme === 'black'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-50'
+              }`}>
+                <div className={`text-lg font-bold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  {Object.keys(statistics.serviceStats).length}
+                </div>
+                <div className={`text-xs ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  Услуг
+                </div>
+              </div>
+
+              <div className={`p-2 rounded-md text-center ${
+                state.theme === 'dark'
+                  ? 'bg-slate-800'
+                  : state.theme === 'black'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-50'
+              }`}>
+                <div className={`text-lg font-bold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  {(statistics.totalEarnings / Math.max(statistics.totalRecords, 1)).toFixed(0)}
+                </div>
+                <div className={`text-xs ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  Среднее
                 </div>
               </div>
             </div>
 
-            {/* Лучший день - более заметный */}
+            {/* Лучший день - компактный */}
             {statistics.bestDay.date && (
-              <div className={`p-6 rounded-2xl border mb-8 ${
+              <div className={`p-2 rounded-md mb-4 ${
                 state.theme === 'dark'
-                  ? 'bg-yellow-500/10 border-yellow-500/20'
+                  ? 'bg-slate-800'
                   : state.theme === 'black'
-                  ? 'bg-yellow-500/5 border-yellow-500/30'
-                  : 'bg-yellow-50 border-yellow-200'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-50'
               }`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <Star className={`w-6 h-6 ${
-                    state.theme === 'dark' ? 'text-yellow-400' : state.theme === 'black' ? 'text-yellow-300' : 'text-yellow-600'
-                  }`} />
-                  <span className={`text-lg font-semibold ${
-                    state.theme === 'dark' ? 'text-yellow-400' : state.theme === 'black' ? 'text-yellow-300' : 'text-yellow-700'
-                  }`}>
-                    🏆 Лучший день
-                  </span>
-                </div>
-                <div className={`text-base ${
-                  state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-600'
+                <div className={`text-sm font-medium mb-1 ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                 }`}>
-                  <span className={`text-xl font-bold ${
-                    state.theme === 'dark' ? 'text-yellow-300' : state.theme === 'black' ? 'text-yellow-200' : 'text-yellow-800'
-                  }`}>
-                    {format(parseISO(statistics.bestDay.date), 'dd MMMM yyyy', { locale: ru })}
-                  </span>
-                  <div className="mt-2 grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm opacity-75">Автомобилей:</div>
-                      <div className="text-lg font-semibold">{statistics.bestDay.count}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm opacity-75">Заработок:</div>
-                      <div className={`text-lg font-bold ${
-                        state.theme === 'dark' ? 'text-green-400' : state.theme === 'black' ? 'text-green-300' : 'text-green-600'
-                      }`}>
-                        {statistics.bestDay.earnings?.toFixed(2)} BYN
-                      </div>
-                    </div>
-                  </div>
+                  Лучший день: {format(parseISO(statistics.bestDay.date), 'dd.MM.yyyy')}
+                </div>
+                <div className={`text-xs ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  {statistics.bestDay.count} машин • {statistics.bestDay.earnings?.toFixed(0)} BYN
                 </div>
               </div>
             )}
 
-            {/* Разделы аналитики - более структурированные */}
-            <div className="space-y-8">
-              {/* Способы оплаты - КЛИКАБЕЛЬНЫЕ */}
+            {/* Разделы аналитики в две колонки */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Способы оплаты */}
               <div>
-                <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${
+                <h3 className={`text-sm font-medium mb-2 ${
                   state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                 }`}>
-                  <CreditCard className="w-5 h-5 text-orange-500" />
                   Способы оплаты
-                  <span className={`text-sm font-normal ${
-                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                  }`}>
-                    (нажмите для деталей)
-                  </span>
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
                   {Object.entries(statistics.paymentStats).map(([method, stats]) => (
-                    <motion.button
+                    <button
                       key={method}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
                       onClick={() => onPaymentMethodClick(method, stats.records || [])}
-                      className={`p-4 rounded-xl border text-left transition-all hover:shadow-lg ${
-                        method === 'cash'
-                          ? state.theme === 'dark'
-                            ? 'bg-green-500/10 border-green-500/20 hover:bg-green-500/20'
-                            : state.theme === 'black'
-                            ? 'bg-green-500/5 border-green-500/30 hover:bg-green-500/10'
-                            : 'bg-green-50 border-green-200 hover:bg-green-100'
-                          : method === 'card'
-                          ? state.theme === 'dark'
-                            ? 'bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20'
-                            : state.theme === 'black'
-                            ? 'bg-blue-500/5 border-blue-500/30 hover:bg-blue-500/10'
-                            : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
-                          : state.theme === 'dark'
-                            ? 'bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20'
-                            : state.theme === 'black'
-                            ? 'bg-purple-500/5 border-purple-500/30 hover:bg-purple-500/10'
-                            : 'bg-purple-50 border-purple-200 hover:bg-purple-100'
+                      className={`w-full p-2 rounded-md text-left transition-colors ${
+                        state.theme === 'dark'
+                          ? 'bg-slate-800 hover:bg-slate-700'
+                          : state.theme === 'black'
+                          ? 'bg-gray-900 hover:bg-gray-800'
+                          : 'bg-gray-50 hover:bg-gray-100'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className={`flex items-center gap-2 ${
-                          method === 'cash'
-                            ? state.theme === 'dark' ? 'text-green-300' : state.theme === 'black' ? 'text-green-400' : 'text-green-700'
-                            : method === 'card'
-                            ? state.theme === 'dark' ? 'text-blue-300' : state.theme === 'black' ? 'text-blue-400' : 'text-blue-700'
-                            : state.theme === 'dark' ? 'text-purple-300' : state.theme === 'black' ? 'text-purple-400' : 'text-purple-700'
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm font-medium ${
+                          state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                         }`}>
-                          <CreditCard className="w-5 h-5" />
-                          <span className="font-semibold">
-                            {method === 'cash' ? 'Наличные' : method === 'card' ? 'Карта' : 'Организация'}
-                          </span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 opacity-50" />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className={`text-sm ${
-                            state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                          }`}>
-                            Заработок:
-                          </span>
-                          <span className={`font-bold text-lg ${
-                            method === 'cash'
-                              ? state.theme === 'dark' ? 'text-green-400' : state.theme === 'black' ? 'text-green-300' : 'text-green-600'
-                              : method === 'card'
-                              ? state.theme === 'dark' ? 'text-blue-400' : state.theme === 'black' ? 'text-blue-300' : 'text-blue-600'
-                              : state.theme === 'dark' ? 'text-purple-400' : state.theme === 'black' ? 'text-purple-300' : 'text-purple-600'
-                          }`}>
-                            {stats.earnings.toFixed(0)} BYN
-                          </span>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <span className={`text-sm ${
-                            state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                          }`}>
-                            Операций:
-                          </span>
-                          <span className={`font-medium ${
-                            state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-700'
-                          }`}>
-                            {stats.count}
-                          </span>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <span className={`text-sm ${
-                            state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                          }`}>
-                            Среднее:
-                          </span>
-                          <span className={`font-medium ${
-                            state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-700'
-                          }`}>
-                            {(stats.earnings / stats.count).toFixed(0)} BYN
-                          </span>
+                          {method === 'cash' ? 'Наличные' : method === 'card' ? 'Карта' : 'Организация'}
+                        </span>
+                        <div className="flex gap-3 text-xs">
+                          <span>{stats.count} оп.</span>
+                          <span className="font-medium">{stats.earnings.toFixed(0)} BYN</span>
                         </div>
                       </div>
-                    </motion.button>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              {/* Остальные разделы - в две колонки */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                {/* Дни недели */}
-                <div>
-                  <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${
-                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    <Calendar className="w-5 h-5 text-blue-500" />
-                    Дни недели
-                  </h3>
-                  <div className="space-y-3">
-                    {Object.entries(statistics.weekdayStats)
-                      .sort(([,a], [,b]) => b.earnings - a.earnings)
-                      .map(([weekday, stats]) => (
-                      <div key={weekday} className={`p-4 rounded-xl border ${
-                        state.theme === 'dark'
-                          ? 'bg-slate-800 border-slate-700'
-                          : state.theme === 'black'
-                          ? 'bg-gray-900 border-gray-800'
-                          : 'bg-white border-gray-200'
-                      }`}>
-                        <div className="flex justify-between items-center">
-                          <span className={`font-semibold text-lg capitalize ${
-                            state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                          }`}>
-                            {weekday}
-                          </span>
-                          <div className="text-right">
-                            <div className="text-xl font-bold text-blue-500">
-                              {stats.earnings.toFixed(0)} BYN
-                            </div>
-                            <div className={`text-sm ${
-                              state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                            }`}>
-                              {stats.count} машин
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Популярные услуги */}
-                <div>
-                  <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${
-                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    <Wrench className="w-5 h-5 text-green-500" />
-                    Прибыльные услуги
-                  </h3>
-                  <div className="space-y-3">
-                    {Object.entries(statistics.serviceStats)
-                      .sort(([,a], [,b]) => b.earnings - a.earnings)
-                      .slice(0, 6)
-                      .map(([service, stats]) => (
-                      <div key={service} className={`p-4 rounded-xl border ${
-                        state.theme === 'dark'
-                          ? 'bg-slate-800 border-slate-700'
-                          : state.theme === 'black'
-                          ? 'bg-gray-900 border-gray-800'
-                          : 'bg-white border-gray-200'
-                      }`}>
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0">
-                            <h4 className={`font-semibold text-base truncate ${
-                              state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                            }`}>
-                              {service}
-                            </h4>
-                            <div className={`text-sm mt-1 ${
-                              state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                            }`}>
-                              {stats.count} раз • Среднее: {(stats.earnings / stats.count).toFixed(1)} BYN
-                            </div>
-                          </div>
-                          <div className="text-right ml-3">
-                            <div className="text-xl font-bold text-green-500">
-                              {stats.earnings.toFixed(0)}
-                            </div>
-                            <div className={`text-sm ${
-                              state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                            }`}>
-                              BYN
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Продуктивные часы */}
-                <div>
-                  <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${
-                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    <Clock className="w-5 h-5 text-purple-500" />
-                    Продуктивные часы
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {Object.entries(statistics.hourlyStats)
-                      .sort(([,a], [,b]) => b.earnings - a.earnings)
-                      .slice(0, 8)
-                      .map(([timeSlot, stats]) => (
-                      <div key={timeSlot} className={`p-4 rounded-xl border text-center ${
-                        state.theme === 'dark'
-                          ? 'bg-slate-800 border-slate-700'
-                          : state.theme === 'black'
-                          ? 'bg-gray-900 border-gray-800'
-                          : 'bg-white border-gray-200'
-                      }`}>
-                        <div className={`font-semibold text-sm mb-2 ${
+              {/* Популярные услуги */}
+              <div>
+                <h3 className={`text-sm font-medium mb-2 ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  Услуги
+                </h3>
+                <div className="space-y-2">
+                  {Object.entries(statistics.serviceStats)
+                    .sort(([,a], [,b]) => b.earnings - a.earnings)
+                    .slice(0, 5)
+                    .map(([service, stats]) => (
+                    <div key={service} className={`p-2 rounded-md ${
+                      state.theme === 'dark'
+                        ? 'bg-slate-800'
+                        : state.theme === 'black'
+                        ? 'bg-gray-900'
+                        : 'bg-gray-50'
+                    }`}>
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm font-medium truncate ${
                           state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                         }`}>
-                          {timeSlot}
-                        </div>
-                        <div className="text-lg font-bold text-purple-500">
-                          {stats.count}
-                        </div>
-                        <div className="text-xs text-purple-400 mb-1">машин</div>
-                        <div className="text-sm font-medium text-blue-500">
-                          {stats.earnings.toFixed(0)} BYN
+                          {service}
+                        </span>
+                        <div className="flex gap-3 text-xs">
+                          <span>{stats.count}×</span>
+                          <span className="font-medium">{stats.earnings.toFixed(0)} BYN</span>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Дни недели */}
+              <div>
+                <h3 className={`text-sm font-medium mb-2 ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  По дням недели
+                </h3>
+                <div className="space-y-2">
+                  {Object.entries(statistics.weekdayStats)
+                    .sort(([,a], [,b]) => b.earnings - a.earnings)
+                    .map(([weekday, stats]) => (
+                    <div key={weekday} className={`p-2 rounded-md ${
+                      state.theme === 'dark'
+                        ? 'bg-slate-800'
+                        : state.theme === 'black'
+                        ? 'bg-gray-900'
+                        : 'bg-gray-50'
+                    }`}>
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm font-medium capitalize ${
+                          state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                        }`}>
+                          {weekday}
+                        </span>
+                        <div className="flex gap-3 text-xs">
+                          <span>{stats.count} машин</span>
+                          <span className="font-medium">{stats.earnings.toFixed(0)} BYN</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Продуктивные часы */}
+              <div>
+                <h3 className={`text-sm font-medium mb-2 ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  Время работы
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(statistics.hourlyStats)
+                    .sort(([,a], [,b]) => b.earnings - a.earnings)
+                    .slice(0, 6)
+                    .map(([timeSlot, stats]) => (
+                    <div key={timeSlot} className={`p-2 rounded-md text-center ${
+                      state.theme === 'dark'
+                        ? 'bg-slate-800'
+                        : state.theme === 'black'
+                        ? 'bg-gray-900'
+                        : 'bg-gray-50'
+                    }`}>
+                      <div className={`text-sm font-medium ${
+                        state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                      }`}>
+                        {timeSlot}
+                      </div>
+                      <div className={`text-xs ${
+                        state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                      }`}>
+                        {stats.count} • {stats.earnings.toFixed(0)} BYN
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
