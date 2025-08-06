@@ -43,18 +43,40 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
 
         // Фильтрация по дате
         const filteredRecords = fetchedRecords.filter(record => {
-          const recordDate = typeof record.date === 'string'
-            ? parseISO(record.date)
-            : new Date(record.date);
+          try {
+            const recordDate = typeof record.date === 'string'
+              ? parseISO(record.date)
+              : new Date(record.date);
 
-          return recordDate >= startDate && recordDate <= endDate;
+            // Проверяем валидность даты
+            if (isNaN(recordDate.getTime())) {
+              console.warn('Невалидная дата в записи:', record.id, record.date);
+              return false;
+            }
+
+            return recordDate >= startDate && recordDate <= endDate;
+          } catch (error) {
+            console.error('Ошибка обработки даты:', error, record.date);
+            return false;
+          }
         });
 
         // Сортировка по дате (от новых к старым)
         filteredRecords.sort((a, b) => {
-          const dateA = typeof a.date === 'string' ? parseISO(a.date) : new Date(a.date);
-          const dateB = typeof b.date === 'string' ? parseISO(b.date) : new Date(b.date);
-          return dateB.getTime() - dateA.getTime();
+          try {
+            const dateA = typeof a.date === 'string' ? parseISO(a.date) : new Date(a.date);
+            const dateB = typeof b.date === 'string' ? parseISO(b.date) : new Date(b.date);
+
+            // Проверяем валидность дат
+            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+              return 0; // Равные если одна из дат невалидна
+            }
+
+            return dateB.getTime() - dateA.getTime();
+          } catch (error) {
+            console.error('Ошибка сортировки по дате:', error);
+            return 0;
+          }
         });
 
         setRecords(filteredRecords);

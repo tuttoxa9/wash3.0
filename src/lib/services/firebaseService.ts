@@ -457,10 +457,21 @@ export const appointmentService = {
       const appointmentsRef = collection(db, 'appointments');
       const snapshot = await getDocs(appointmentsRef);
 
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Appointment));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+
+        // Преобразуем Timestamp в Date если необходимо
+        let createdAt = data.createdAt;
+        if (createdAt && typeof createdAt.toDate === 'function') {
+          createdAt = createdAt.toDate();
+        }
+
+        return {
+          id: doc.id,
+          ...data,
+          createdAt
+        } as Appointment;
+      });
     } catch (error) {
       logFirebaseError('Ошибка получения списка записей на мойку', error);
       return [];
@@ -474,10 +485,21 @@ export const appointmentService = {
       const q = query(appointmentsRef, where('date', '==', date));
       const snapshot = await getDocs(q);
 
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Appointment));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+
+        // Преобразуем Timestamp в Date если необходимо
+        let createdAt = data.createdAt;
+        if (createdAt && typeof createdAt.toDate === 'function') {
+          createdAt = createdAt.toDate();
+        }
+
+        return {
+          id: doc.id,
+          ...data,
+          createdAt
+        } as Appointment;
+      });
     } catch (error) {
       logFirebaseError('Ошибка получения записей на мойку по дате', error);
       return [];
@@ -547,10 +569,21 @@ export const appointmentService = {
 
       const snapshot = await getDocs(q);
 
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Appointment));
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+
+        // Преобразуем Timestamp в Date если необходимо
+        let createdAt = data.createdAt;
+        if (createdAt && typeof createdAt.toDate === 'function') {
+          createdAt = createdAt.toDate();
+        }
+
+        return {
+          id: doc.id,
+          ...data,
+          createdAt
+        } as Appointment;
+      });
     } catch (error) {
       logFirebaseError('Ошибка получения записей на мойку на сегодня и завтра', error);
       return [];

@@ -976,12 +976,23 @@ const RecordsPage: React.FC = () => {
 
                 {selectedAppointment.createdAt && (
                   <div className="text-xs text-muted-foreground border-t border-border pt-4">
-                    Создано: {format(
-                      typeof selectedAppointment.createdAt === 'string'
-                        ? parseISO(selectedAppointment.createdAt)
-                        : selectedAppointment.createdAt,
-                      'dd.MM.yyyy HH:mm'
-                    )}
+                    Создано: {(() => {
+                      try {
+                        const date = typeof selectedAppointment.createdAt === 'string'
+                          ? parseISO(selectedAppointment.createdAt)
+                          : selectedAppointment.createdAt;
+
+                        // Проверяем валидность даты
+                        if (date instanceof Date && isNaN(date.getTime())) {
+                          return 'Неизвестная дата';
+                        }
+
+                        return format(date, 'dd.MM.yyyy HH:mm');
+                      } catch (error) {
+                        console.error('Ошибка форматирования даты:', error);
+                        return 'Неизвестная дата';
+                      }
+                    })()}
                   </div>
                 )}
               </div>
