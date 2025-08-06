@@ -1081,7 +1081,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
         service: prefilledData.service,
         price: 0, // Нужно указать цену
         paymentMethod: { type: 'cash' } as PaymentMethod,
-        employeeIds: shiftEmployeeIds.length > 0 ? shiftEmployeeIds : [] // Используем сотрудников смены для предзаполненных данных
+        employeeIds: [] // Не предзаполняем сотрудников
       };
     }
 
@@ -1091,7 +1091,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
       service: '',
       price: 0,
       paymentMethod: { type: 'cash' } as PaymentMethod,
-      employeeIds: shiftEmployeeIds.length > 0 ? shiftEmployeeIds : [] // Используем сотрудников смены по умолчанию
+      employeeIds: [] // Не предзаполняем сотрудников
     };
   });
 
@@ -1450,7 +1450,8 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                         htmlFor={`employee-${employee.id}`}
                         className={`ml-2 block text-sm ${shiftEmployeeIds.includes(employee.id) ? 'font-medium' : ''}`}
                       >
-                        {employee.name} {shiftEmployeeIds.includes(employee.id) ? '(на смене)' : ''}
+                        {employee.name} {shiftEmployeeIds.includes(employee.id) ?
+                          `(${employeeRoles[employee.id] === 'admin' ? 'Админ' : employeeRoles[employee.id] === 'washer' ? 'Мойщик' : 'на смене'})` : ''}
                       </label>
                     </div>
                   ))
