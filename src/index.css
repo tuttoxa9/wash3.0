@@ -395,3 +395,28 @@ h1, h2, h3, h4, h5, h6 {
     @apply min-h-[44px] min-w-[44px];
   }
 }
+
+/* Устранение пробелов в мобильной шапке */
+@media (max-width: 768px) {
+  html, body {
+    @apply m-0 p-0;
+    height: 100vh;
+    height: 100dvh; /* Динамическая высота viewport для мобильных */
+  }
+
+  #root {
+    height: 100vh;
+    height: 100dvh;
+    @apply overflow-hidden;
+  }
+
+  /* Убираем скролл на основном контейнере на мобильных */
+  .mobile-main-content {
+    @apply h-full overflow-auto;
+  }
+
+  /* Поддержка safe-area на iOS */
+  .mobile-header {
+    padding-top: env(safe-area-inset-top);
+  }
+}
