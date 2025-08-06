@@ -68,7 +68,7 @@ export interface Appointment {
 }
 
 // Тип для метода расчета зарплаты
-export type SalaryCalculationMethod = 'percentage' | 'fixedPlusPercentage' | 'minimumWithPercentage' | 'none';
+export type SalaryCalculationMethod = 'minimumWithPercentage' | 'none';
 
 // Тип для роли сотрудника
 export type EmployeeRole = 'washer' | 'admin';

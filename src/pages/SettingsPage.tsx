@@ -637,11 +637,11 @@ const SettingsPage: React.FC = () => {
           }
         });
 
-        // Сбрасываем настройки на дефолтные значения (не выбрано)
+        // Сбрасываем настройки на дефолтные значения (минималка + %)
         dispatch({
           type: 'SET_SALARY_CALCULATION_METHOD',
           payload: {
-            method: 'none',
+            method: 'minimumWithPercentage',
             date: format(new Date(), 'yyyy-MM-dd')
           }
         });
@@ -1004,11 +1004,7 @@ const SalaryCalculationSettings: React.FC = () => {
           }
         });
 
-        const methodDescription = method === 'percentage'
-          ? '27% от общей выручки'
-          : method === 'fixedPlusPercentage'
-          ? '60 руб. + 10% от общей выручки'
-          : 'Минимальная оплата + процент';
+        const methodDescription = 'Минимальная оплата + процент';
 
         toast.success(`Метод расчета зарплаты изменен на: ${methodDescription}`);
       } else {
@@ -1065,59 +1061,7 @@ const SalaryCalculationSettings: React.FC = () => {
       )}
 
       <div className="flex flex-col gap-3 mb-2">
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          onClick={() => handleSalaryMethodChange('percentage')}
-          className={`p-3 border rounded-lg flex items-start transition-colors ${
-            state.salaryCalculationMethod === 'percentage'
-              ? 'border-primary bg-primary/5'
-              : 'border-border hover:bg-secondary/10'
-          }`}
-          disabled={loading}
-        >
-          <div className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center ${
-            state.salaryCalculationMethod === 'percentage'
-              ? 'border-primary' : 'border-input'
-          }`}>
-            {state.salaryCalculationMethod === 'percentage' && (
-              <div className="w-3 h-3 rounded-full bg-primary"></div>
-            )}
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm">27% от общей выручки</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Заработная плата рассчитывается как 27% от общей выручки за день и делится поровну между сотрудниками в смену.
-            </p>
-          </div>
-        </motion.button>
 
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          onClick={() => handleSalaryMethodChange('fixedPlusPercentage')}
-          className={`p-3 border rounded-lg flex items-start transition-colors ${
-            state.salaryCalculationMethod === 'fixedPlusPercentage'
-              ? 'border-primary bg-primary/5'
-              : 'border-border hover:bg-secondary/10'
-          }`}
-          disabled={loading}
-        >
-          <div className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center ${
-            state.salaryCalculationMethod === 'fixedPlusPercentage'
-              ? 'border-primary' : 'border-input'
-          }`}>
-            {state.salaryCalculationMethod === 'fixedPlusPercentage' && (
-              <div className="w-3 h-3 rounded-full bg-primary"></div>
-            )}
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm">60 руб. + 10% от общей выручки</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Фиксированная ставка 60 руб. плюс 10% от общей выручки за день, сумма делится поровну между сотрудниками в смену.
-            </p>
-          </div>
-        </motion.button>
 
         <motion.button
           whileHover={{ scale: 1.01 }}
@@ -1284,10 +1228,6 @@ const SalaryCalculationSettings: React.FC = () => {
           <span className="font-medium">Текущий метод:</span> {
             state.salaryCalculationMethod === 'none'
               ? 'Не выбран'
-              : state.salaryCalculationMethod === 'percentage'
-              ? '27% от общей выручки'
-              : state.salaryCalculationMethod === 'fixedPlusPercentage'
-              ? '60 руб. + 10% от общей выручки'
               : 'Минимальная оплата + процент'
           }
         </p>

@@ -917,12 +917,7 @@ const HomePage: React.FC = () => {
                     <span className="w-5 h-5 flex items-center justify-center rounded-full border border-primary text-primary text-xs cursor-help">i</span>
                     <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-popover text-popover-foreground rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                       <p className="text-sm">
-                        {state.salaryCalculationMethod === 'percentage' ?
-                          'Расчет ЗП: 27% от общей выручки, делится поровну между сотрудниками' :
-                          state.salaryCalculationMethod === 'fixedPlusPercentage' ?
-                          'Расчет ЗП: 60р + 10% от общей выручки для каждого сотрудника' :
-                          'Расчет ЗП: минимальная оплата + процент с учетом ролей'
-                        }
+                        Расчет ЗП: минимальная оплата + процент с учетом ролей
                       </p>
                       <div className="absolute top-full left-5 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-popover"></div>
                     </div>
@@ -930,11 +925,10 @@ const HomePage: React.FC = () => {
                 </h3>
                 <div className="space-y-2">
                   {(() => {
-                    // Определяем метод расчета в зависимости от даты
-                    const shouldUseCurrentMethod = selectedDate >= state.salaryCalculationDate;
-                    const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+                    // Всегда используем минимальную оплату + процент
+                    const methodToUse = state.salaryCalculationMethod;
 
-                    // Используем новый компонент расчёта зарплаты только для minimumWithPercentage
+                    // Используем новый компонент расчёта зарплаты
                     if (methodToUse === 'minimumWithPercentage' && currentReport?.records) {
                       const salaryCalculator = createSalaryCalculator(
                         state.minimumPaymentSettings,
@@ -973,65 +967,22 @@ const HomePage: React.FC = () => {
                       );
                     }
 
-                    // Старая логика для других методов расчёта
-                    const calculateSalary = (date: string, revenue: number, empCount: number) => {
-                      let totalAmount = 0;
-                      let perEmployee = 0;
-                      let description = '';
-                      let formula = '';
-
-                      if (methodToUse === 'percentage') {
-                        // 27% от общей выручки, делится поровну
-                        totalAmount = revenue * 0.27;
-                        perEmployee = empCount > 0 ? totalAmount / empCount : 0;
-                        description = '27% от общей выручки';
-                        formula = `(${revenue.toFixed(2)} BYN × 27%) ÷ ${empCount} сотрудников`;
-                      } else if (methodToUse === 'fixedPlusPercentage') {
-                        // 60 руб + 10% от общей выручки для каждого сотрудника
-                        perEmployee = 60 + revenue * 0.1;
-                        totalAmount = perEmployee * empCount;
-                        description = '60р + 10% от общей выручки';
-                        formula = `60 BYN + (${revenue.toFixed(2)} BYN × 10%)`;
-                      }
-
-                      return { totalAmount, perEmployee, description, formula };
-                    };
-
-                    // Используем старую функцию для расчета
-                    const totalRevenue = currentReport.totalCash + currentReport.totalNonCash + (currentReport.records?.reduce((sum, record) => {
-                      return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
-                    }, 0) || 0);
-                    const employeeCount = workingEmployees.length;
-
-                    // Получаем расчет зарплаты с учетом метода
-                    const salaryCalculation = calculateSalary(
-                      selectedDate,
-                      totalRevenue,
-                      employeeCount
-                    );
-
-                    return (
-                      <>
+                    // Fallback если нет записей или метод не выбран
+                    if (methodToUse === 'none') {
+                      return (
                         <div className="flex justify-between">
-                          <span>Общая сумма - </span>
-                          <span className="font-medium">{salaryCalculation.totalAmount.toFixed(2)} BYN</span>
+                          <span>Выберите метод расчёта в настройках</span>
+                          <span className="font-medium">0.00 BYN</span>
                         </div>
-                        {workingEmployees && workingEmployees.length > 0 && (
-                          <div className="border-t border-border mt-4 pt-4">
-                            <div>
-                              <p className="text-sm text-muted-foreground mb-2">
-                                На каждого сотрудника:
-                              </p>
-                              <div className="font-medium">
-                                {salaryCalculation.perEmployee.toFixed(2)} BYN
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-2 italic">
-                                {salaryCalculation.formula}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </>
+                      );
+                    }
+
+                    // Fallback - показываем что нет данных для расчёта
+                    return (
+                      <div className="flex justify-between">
+                        <span>Нет данных для расчёта</span>
+                        <span className="font-medium">0.00 BYN</span>
+                      </div>
                     );
                   })()}
                 </div>

@@ -730,9 +730,8 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     // Определяем роль сотрудника на дату записи
     const employeeRole = dailyRoles[recordDate]?.[employeeId] || 'washer';
 
-    // Определяем метод расчета зарплаты
-    const shouldUseCurrentMethod = recordDate >= state.salaryCalculationDate;
-    const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+    // Всегда используем выбранный метод (минималка + %)
+    const methodToUse = state.salaryCalculationMethod;
 
     if (methodToUse === 'minimumWithPercentage') {
       if (employeeRole === 'washer') {
@@ -749,19 +748,10 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
         }
         return 0; // Админ не участвовал в мойке этого авто
       }
-    } else if (methodToUse === 'percentage') {
-      // 27% от общей выручки - но от конкретного авто считаем пропорционально
-      const employeeShare = record.price / record.employeeIds.length;
-      return employeeShare * 0.27;
-    } else if (methodToUse === 'fixedPlusPercentage') {
-      // 10% от выручки за авто для сотрудника
-      const employeeShare = record.price / record.employeeIds.length;
-      return employeeShare * 0.1;
     }
 
-    // Fallback
-    const employeeShare = record.price / record.employeeIds.length;
-    return employeeShare * 0.27;
+    // Если метод не выбран или неизвестен, возвращаем 0
+    return 0;
   };
 
   // Группировка записей по дням

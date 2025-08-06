@@ -12,7 +12,7 @@ const initialState: AppState = {
   appointments: [],
   currentDate: format(new Date(), 'yyyy-MM-dd'),
   theme: 'light',
-  salaryCalculationMethod: 'none', // По умолчанию - не выбрано
+  salaryCalculationMethod: 'minimumWithPercentage', // Единственный доступный метод
   salaryCalculationDate: format(new Date(), 'yyyy-MM-dd'), // Текущая дата как дата изменения метода
   minimumPaymentSettings: {
     minimumPaymentWasher: 0,
@@ -182,7 +182,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const initialStateWithSaved = {
     ...initialState,
     theme: savedTheme || initialState.theme,
-    salaryCalculationMethod: savedSalaryMethod || initialState.salaryCalculationMethod,
+    salaryCalculationMethod: 'minimumWithPercentage', // Принудительно устанавливаем единственный метод
     salaryCalculationDate: savedSalaryDate || initialState.salaryCalculationDate,
     minimumPaymentSettings: parsedMinimumPaymentSettings
   };
@@ -264,36 +264,26 @@ export function useAppContext() {
 export function useSalaryCalculation(date: string, totalRevenue: number, employeeCount = 1) {
   const { state } = useAppContext();
 
-  // Определяем метод расчета в зависимости от даты
-  // Если дата до изменения метода - используем percentage,
-  // иначе используем текущий выбранный метод
-  const shouldUseCurrentMethod = date >= state.salaryCalculationDate;
-  const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+  // Теперь всегда используем выбранный метод (минималка + %)
+  const methodToUse = state.salaryCalculationMethod;
 
-  // Расчет зарплаты
-  if (methodToUse === 'percentage') {
-    // 27% от общей выручки делится между сотрудниками
-    const totalSalary = totalRevenue * 0.27;
-    const perEmployeeSalary = employeeCount > 0 ? totalSalary / employeeCount : totalSalary;
-
+  // Если метод не выбран, возвращаем нулевые значения
+  if (methodToUse === 'none') {
     return {
-      method: 'percentage' as SalaryCalculationMethod,
-      description: '27% от общей выручки',
-      totalAmount: totalSalary,
-      perEmployee: perEmployeeSalary,
-      formula: `(${totalRevenue.toFixed(2)} × 0.27) ÷ ${employeeCount} = ${perEmployeeSalary.toFixed(2)}`
-    };
-  } else {
-    // 60 руб + 10% от общей выручки для КАЖДОГО сотрудника (не делится)
-    const perEmployeeSalary = 60 + (totalRevenue * 0.1);
-    const totalSalary = perEmployeeSalary * employeeCount;
-
-    return {
-      method: 'fixedPlusPercentage' as SalaryCalculationMethod,
-      description: '60 руб. + 10% от общей выручки',
-      totalAmount: totalSalary,
-      perEmployee: perEmployeeSalary,
-      formula: `60 + (${totalRevenue.toFixed(2)} × 0.1) = ${perEmployeeSalary.toFixed(2)}`
+      method: 'none' as SalaryCalculationMethod,
+      description: 'Метод не выбран',
+      totalAmount: 0,
+      perEmployee: 0,
+      formula: 'Выберите метод расчёта в настройках'
     };
   }
+
+  // Всегда используем минимальную оплату + процент
+  return {
+    method: 'minimumWithPercentage' as SalaryCalculationMethod,
+    description: 'Минимальная оплата + процент',
+    totalAmount: 0, // Будет рассчитано индивидуально
+    perEmployee: 0, // Будет рассчитано индивидуально
+    formula: 'Расчёт по ролям и индивидуальным показателям'
+  };
 }

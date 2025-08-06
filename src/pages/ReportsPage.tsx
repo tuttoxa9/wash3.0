@@ -138,14 +138,10 @@ const ReportsPage: React.FC = () => {
     loadRecords();
   }, [startDate, endDate]);
 
-  // Функция для расчета зарплаты
+  // Функция для расчета зарплаты - теперь всегда используем минималку + %
   const getSalaryAmount = (totalRevenue: number, employeeCount = 1, employeeRole: 'admin' | 'washer' | null = null, date?: string) => {
-    // Определяем дату для периода отчета (используем начальную дату периода)
-    const reportDate = date || startDate.toISOString().split('T')[0];
-
-    // Получаем метод расчета зарплаты для этой даты
-    const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
-    const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+    // Всегда используем выбранный метод (минималка + %)
+    const methodToUse = state.salaryCalculationMethod;
 
     // Если метод не выбран, возвращаем 0
     if (methodToUse === 'none') {
@@ -155,67 +151,44 @@ const ReportsPage: React.FC = () => {
       };
     }
 
-    if (methodToUse === 'percentage') {
-      // 27% от общей выручки - делится между сотрудниками
-      const totalSalary = totalRevenue * 0.27;
-      return {
-        totalAmount: totalSalary,
-        perEmployee: employeeCount > 0 ? totalSalary / employeeCount : totalSalary
-      };
-    } else if (methodToUse === 'fixedPlusPercentage') {
-      // 60 руб + 10% от общей выручки для КАЖДОГО сотрудника
-      const perEmployee = 60 + (totalRevenue * 0.1);
-      return {
-        totalAmount: perEmployee * employeeCount,
-        perEmployee
-      };
-    } else if (methodToUse === 'minimumWithPercentage') {
-      // Минимальная оплата + процент с учетом ролей
-      if (employeeRole) {
-        if (employeeRole === 'washer') {
-          // Базовый расчёт для мойщика
-          const basePercentage = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-          const salary = Math.max(basePercentage, state.minimumPaymentSettings.minimumPaymentWasher);
-          return {
-            totalAmount: salary * employeeCount,
-            perEmployee: salary
-          };
-        } else if (employeeRole === 'admin') {
-          // Специальный расчёт для админа с учетом настроек
-          let adminEarnings = 0;
+    // Минимальная оплата + процент с учетом ролей
+    if (employeeRole) {
+      if (employeeRole === 'washer') {
+        // Базовый расчёт для мойщика
+        const basePercentage = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+        const salary = Math.max(basePercentage, state.minimumPaymentSettings.minimumPaymentWasher);
+        return {
+          totalAmount: salary * employeeCount,
+          perEmployee: salary
+        };
+      } else if (employeeRole === 'admin') {
+        // Специальный расчёт для админа с учетом настроек
+        let adminEarnings = 0;
 
-          // Процент от всей выручки (наличные + безнал + организации) - всегда получает
-          const cashBonus = totalRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
+        // Процент от всей выручки (наличные + безнал + организации) - всегда получает
+        const cashBonus = totalRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
 
-          // Процент от вымытых машин - только если участвовал в мойке
-          // Здесь нужен employee ID, но его нет в параметрах функции
-          // Эта логика будет обрабатываться в вызывающем коде
-          const carWashBonus = 0; // Будет рассчитано отдельно для каждого админа
+        // Процент от вымытых машин - только если участвовал в мойке
+        // Здесь нужен employee ID, но его нет в параметрах функции
+        // Эта логика будет обрабатываться в вызывающем коде
+        const carWashBonus = 0; // Будет рассчитано отдельно для каждого админа
 
-          adminEarnings = cashBonus + carWashBonus;
-          const salary = Math.max(adminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
+        adminEarnings = cashBonus + carWashBonus;
+        const salary = Math.max(adminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
 
-          return {
-            totalAmount: salary * employeeCount,
-            perEmployee: salary
-          };
-        }
+        return {
+          totalAmount: salary * employeeCount,
+          perEmployee: salary
+        };
       }
-
-      // Fallback если роль не определена - используем как мойщик
-      const earnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-      const salary = Math.max(earnings, state.minimumPaymentSettings.minimumPaymentWasher);
-      return {
-        totalAmount: salary * employeeCount,
-        perEmployee: salary
-      };
     }
 
-    // Fallback на старый метод
-    const totalSalary = totalRevenue * 0.27;
+    // Fallback если роль не определена - используем как мойщик
+    const earnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
+    const salary = Math.max(earnings, state.minimumPaymentSettings.minimumPaymentWasher);
     return {
-      totalAmount: totalSalary,
-      perEmployee: employeeCount > 0 ? totalSalary / employeeCount : totalSalary
+      totalAmount: salary * employeeCount,
+      perEmployee: salary
     };
   };
 
@@ -342,25 +315,13 @@ const ReportsPage: React.FC = () => {
 
       // Calculate salary for each employee with daily roles
       const reportDate = startDate.toISOString().split('T')[0];
-      const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
-      const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+      // Всегда используем выбранный метод (минималка + %)
+      const methodToUse = state.salaryCalculationMethod;
 
       // Если метод не выбран, устанавливаем зарплату в 0 для всех
       if (methodToUse === 'none') {
         results.forEach(r => {
           r.calculatedEarnings = 0;
-        });
-      } else if (methodToUse === 'percentage') {
-        // For percentage method, divide total salary equally
-        const salaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, results.length);
-        results.forEach(r => {
-          r.calculatedEarnings = salaryInfo.perEmployee;
-        });
-      } else if (methodToUse === 'fixedPlusPercentage') {
-        // For fixed + percentage method, calculate for each employee
-        results.forEach(r => {
-          const indivSalaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, 1, 'washer', reportDate);
-          r.calculatedEarnings = indivSalaryInfo.perEmployee;
         });
       } else if (methodToUse === 'minimumWithPercentage') {
         // Используем новый компонент расчёта зарплаты
@@ -400,12 +361,6 @@ const ReportsPage: React.FC = () => {
           if (salaryResult) {
             r.calculatedEarnings = salaryResult.calculatedSalary;
           }
-        });
-      } else {
-        // Fallback to percentage method
-        const salaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, results.length);
-        results.forEach(r => {
-          r.calculatedEarnings = salaryInfo.perEmployee;
         });
       }
 
@@ -707,9 +662,8 @@ const ReportsPage: React.FC = () => {
                     employeeRole = dailyRoles[reportDate][report.employeeId] as 'admin' | 'washer' || 'washer';
                   }
 
-                  // Определяем метод расчета зарплаты для этой даты
-                  const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
-                  const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+                  // Всегда используем выбранный метод (минималка + %)
+                  const methodToUse = state.salaryCalculationMethod;
 
                   // Используем уже рассчитанное значение calculatedEarnings из useEffect
                   let perEmployee = report.calculatedEarnings;
