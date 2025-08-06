@@ -1437,8 +1437,17 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
               </label>
               <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-input rounded-xl">
                 {state.employees.length > 0 ? (
-                  state.employees.map(employee => (
-                    <div key={employee.id} className="flex items-center">
+                  // Сортируем сотрудников: сначала те, кто на смене, потом остальные
+                  [...state.employees]
+                    .sort((a, b) => {
+                      const aOnShift = shiftEmployeeIds.includes(a.id);
+                      const bOnShift = shiftEmployeeIds.includes(b.id);
+                      if (aOnShift && !bOnShift) return -1;
+                      if (!aOnShift && bOnShift) return 1;
+                      return 0;
+                    })
+                    .map(employee => (
+                    <div key={employee.id} className="flex items-center gap-2">
                       <input
                         type="checkbox"
                         id={`employee-${employee.id}`}
@@ -1450,10 +1459,22 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                       />
                       <label
                         htmlFor={`employee-${employee.id}`}
-                        className={`ml-2 block text-sm ${shiftEmployeeIds.includes(employee.id) ? 'font-medium' : ''}`}
+                        className={`flex-1 flex items-center gap-2 text-sm ${shiftEmployeeIds.includes(employee.id) ? 'font-medium' : ''}`}
                       >
-                        {employee.name} {shiftEmployeeIds.includes(employee.id) ?
-                          `(${employeeRoles[employee.id] === 'admin' ? 'Админ' : employeeRoles[employee.id] === 'washer' ? 'Мойщик' : 'на смене'})` : ''}
+                        <span>{employee.name}</span>
+                        {shiftEmployeeIds.includes(employee.id) && (
+                          <span
+                            className={`px-2 py-1 rounded text-xs text-white ${
+                              employeeRoles[employee.id] === 'admin'
+                                ? 'bg-green-500'
+                                : employeeRoles[employee.id] === 'washer'
+                                ? 'bg-blue-500'
+                                : 'bg-gray-500'
+                            }`}
+                          >
+                            {employeeRoles[employee.id] === 'admin' ? 'Админ' : employeeRoles[employee.id] === 'washer' ? 'Мойщик' : 'на смене'}
+                          </span>
+                        )}
                       </label>
                     </div>
                   ))
