@@ -331,11 +331,19 @@ const ReportsPage: React.FC = () => {
         results.forEach(r => {
           let employeeRole: 'admin' | 'washer' = 'washer';
 
-          // Проверяем роль в dailyRoles для начальной даты периода или глобально
-          if (dailyRoles[reportDate] && dailyRoles[reportDate][r.employeeId]) {
-            employeeRole = dailyRoles[reportDate][r.employeeId] as 'admin' | 'washer';
-          } else {
-            // Если роли для даты нет, пытаемся получить из глобального состояния сотрудников
+          // Проверяем роль в dailyRoles для каждой даты в периоде
+          let roleFound = false;
+
+          // Проверяем все даты в диапазоне
+          Object.keys(dailyRoles).forEach(date => {
+            if (dailyRoles[date] && dailyRoles[date][r.employeeId]) {
+              employeeRole = dailyRoles[date][r.employeeId] as 'admin' | 'washer';
+              roleFound = true;
+            }
+          });
+
+          // Если роль не найдена в dailyRoles, проверяем глобальное состояние сотрудников
+          if (!roleFound) {
             const employee = state.employees.find(emp => emp.id === r.employeeId);
             if (employee && employee.role) {
               employeeRole = employee.role;
