@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Calendar as CalendarIcon, X, Filter, Building } from 'lucide-react';
 import { carWashService, dailyRolesService } from '@/lib/services/firebaseService';
 import type { CarWashRecord, Employee } from '@/lib/types';
+import { createSalaryCalculator } from '@/components/SalaryCalculator';
 import { useToast } from '@/lib/hooks/useToast';
 import OrganizationsReport from '@/components/OrganizationsReport';
 import EmployeeRecordsModal from '@/components/EmployeeRecordsModal';
@@ -351,9 +352,11 @@ const ReportsPage: React.FC = () => {
           r.calculatedEarnings = indivSalaryInfo.perEmployee;
         });
       } else if (methodToUse === 'minimumWithPercentage') {
-        // Расчёт с учётом ролей админ/мойщик
+        // Используем новый компонент расчёта зарплаты
+        const employeeRolesForCalc: Record<string, 'admin' | 'washer'> = {};
+
+        // Определяем роли для всех сотрудников
         results.forEach(r => {
-          // Определяем роль сотрудника
           let employeeRole: 'admin' | 'washer' = 'washer';
 
           // Проверяем роль в dailyRoles для текущей даты
@@ -367,46 +370,24 @@ const ReportsPage: React.FC = () => {
             }
           }
 
-          if (employeeRole === 'admin') {
-            // РАСЧЁТ ДЛЯ АДМИНА
-            const totalRevenueAll = totalCashAll + totalNonCashAll + totalOrganizationsAll;
+          employeeRolesForCalc[r.employeeId] = employeeRole;
+        });
 
-            // Количество админов для деления базового процента
-            const adminCount = results.filter(res => {
-              let resRole: 'admin' | 'washer' = 'washer';
-              if (periodType === 'day' && dailyRoles[reportDate] && dailyRoles[reportDate][res.employeeId]) {
-                resRole = dailyRoles[reportDate][res.employeeId] as 'admin' | 'washer';
-              } else {
-                const resEmployee = state.employees.find(emp => emp.id === res.employeeId);
-                if (resEmployee && resEmployee.role) {
-                  resRole = resEmployee.role;
-                }
-              }
-              return resRole === 'admin';
-            }).length;
+        // Создаём калькулятор зарплаты и получаем результаты
+        const salaryCalculator = createSalaryCalculator(
+          state.minimumPaymentSettings,
+          filteredRecords,
+          employeeRolesForCalc,
+          state.employees
+        );
 
-            // 1. Базовый процент от общей выручки (делится между всеми админами)
-            const baseCashBonus = adminCount > 0 ?
-              (totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100)) / adminCount :
-              totalRevenueAll * (state.minimumPaymentSettings.adminCashPercentage / 100);
+        const salaryResults = salaryCalculator.calculateSalaries();
 
-            // 2. Процент от машин, которые лично помыл этот админ
-            let carWashBonus = 0;
-            records.forEach(record => {
-              if (record.employeeIds.includes(r.employeeId)) {
-                const adminShare = record.price / record.employeeIds.length;
-                carWashBonus += adminShare * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
-              }
-            });
-
-            const totalAdminEarnings = baseCashBonus + carWashBonus;
-            r.calculatedEarnings = Math.max(totalAdminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
-
-          } else {
-            // РАСЧЁТ ДЛЯ МОЙЩИКА
-            const washerPersonalRevenue = r.totalCash + r.totalNonCash + r.totalOrganizations;
-            const washerEarnings = washerPersonalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-            r.calculatedEarnings = Math.max(washerEarnings, state.minimumPaymentSettings.minimumPaymentWasher);
+        // Обновляем результаты с рассчитанными зарплатами
+        results.forEach(r => {
+          const salaryResult = salaryResults.find(sr => sr.employeeId === r.employeeId);
+          if (salaryResult) {
+            r.calculatedEarnings = salaryResult.calculatedSalary;
           }
         });
       } else {
