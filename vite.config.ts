@@ -31,6 +31,17 @@ export default defineConfig({
       }
     }
   },
+  // PWA и кеширование настройки
+  server: {
+    headers: {
+      'Cache-Control': 'no-cache',
+    },
+  },
+  preview: {
+    headers: {
+      'Cache-Control': 'no-cache',
+    },
+  },
   // Add static site export option
   base: './', // This setting is useful for static site deployments
 });

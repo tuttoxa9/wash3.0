@@ -98,7 +98,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className={`w-full max-w-4xl max-h-[95vh] rounded-2xl shadow-2xl overflow-hidden ${
+          className={`w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg overflow-hidden ${
             state.theme === 'dark'
               ? 'bg-slate-900 border border-slate-700'
               : state.theme === 'black'
@@ -107,173 +107,187 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Заголовок */}
-          <div className={`p-4 border-b ${
+          {/* Компактный заголовок */}
+          <div className={`p-3 border-b flex items-center justify-between ${
             state.theme === 'dark'
-              ? 'border-slate-700 bg-slate-800/50'
+              ? 'border-slate-700'
               : state.theme === 'black'
-              ? 'border-gray-800 bg-gray-900/50'
-              : 'border-gray-200 bg-gray-50/50'
+              ? 'border-gray-800'
+              : 'border-gray-200'
           }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={onClose}
-                  className={`p-2 rounded-lg transition-colors ${
-                    state.theme === 'dark'
-                      ? 'hover:bg-slate-700 text-gray-300'
-                      : state.theme === 'black'
-                      ? 'hover:bg-gray-800 text-gray-400'
-                      : 'hover:bg-gray-100 text-gray-500'
-                  }`}
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </motion.button>
-                <div className={`p-2 rounded-lg border ${getPaymentMethodColor(paymentMethod)}`}>
-                  <CreditCard className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className={`text-xl font-bold ${
-                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    {getPaymentMethodLabel(paymentMethod)} • {employee.name}
-                  </h2>
-                  <p className={`text-sm ${
-                    state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    {periodLabel} • {records.length} записей
-                  </p>
-                </div>
-              </div>
+            <div className="flex items-center gap-3">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onClose}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`p-1 rounded-md transition-colors ${
                   state.theme === 'dark'
-                    ? 'hover:bg-slate-700 text-gray-300'
+                    ? 'hover:bg-slate-700 text-gray-400'
                     : state.theme === 'black'
-                    ? 'hover:bg-gray-800 text-gray-400'
+                    ? 'hover:bg-gray-800 text-gray-500'
                     : 'hover:bg-gray-100 text-gray-500'
                 }`}
               >
-                <X className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </motion.button>
+              <div>
+                <h2 className={`text-lg font-semibold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  {getPaymentMethodLabel(paymentMethod)}: {employee.name}
+                </h2>
+                <p className={`text-sm ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  {periodLabel}
+                </p>
+              </div>
             </div>
+            <button
+              onClick={onClose}
+              className={`p-1 rounded-md transition-colors ${
+                state.theme === 'dark'
+                  ? 'hover:bg-slate-700 text-gray-400'
+                  : state.theme === 'black'
+                  ? 'hover:bg-gray-800 text-gray-500'
+                  : 'hover:bg-gray-100 text-gray-500'
+              }`}
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
-          {/* Статистика по способу оплаты */}
-          <div className={`p-4 border-b ${
-            state.theme === 'dark'
-              ? 'border-slate-700 bg-slate-800/20'
-              : state.theme === 'black'
-              ? 'border-gray-800 bg-gray-900/20'
-              : 'border-gray-200 bg-gray-50/20'
-          }`}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className={`text-center p-3 rounded-lg border ${getPaymentMethodColor(paymentMethod)}`}>
-                <Car className="w-5 h-5 mx-auto mb-1" />
-                <div className="text-xl font-bold">
+          {/* Компактная статистика */}
+          <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-3">
+            {/* Основные показатели - компактные */}
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              <div className={`p-2 rounded-md text-center ${
+                state.theme === 'dark'
+                  ? 'bg-slate-800'
+                  : state.theme === 'black'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-50'
+              }`}>
+                <div className={`text-lg font-bold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
                   {records.length}
                 </div>
-                <div className="text-xs">
-                  Записей
+                <div className={`text-xs ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  Машин
                 </div>
               </div>
 
-              <div className={`text-center p-3 rounded-lg border ${getPaymentMethodColor(paymentMethod)}`}>
-                <TrendingUp className="w-5 h-5 mx-auto mb-1" />
-                <div className="text-xl font-bold">
+              <div className={`p-2 rounded-md text-center ${
+                state.theme === 'dark'
+                  ? 'bg-slate-800'
+                  : state.theme === 'black'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-50'
+              }`}>
+                <div className={`text-lg font-bold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
                   {records.reduce((sum, record) => sum + (record.price / record.employeeIds.length), 0).toFixed(0)}
                 </div>
-                <div className="text-xs">
-                  Выручка BYN
+                <div className={`text-xs ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  Заработок
                 </div>
               </div>
 
-              <div className={`text-center p-3 rounded-lg border ${getPaymentMethodColor(paymentMethod)}`}>
-                <DollarSign className="w-5 h-5 mx-auto mb-1" />
-                <div className="text-xl font-bold">
-                  {records.length > 0 ? (records.reduce((sum, record) => sum + (record.price / record.employeeIds.length), 0) / records.length).toFixed(0) : '0'}
-                </div>
-                <div className="text-xs">
-                  Среднее BYN
-                </div>
-              </div>
-
-              <div className={`text-center p-3 rounded-lg border ${getPaymentMethodColor(paymentMethod)}`}>
-                <Target className="w-5 h-5 mx-auto mb-1" />
-                <div className="text-xl font-bold">
+              <div className={`p-2 rounded-md text-center ${
+                state.theme === 'dark'
+                  ? 'bg-slate-800'
+                  : state.theme === 'black'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-50'
+              }`}>
+                <div className={`text-lg font-bold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
                   {new Set(records.map(r => r.service)).size}
                 </div>
-                <div className="text-xs">
+                <div className={`text-xs ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
                   Услуг
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Список записей */}
-          <div className="overflow-y-auto max-h-[calc(95vh-220px)] p-4">
-            <div className="space-y-3">
+              <div className={`p-2 rounded-md text-center ${
+                state.theme === 'dark'
+                  ? 'bg-slate-800'
+                  : state.theme === 'black'
+                  ? 'bg-gray-900'
+                  : 'bg-gray-50'
+              }`}>
+                <div className={`text-lg font-bold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  {records.length > 0 ? (records.reduce((sum, record) => sum + (record.price / record.employeeIds.length), 0) / records.length).toFixed(0) : '0'}
+                </div>
+                <div className={`text-xs ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  Среднее
+                </div>
+              </div>
+            </div>
+
+            {/* Список записей */}
+            <div className="space-y-2">
               {records.map(record => (
                 <div
                   key={record.id}
-                  className={`p-4 rounded-lg border ${
+                  className={`p-2 rounded-md ${
                     state.theme === 'dark'
-                      ? 'border-slate-700 bg-slate-800/30'
+                      ? 'bg-slate-800'
                       : state.theme === 'black'
-                      ? 'border-gray-800 bg-gray-900/30'
-                      : 'border-gray-200 bg-gray-50/30'
+                      ? 'bg-gray-900'
+                      : 'bg-gray-50'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="w-4 h-4 text-blue-500" />
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 text-xs mb-1">
                         <span className={`${
-                          state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-600'
+                          state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
                         }`}>
-                          {format(parseISO(typeof record.date === 'string' ? record.date : format(record.date, 'yyyy-MM-dd')), 'dd MMMM yyyy', { locale: ru })}
+                          {format(parseISO(typeof record.date === 'string' ? record.date : format(record.date, 'yyyy-MM-dd')), 'dd.MM.yyyy')}
                         </span>
                         {record.time && (
-                          <>
-                            <Clock className="w-4 h-4 text-blue-500 ml-2" />
-                            <span className={`${
-                              state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-600'
-                            }`}>
-                              {record.time}
-                            </span>
-                          </>
+                          <span className={`${
+                            state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                          }`}>
+                            {record.time}
+                          </span>
                         )}
                       </div>
-
-                      <div className={`font-medium ${
+                      <div className={`font-medium text-sm truncate ${
                         state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                       }`}>
                         {record.carInfo}
                       </div>
-
-                      <div className={`text-sm ${
+                      <div className={`text-xs truncate ${
                         state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
                       }`}>
                         {record.service}
                       </div>
-
                       {record.paymentMethod.organizationName && (
-                        <div className={`text-sm ${
+                        <div className={`text-xs truncate ${
                           state.theme === 'dark' ? 'text-purple-300' : state.theme === 'black' ? 'text-purple-400' : 'text-purple-600'
                         }`}>
                           {record.paymentMethod.organizationName}
                         </div>
                       )}
                     </div>
-
-                    <div className="text-right space-y-1">
-                      <div className="text-lg font-bold text-green-500">
-                        {record.price.toFixed(2)} BYN
+                    <div className="text-right ml-2">
+                      <div className="text-sm font-bold text-green-500">
+                        {record.price.toFixed(2)}
                       </div>
                       <div className={`text-xs ${
                         state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
@@ -890,7 +904,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className={`w-full max-w-4xl max-h-[95vh] rounded-2xl shadow-2xl overflow-hidden ${
+            className={`w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg overflow-hidden ${
               state.theme === 'dark'
                 ? 'bg-slate-900 border border-slate-700'
                 : state.theme === 'black'
@@ -900,172 +914,138 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Компактный заголовок */}
-            <div className={`p-4 border-b ${
+            <div className={`p-3 border-b flex items-center justify-between ${
               state.theme === 'dark'
-                ? 'border-slate-700 bg-slate-800/30'
+                ? 'border-slate-700'
                 : state.theme === 'black'
-                ? 'border-gray-800 bg-gray-900/30'
-                : 'border-gray-200 bg-gray-50/30'
+                ? 'border-gray-800'
+                : 'border-gray-200'
             }`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
+              <div>
+                <h2 className={`text-lg font-semibold ${
+                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  {employee.name}
+                </h2>
+                <p className={`text-sm ${
+                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  {periodLabel}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowAnalytics(true)}
+                  className={`px-2 py-1 rounded-md font-medium text-sm transition-colors ${
                     state.theme === 'dark'
-                      ? 'bg-blue-500/10 text-blue-400'
+                      ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
                       : state.theme === 'black'
-                      ? 'bg-blue-500/20 text-blue-300'
-                      : 'bg-blue-50 text-blue-600'
-                  }`}>
-                    <User className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h2 className={`text-lg font-bold ${
-                      state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                    }`}>
-                      {employee.name}
-                    </h2>
-                    <p className={`text-sm ${
-                      state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
-                      {periodLabel}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowAnalytics(true)}
-                    className={`px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
-                      state.theme === 'dark'
-                        ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
-                        : state.theme === 'black'
-                        ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
-                        : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                    }`}
-                  >
-                    <BarChart3 className="w-4 h-4 mr-2 inline" />
-                    Аналитика
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={onClose}
-                    className={`p-2 rounded-lg transition-colors ${
-                      state.theme === 'dark'
-                        ? 'hover:bg-slate-700 text-gray-300'
-                        : state.theme === 'black'
-                        ? 'hover:bg-gray-800 text-gray-400'
-                        : 'hover:bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    <X className="w-5 h-5" />
-                  </motion.button>
-                </div>
+                      ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+                      : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4 mr-1 inline" />
+                  Аналитика
+                </motion.button>
+                <button
+                  onClick={onClose}
+                  className={`p-1 rounded-md transition-colors ${
+                    state.theme === 'dark'
+                      ? 'hover:bg-slate-700 text-gray-400'
+                      : state.theme === 'black'
+                      ? 'hover:bg-gray-800 text-gray-500'
+                      : 'hover:bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
             {/* Компактная статистика */}
-            <div className={`p-4 border-b ${
-              state.theme === 'dark'
-                ? 'border-slate-700 bg-slate-800/20'
-                : state.theme === 'black'
-                ? 'border-gray-800 bg-gray-900/20'
-                : 'border-gray-200 bg-gray-50/20'
-            }`}>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className={`text-center p-3 rounded-lg border ${
+            <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-3">
+              {/* Основные показатели - компактные */}
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                <div className={`p-2 rounded-md text-center ${
                   state.theme === 'dark'
-                    ? 'bg-slate-800 border-slate-600'
+                    ? 'bg-slate-800'
                     : state.theme === 'black'
-                    ? 'bg-gray-900 border-gray-700'
-                    : 'bg-white border-gray-200'
+                    ? 'bg-gray-900'
+                    : 'bg-gray-50'
                 }`}>
-                  <Car className={`w-5 h-5 mx-auto mb-1 ${
-                    state.theme === 'dark' ? 'text-blue-400' : state.theme === 'black' ? 'text-blue-300' : 'text-blue-600'
-                  }`} />
-                  <div className={`text-xl font-bold ${
-                    state.theme === 'dark' ? 'text-blue-400' : state.theme === 'black' ? 'text-blue-300' : 'text-blue-600'
+                  <div className={`text-lg font-bold ${
+                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                   }`}>
                     {statistics.totalRecords}
                   </div>
                   <div className={`text-xs ${
-                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
+                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
                   }`}>
                     Машин
                   </div>
                 </div>
 
-                <div className={`text-center p-3 rounded-lg border ${
+                <div className={`p-2 rounded-md text-center ${
                   state.theme === 'dark'
-                    ? 'bg-slate-800 border-slate-600'
+                    ? 'bg-slate-800'
                     : state.theme === 'black'
-                    ? 'bg-gray-900 border-gray-700'
-                    : 'bg-white border-gray-200'
+                    ? 'bg-gray-900'
+                    : 'bg-gray-50'
                 }`}>
-                  <TrendingUp className={`w-5 h-5 mx-auto mb-1 ${
-                    state.theme === 'dark' ? 'text-green-400' : state.theme === 'black' ? 'text-green-300' : 'text-green-600'
-                  }`} />
-                  <div className={`text-xl font-bold ${
-                    state.theme === 'dark' ? 'text-green-400' : state.theme === 'black' ? 'text-green-300' : 'text-green-600'
-                  }`}>
-                    {statistics.totalRevenue.toFixed(0)}
-                  </div>
-                  <div className={`text-xs ${
-                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                  }`}>
-                    Выручка BYN
-                  </div>
-                </div>
-
-                <div className={`text-center p-3 rounded-lg border ${
-                  state.theme === 'dark'
-                    ? 'bg-slate-800 border-slate-600'
-                    : state.theme === 'black'
-                    ? 'bg-gray-900 border-gray-700'
-                    : 'bg-white border-gray-200'
-                }`}>
-                  <DollarSign className={`w-5 h-5 mx-auto mb-1 ${
-                    state.theme === 'dark' ? 'text-orange-400' : state.theme === 'black' ? 'text-orange-300' : 'text-orange-600'
-                  }`} />
-                  <div className={`text-xl font-bold ${
-                    state.theme === 'dark' ? 'text-orange-400' : state.theme === 'black' ? 'text-orange-300' : 'text-orange-600'
+                  <div className={`text-lg font-bold ${
+                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                   }`}>
                     {statistics.totalEarnings.toFixed(0)}
                   </div>
                   <div className={`text-xs ${
-                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
+                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
                   }`}>
-                    Заработок BYN
+                    Заработок
                   </div>
                 </div>
 
-                <div className={`text-center p-3 rounded-lg border ${
+                <div className={`p-2 rounded-md text-center ${
                   state.theme === 'dark'
-                    ? 'bg-slate-800 border-slate-600'
+                    ? 'bg-slate-800'
                     : state.theme === 'black'
-                    ? 'bg-gray-900 border-gray-700'
-                    : 'bg-white border-gray-200'
+                    ? 'bg-gray-900'
+                    : 'bg-gray-50'
                 }`}>
-                  <Target className={`w-5 h-5 mx-auto mb-1 ${
-                    state.theme === 'dark' ? 'text-purple-400' : state.theme === 'black' ? 'text-purple-300' : 'text-purple-600'
-                  }`} />
-                  <div className={`text-xl font-bold ${
-                    state.theme === 'dark' ? 'text-purple-400' : state.theme === 'black' ? 'text-purple-300' : 'text-purple-600'
+                  <div className={`text-lg font-bold ${
+                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                   }`}>
-                    {statistics.averageEarnings.toFixed(0)}
+                    {Object.keys(statistics.serviceStats).length}
                   </div>
                   <div className={`text-xs ${
-                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
+                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
                   }`}>
-                    Среднее BYN
+                    Услуг
+                  </div>
+                </div>
+
+                <div className={`p-2 rounded-md text-center ${
+                  state.theme === 'dark'
+                    ? 'bg-slate-800'
+                    : state.theme === 'black'
+                    ? 'bg-gray-900'
+                    : 'bg-gray-50'
+                }`}>
+                  <div className={`text-lg font-bold ${
+                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                  }`}>
+                    {(statistics.totalEarnings / Math.max(statistics.totalRecords, 1)).toFixed(0)}
+                  </div>
+                  <div className={`text-xs ${
+                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                  }`}>
+                    Среднее
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Содержимое с записями */}
-            <div className="flex-1 overflow-y-auto max-h-[calc(95vh-220px)] p-4">
+              {/* Список записей */}
               {statistics.totalRecords === 0 ? (
                 <div className={`text-center py-8 ${
                   state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
@@ -1074,115 +1054,64 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
                   <p>Нет записей за выбранный период</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {sortedDates.map(date => (
-                    <motion.div
-                      key={date}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`border rounded-xl overflow-hidden ${
-                        state.theme === 'dark'
-                          ? 'border-slate-700'
-                          : state.theme === 'black'
-                          ? 'border-gray-800'
-                          : 'border-gray-200'
-                      }`}
-                    >
+                    <div key={date}>
                       {/* Заголовок дня */}
-                      <div className={`p-3 border-b ${
-                        state.theme === 'dark'
-                          ? 'bg-slate-800/50 border-slate-700'
-                          : state.theme === 'black'
-                          ? 'bg-gray-900/50 border-gray-800'
-                          : 'bg-gray-50/50 border-gray-200'
+                      <div className={`text-sm font-medium mb-2 ${
+                        state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                       }`}>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-blue-500" />
-                            <span className={`font-medium ${
-                              state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                            }`}>
-                              {formatDate(date)}
-                            </span>
-                          </div>
-                          <div className={`text-sm ${
-                            state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            {groupedRecords[date].length} записей • {' '}
-                            <span className="font-medium text-green-500">
-                              {groupedRecords[date].reduce((sum, record) => sum + calculateEmployeeEarnings(record, employee.id), 0).toFixed(2)} BYN
-                            </span>
-                          </div>
-                        </div>
+                        {formatDate(date)} • {groupedRecords[date].length} записей
                       </div>
 
                       {/* Записи дня */}
-                      <div className={`divide-y ${
-                        state.theme === 'dark'
-                          ? 'divide-slate-700'
-                          : state.theme === 'black'
-                          ? 'divide-gray-800'
-                          : 'divide-gray-200'
-                      }`}>
+                      <div className="space-y-2 mb-4">
                         {groupedRecords[date].map(record => {
                           const isExpanded = expandedRecords.has(record.id);
-                          const employeeShare = record.price / record.employeeIds.length;
 
                           return (
-                            <motion.div
+                            <div
                               key={record.id}
-                              className={`p-3 transition-colors ${
+                              className={`p-2 rounded-md cursor-pointer transition-colors ${
                                 state.theme === 'dark'
-                                  ? 'hover:bg-slate-800/30'
+                                  ? 'bg-slate-800 hover:bg-slate-700'
                                   : state.theme === 'black'
-                                  ? 'hover:bg-gray-900/30'
-                                  : 'hover:bg-gray-50/50'
+                                  ? 'bg-gray-900 hover:bg-gray-800'
+                                  : 'bg-gray-50 hover:bg-gray-100'
                               }`}
+                              onClick={() => toggleRecordExpansion(record.id)}
                             >
-                              {/* Основная информация записи */}
-                              <div
-                                className="flex items-center justify-between cursor-pointer"
-                                onClick={() => toggleRecordExpansion(record.id)}
-                              >
-                                <div className="flex items-center gap-3 flex-1">
-                                  <motion.div
-                                    animate={{ rotate: isExpanded ? 90 : 0 }}
-                                    transition={{ duration: 0.2 }}
-                                  >
-                                    <ChevronRight className={`w-4 h-4 ${
-                                      state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                                    }`} />
-                                  </motion.div>
-
-                                  <div className={`flex items-center gap-2 text-sm ${
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 text-xs mb-1">
+                                    <span className={`${
+                                      state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
+                                    }`}>
+                                      {record.time || '—'}
+                                    </span>
+                                    <span className={`px-2 py-0.5 rounded text-xs border ${getPaymentMethodColor(record.paymentMethod.type)}`}>
+                                      {getPaymentMethodLabel(record.paymentMethod.type)}
+                                    </span>
+                                  </div>
+                                  <div className={`font-medium text-sm truncate ${
+                                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
+                                  }`}>
+                                    {record.carInfo}
+                                  </div>
+                                  <div className={`text-xs truncate ${
                                     state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
                                   }`}>
-                                    <Clock className="w-3 h-3" />
-                                    {record.time || '—'}
+                                    {record.service}
                                   </div>
-
-                                  <div className="flex-1 min-w-0">
-                                    <div className={`font-medium truncate ${
-                                      state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                                    }`}>
-                                      {record.carInfo}
-                                    </div>
-                                    <div className={`text-sm truncate ${
-                                      state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                                    }`}>
-                                      {record.service}
-                                    </div>
+                                </div>
+                                <div className="text-right ml-2">
+                                  <div className="text-sm font-bold text-green-500">
+                                    +{calculateEmployeeEarnings(record, employee.id).toFixed(2)}
                                   </div>
-
-                                  <div className="text-right">
-                                    <div className={`font-medium ${
-                                      state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                                    }`}>
-                                      {record.price.toFixed(2)} BYN
-                                    </div>
-                                    <div className="text-xs text-green-500 font-medium">
-                                      +{calculateEmployeeEarnings(record, employee.id).toFixed(2)} BYN
-                                    </div>
+                                  <div className={`text-xs ${
+                                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
+                                  }`}>
+                                    из {record.price.toFixed(2)}
                                   </div>
                                 </div>
                               </div>
@@ -1195,129 +1124,25 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
                                     animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }}
                                     transition={{ duration: 0.2 }}
-                                    className="mt-3 pl-7 border-l-2 border-blue-500/30"
+                                    className="mt-2 pt-2 border-t border-gray-600/30"
                                   >
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                      <div className="space-y-2">
-                                        <div className="flex items-center gap-2">
-                                          <Car className={`w-4 h-4 ${
-                                            state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                                          }`} />
-                                          <span className={`font-medium ${
-                                            state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-700'
-                                          }`}>
-                                            Автомобиль:
-                                          </span>
-                                          <span className={`${
-                                            state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                                          }`}>
-                                            {record.carInfo}
-                                          </span>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                          <Wrench className={`w-4 h-4 ${
-                                            state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                                          }`} />
-                                          <span className={`font-medium ${
-                                            state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-700'
-                                          }`}>
-                                            Услуга:
-                                          </span>
-                                          <span className={`${
-                                            state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                                          }`}>
-                                            {record.service}
-                                          </span>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                          <CreditCard className={`w-4 h-4 ${
-                                            state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                                          }`} />
-                                          <span className={`font-medium ${
-                                            state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-700'
-                                          }`}>
-                                            Оплата:
-                                          </span>
-                                          <span className={`px-2 py-1 rounded-md text-xs border ${getPaymentMethodColor(record.paymentMethod.type)}`}>
-                                            {getPaymentMethodLabel(record.paymentMethod.type)}
-                                            {record.paymentMethod.organizationName && ` (${record.paymentMethod.organizationName})`}
-                                          </span>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <div className="flex items-center gap-2">
-                                          <Users className={`w-4 h-4 ${
-                                            state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                                          }`} />
-                                          <span className={`font-medium ${
-                                            state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-700'
-                                          }`}>
-                                            Сотрудников:
-                                          </span>
-                                          <span className={`${
-                                            state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                                          }`}>
-                                            {record.employeeIds.length}
-                                          </span>
-                                        </div>
-
-                                        <div>
-                                          <span className={`font-medium ${
-                                            state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-700'
-                                          }`}>
-                                            Общая стоимость:
-                                          </span>
-                                          <span className={`ml-2 text-lg font-bold ${
-                                            state.theme === 'dark' ? 'text-blue-400' : state.theme === 'black' ? 'text-blue-300' : 'text-blue-600'
-                                          }`}>
-                                            {record.price.toFixed(2)} BYN
-                                          </span>
-                                        </div>
-
-                                        <div>
-                                          <span className={`font-medium ${
-                                            state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-700'
-                                          }`}>
-                                            Заработок сотрудника:
-                                          </span>
-                                          <span className="ml-2 text-lg font-bold text-green-500">
-                                            {calculateEmployeeEarnings(record, employee.id).toFixed(2)} BYN
-                                          </span>
-                                        </div>
-                                      </div>
+                                    <div className="text-xs space-y-1">
+                                      <div>Сотрудников: {record.employeeIds.length}</div>
+                                      {record.paymentMethod.organizationName && (
+                                        <div>Организация: {record.paymentMethod.organizationName}</div>
+                                      )}
+                                      {record.notes && (
+                                        <div>Примечания: {record.notes}</div>
+                                      )}
                                     </div>
-
-                                    {record.notes && (
-                                      <div className={`mt-3 p-3 rounded-lg ${
-                                        state.theme === 'dark'
-                                          ? 'bg-slate-800/50'
-                                          : state.theme === 'black'
-                                          ? 'bg-gray-900/50'
-                                          : 'bg-gray-50'
-                                      }`}>
-                                        <span className={`font-medium text-sm ${
-                                          state.theme === 'dark' ? 'text-gray-300' : state.theme === 'black' ? 'text-gray-400' : 'text-gray-700'
-                                        }`}>
-                                          Примечания:
-                                        </span>
-                                        <p className={`text-sm mt-1 ${
-                                          state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                                        }`}>
-                                          {record.notes}
-                                        </p>
-                                      </div>
-                                    )}
                                   </motion.div>
                                 )}
                               </AnimatePresence>
-                            </motion.div>
+                            </div>
                           );
                         })}
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               )}

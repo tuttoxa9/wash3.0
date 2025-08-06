@@ -16,23 +16,69 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
     dispatch({ type: 'SET_THEME', payload: newTheme });
   };
 
-  const handleInstallPWA = () => {
+  const handleInstallPWA = async () => {
     const deferredPrompt = (window as any).deferredPrompt;
+
+    // Проверяем, запущено ли приложение в режиме PWA
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
+                              (window.navigator as any).standalone ||
+                              document.referrer.includes('android-app://');
+
+    if (isInStandaloneMode) {
+      alert('Приложение уже установлено!');
+      return;
+    }
+
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: any) => {
+      try {
+        await deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+
         if (choiceResult.outcome === 'accepted') {
-          console.log('PWA установлено');
+          console.log('[Sidebar] PWA установлено');
+        } else {
+          console.log('[Sidebar] Пользователь отказался от установки');
         }
+
         (window as any).deferredPrompt = null;
-      });
-    } else {
-      // Для iOS показываем инструкцию
-      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-        alert('Для установки приложения: нажмите кнопку "Поделиться" в Safari, затем "На экран Домой"');
-      } else {
-        alert('Приложение уже установлено или не поддерживается на вашем устройстве');
+      } catch (error) {
+        console.error('[Sidebar] Ошибка при установке PWA:', error);
       }
+    } else {
+      // Определяем тип устройства и браузер для более точных инструкций
+      const userAgent = navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+      const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+      const isChrome = /Chrome/.test(userAgent);
+      const isFirefox = /Firefox/.test(userAgent);
+      const isAndroid = /Android/.test(userAgent);
+
+      let message = '';
+
+      if (isIOS) {
+        if (isSafari) {
+          message = 'Для установки приложения:\n1. Нажмите кнопку "Поделиться" внизу экрана\n2. Выберите "На экран Домой"\n3. Нажмите "Добавить"';
+        } else {
+          message = 'Для установки на iOS используйте Safari браузер';
+        }
+      } else if (isAndroid) {
+        if (isChrome) {
+          message = 'Для установки приложения:\n1. Нажмите на меню браузера (⋮)\n2. Выберите "Установить приложение"\n3. Нажмите "Установить"';
+        } else if (isFirefox) {
+          message = 'Для установки приложения:\n1. Нажмите на меню браузера\n2. Выберите "Установить"\n3. Нажмите "Добавить на главный экран"';
+        } else {
+          message = 'Для установки используйте Chrome или Firefox браузер';
+        }
+      } else {
+        // Desktop
+        if (isChrome) {
+          message = 'Для установки приложения:\n1. Нажмите на иконку установки в адресной строке\n2. Нажмите "Установить"';
+        } else {
+          message = 'Для установки приложения используйте Chrome, Edge или другой современный браузер';
+        }
+      }
+
+      alert(message);
     }
   };
 
