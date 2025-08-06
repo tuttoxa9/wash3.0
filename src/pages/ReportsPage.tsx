@@ -609,35 +609,19 @@ const ReportsPage: React.FC = () => {
               <h3 className="text-sm font-medium mb-1">Метод расчета зарплаты:</h3>
               <p className="text-sm">
                 {(() => {
-                  // Определяем дату для периода отчета (используем начальную дату периода)
-                  const reportDate = startDate.toISOString().split('T')[0];
-
-                  // Получаем метод расчета зарплаты для этой даты
-                  const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
-                  const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
+                  // Всегда используем текущий выбранный метод
+                  const methodToUse = state.salaryCalculationMethod;
 
                   if (methodToUse === 'none') {
                     return 'Метод расчета не выбран. Перейдите в настройки для выбора метода.';
-                  } else if (methodToUse === 'percentage') {
-                    return '27% от общей выручки, делится поровну между сотрудниками';
-                  } else if (methodToUse === 'fixedPlusPercentage') {
-                    return '60 руб. + 10% от общей выручки для каждого сотрудника';
                   } else if (methodToUse === 'minimumWithPercentage') {
                     return 'Минимальная оплата + процент с учетом ролей (мойщик/админ)';
                   }
-                  return 'Метод расчета не выбран';
+                  return 'Минимальная оплата + процент с учетом ролей (мойщик/админ)';
                 })()}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {(() => {
-                  try {
-                    return startDate && !isNaN(startDate.getTime()) && startDate >= parseISO(state.salaryCalculationDate) ?
-                      'На основе текущих настроек' :
-                      'На основе метода, действующего на указанную дату';
-                  } catch (error) {
-                    return 'На основе метода, действующего на указанную дату';
-                  }
-                })()}
+                На основе текущих настроек
               </p>
             </div>
 
