@@ -194,7 +194,12 @@ const ReportsPage: React.FC = () => {
 
   // Calculate earnings when records or selected employee changes
   useEffect(() => {
-    if (records.length === 0) {
+    // Если нет записей, но есть сотрудники на смене, всё равно показываем минималку
+    const hasEmployeesOnShift = Object.keys(dailyRoles).some(date =>
+      Object.keys(dailyRoles[date]).length > 0
+    );
+
+    if (records.length === 0 && !hasEmployeesOnShift) {
       setEarningsReport([]);
       setTotalRevenue(0);
       return;
@@ -207,10 +212,19 @@ const ReportsPage: React.FC = () => {
 
     // Calculate employee reports
     const calculateEmployeeReports = () => {
-      // Create a set of all employee IDs involved in the filtered records
+      // Create a set of all employee IDs involved in the filtered records and on shift
       const employeeIdsSet = new Set<string>();
+
+      // Добавляем сотрудников из записей о мойке
       filteredRecords.forEach(record => {
         record.employeeIds.forEach(id => employeeIdsSet.add(id));
+      });
+
+      // Добавляем всех сотрудников, которые работали в смене за период (даже если не мыли машины)
+      Object.entries(dailyRoles).forEach(([date, roles]) => {
+        Object.keys(roles).forEach(empId => {
+          employeeIdsSet.add(empId);
+        });
       });
 
       // Initialize map entries for each employee
