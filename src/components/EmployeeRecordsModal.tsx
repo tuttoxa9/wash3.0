@@ -297,15 +297,16 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
 
             {/* Лучший день */}
             {statistics.bestDay.date && (
-              <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+              <div className="mb-6 p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 rounded-xl shadow-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <Star className="w-5 h-5 text-yellow-600" />
-                  <span className="font-medium text-yellow-800">Лучший день</span>
+                  <Star className="w-5 h-5 text-yellow-400" />
+                  <span className="font-medium text-white">Лучший день</span>
                 </div>
-                <div className="text-sm text-yellow-700">
-                  <span className="font-medium">{format(parseISO(statistics.bestDay.date), 'dd MMMM yyyy', { locale: ru })}</span>
+                <div className="text-sm text-gray-300">
+                  <span className="font-medium text-yellow-400">{format(parseISO(statistics.bestDay.date), 'dd MMMM yyyy', { locale: ru })}</span>
                   {' — '}
-                  <span>{statistics.bestDay.count} машин, заработок {statistics.bestDay.earnings?.toFixed(2)} BYN</span>
+                  <span className="text-white">{statistics.bestDay.count} машин, заработок </span>
+                  <span className="font-bold text-green-400">{statistics.bestDay.earnings?.toFixed(2)} BYN</span>
                 </div>
               </div>
             )}
@@ -549,84 +550,114 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
               )
             ) : (
               // Вкладка "Аналитика"
-              <div className="space-y-6">
-                {/* Аналитика по дням недели */}
+              <div className="space-y-4">
+                {/* Основные метрики в компактном виде */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg border border-blue-200">
+                    <div className="text-2xl font-bold text-blue-700">{statistics.totalRecords}</div>
+                    <div className="text-xs text-blue-600">Всего записей</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg border border-green-200">
+                    <div className="text-2xl font-bold text-green-700">{statistics.totalEarnings.toFixed(0)}</div>
+                    <div className="text-xs text-green-600">BYN заработано</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-lg border border-purple-200">
+                    <div className="text-2xl font-bold text-purple-700">{Object.keys(statistics.serviceStats).length}</div>
+                    <div className="text-xs text-purple-600">Видов услуг</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-3 rounded-lg border border-orange-200">
+                    <div className="text-2xl font-bold text-orange-700">{(statistics.totalEarnings / Math.max(statistics.totalRecords, 1)).toFixed(0)}</div>
+                    <div className="text-xs text-orange-600">BYN в среднем</div>
+                  </div>
+                </div>
+
+                {/* Топ дни недели */}
                 <div>
-                  <h4 className="font-medium mb-4 flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-primary" />
-                    Активность по дням недели
+                  <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    Лучшие дни недели
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {Object.entries(statistics.weekdayStats)
-                      .sort(([,a], [,b]) => b.count - a.count)
+                      .sort(([,a], [,b]) => b.earnings - a.earnings)
+                      .slice(0, 4)
                       .map(([weekday, stats]) => (
-                      <div key={weekday} className="p-4 bg-card border rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium capitalize">{weekday}</span>
-                          <span className="text-sm text-muted-foreground">{stats.count} машин</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Выручка: {stats.revenue.toFixed(2)} BYN</span>
-                          <span className="text-blue-600 font-medium">Заработок: {stats.earnings.toFixed(2)} BYN</span>
-                        </div>
+                      <div key={weekday} className="p-3 bg-card border rounded-lg hover:shadow-md transition-shadow">
+                        <div className="font-medium text-sm capitalize mb-1">{weekday}</div>
+                        <div className="text-lg font-bold text-blue-600">{stats.earnings.toFixed(0)}</div>
+                        <div className="text-xs text-muted-foreground">{stats.count} машин</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Аналитика по времени */}
+                {/* Топ время работы */}
                 <div>
-                  <h4 className="font-medium mb-4 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-primary" />
-                    Активность по времени
+                  <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
+                    <Clock className="w-4 h-4 text-primary" />
+                    Самые продуктивные часы
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                     {Object.entries(statistics.hourlyStats)
-                      .sort(([,a], [,b]) => b.count - a.count)
-                      .slice(0, 9)
+                      .sort(([,a], [,b]) => b.earnings - a.earnings)
+                      .slice(0, 6)
                       .map(([timeSlot, stats]) => (
-                      <div key={timeSlot} className="p-3 bg-card border rounded-lg text-center">
-                        <div className="font-medium text-sm mb-1">{timeSlot}</div>
-                        <div className="text-lg font-bold text-primary">{stats.count}</div>
-                        <div className="text-xs text-muted-foreground">машин</div>
-                        <div className="text-sm text-blue-600 font-medium mt-1">
-                          {stats.earnings.toFixed(2)} BYN
-                        </div>
+                      <div key={timeSlot} className="p-2 bg-card border rounded-lg text-center hover:shadow-md transition-shadow">
+                        <div className="font-medium text-xs mb-1">{timeSlot}</div>
+                        <div className="text-sm font-bold text-primary">{stats.count}</div>
+                        <div className="text-xs text-blue-600 font-medium">{stats.earnings.toFixed(0)} BYN</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Детальная статистика по услугам */}
+                {/* Топ услуги в компактном виде */}
                 <div>
-                  <h4 className="font-medium mb-4 flex items-center gap-2">
-                    <Wrench className="w-5 h-5 text-primary" />
-                    Детальная статистика по услугам
+                  <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
+                    <Wrench className="w-4 h-4 text-primary" />
+                    Самые прибыльные услуги
                   </h4>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {Object.entries(statistics.serviceStats)
                       .sort(([,a], [,b]) => b.earnings - a.earnings)
+                      .slice(0, 5)
                       .map(([service, stats]) => (
-                      <div key={service} className="p-4 bg-card border rounded-lg">
-                        <div className="flex justify-between items-start mb-2">
-                          <h5 className="font-medium flex-1">{service}</h5>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-blue-600">{stats.earnings.toFixed(2)} BYN</div>
-                            <div className="text-sm text-muted-foreground">заработок</div>
+                      <div key={service} className="p-3 bg-card border rounded-lg hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-center">
+                          <div className="flex-1 min-w-0">
+                            <h5 className="font-medium text-sm truncate">{service}</h5>
+                            <div className="text-xs text-muted-foreground">{stats.count} раз • Среднее: {(stats.earnings / stats.count).toFixed(1)} BYN</div>
+                          </div>
+                          <div className="text-right ml-3">
+                            <div className="text-lg font-bold text-blue-600">{stats.earnings.toFixed(0)}</div>
+                            <div className="text-xs text-muted-foreground">BYN</div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Количество:</span>
-                            <div className="font-medium">{stats.count} раз</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Доля выручки:</span>
-                            <div className="font-medium">{stats.revenue.toFixed(2)} BYN</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Средний заработок:</span>
-                            <div className="font-medium">{(stats.earnings / stats.count).toFixed(2)} BYN</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Способы оплаты компактно */}
+                <div>
+                  <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
+                    <PieChart className="w-4 h-4 text-primary" />
+                    Способы оплаты
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    {Object.entries(statistics.paymentStats).map(([method, stats]) => (
+                      <div key={method} className="p-3 bg-card border rounded-lg hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            method === 'cash' ? 'bg-green-100 text-green-800' :
+                            method === 'card' ? 'bg-blue-100 text-blue-800' :
+                            'bg-purple-100 text-purple-800'
+                          }`}>
+                            {method === 'cash' ? 'Наличные' : method === 'card' ? 'Карта' : 'Организация'}
+                          </span>
+                          <div className="text-right">
+                            <div className="font-bold text-sm">{stats.earnings.toFixed(0)} BYN</div>
+                            <div className="text-xs text-muted-foreground">{stats.count} раз</div>
                           </div>
                         </div>
                       </div>
