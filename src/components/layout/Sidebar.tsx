@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
       {/* Сайдбар */}
       <aside
-        className={`fixed top-0 left-0 z-50 w-64 h-screen bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-4 border-r border-border/40 shadow-lg transition-transform md:static md:translate-x-0 md:z-0 ${
+        className={`fixed top-0 left-0 z-50 w-72 sm:w-80 md:w-64 h-screen bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-3 sm:p-4 border-r border-border/40 shadow-lg transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:z-0 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -53,6 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
                 `sidebar-link ${isActive ? 'active' : ''}`
               }
               end
+              onClick={toggleMobileSidebar}
             >
               <Home className="w-5 h-5" />
               <span>Главная</span>
@@ -62,6 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
               className={({ isActive }) =>
                 `sidebar-link ${isActive ? 'active' : ''}`
               }
+              onClick={toggleMobileSidebar}
             >
               <Clipboard className="w-5 h-5" />
               <span>Записи</span>
@@ -71,6 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
               className={({ isActive }) =>
                 `sidebar-link ${isActive ? 'active' : ''}`
               }
+              onClick={toggleMobileSidebar}
             >
               <BarChart className="w-5 h-5" />
               <span>Отчеты</span>
@@ -80,6 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
               className={({ isActive }) =>
                 `sidebar-link ${isActive ? 'active' : ''}`
               }
+              onClick={toggleMobileSidebar}
             >
               <Settings className="w-5 h-5" />
               <span>Настройки</span>

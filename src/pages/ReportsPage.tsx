@@ -491,7 +491,7 @@ const ReportsPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <h2 className="text-2xl font-semibold border-b pb-3">Отчеты</h2>
+      <h2 className="text-xl sm:text-2xl font-semibold border-b pb-3">Отчеты</h2>
 
       <Tabs defaultValue="employee-earnings" className="w-full">
         <TabsList className="mb-4">

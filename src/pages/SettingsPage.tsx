@@ -19,7 +19,7 @@ const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
     setIsLoading(true);
 
     setTimeout(() => {
-      if (password === 'wash8') {
+      if (password === 'adminlab') {
         setError('');
         onSuccess();
       } else {
@@ -131,16 +131,16 @@ const ThemeSettings: React.FC = () => {
         Выберите тему оформления приложения
       </p>
 
-      <div className="flex gap-3 mb-1">
+      <div className="flex gap-2 sm:gap-3 mb-1">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setTheme('light')}
-          className={`flex-1 p-2 border rounded-lg flex flex-col items-center gap-2 transition-colors ${
+          className={`flex-1 p-2 sm:p-2 border rounded-lg flex flex-col items-center gap-1 sm:gap-2 transition-colors touch-manipulation ${
             state.theme === 'light' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
           }`}
         >
-          <Sun className={`w-5 h-5 ${state.theme === 'light' ? 'text-primary' : 'text-muted-foreground'}`} />
+          <Sun className={`w-4 h-4 sm:w-5 sm:h-5 ${state.theme === 'light' ? 'text-primary' : 'text-muted-foreground'}`} />
           <span className="text-xs font-medium">Светлая</span>
         </motion.button>
 
@@ -148,11 +148,11 @@ const ThemeSettings: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setTheme('dark')}
-          className={`flex-1 p-2 border rounded-lg flex flex-col items-center gap-2 transition-colors ${
+          className={`flex-1 p-2 sm:p-2 border rounded-lg flex flex-col items-center gap-1 sm:gap-2 transition-colors touch-manipulation ${
             state.theme === 'dark' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
           }`}
         >
-          <Moon className={`w-5 h-5 ${state.theme === 'dark' ? 'text-primary' : 'text-muted-foreground'}`} />
+          <Moon className={`w-4 h-4 sm:w-5 sm:h-5 ${state.theme === 'dark' ? 'text-primary' : 'text-muted-foreground'}`} />
           <span className="text-xs font-medium">Темная</span>
         </motion.button>
 
@@ -160,11 +160,11 @@ const ThemeSettings: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setTheme('black')}
-          className={`flex-1 p-2 border rounded-lg flex flex-col items-center gap-2 transition-colors ${
+          className={`flex-1 p-2 sm:p-2 border rounded-lg flex flex-col items-center gap-1 sm:gap-2 transition-colors touch-manipulation ${
             state.theme === 'black' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
           }`}
         >
-          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-black text-white ${
+          <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center bg-black text-white ${
             state.theme === 'black' ? 'ring-2 ring-primary' : ''
           }`}>
             <span className="text-xs font-bold">B</span>
@@ -667,7 +667,7 @@ const SettingsPage: React.FC = () => {
             Управление сотрудниками, организациями и параметрами системы
           </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5"> {/* Изменяем параметр для брейкпоинта с md на lg */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5"> {/* Мобильная адаптация грида */}
             {/* Левая колонка */}
             <div className="space-y-5">
               {/* Theme Settings */}
@@ -1130,7 +1130,7 @@ const SalaryCalculationSettings: React.FC = () => {
             <h4 className="text-sm font-medium mb-3">Настройки минимальной оплаты</h4>
 
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1">
                     Минимальная оплата мойщика за день
@@ -1142,7 +1142,7 @@ const SalaryCalculationSettings: React.FC = () => {
                       ...minimumSettings,
                       minimumPaymentWasher: Number.parseFloat(e.target.value) || 0
                     })}
-                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="0"
                     step="0.01"
                     min="0"
@@ -1159,7 +1159,7 @@ const SalaryCalculationSettings: React.FC = () => {
                       ...minimumSettings,
                       percentageWasher: Number.parseFloat(e.target.value) || 0
                     })}
-                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="10"
                     step="0.1"
                     min="0"
@@ -1168,7 +1168,7 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1">
                     Минимальная оплата админа за день
@@ -1180,7 +1180,7 @@ const SalaryCalculationSettings: React.FC = () => {
                       ...minimumSettings,
                       minimumPaymentAdmin: Number.parseFloat(e.target.value) || 0
                     })}
-                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="0"
                     step="0.01"
                     min="0"
@@ -1189,7 +1189,7 @@ const SalaryCalculationSettings: React.FC = () => {
                 <div></div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1">
                     % админа от кассы (%)
@@ -1201,7 +1201,7 @@ const SalaryCalculationSettings: React.FC = () => {
                       ...minimumSettings,
                       adminCashPercentage: Number.parseFloat(e.target.value) || 0
                     })}
-                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="3"
                     step="0.1"
                     min="0"
@@ -1219,7 +1219,7 @@ const SalaryCalculationSettings: React.FC = () => {
                       ...minimumSettings,
                       adminCarWashPercentage: Number.parseFloat(e.target.value) || 0
                     })}
-                    className="w-full px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="2"
                     step="0.1"
                     min="0"

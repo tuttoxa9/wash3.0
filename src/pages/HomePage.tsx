@@ -602,7 +602,7 @@ const HomePage: React.FC = () => {
                     <button
                       key={employee.id}
                       onClick={() => handleEmployeeSelection(employee.id)}
-                      className={`px-3 py-1 rounded-lg text-xs transition-colors ${
+                      className={`px-3 py-2 rounded-lg text-xs transition-colors touch-manipulation ${
                         shiftEmployees.includes(employee.id)
                           ? 'bg-primary text-white'
                           : 'bg-secondary/50 hover:bg-secondary'
@@ -623,12 +623,12 @@ const HomePage: React.FC = () => {
                         if (!employee) return null;
 
                         return (
-                          <div key={employeeId} className="flex items-center justify-between">
-                            <span className="text-xs font-medium">{employee.name}</span>
+                          <div key={employeeId} className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-medium flex-1">{employee.name}</span>
                             <div className="flex gap-1">
                               <button
                                 onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
-                                className={`px-2 py-1 rounded text-xs transition-colors ${
+                                className={`px-2 py-1 rounded text-xs transition-colors touch-manipulation ${
                                   employeeRoles[employeeId] === 'washer'
                                     ? 'bg-blue-500 text-white'
                                     : 'bg-secondary/50 hover:bg-secondary'
@@ -638,7 +638,7 @@ const HomePage: React.FC = () => {
                               </button>
                               <button
                                 onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
-                                className={`px-2 py-1 rounded text-xs transition-colors ${
+                                className={`px-2 py-1 rounded text-xs transition-colors touch-manipulation ${
                                   employeeRoles[employeeId] === 'admin'
                                     ? 'bg-green-500 text-white'
                                     : 'bg-secondary/50 hover:bg-secondary'
@@ -678,7 +678,7 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* Основная секция с таблицей и виджетами */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 lg:gap-5">
         <div className="space-y-5">
           {/* Таблица записей */}
           <div className="card-with-shadow overflow-hidden">
@@ -694,16 +694,16 @@ const HomePage: React.FC = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[700px]">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="py-3 px-4 text-left">№</th>
-                      <th className="py-3 px-4 text-left">Время</th>
-                      <th className="py-3 px-4 text-left">Авто</th>
-                      <th className="py-3 px-4 text-left">Услуга</th>
-                      <th className="py-3 px-4 text-right">Стоимость</th>
-                      <th className="py-3 px-4 text-left">Оплата</th>
-                      <th className="py-3 px-4 text-left">Действия</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">№</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Время</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Авто</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Услуга</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-right text-xs sm:text-sm">Стоимость</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Оплата</th>
+                      <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm">Действия</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -872,7 +872,7 @@ const HomePage: React.FC = () => {
 
           {/* Итоги */}
           {currentReport && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
               {/* Сводка по оплатам */}
               <div className="card-with-shadow">
                 <h3 className="text-lg font-semibold mb-4">Итого:</h3>

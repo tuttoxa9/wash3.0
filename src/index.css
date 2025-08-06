@@ -140,7 +140,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .card-with-shadow {
-    @apply rounded-2xl bg-card p-6 shadow-lg;
+    @apply rounded-2xl bg-card p-4 sm:p-6 shadow-lg;
   }
 
   /* Добавляем улучшенные тени для темных тем */
@@ -241,7 +241,8 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .sidebar-link {
-    @apply flex items-center gap-3 rounded-xl px-3 py-2 text-muted-foreground transition-all hover:bg-secondary hover:text-foreground;
+    @apply flex items-center gap-3 rounded-xl px-3 py-3 sm:py-2 text-muted-foreground transition-all hover:bg-secondary hover:text-foreground touch-manipulation;
+    min-height: 44px; /* Минимальная высота для сенсорных устройств */
   }
 
   .sidebar-link.active {
@@ -296,6 +297,25 @@ h1, h2, h3, h4, h5, h6 {
   .rdp-head_cell {
     font-weight: 600;
     color: hsl(var(--muted-foreground));
+  }
+
+  /* Мобильные улучшения */
+  @media (max-width: 640px) {
+    .touch-manipulation {
+      touch-action: manipulation;
+    }
+
+    input, textarea, select, button {
+      font-size: 16px; /* Предотвращает зум на iOS */
+    }
+
+    table {
+      font-size: 14px;
+    }
+
+    .card-with-shadow {
+      border-radius: 12px;
+    }
   }
 
   /* Стилизация форм для темных тем */
