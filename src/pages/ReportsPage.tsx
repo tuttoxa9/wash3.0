@@ -140,11 +140,11 @@ const ReportsPage: React.FC = () => {
 
   // Функция для расчета зарплаты
   const getSalaryAmount = (totalRevenue: number, employeeCount = 1, employeeRole: 'admin' | 'washer' | null = null, date?: string) => {
-    // Определяем дату для периода отчета
-    const reportDate = date || (periodType === 'day' ? startDate.toISOString().split('T')[0] : '');
+    // Определяем дату для периода отчета (используем начальную дату периода)
+    const reportDate = date || startDate.toISOString().split('T')[0];
 
     // Получаем метод расчета зарплаты для этой даты
-    const shouldUseCurrentMethod = periodType === 'day' && reportDate >= state.salaryCalculationDate;
+    const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
     const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
     if (methodToUse === 'percentage') {
@@ -333,8 +333,8 @@ const ReportsPage: React.FC = () => {
       }
 
       // Calculate salary for each employee with daily roles
-      const reportDate = periodType === 'day' ? startDate.toISOString().split('T')[0] : '';
-      const shouldUseCurrentMethod = periodType === 'day' && reportDate >= state.salaryCalculationDate;
+      const reportDate = startDate.toISOString().split('T')[0];
+      const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
       const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
 
@@ -359,8 +359,8 @@ const ReportsPage: React.FC = () => {
         results.forEach(r => {
           let employeeRole: 'admin' | 'washer' = 'washer';
 
-          // Проверяем роль в dailyRoles для текущей даты
-          if (periodType === 'day' && dailyRoles[reportDate] && dailyRoles[reportDate][r.employeeId]) {
+          // Проверяем роль в dailyRoles для начальной даты периода или глобально
+          if (dailyRoles[reportDate] && dailyRoles[reportDate][r.employeeId]) {
             employeeRole = dailyRoles[reportDate][r.employeeId] as 'admin' | 'washer';
           } else {
             // Если роли для даты нет, пытаемся получить из глобального состояния сотрудников
@@ -643,11 +643,11 @@ const ReportsPage: React.FC = () => {
               <h3 className="text-sm font-medium mb-1">Метод расчета зарплаты:</h3>
               <p className="text-sm">
                 {(() => {
-                  // Определяем дату для периода отчета
-                  const reportDate = periodType === 'day' ? startDate.toISOString().split('T')[0] : '';
+                  // Определяем дату для периода отчета (используем начальную дату периода)
+                  const reportDate = startDate.toISOString().split('T')[0];
 
                   // Получаем метод расчета зарплаты для этой даты
-                  const shouldUseCurrentMethod = periodType === 'day' && reportDate >= state.salaryCalculationDate;
+                  const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
                   const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
                   if (methodToUse === 'percentage') {
@@ -663,7 +663,7 @@ const ReportsPage: React.FC = () => {
               <p className="text-xs text-muted-foreground mt-1">
                 {(() => {
                   try {
-                    return periodType === 'day' && startDate && !isNaN(startDate.getTime()) && startDate >= parseISO(state.salaryCalculationDate) ?
+                    return startDate && !isNaN(startDate.getTime()) && startDate >= parseISO(state.salaryCalculationDate) ?
                       'На основе текущих настроек' :
                       'На основе метода, действующего на указанную дату';
                   } catch (error) {
@@ -687,15 +687,15 @@ const ReportsPage: React.FC = () => {
                   const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
 
                   // Рассчитываем зарплату сотрудника с учетом роли
-                  const reportDate = periodType === 'day' ? startDate.toISOString().split('T')[0] : '';
+                  const reportDate = startDate.toISOString().split('T')[0];
                   let employeeRole: 'admin' | 'washer' = 'washer';
 
-                  if (periodType === 'day' && dailyRoles[reportDate]) {
+                  if (dailyRoles[reportDate]) {
                     employeeRole = dailyRoles[reportDate][report.employeeId] as 'admin' | 'washer' || 'washer';
                   }
 
                   // Определяем метод расчета зарплаты для этой даты
-                  const shouldUseCurrentMethod = periodType === 'day' && reportDate >= state.salaryCalculationDate;
+                  const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
                   const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
                   // Используем уже рассчитанное значение calculatedEarnings из useEffect
