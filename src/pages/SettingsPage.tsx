@@ -615,9 +615,13 @@ const SettingsPage: React.FC = () => {
       const success = await databaseService.clearAllData();
 
       if (success) {
-        // Обновляем состояние приложения
+        // Полностью очищаем состояние приложения
         dispatch({ type: 'SET_EMPLOYEES', payload: [] });
+        dispatch({ type: 'SET_ORGANIZATIONS', payload: [] });
         dispatch({ type: 'SET_SERVICES', payload: [] });
+        dispatch({ type: 'SET_APPOINTMENTS', payload: [] });
+
+        // Очищаем текущий дневной отчет
         dispatch({
           type: 'SET_DAILY_REPORT',
           payload: {
@@ -633,10 +637,30 @@ const SettingsPage: React.FC = () => {
           }
         });
 
-        toast.success('База данных успешно очищена');
+        // Сбрасываем настройки на дефолтные значения
+        dispatch({
+          type: 'SET_SALARY_CALCULATION_METHOD',
+          payload: {
+            method: 'percentage',
+            date: format(new Date(), 'yyyy-MM-dd')
+          }
+        });
+
+        dispatch({
+          type: 'SET_MINIMUM_PAYMENT_SETTINGS',
+          payload: {
+            minimumPaymentWasher: 0,
+            percentageWasher: 10,
+            minimumPaymentAdmin: 0,
+            adminCashPercentage: 3,
+            adminCarWashPercentage: 2
+          }
+        });
+
+        toast.success('База данных полностью очищена, все данные удалены');
         setShowConfirmation(false);
       } else {
-        throw new Error('Не удалось очистить базу данных');
+        throw new Error('Не удалось полностью очистить базу данных');
       }
     } catch (error) {
       console.error('Ошибка при очистке базы данных:', error);

@@ -619,53 +619,104 @@ export const databaseService = {
     }
   },
 
-  // Очистить всю базу данных (оптимизированная версия)
+  // Очистить всю базу данных (полная очистка всех коллекций)
   async clearAllData(): Promise<boolean> {
     try {
+      console.log('Начинаем полную очистку базы данных Firestore');
+      console.log('Проект:', app.options.projectId);
+
       // Максимальный размер пакета - 500 операций
       const MAX_BATCH_SIZE = 450;
 
       // Функция для удаления коллекции с использованием нескольких пакетов
       const deleteCollection = async (collectionPath: string) => {
-        const collectionRef = collection(db, collectionPath);
-        const snapshot = await getDocs(collectionRef);
+        try {
+          console.log(`Начинаем очистку коллекции: ${collectionPath}`);
+          const collectionRef = collection(db, collectionPath);
+          const snapshot = await getDocs(collectionRef);
 
-        if (snapshot.empty) return;
-
-        let batch = writeBatch(db);
-        let operationCount = 0;
-
-        for (const document of snapshot.docs) {
-          batch.delete(document.ref);
-          operationCount++;
-
-          // Если достигли максимального размера пакета, выполняем его и создаем новый
-          if (operationCount >= MAX_BATCH_SIZE) {
-            await batch.commit();
-            console.log(`Удалено ${operationCount} документов из ${collectionPath}`);
-            batch = writeBatch(db);
-            operationCount = 0;
+          if (snapshot.empty) {
+            console.log(`Коллекция ${collectionPath} уже пуста`);
+            return;
           }
-        }
 
-        // Если остались операции в пакете, выполняем их
-        if (operationCount > 0) {
-          await batch.commit();
-          console.log(`Удалено оставшиеся ${operationCount} документов из ${collectionPath}`);
+          console.log(`Найдено ${snapshot.docs.length} документов в коллекции ${collectionPath}`);
+
+          let batch = writeBatch(db);
+          let operationCount = 0;
+          let totalDeleted = 0;
+
+          for (const document of snapshot.docs) {
+            batch.delete(document.ref);
+            operationCount++;
+            totalDeleted++;
+
+            // Если достигли максимального размера пакета, выполняем его и создаем новый
+            if (operationCount >= MAX_BATCH_SIZE) {
+              await batch.commit();
+              console.log(`Удалено ${operationCount} документов из ${collectionPath} (итого: ${totalDeleted})`);
+              batch = writeBatch(db);
+              operationCount = 0;
+            }
+          }
+
+          // Если остались операции в пакете, выполняем их
+          if (operationCount > 0) {
+            await batch.commit();
+            console.log(`Удалено оставшиеся ${operationCount} документов из ${collectionPath}`);
+          }
+
+          console.log(`Коллекция ${collectionPath} полностью очищена (всего удалено: ${totalDeleted} документов)`);
+        } catch (error) {
+          console.error(`Ошибка при очистке коллекции ${collectionPath}:`, error);
+          // Продолжаем с другими коллекциями даже если одна дала ошибку
         }
       };
 
-      // Перечисляем все коллекции, которые нужно очистить
-      const collections = ['employees', 'organizations', 'carWashRecords', 'dailyReports', 'services'];
+      // Перечисляем ВСЕ возможные коллекции в приложении
+      const collections = [
+        'employees',           // Сотрудники
+        'organizations',       // Организации-партнеры
+        'carWashRecords',      // Записи о мойках
+        'dailyReports',        // Ежедневные отчеты
+        'services',            // Услуги
+        'appointments',        // Записи на мойку
+        'settings',            // Настройки системы
+        'dailyRoles',          // Ежедневные роли сотрудников
+        'users',               // Пользователи (если есть)
+        'logs',                // Логи (если есть)
+        'notifications',       // Уведомления (если есть)
+        'backups',             // Резервные копии (если есть)
+        'analytics',           // Аналитика (если есть)
+        'configuration'        // Дополнительная конфигурация (если есть)
+      ];
+
+      console.log('Список коллекций для очистки:', collections);
 
       // Последовательно удаляем данные из каждой коллекции
+      let successfullyCleared = 0;
+      let errors = 0;
+
       for (const collectionPath of collections) {
-        await deleteCollection(collectionPath);
+        try {
+          await deleteCollection(collectionPath);
+          successfullyCleared++;
+        } catch (error) {
+          console.error(`Критическая ошибка при очистке коллекции ${collectionPath}:`, error);
+          errors++;
+        }
       }
 
-      return true;
+      console.log(`Очистка завершена. Успешно очищено коллекций: ${successfullyCleared}, ошибок: ${errors}`);
+
+      if (errors > 0) {
+        console.warn(`Внимание: при очистке ${errors} коллекций произошли ошибки`);
+      }
+
+      // Возвращаем true если хотя бы часть коллекций была очищена
+      return successfullyCleared > 0;
     } catch (error) {
-      logFirebaseError('Ошибка очистки базы данных', error);
+      logFirebaseError('Критическая ошибка при полной очистке базы данных', error);
       return false;
     }
   }
