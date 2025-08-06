@@ -693,17 +693,17 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="overflow-x-auto mobile-table">
-                <table className="w-full min-w-[600px] md:min-w-[700px]">
+              <div className="overflow-x-auto">
+                <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="py-1.5 px-1 md:py-3 md:px-4 text-left text-xs font-medium">№</th>
-                      <th className="py-1.5 px-1 md:py-3 md:px-4 text-left text-xs font-medium">Время</th>
-                      <th className="py-1.5 px-1 md:py-3 md:px-4 text-left text-xs font-medium">Авто</th>
-                      <th className="py-1.5 px-1 md:py-3 md:px-4 text-left text-xs font-medium">Услуга</th>
-                      <th className="py-1.5 px-1 md:py-3 md:px-4 text-right text-xs font-medium">₽</th>
-                      <th className="py-1.5 px-1 md:py-3 md:px-4 text-left text-xs font-medium">Оплата</th>
-                      <th className="py-1.5 px-1 md:py-3 md:px-4 text-left text-xs font-medium w-16">•••</th>
+                      <th className="py-3 px-4 text-left text-sm font-medium">№</th>
+                      <th className="py-3 px-4 text-left text-sm font-medium">Время</th>
+                      <th className="py-3 px-4 text-left text-sm font-medium">Авто</th>
+                      <th className="py-3 px-4 text-left text-sm font-medium">Услуга</th>
+                      <th className="py-3 px-4 text-right text-sm font-medium">Стоимость</th>
+                      <th className="py-3 px-4 text-left text-sm font-medium">Оплата</th>
+                      <th className="py-3 px-4 text-left text-sm font-medium">•••</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -712,52 +712,52 @@ const HomePage: React.FC = () => {
                         editingRecordId === record.id ? (
                           // Режим редактирования
                           <tr key={record.id} className="border-b border-border bg-secondary/10">
-                            <td className="py-1.5 px-1 md:py-2 md:px-4 align-middle text-xs">{index + 1}</td>
-                            <td className="py-1.5 px-1 md:py-2 md:px-4 align-middle">
+                            <td className="py-2 px-4 align-middle">{index + 1}</td>
+                            <td className="py-2 px-4 align-middle">
                               <input
                                 type="time"
                                 name="time"
                                 value={editFormData?.time || ''}
                                 onChange={handleEditFormChange}
-                                className="w-full px-1 py-0.5 md:px-2 md:py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring text-xs"
+                                className="w-full px-2 py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                               />
                             </td>
-                            <td className="py-1.5 px-1 md:py-2 md:px-4 align-middle">
+                            <td className="py-2 px-4 align-middle">
                               <input
                                 type="text"
                                 name="carInfo"
                                 value={editFormData?.carInfo || ''}
                                 onChange={handleEditFormChange}
-                                className="w-full px-1 py-0.5 md:px-2 md:py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring text-xs"
+                                className="w-full px-2 py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                               />
                             </td>
-                            <td className="py-1.5 px-1 md:py-2 md:px-4 align-middle">
+                            <td className="py-2 px-4 align-middle">
                               <input
                                 type="text"
                                 name="service"
                                 value={editFormData?.service || ''}
                                 onChange={handleEditFormChange}
-                                className="w-full px-1 py-0.5 md:px-2 md:py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring text-xs"
+                                className="w-full px-2 py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                               />
                             </td>
-                            <td className="py-1.5 px-1 md:py-2 md:px-4 align-middle">
+                            <td className="py-2 px-4 align-middle">
                               <input
                                 type="number"
                                 name="price"
                                 value={editFormData?.price || 0}
                                 onChange={handleEditFormChange}
-                                className="w-full px-1 py-0.5 md:px-2 md:py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring text-xs text-right"
+                                className="w-full px-2 py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring text-right"
                                 step="0.01"
                                 min="0"
                               />
                             </td>
-                            <td className="py-1.5 px-1 md:py-2 md:px-4 align-middle">
-                              <div className="flex flex-col gap-0.5">
-                                <div className="flex gap-0.5 flex-wrap">
+                            <td className="py-2 px-4 align-middle">
+                              <div className="flex flex-col gap-1">
+                                <div className="flex gap-1 flex-wrap">
                                   <button
                                     type="button"
                                     onClick={() => handleEditPaymentTypeChange('cash')}
-                                    className={`px-1 py-0.5 border rounded text-xs transition-colors ${
+                                    className={`px-2 py-1 border rounded text-sm transition-colors ${
                                       editFormData?.paymentMethod?.type === 'cash'
                                         ? 'bg-primary text-white border-primary'
                                         : 'border-input hover:bg-secondary/50'
@@ -768,7 +768,7 @@ const HomePage: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleEditPaymentTypeChange('card')}
-                                    className={`px-1 py-0.5 border rounded text-xs transition-colors ${
+                                    className={`px-2 py-1 border rounded text-sm transition-colors ${
                                       editFormData?.paymentMethod?.type === 'card'
                                         ? 'bg-primary text-white border-primary'
                                         : 'border-input hover:bg-secondary/50'
@@ -779,7 +779,7 @@ const HomePage: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleEditPaymentTypeChange('organization')}
-                                    className={`px-1 py-0.5 border rounded text-xs transition-colors ${
+                                    className={`px-2 py-1 border rounded text-sm transition-colors ${
                                       editFormData?.paymentMethod?.type === 'organization'
                                         ? 'bg-primary text-white border-primary'
                                         : 'border-input hover:bg-secondary/50'
@@ -794,7 +794,7 @@ const HomePage: React.FC = () => {
                                     name="organizationId"
                                     value={editFormData.paymentMethod.organizationId || ''}
                                     onChange={handleEditOrganizationChange}
-                                    className="mt-0.5 px-1 py-0.5 border border-input rounded text-xs w-full"
+                                    className="mt-1 px-2 py-1 border border-input rounded text-sm w-full"
                                   >
                                     <option value="" disabled>Выберите...</option>
                                     {state.organizations.map(org => (
@@ -806,21 +806,21 @@ const HomePage: React.FC = () => {
                                 )}
                               </div>
                             </td>
-                            <td className="py-1.5 px-1 md:py-2 md:px-4 align-middle">
-                              <div className="flex items-center gap-0.5">
+                            <td className="py-2 px-4 align-middle">
+                              <div className="flex items-center gap-1">
                                 <button
                                   onClick={saveRecordChanges}
-                                  className="p-0.5 rounded bg-green-100 text-green-600 hover:bg-green-200"
+                                  className="p-1 rounded bg-green-100 text-green-600 hover:bg-green-200"
                                   title="Сохранить"
                                 >
-                                  <Check className="w-3 h-3" />
+                                  <Check className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={cancelEditing}
-                                  className="p-0.5 rounded bg-red-100 text-red-600 hover:bg-red-200"
+                                  className="p-1 rounded bg-red-100 text-red-600 hover:bg-red-200"
                                   title="Отменить"
                                 >
-                                  <X className="w-3 h-3" />
+                                  <X className="w-4 h-4" />
                                 </button>
                               </div>
                             </td>
@@ -828,31 +828,29 @@ const HomePage: React.FC = () => {
                         ) : (
                           // Режим просмотра
                           <tr key={record.id} className="border-b border-border hover:bg-muted/30">
-                            <td className="py-2 px-1 md:py-3 md:px-4 text-xs">{index + 1}</td>
-                            <td className="py-2 px-1 md:py-3 md:px-4 text-xs">{record.time}</td>
-                            <td className="py-2 px-1 md:py-3 md:px-4 text-xs truncate max-w-[80px]" title={record.carInfo}>{record.carInfo}</td>
-                            <td className="py-2 px-1 md:py-3 md:px-4 text-xs truncate max-w-[80px]" title={record.service}>{record.service}</td>
-                            <td className="py-2 px-1 md:py-3 md:px-4 text-right font-medium text-xs">{record.price.toFixed(2)}</td>
-                            <td className="py-2 px-1 md:py-3 md:px-4 text-xs truncate max-w-[70px]" title={getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}>
-                              {record.paymentMethod.type === 'cash' ? 'Нал' :
-                               record.paymentMethod.type === 'card' ? 'Карт' :
-                               record.paymentMethod.type === 'organization' ? 'Орг' : 'Неизвестно'}
+                            <td className="py-3 px-4">{index + 1}</td>
+                            <td className="py-3 px-4">{record.time}</td>
+                            <td className="py-3 px-4">{record.carInfo}</td>
+                            <td className="py-3 px-4">{record.service}</td>
+                            <td className="py-3 px-4 text-right font-medium">{record.price.toFixed(2)}</td>
+                            <td className="py-3 px-4">
+                              {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
                             </td>
-                            <td className="py-2 px-1 md:py-3 md:px-4">
-                              <div className="flex items-center gap-0.5">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => startEditing(record)}
-                                  className="p-0.5 rounded hover:bg-secondary/50"
+                                  className="p-1 rounded hover:bg-secondary/50"
                                   title="Редактировать"
                                 >
-                                  <Edit className="w-3 h-3" />
+                                  <Edit className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => deleteRecord(record.id)}
-                                  className="p-0.5 rounded hover:bg-red-100 hover:text-red-600"
+                                  className="p-1 rounded hover:bg-red-100 hover:text-red-600"
                                   title="Удалить"
                                 >
-                                  <Trash2 className="w-3 h-3" />
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
                             </td>
