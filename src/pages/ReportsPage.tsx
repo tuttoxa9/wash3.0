@@ -147,6 +147,14 @@ const ReportsPage: React.FC = () => {
     const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
     const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
+    // Если метод не выбран, возвращаем 0
+    if (methodToUse === 'none') {
+      return {
+        totalAmount: 0,
+        perEmployee: 0
+      };
+    }
+
     if (methodToUse === 'percentage') {
       // 27% от общей выручки - делится между сотрудниками
       const totalSalary = totalRevenue * 0.27;
@@ -337,9 +345,12 @@ const ReportsPage: React.FC = () => {
       const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
       const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
-
-
-      if (methodToUse === 'percentage') {
+      // Если метод не выбран, устанавливаем зарплату в 0 для всех
+      if (methodToUse === 'none') {
+        results.forEach(r => {
+          r.calculatedEarnings = 0;
+        });
+      } else if (methodToUse === 'percentage') {
         // For percentage method, divide total salary equally
         const salaryInfo = getSalaryAmount(totalCashAll + totalNonCashAll + totalOrganizationsAll, results.length);
         results.forEach(r => {
@@ -650,14 +661,16 @@ const ReportsPage: React.FC = () => {
                   const shouldUseCurrentMethod = reportDate >= state.salaryCalculationDate;
                   const methodToUse = shouldUseCurrentMethod ? state.salaryCalculationMethod : 'percentage';
 
-                  if (methodToUse === 'percentage') {
+                  if (methodToUse === 'none') {
+                    return 'Метод расчета не выбран. Перейдите в настройки для выбора метода.';
+                  } else if (methodToUse === 'percentage') {
                     return '27% от общей выручки, делится поровну между сотрудниками';
                   } else if (methodToUse === 'fixedPlusPercentage') {
                     return '60 руб. + 10% от общей выручки для каждого сотрудника';
                   } else if (methodToUse === 'minimumWithPercentage') {
                     return 'Минимальная оплата + процент с учетом ролей (мойщик/админ)';
                   }
-                  return '60 руб. + 10% от общей выручки для каждого сотрудника';
+                  return 'Метод расчета не выбран';
                 })()}
               </p>
               <p className="text-xs text-muted-foreground mt-1">

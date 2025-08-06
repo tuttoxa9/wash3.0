@@ -12,7 +12,7 @@ const initialState: AppState = {
   appointments: [],
   currentDate: format(new Date(), 'yyyy-MM-dd'),
   theme: 'light',
-  salaryCalculationMethod: 'percentage', // По умолчанию - процентный метод (27%)
+  salaryCalculationMethod: 'none', // По умолчанию - не выбрано
   salaryCalculationDate: format(new Date(), 'yyyy-MM-dd'), // Текущая дата как дата изменения метода
   minimumPaymentSettings: {
     minimumPaymentWasher: 0,

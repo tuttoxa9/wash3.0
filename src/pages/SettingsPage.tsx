@@ -637,11 +637,11 @@ const SettingsPage: React.FC = () => {
           }
         });
 
-        // Сбрасываем настройки на дефолтные значения
+        // Сбрасываем настройки на дефолтные значения (не выбрано)
         dispatch({
           type: 'SET_SALARY_CALCULATION_METHOD',
           payload: {
-            method: 'percentage',
+            method: 'none',
             date: format(new Date(), 'yyyy-MM-dd')
           }
         });
@@ -656,6 +656,12 @@ const SettingsPage: React.FC = () => {
             adminCarWashPercentage: 2
           }
         });
+
+        // Очищаем также localStorage от сохранённых настроек
+        localStorage.removeItem('salaryCalculationMethod');
+        localStorage.removeItem('salaryCalculationDate');
+        localStorage.removeItem('minimumPaymentSettings');
+        localStorage.removeItem('appTheme');
 
         toast.success('База данных полностью очищена, все данные удалены');
         setShowConfirmation(false);
@@ -1276,7 +1282,9 @@ const SalaryCalculationSettings: React.FC = () => {
       <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border">
         <p>
           <span className="font-medium">Текущий метод:</span> {
-            state.salaryCalculationMethod === 'percentage'
+            state.salaryCalculationMethod === 'none'
+              ? 'Не выбран'
+              : state.salaryCalculationMethod === 'percentage'
               ? '27% от общей выручки'
               : state.salaryCalculationMethod === 'fixedPlusPercentage'
               ? '60 руб. + 10% от общей выручки'
