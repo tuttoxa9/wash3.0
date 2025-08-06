@@ -1045,6 +1045,7 @@ const HomePage: React.FC = () => {
             selectedDate={selectedDate}
             prefilledData={appointmentToConvert}
             clickPosition={clickPosition}
+            employeeRoles={employeeRoles}
           />}
 
         </div>
@@ -1062,9 +1063,10 @@ interface AddCarWashModalProps {
   selectedDate: string;
   prefilledData?: Appointment | null;
   clickPosition?: { x: number; y: number } | null;
+  employeeRoles: Record<string, EmployeeRole>;
 }
 
-const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate, prefilledData, clickPosition }) => {
+const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate, prefilledData, clickPosition, employeeRoles }) => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
 
