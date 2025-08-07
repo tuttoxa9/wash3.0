@@ -1,7 +1,10 @@
 import type React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download } from 'lucide-react';
+import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download, LogOut } from 'lucide-react';
 import { useAppContext } from '@/lib/context/AppContext';
+import { useAuth } from '@/lib/context/AuthContext';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import type { ThemeMode } from '@/lib/types';
 
 interface SidebarProps {
@@ -11,9 +14,18 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) => {
   const { state, dispatch } = useAppContext();
+  const { user } = useAuth();
 
   const handleThemeChange = (newTheme: ThemeMode) => {
     dispatch({ type: 'SET_THEME', payload: newTheme });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Ошибка при выходе:', error);
+    }
   };
 
   const handleInstallPWA = async () => {
@@ -111,6 +123,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             </button>
           </div>
 
+          {/* Информация о пользователе */}
+          {user && (
+            <div className="mb-6 p-3 rounded-xl bg-secondary/50 border border-border/40">
+              <p className="text-sm text-muted-foreground">Вы вошли как:</p>
+              <p className="text-sm font-medium truncate" title={user.email || ''}>
+                {user.email}
+              </p>
+            </div>
+          )}
+
           {/* Навигация */}
           <nav className="flex-1 space-y-2">
             <NavLink
@@ -206,6 +228,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
               </button>
             </div>
           </div>
+
+          {/* Кнопка выхода */}
+          {user && (
+            <div className="mt-4">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 border border-red-500/20 text-red-500 hover:text-red-400 transition-colors"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="text-sm font-medium">Выйти</span>
+              </button>
+            </div>
+          )}
 
           {/* Футер сайдбара */}
           <div className="mt-6 text-xs text-muted-foreground">
