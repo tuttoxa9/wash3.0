@@ -104,7 +104,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className={`w-full max-w-[90vw] max-h-[90vh] rounded-lg shadow-lg overflow-hidden ${
+          className={`w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg overflow-hidden ${
             state.theme === 'dark'
               ? 'bg-slate-900 border border-slate-700'
               : state.theme === 'black'
@@ -354,7 +354,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className={`w-full max-w-[90vw] max-h-[90vh] rounded-lg shadow-lg overflow-hidden ${
+          className={`w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg overflow-hidden ${
             state.theme === 'dark'
               ? 'bg-slate-900 border border-slate-700'
               : state.theme === 'black'
@@ -927,7 +927,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className={`w-full max-w-[90vw] max-h-[90vh] rounded-lg shadow-lg overflow-hidden ${
+            className={`w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg overflow-hidden ${
               state.theme === 'dark'
                 ? 'bg-slate-900 border border-slate-700'
                 : state.theme === 'black'
