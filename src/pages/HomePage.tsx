@@ -1728,7 +1728,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const totalEarnings = employeeRecords.reduce((sum, record) => sum + record.price, 0);
 
   return (
-    <Modal isOpen={true} onClose={onClose} className="max-w-6xl max-h-[90vh]">
+    <Modal isOpen={true} onClose={onClose} className="max-w-[95vw] max-h-[95vh]">
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-card-foreground">Детали работы - {employee.name}</h3>
@@ -1753,7 +1753,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto max-h-[60vh]">
+        <div className="overflow-x-auto max-h-[65vh]">
           <table className="w-full bg-card">
             <thead>
               <tr className="border-b border-border bg-muted/30">
@@ -1862,7 +1862,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
       />
 
       {/* Модальное окно снизу */}
-      <div className="relative w-full max-w-7xl bg-card rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[95vh] overflow-hidden border border-border">
+      <div className="relative w-full max-w-7xl bg-card rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[98vh] overflow-hidden border border-border">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-bold text-card-foreground">
@@ -1895,7 +1895,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             </div>
           </div>
 
-          <div className="overflow-x-auto max-h-[75vh]">
+          <div className="overflow-x-auto max-h-[70vh]">
             <table className="w-full bg-card">
               <thead className="sticky top-0 bg-card z-10">
                 <tr className="border-b border-border bg-muted/30">
@@ -1957,21 +1957,21 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             </table>
           </div>
 
-          {/* Итоги */}
+          {/* Итоги - компактный дизайн */}
           {currentReport && (
-            <div className="mt-6 pt-6 border-t border-border">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center p-4 bg-muted/30 rounded-lg">
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Наличные</div>
-                  <div className="text-xl font-bold text-card-foreground">{currentReport.totalCash.toFixed(2)} BYN</div>
+            <div className="mt-4 pt-4 border-t border-border bg-muted/5 -mx-6 px-6 pb-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                  <div className="text-xs font-medium text-muted-foreground mb-1">Наличные</div>
+                  <div className="text-lg font-bold text-card-foreground">{currentReport.totalCash.toFixed(2)} BYN</div>
                 </div>
-                <div className="text-center p-4 bg-muted/30 rounded-lg">
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Карта</div>
-                  <div className="text-xl font-bold text-card-foreground">{currentReport.totalNonCash.toFixed(2)} BYN</div>
+                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                  <div className="text-xs font-medium text-muted-foreground mb-1">Карта</div>
+                  <div className="text-lg font-bold text-card-foreground">{currentReport.totalNonCash.toFixed(2)} BYN</div>
                 </div>
-                <div className="text-center p-4 bg-muted/30 rounded-lg">
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Безнал</div>
-                  <div className="text-xl font-bold text-card-foreground">
+                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                  <div className="text-xs font-medium text-muted-foreground mb-1">Безнал</div>
+                  <div className="text-lg font-bold text-card-foreground">
                     {(() => {
                       const orgSum = currentReport.records?.reduce((sum, record) => {
                         return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
@@ -1980,9 +1980,9 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                     })()} BYN
                   </div>
                 </div>
-                <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <div className="text-sm font-medium text-muted-foreground mb-1">Всего</div>
-                  <div className="text-2xl font-bold text-primary">
+                <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/20">
+                  <div className="text-xs font-medium text-muted-foreground mb-1">Всего</div>
+                  <div className="text-lg font-bold text-primary">
                     {(() => {
                       const totalRevenue = currentReport.records?.reduce((sum, record) => {
                         return sum + record.price;
