@@ -259,10 +259,6 @@ const HomePage: React.FC = () => {
     toggleModal();
   };
 
-  // Добавляем состояние для отслеживания редактируемой записи
-  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
-  const [editFormData, setEditFormData] = useState<Partial<CarWashRecord> | null>(null);
-
   // Функция для начала редактирования записи
   const startEditing = (record: CarWashRecord) => {
     setEditingRecordId(record.id);
