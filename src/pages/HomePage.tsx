@@ -955,8 +955,37 @@ const HomePage: React.FC = () => {
                                 </p>
                                 <div className="space-y-1">
                                   {salaryResults.map(result => {
-                                    // Расчет почасовой оплаты с 9:00 до 21:00 (12 часов)
-                                    const hourlyRate = result.calculatedSalary / 12;
+                                    // Динамический расчет почасовой оплаты в зависимости от времени
+                                    const calculateCurrentHourlyRate = () => {
+                                      if (!isCurrentDate) {
+                                        // Если это не сегодняшний день, используем полный рабочий день (12 часов)
+                                        return result.calculatedSalary / 12;
+                                      }
+
+                                      const now = new Date();
+                                      const currentHour = now.getHours();
+                                      const currentMinutes = now.getMinutes();
+                                      const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+
+                                      // Рабочий день с 9:00 до 21:00
+                                      const startTime = 9 * 60; // 9:00 в минутах
+                                      const endTime = 21 * 60; // 21:00 в минутах
+
+                                      if (currentTimeInMinutes < startTime) {
+                                        // Еще не начался рабочий день
+                                        return result.calculatedSalary / 12; // показываем полную ставку
+                                      } else if (currentTimeInMinutes >= endTime) {
+                                        // Рабочий день закончился
+                                        return result.calculatedSalary / 12; // показываем полную ставку
+                                      } else {
+                                        // В течение рабочего дня - пропорционально отработанному времени
+                                        const workedMinutes = currentTimeInMinutes - startTime;
+                                        const workedHours = workedMinutes / 60;
+                                        return workedHours > 0 ? result.calculatedSalary / workedHours : result.calculatedSalary / 12;
+                                      }
+                                    };
+
+                                    const hourlyRate = calculateCurrentHourlyRate();
 
                                     return (
                                       <div key={result.employeeId} className="flex justify-between text-sm">

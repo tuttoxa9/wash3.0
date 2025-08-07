@@ -4,6 +4,7 @@ import { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, TextRun,
 import type { CarWashRecord, DailyReport, Employee } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { SalaryCalculator } from '@/components/SalaryCalculator';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -209,7 +210,7 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
   // Создаем список сотрудников для отчета
   const employeesList = workingEmployees.map(emp => emp.name).join(', ');
 
-  // Создаем таблицу записей с новой структурой: № | Время | Авто | Услуга | Стоимость | Оплата
+  // Создаем таблицу записей с новой структурой: № | Время | Авто | Услуга | Стоимость | Оплата | Мойщик
   const recordsTableRows = [
     new TableRow({
       children: [
@@ -219,23 +220,27 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
         }),
         new TableCell({
           children: [new Paragraph({ text: "Время", alignment: AlignmentType.CENTER })],
-          width: { size: 1000, type: "dxa" }
+          width: { size: 800, type: "dxa" }
         }),
         new TableCell({
           children: [new Paragraph({ text: "Авто", alignment: AlignmentType.CENTER })],
-          width: { size: 2000, type: "dxa" }
+          width: { size: 1500, type: "dxa" }
         }),
         new TableCell({
           children: [new Paragraph({ text: "Услуга", alignment: AlignmentType.CENTER })],
-          width: { size: 2000, type: "dxa" }
+          width: { size: 1500, type: "dxa" }
         }),
         new TableCell({
           children: [new Paragraph({ text: "Стоимость", alignment: AlignmentType.CENTER })],
-          width: { size: 1000, type: "dxa" }
+          width: { size: 800, type: "dxa" }
         }),
         new TableCell({
           children: [new Paragraph({ text: "Оплата", alignment: AlignmentType.CENTER })],
-          width: { size: 1500, type: "dxa" }
+          width: { size: 1000, type: "dxa" }
+        }),
+        new TableCell({
+          children: [new Paragraph({ text: "Мойщик", alignment: AlignmentType.CENTER })],
+          width: { size: 1400, type: "dxa" }
         }),
       ],
       tableHeader: true
@@ -252,6 +257,12 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
       } else if (record.paymentMethod.type === 'organization' && record.paymentMethod.organizationId) {
         paymentMethod = record.paymentMethod.organizationName || "Организация";
       }
+
+      // Определяем мойщика(ов) для этой записи
+      const recordEmployees = record.employeeIds
+        ?.map(empId => employees.find(emp => emp.id === empId)?.name)
+        .filter(Boolean)
+        .join(', ') || "Не указан";
 
       recordsTableRows.push(
         new TableRow({
@@ -274,6 +285,9 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
             new TableCell({
               children: [new Paragraph({ text: paymentMethod || "" })]
             }),
+            new TableCell({
+              children: [new Paragraph({ text: recordEmployees })]
+            }),
           ]
         })
       );
@@ -285,7 +299,7 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
         children: [
           new TableCell({
             children: [new Paragraph({ text: "Нет данных", alignment: AlignmentType.CENTER })],
-            columnSpan: 6 // Обновлено с 5 до 6, так как теперь у нас 6 колонок
+            columnSpan: 7 // Обновлено с 6 до 7, так как теперь у нас 7 колонок
           })
         ]
       })
@@ -355,10 +369,19 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
       salary = totalRevenue * 0.27;
     }
 
-    // Распределение на сотрудников
-    perEmployee = (workingEmployees.length > 0) ?
-      (salary / workingEmployees.length).toFixed(2) :
-      salary.toFixed(2);
+    // Индивидуальные зарплаты (для экспорта используем локальные настройки)
+    const localEmployeeRoles = report.dailyEmployeeRoles || {};
+    const localMinimumPaymentSettings = JSON.parse(localStorage.getItem('minimumPaymentSettings') || '{"minimumPaymentWasher":0,"percentageWasher":10,"minimumPaymentAdmin":0,"adminCashPercentage":3,"adminCarWashPercentage":2}');
+
+    // Создаем калькулятор зарплаты
+    const salaryCalculator = new SalaryCalculator(
+      localMinimumPaymentSettings,
+      report.records,
+      localEmployeeRoles,
+      workingEmployees
+    );
+
+    const salaryResults = salaryCalculator.calculateSalaries();
 
     // Обновляем итоги
     totalCash += report.totalCash;
@@ -508,9 +531,47 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
             spacing: { before: 100, after: 100 }
           }),
 
+          // Добавляем индивидуальные зарплаты
+          ...(() => {
+            const individualSalaries: Paragraph[] = [];
+            const localEmployeeRoles = report.dailyEmployeeRoles || {};
+            const localMinimumPaymentSettings = JSON.parse(localStorage.getItem('minimumPaymentSettings') || '{"minimumPaymentWasher":0,"percentageWasher":10,"minimumPaymentAdmin":0,"adminCashPercentage":3,"adminCarWashPercentage":2}');
+
+            try {
+              const salaryCalculator = new SalaryCalculator(
+                localMinimumPaymentSettings,
+                report.records,
+                localEmployeeRoles,
+                workingEmployees
+              );
+
+              const salaryResults = salaryCalculator.calculateSalaries();
+
+              salaryResults.forEach(result => {
+                individualSalaries.push(
+                  new Paragraph({
+                    text: `${result.employeeName} (${result.role === 'admin' ? 'Админ' : 'Мойщик'}): ${result.calculatedSalary.toFixed(2)} BYN`,
+                    spacing: { after: 50 }
+                  })
+                );
+              });
+            } catch (error) {
+              // Fallback если не удалось рассчитать индивидуальные зарплаты
+              const fallbackPerEmployee = (workingEmployees.length > 0) ? (totalSalary / workingEmployees.length).toFixed(2) : "0.00";
+              individualSalaries.push(
+                new Paragraph({
+                  text: `По ${fallbackPerEmployee} BYN на каждого сотрудника`,
+                  spacing: { after: 50 }
+                })
+              );
+            }
+
+            return individualSalaries;
+          })(),
+
           new Paragraph({
-            text: `По ${perEmployee} BYN на каждого сотрудника`,
-            spacing: { after: 200 }
+            text: "",
+            spacing: { after: 150 }
           }),
 
           // Место для подписи
