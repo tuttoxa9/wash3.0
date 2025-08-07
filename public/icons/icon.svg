@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="carGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)" filter="url(#shadow)"/>
+
+  <!-- Car wash bubbles -->
+  <circle cx="180" cy="150" r="12" fill="#ffffff" opacity="0.8"/>
+  <circle cx="220" cy="120" r="8" fill="#ffffff" opacity="0.6"/>
+  <circle cx="160" cy="180" r="6" fill="#ffffff" opacity="0.7"/>
+  <circle cx="350" cy="140" r="10" fill="#ffffff" opacity="0.8"/>
+  <circle cx="380" cy="170" r="7" fill="#ffffff" opacity="0.6"/>
+  <circle cx="320" cy="110" r="5" fill="#ffffff" opacity="0.7"/>
+
+  <!-- Car silhouette -->
+  <g transform="translate(256,280) scale(2.5,2.5) translate(-32,-24)">
+    <path d="M8 18c0 1.1.9 2 2 2h2c0-1.1.9-2 2-2s2 .9 2 2h8c0-1.1.9-2 2-2s2 .9 2 2h2c1.1 0 2-.9 2-2V8H8v10z" fill="url(#carGradient)"/>
+    <path d="M12 6h16l-2-4H14l-2 4z" fill="url(#carGradient)"/>
+    <circle cx="14" cy="18" r="1.5" fill="#64748b"/>
+    <circle cx="26" cy="18" r="1.5" fill="#64748b"/>
+    <rect x="10" y="8" width="4" height="6" rx="1" fill="#3b82f6" opacity="0.7"/>
+    <rect x="18" y="8" width="8" height="6" rx="1" fill="#3b82f6" opacity="0.7"/>
+  </g>
+
+  <!-- Water drops -->
+  <path d="M200 350 Q200 340 210 340 Q220 340 220 350 Q220 360 210 360 Q200 360 200 350" fill="#60a5fa" opacity="0.8"/>
+  <path d="M280 370 Q280 365 285 365 Q290 365 290 370 Q290 375 285 375 Q280 375 280 370" fill="#60a5fa" opacity="0.6"/>
+  <path d="M320 355 Q320 350 325 350 Q330 350 330 355 Q330 360 325 360 Q320 360 320 355" fill="#60a5fa" opacity="0.7"/>
+
+  <!-- Cleaning brush -->
+  <g transform="translate(120,320) rotate(-30)">
+    <rect x="0" y="0" width="40" height="8" rx="4" fill="#fbbf24"/>
+    <rect x="35" y="-2" width="20" height="12" rx="6" fill="#78716c"/>
+    <line x1="0" y1="8" x2="30" y2="8" stroke="#f59e0b" stroke-width="1"/>
+    <line x1="0" y1="10" x2="25" y2="10" stroke="#f59e0b" stroke-width="1"/>
+    <line x1="0" y1="12" x2="20" y2="12" stroke="#f59e0b" stroke-width="1"/>
+  </g>
+</svg>

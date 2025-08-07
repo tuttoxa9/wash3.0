@@ -1,0 +1,456 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 211 100% 50%;
+    --radius: 1rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222.2 84% 4.9%;
+    --card-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .dark {
+    /* Основные цвета темы с более глубокой иерархией оттенков */
+    --background: 224 71% 4%; /* Самый темный фон */
+    --foreground: 213 31% 91%; /* Более мягкий белый для основного текста */
+
+    /* Карточки чуть светлее фона для лучшей глубины */
+    --card: 222 47% 11%;
+    --card-foreground: 213 31% 91%;
+
+    /* Popover элементы еще светлее для многослойности */
+    --popover: 220 40% 14%;
+    --popover-foreground: 213 31% 91%;
+
+    /* Яркий акцентный синий для отличной видимости */
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    /* Вторичный цвет с большей насыщенностью */
+    --secondary: 217.2 32.6% 20%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* Приглушенные элементы */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 75%; /* Более светлый для лучшей читаемости */
+
+    /* Сохраняем яркий акцентный фиолетовый для выделения */
+    --accent: 280 75% 60%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Деструктивный красный контрастнее на темном фоне */
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Более выраженные границы для лучшей различимости элементов */
+    --border: 217.2 32.6% 25%;
+    --input: 217.2 32.6% 25%;
+    --ring: 224.3 76.3% 55%; /* Ярче для лучшей заметности */
+
+    --chart-1: 220 70% 55%;
+    --chart-2: 160 60% 50%;
+    --chart-3: 30 80% 60%;
+    --chart-4: 280 65% 65%;
+    --chart-5: 340 75% 60%;
+
+    /* Стилизация боковой панели (темнее общего фона) */
+    --sidebar-background: 225 65% 5%;
+    --sidebar-foreground: 213 31% 91%;
+
+    /* Настройка теней для лучшей визуальной глубины */
+    --card-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.6);
+  }
+
+  .black {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 4%; /* Немного светлее чистого черного для иерархии */
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 7%; /* Еще светлее для поповеров */
+    --popover-foreground: 0 0% 100%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 80%; /* Светлее для лучшей читаемости */
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 211 100% 50%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 0 0% 2%; /* Чуть темнее для боковой панели */
+    --sidebar-foreground: 0 0% 100%;
+    --card-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.8);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .gradient-heading {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8, #6366f1, #8b5cf6, #3b82f6);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientShift 4s ease-in-out infinite;
+  }
+
+  @keyframes gradientShift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .card-with-shadow {
+    @apply rounded-2xl bg-card p-4 sm:p-6 shadow-lg;
+  }
+
+  /* Добавляем улучшенные тени для темных тем */
+  .dark .card-with-shadow {
+    box-shadow: var(--card-shadow);
+    @apply border border-border/40;
+  }
+
+  .black .card-with-shadow {
+    box-shadow: var(--card-shadow);
+    @apply border border-border/40;
+  }
+
+  /* Улучшенные стили для форм в черной теме */
+  .black input,
+  .black textarea,
+  .black select {
+    @apply bg-muted border-input text-foreground;
+  }
+
+  /* Стили для таблиц в черной теме */
+  .black table {
+    @apply text-foreground;
+  }
+
+  .black table th {
+    @apply bg-muted/80 text-foreground;
+  }
+
+  .black table tr:hover {
+    @apply bg-muted/50;
+  }
+
+  .black table td {
+    @apply border-border/40;
+  }
+
+  /* Стили для модальных окон и поповеров в черной теме */
+  .black [role="dialog"],
+  .black [role="tooltip"] {
+    @apply bg-card border-border/40;
+  }
+
+  /* Стили для кнопок в черной теме */
+  .black button:not([class*="bg-"]) {
+    @apply bg-muted hover:bg-muted/80 text-foreground;
+  }
+
+  /* Фикс для кнопок с bg-primary и других предопределенных стилей */
+  .black button.bg-primary {
+    @apply text-primary-foreground;
+  }
+
+  .black button.bg-secondary {
+    @apply text-secondary-foreground;
+  }
+
+  /* Стили для карточек в режиме редактирования (RecordsPage) */
+  .black .card-edit-mode {
+    @apply bg-muted/50;
+  }
+
+  /* Стили для карточек записей в черной теме */
+  .black .bg-blue-50 {
+    @apply bg-blue-950 border-blue-900 text-blue-100;
+  }
+
+  .black .bg-green-50 {
+    @apply bg-green-950 border-green-900 text-green-100;
+  }
+
+  .black .bg-red-50 {
+    @apply bg-red-950 border-red-900 text-red-100;
+  }
+
+  .black .bg-blue-100 {
+    @apply bg-blue-900 text-blue-100;
+  }
+
+  .black .bg-green-100 {
+    @apply bg-green-900 text-green-100;
+  }
+
+  .black .bg-red-100 {
+    @apply bg-red-900 text-red-100;
+  }
+
+  .black .text-blue-800 {
+    @apply text-blue-100;
+  }
+
+  .black .text-green-800 {
+    @apply text-green-100;
+  }
+
+  .black .text-red-800 {
+    @apply text-red-100;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-xl px-3 py-3 sm:py-2 text-muted-foreground transition-all hover:bg-secondary hover:text-foreground touch-manipulation;
+    min-height: 44px; /* Минимальная высота для сенсорных устройств */
+  }
+
+  .sidebar-link.active {
+    @apply bg-primary/10 text-primary;
+  }
+
+  /* Mini Calendar Styles */
+  .rdp {
+    --rdp-cell-size: 32px;
+    --rdp-accent-color: hsl(var(--primary));
+    --rdp-background-color: hsl(var(--primary) / 0.2);
+    --rdp-accent-color-dark: hsl(var(--primary));
+    --rdp-background-color-dark: hsl(var(--primary) / 0.2);
+    margin: 0;
+  }
+
+  .rdp-months {
+    justify-content: center;
+  }
+
+  .rdp-day_selected,
+  .rdp-day_selected:focus-visible,
+  .rdp-day_selected:hover {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .dark .rdp-day,
+  .black .rdp-day {
+    color: hsl(var(--foreground));
+  }
+
+  .dark .rdp-day_selected,
+  .black .rdp-day_selected,
+  .dark .rdp-day_selected:focus-visible,
+  .black .rdp-day_selected:focus-visible,
+  .dark .rdp-day_selected:hover,
+  .black .rdp-day_selected:hover {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+    background-color: hsl(var(--secondary));
+  }
+
+  .dark .rdp-button:hover:not([disabled]):not(.rdp-day_selected),
+  .black .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+    background-color: hsl(var(--secondary));
+  }
+
+  .rdp-head_cell {
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Мобильные улучшения */
+  @media (max-width: 640px) {
+    .touch-manipulation {
+      touch-action: manipulation;
+    }
+
+    input, textarea, select, button {
+      font-size: 16px; /* Предотвращает зум на iOS */
+    }
+
+    table {
+      font-size: 14px;
+    }
+
+    .card-with-shadow {
+      border-radius: 12px;
+    }
+  }
+
+  /* Стилизация форм для темных тем */
+  .dark input,
+  .dark select,
+  .dark textarea,
+  .black input,
+  .black select,
+  .black textarea {
+    @apply bg-muted border-border;
+  }
+
+  /* Улучшение кнопок в темных темах */
+  .dark button:not([class*="bg-"]),
+  .black button:not([class*="bg-"]) {
+    @apply hover:bg-secondary/80;
+  }
+}
+
+/* Дополнительные мобильные улучшения */
+@media (max-width: 768px) {
+  /* Улучшенная адаптация таблиц */
+  .mobile-table {
+    @apply block overflow-x-auto whitespace-nowrap;
+  }
+
+  .mobile-table th,
+  .mobile-table td {
+    @apply min-w-[80px] px-1 py-1.5;
+  }
+
+  .mobile-table th:first-child,
+  .mobile-table td:first-child {
+    @apply min-w-[50px];
+  }
+
+  .mobile-table th:last-child,
+  .mobile-table td:last-child {
+    @apply min-w-[60px];
+  }
+
+  /* Адаптивные карточки */
+  .mobile-card {
+    @apply p-3 rounded-lg shadow-sm border bg-card;
+  }
+
+  /* Адаптивные модальные окна */
+  .mobile-modal {
+    @apply mx-2 my-4 max-h-[90vh] overflow-y-auto;
+  }
+
+  /* Улучшенные формы */
+  .mobile-form {
+    @apply space-y-4;
+  }
+
+  .mobile-form-row {
+    @apply flex flex-col space-y-2;
+  }
+
+  /* Адаптивные кнопки */
+  .mobile-button {
+    @apply min-h-[44px] text-base font-medium;
+  }
+
+  /* Улучшенные уведомления */
+  .mobile-notification {
+    @apply mx-2 rounded-lg;
+  }
+}
+
+/* Стили для очень маленьких экранов */
+@media (max-width: 375px) {
+  .mobile-table th,
+  .mobile-table td {
+    @apply min-w-[60px] px-0.5 py-1 text-xs;
+  }
+
+  .mobile-table th:first-child,
+  .mobile-table td:first-child {
+    @apply min-w-[30px];
+  }
+
+  .mobile-table th:last-child,
+  .mobile-table td:last-child {
+    @apply min-w-[40px];
+  }
+
+  .mobile-card {
+    @apply p-2 text-sm;
+  }
+}
+
+/* Стили для улучшения доступности на мобильных */
+@media (hover: none) and (pointer: coarse) {
+  button, .clickable {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}
+
+/* Устранение пробелов в мобильной шапке */
+@media (max-width: 768px) {
+  html, body {
+    @apply m-0 p-0;
+    height: 100vh;
+    height: 100dvh; /* Динамическая высота viewport для мобильных */
+  }
+
+  #root {
+    height: 100vh;
+    height: 100dvh;
+    @apply overflow-hidden;
+  }
+
+  /* Убираем скролл на основном контейнере на мобильных */
+  .mobile-main-content {
+    @apply h-full overflow-auto;
+  }
+
+  /* Поддержка safe-area на iOS */
+  .mobile-header {
+    padding-top: env(safe-area-inset-top);
+  }
+}
