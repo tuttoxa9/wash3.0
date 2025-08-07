@@ -4,13 +4,16 @@ import { useAppContext } from '@/lib/context/AppContext';
 import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isAfter, isBefore, isEqual } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Calendar as CalendarIcon, X, Filter, Building } from 'lucide-react';
+import { Loader2, Calendar as CalendarIcon, X, Filter, Building, TrendingUp, FileDown } from 'lucide-react';
 import { carWashService, dailyRolesService } from '@/lib/services/firebaseService';
 import type { CarWashRecord, Employee } from '@/lib/types';
 import { createSalaryCalculator } from '@/components/SalaryCalculator';
 import { useToast } from '@/lib/hooks/useToast';
 import OrganizationsReport from '@/components/OrganizationsReport';
 import EmployeeRecordsModal from '@/components/EmployeeRecordsModal';
+import { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, TextRun, AlignmentType, BorderStyle } from 'docx';
+import { Packer } from 'docx';
+import { saveAs } from 'file-saver';
 
 type PeriodType = 'day' | 'week' | 'month' | 'custom';
 
@@ -38,6 +41,19 @@ const ReportsPage: React.FC = () => {
   const [earningsReport, setEarningsReport] = useState<EarningsReport[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [dailyRoles, setDailyRoles] = useState<Record<string, Record<string, string>>>({});
+
+  // Состояние для общего отчёта
+  const [generalReportLoading, setGeneralReportLoading] = useState(false);
+  const [generalStartDate, setGeneralStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [generalEndDate, setGeneralEndDate] = useState(new Date());
+  const [generalReportData, setGeneralReportData] = useState<{
+    totalCash: number;
+    totalCard: number;
+    totalOrganizations: number;
+    totalRevenue: number;
+    totalSalaries: number;
+    organizationBreakdown: { name: string; amount: number }[];
+  } | null>(null);
 
   // Modal state
   const [selectedEmployeeForModal, setSelectedEmployeeForModal] = useState<Employee | null>(null);
@@ -477,6 +493,333 @@ const ReportsPage: React.FC = () => {
     setActiveDatePicker(null);
   };
 
+  // Функция для загрузки данных общего отчёта
+  const loadGeneralReport = async () => {
+    setGeneralReportLoading(true);
+    try {
+      // Получаем все даты в диапазоне
+      const dateRange: string[] = [];
+      const currentDate = new Date(generalStartDate);
+
+      while (isBefore(currentDate, generalEndDate) || isEqual(currentDate, generalEndDate)) {
+        if (!isNaN(currentDate.getTime())) {
+          dateRange.push(format(currentDate, 'yyyy-MM-dd'));
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      // Получаем записи для каждой даты
+      const recordsPromises = dateRange.map(date =>
+        carWashService.getByDate(date)
+      );
+
+      // Получаем ежедневные роли для каждой даты
+      const rolesPromises = dateRange.map(date =>
+        dailyRolesService.getDailyRoles(date).then(roles => ({ date, roles: roles || {} }))
+      );
+
+      const [recordsResults, rolesResults] = await Promise.all([
+        Promise.all(recordsPromises),
+        Promise.all(rolesPromises)
+      ]);
+
+      const allRecords = recordsResults.flat();
+      const rolesMap: Record<string, Record<string, string>> = {};
+      rolesResults.forEach(({ date, roles }) => {
+        rolesMap[date] = roles;
+      });
+
+      // Подсчитываем итоги
+      let totalCash = 0;
+      let totalCard = 0;
+      let totalOrganizations = 0;
+      const organizationBreakdown: Record<string, number> = {};
+
+      allRecords.forEach(record => {
+        if (record.paymentMethod.type === 'cash') {
+          totalCash += record.price;
+        } else if (record.paymentMethod.type === 'card') {
+          totalCard += record.price;
+        } else if (record.paymentMethod.type === 'organization') {
+          totalOrganizations += record.price;
+          const orgName = record.paymentMethod.organizationName ||
+                          state.organizations.find(org => org.id === record.paymentMethod.organizationId)?.name ||
+                          'Неизвестная организация';
+          organizationBreakdown[orgName] = (organizationBreakdown[orgName] || 0) + record.price;
+        }
+      });
+
+      const totalRevenue = totalCash + totalCard + totalOrganizations;
+
+      // Подсчитываем общую зарплату
+      let totalSalaries = 0;
+      if (state.salaryCalculationMethod === 'minimumWithPercentage') {
+        // Группируем сотрудников по всему периоду
+        const employeeIdsSet = new Set<string>();
+
+        // Добавляем сотрудников из записей
+        allRecords.forEach(record => {
+          record.employeeIds.forEach(id => employeeIdsSet.add(id));
+        });
+
+        // Добавляем сотрудников из ролей
+        Object.values(rolesMap).forEach(roles => {
+          Object.keys(roles).forEach(empId => {
+            employeeIdsSet.add(empId);
+          });
+        });
+
+        // Определяем роли сотрудников
+        const employeeRolesForCalc: Record<string, 'admin' | 'washer'> = {};
+        employeeIdsSet.forEach(empId => {
+          let employeeRole: 'admin' | 'washer' = 'washer';
+
+          // Проверяем роли в dailyRoles
+          Object.values(rolesMap).forEach(roles => {
+            if (roles[empId]) {
+              employeeRole = roles[empId] as 'admin' | 'washer';
+            }
+          });
+
+          // Если роль не найдена, проверяем глобальное состояние
+          if (employeeRole === 'washer') {
+            const employee = state.employees.find(emp => emp.id === empId);
+            if (employee && employee.role) {
+              employeeRole = employee.role;
+            }
+          }
+
+          employeeRolesForCalc[empId] = employeeRole;
+        });
+
+        // Создаём калькулятор зарплаты
+        const salaryCalculator = createSalaryCalculator(
+          state.minimumPaymentSettings,
+          allRecords,
+          employeeRolesForCalc,
+          state.employees
+        );
+
+        totalSalaries = salaryCalculator.getTotalSalarySum();
+      }
+
+      setGeneralReportData({
+        totalCash,
+        totalCard,
+        totalOrganizations,
+        totalRevenue,
+        totalSalaries,
+        organizationBreakdown: Object.entries(organizationBreakdown).map(([name, amount]) => ({ name, amount }))
+      });
+
+    } catch (error) {
+      console.error('Ошибка при загрузке общего отчёта:', error);
+      toast.error('Ошибка при загрузке данных общего отчёта');
+    } finally {
+      setGeneralReportLoading(false);
+    }
+  };
+
+  // Функция экспорта общего отчёта в Word
+  const exportGeneralReportToWord = async () => {
+    if (!generalReportData) {
+      toast.error('Нет данных для экспорта');
+      return;
+    }
+
+    try {
+      // Создаем таблицу с итогами
+      const summaryTableRows = [
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [new Paragraph({ text: "Тип оплаты", alignment: AlignmentType.CENTER, bold: true })],
+              width: { size: 3000, type: "dxa" }
+            }),
+            new TableCell({
+              children: [new Paragraph({ text: "Сумма (BYN)", alignment: AlignmentType.CENTER, bold: true })],
+              width: { size: 2000, type: "dxa" }
+            }),
+          ],
+          tableHeader: true
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [new Paragraph({ text: "Наличные" })]
+            }),
+            new TableCell({
+              children: [new Paragraph({ text: generalReportData.totalCash.toFixed(2), alignment: AlignmentType.RIGHT })]
+            }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [new Paragraph({ text: "Карта" })]
+            }),
+            new TableCell({
+              children: [new Paragraph({ text: generalReportData.totalCard.toFixed(2), alignment: AlignmentType.RIGHT })]
+            }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [new Paragraph({ text: "Безнал" })]
+            }),
+            new TableCell({
+              children: [new Paragraph({ text: generalReportData.totalOrganizations.toFixed(2), alignment: AlignmentType.RIGHT })]
+            }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [new Paragraph({ text: "Итого выручка", bold: true })]
+            }),
+            new TableCell({
+              children: [new Paragraph({ text: generalReportData.totalRevenue.toFixed(2), alignment: AlignmentType.RIGHT, bold: true })]
+            }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [new Paragraph({ text: "Итого зарплаты", bold: true })]
+            }),
+            new TableCell({
+              children: [new Paragraph({ text: generalReportData.totalSalaries.toFixed(2), alignment: AlignmentType.RIGHT, bold: true })]
+            }),
+          ]
+        }),
+      ];
+
+      // Создаем таблицу по организациям, если есть данные
+      const orgTableRows = [];
+      if (generalReportData.organizationBreakdown.length > 0) {
+        orgTableRows.push(
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [new Paragraph({ text: "Организация", alignment: AlignmentType.CENTER, bold: true })],
+                width: { size: 3000, type: "dxa" }
+              }),
+              new TableCell({
+                children: [new Paragraph({ text: "Сумма (BYN)", alignment: AlignmentType.CENTER, bold: true })],
+                width: { size: 2000, type: "dxa" }
+              }),
+            ],
+            tableHeader: true
+          })
+        );
+
+        generalReportData.organizationBreakdown.forEach(org => {
+          orgTableRows.push(
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: [new Paragraph({ text: org.name })]
+                }),
+                new TableCell({
+                  children: [new Paragraph({ text: org.amount.toFixed(2), alignment: AlignmentType.RIGHT })]
+                }),
+              ]
+            })
+          );
+        });
+      }
+
+      // Создаем документ
+      const doc = new Document({
+        sections: [
+          {
+            properties: {},
+            children: [
+              // Заголовок отчета
+              new Paragraph({
+                text: "Общий отчёт по выручке",
+                heading: HeadingLevel.HEADING_1,
+                spacing: { after: 200 }
+              }),
+
+              // Период отчета
+              new Paragraph({
+                text: `Период: ${format(generalStartDate, 'dd.MM.yyyy')} - ${format(generalEndDate, 'dd.MM.yyyy')}`,
+                spacing: { after: 300 }
+              }),
+
+              // Общая таблица
+              new Paragraph({
+                text: "Сводка по выручке:",
+                heading: HeadingLevel.HEADING_2,
+                spacing: { after: 200 }
+              }),
+
+              new Table({
+                rows: summaryTableRows,
+                width: { size: 5000, type: "dxa" },
+                borders: {
+                  top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                  bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                  left: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                  right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                  insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                  insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                }
+              }),
+
+              // Таблица по организациям
+              ...(orgTableRows.length > 0 ? [
+                new Paragraph({
+                  text: "Детализация по организациям:",
+                  heading: HeadingLevel.HEADING_2,
+                  spacing: { before: 400, after: 200 }
+                }),
+
+                new Table({
+                  rows: orgTableRows,
+                  width: { size: 5000, type: "dxa" },
+                  borders: {
+                    top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                    bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                    left: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                    right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                    insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                    insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                  }
+                }),
+              ] : []),
+
+              // Дата создания
+              new Paragraph({
+                spacing: { before: 400, after: 400 },
+                alignment: AlignmentType.RIGHT,
+                children: [new TextRun({ text: `Отчет сформирован: ${format(new Date(), 'dd.MM.yyyy HH:mm:ss', { locale: ru })}`, size: 18 })]
+              }),
+
+              // Место для подписи
+              new Paragraph({
+                text: "Подпись ответственного лица: ___________________",
+                spacing: { before: 400 }
+              }),
+            ]
+          }
+        ]
+      });
+
+      // Сохраняем документ
+      const blob = await Packer.toBlob(doc);
+      const fileName = `Общий_отчет_выручка_${format(new Date(), 'dd-MM-yyyy')}.docx`;
+      saveAs(blob, fileName);
+
+      toast.success('Документ успешно экспортирован');
+    } catch (error) {
+      console.error('Ошибка при экспорте документа:', error);
+      toast.error('Ошибка при экспорте документа');
+    }
+  };
+
   return (
     <div className="space-y-5">
       <h2 className="text-xl sm:text-2xl font-semibold border-b pb-3">Отчеты</h2>
@@ -489,6 +832,10 @@ const ReportsPage: React.FC = () => {
           <TabsTrigger value="organizations" className="flex items-center gap-2">
             <Building className="h-4 w-4" />
             Отчеты по организациям
+          </TabsTrigger>
+          <TabsTrigger value="general-revenue" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Общий отчёт по выручке
           </TabsTrigger>
         </TabsList>
 
@@ -562,6 +909,57 @@ const ReportsPage: React.FC = () => {
                       )}
                     </div>
                   </div>
+                ) : periodType === 'week' || periodType === 'month' ? (
+                  <>
+                    <div className="w-full sm:w-auto">
+                      <label className="block text-sm font-medium mb-1">Начальная дата</label>
+                      <div className="relative" ref={startDatePickerRef}>
+                        <div
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-within:ring-2 focus-within:ring-ring cursor-pointer"
+                          onClick={() => setActiveDatePicker('start')}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                          <span className="flex-1">{startDate && !isNaN(startDate.getTime()) ? format(startDate, 'dd.MM.yyyy') : 'Неверная дата'}</span>
+                        </div>
+                        {activeDatePicker === 'start' && (
+                          <div className="absolute top-full left-0 mt-1 z-10 bg-card rounded-md shadow-md border border-border p-1">
+                            <input
+                              type="date"
+                              value={startDate && !isNaN(startDate.getTime()) ? format(startDate, 'yyyy-MM-dd') : ''}
+                              onChange={handleStartDateChange}
+                              className="w-full p-2 outline-none bg-background rounded-md"
+                              autoFocus
+                              onBlur={() => setActiveDatePicker(null)}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="w-full sm:w-auto">
+                      <label className="block text-sm font-medium mb-1">Конечная дата</label>
+                      <div className="relative" ref={endDatePickerRef}>
+                        <div
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-within:ring-2 focus-within:ring-ring cursor-pointer"
+                          onClick={() => setActiveDatePicker('end')}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                          <span className="flex-1">{endDate && !isNaN(endDate.getTime()) ? format(endDate, 'dd.MM.yyyy') : 'Неверная дата'}</span>
+                        </div>
+                        {activeDatePicker === 'end' && (
+                          <div className="absolute top-full left-0 mt-1 z-10 bg-card rounded-md shadow-md border border-border p-1">
+                            <input
+                              type="date"
+                              value={endDate && !isNaN(endDate.getTime()) ? format(endDate, 'yyyy-MM-dd') : ''}
+                              onChange={handleEndDateChange}
+                              className="w-full p-2 outline-none bg-background rounded-md"
+                              autoFocus
+                              onBlur={() => setActiveDatePicker(null)}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <>
                     <div className="w-full sm:w-auto">
@@ -742,6 +1140,163 @@ const ReportsPage: React.FC = () => {
 
         <TabsContent value="organizations">
           <OrganizationsReport />
+        </TabsContent>
+
+        <TabsContent value="general-revenue" className="space-y-5">
+          <div className="card-with-shadow p-4">
+            <h3 className="text-lg font-semibold mb-3 flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2" />
+              Общий отчёт по выручке
+            </h3>
+
+            <div className="space-y-4">
+              {/* Выбор периода */}
+              <div className="flex flex-wrap gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Начальная дата</label>
+                  <input
+                    type="date"
+                    value={format(generalStartDate, 'yyyy-MM-dd')}
+                    onChange={(e) => setGeneralStartDate(new Date(e.target.value))}
+                    className="px-3 py-2 border border-input rounded-lg bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Конечная дата</label>
+                  <input
+                    type="date"
+                    value={format(generalEndDate, 'yyyy-MM-dd')}
+                    onChange={(e) => setGeneralEndDate(new Date(e.target.value))}
+                    className="px-3 py-2 border border-input rounded-lg bg-background"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={loadGeneralReport}
+                    disabled={generalReportLoading}
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {generalReportLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Загрузка...
+                      </>
+                    ) : (
+                      'Сформировать отчёт'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Результаты отчёта */}
+          {generalReportData && (
+            <div className="card-with-shadow overflow-hidden">
+              <div className="flex justify-between items-center p-4 border-b border-border">
+                <h3 className="font-medium">
+                  Период: {format(generalStartDate, 'dd.MM.yyyy')} - {format(generalEndDate, 'dd.MM.yyyy')}
+                </h3>
+                <button
+                  onClick={exportGeneralReportToWord}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors text-sm"
+                >
+                  <FileDown className="w-4 h-4" />
+                  Экспорт в Word
+                </button>
+              </div>
+
+              <div className="p-6">
+                {/* Общая сводка */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <div className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">Наличные</div>
+                    <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                      {generalReportData.totalCash.toFixed(2)} BYN
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">Карта</div>
+                    <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                      {generalReportData.totalCard.toFixed(2)} BYN
+                    </div>
+                  </div>
+
+                  <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                    <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">Безнал</div>
+                    <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                      {generalReportData.totalOrganizations.toFixed(2)} BYN
+                    </div>
+                  </div>
+
+                  <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
+                    <div className="text-sm font-medium text-primary mb-1">Общая выручка</div>
+                    <div className="text-2xl font-bold text-primary">
+                      {generalReportData.totalRevenue.toFixed(2)} BYN
+                    </div>
+                  </div>
+                </div>
+
+                {/* Зарплаты */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                    <div className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-1">Итого зарплаты</div>
+                    <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                      {generalReportData.totalSalaries.toFixed(2)} BYN
+                    </div>
+                  </div>
+
+                  <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                    <div className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">Чистая прибыль</div>
+                    <div className="text-2xl font-bold text-red-900 dark:text-red-100">
+                      {(generalReportData.totalRevenue - generalReportData.totalSalaries).toFixed(2)} BYN
+                    </div>
+                  </div>
+                </div>
+
+                {/* Детализация по организациям */}
+                {generalReportData.organizationBreakdown.length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-semibold mb-4">Детализация по организациям</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-border">
+                            <th className="py-3 px-4 text-left text-sm font-medium">Организация</th>
+                            <th className="py-3 px-4 text-right text-sm font-medium">Сумма</th>
+                            <th className="py-3 px-4 text-right text-sm font-medium">% от общей выручки</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {generalReportData.organizationBreakdown
+                            .sort((a, b) => b.amount - a.amount)
+                            .map((org, index) => (
+                            <tr key={index} className="border-b border-border hover:bg-muted/30">
+                              <td className="py-3 px-4 text-sm">{org.name}</td>
+                              <td className="py-3 px-4 text-right font-medium">{org.amount.toFixed(2)} BYN</td>
+                              <td className="py-3 px-4 text-right text-sm text-muted-foreground">
+                                {((org.amount / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {generalReportLoading && (
+            <div className="card-with-shadow">
+              <div className="flex items-center justify-center p-8">
+                <Loader2 className="w-8 h-8 animate-spin text-primary mr-2" />
+                <p>Формирование отчёта...</p>
+              </div>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 

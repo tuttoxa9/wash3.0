@@ -47,6 +47,9 @@ const HomePage: React.FC = () => {
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<CarWashRecord> | null>(null);
 
+  // Добавляем состояние для фильтрации по методу оплаты
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'cash' | 'card' | 'organization'>('all');
+
   // Проверяем, является ли выбранная дата текущей
   const isCurrentDate = isToday(new Date(selectedDate));
 
@@ -813,15 +816,39 @@ const HomePage: React.FC = () => {
               <div className="card-with-shadow">
                 <h3 className="text-lg font-semibold mb-4">Итого:</h3>
                 <div className="space-y-2">
-                  <div className="flex justify-between">
+                  <div
+                    className={`flex justify-between p-2 rounded-lg cursor-pointer transition-colors ${
+                      paymentFilter === 'cash'
+                        ? 'bg-primary/10 border border-primary'
+                        : 'hover:bg-muted/50'
+                    }`}
+                    onClick={() => setPaymentFilter(paymentFilter === 'cash' ? 'all' : 'cash')}
+                    title="Нажмите для фильтрации по наличным"
+                  >
                     <span>Нал - </span>
                     <span className="font-medium">{currentReport.totalCash.toFixed(2)} BYN</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div
+                    className={`flex justify-between p-2 rounded-lg cursor-pointer transition-colors ${
+                      paymentFilter === 'card'
+                        ? 'bg-primary/10 border border-primary'
+                        : 'hover:bg-muted/50'
+                    }`}
+                    onClick={() => setPaymentFilter(paymentFilter === 'card' ? 'all' : 'card')}
+                    title="Нажмите для фильтрации по картам"
+                  >
                     <span>Карта - </span>
                     <span className="font-medium">{currentReport.totalNonCash.toFixed(2)} BYN</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div
+                    className={`flex justify-between p-2 rounded-lg cursor-pointer transition-colors ${
+                      paymentFilter === 'organization'
+                        ? 'bg-primary/10 border border-primary'
+                        : 'hover:bg-muted/50'
+                    }`}
+                    onClick={() => setPaymentFilter(paymentFilter === 'organization' ? 'all' : 'organization')}
+                    title="Нажмите для фильтрации по безналу"
+                  >
                     <span>Безнал - </span>
                     <span className="font-medium">{(() => {
                       // Подсчитываем сумму за организации
@@ -995,6 +1022,8 @@ const HomePage: React.FC = () => {
               selectedDate={selectedDate}
               onExport={exportToWord}
               isExporting={loading.exporting}
+              paymentFilter={paymentFilter}
+              onPaymentFilterChange={setPaymentFilter}
             />
           )}
 
@@ -1828,6 +1857,8 @@ interface DailyReportModalProps {
   selectedDate: string;
   onExport: () => void;
   isExporting: boolean;
+  paymentFilter: 'all' | 'cash' | 'card' | 'organization';
+  onPaymentFilterChange: (filter: 'all' | 'cash' | 'card' | 'organization') => void;
 }
 
 const DailyReportModal: React.FC<DailyReportModalProps> = ({
@@ -1837,7 +1868,9 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
   organizations,
   selectedDate,
   onExport,
-  isExporting
+  isExporting,
+  paymentFilter,
+  onPaymentFilterChange
 }) => {
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<CarWashRecord> | null>(null);
@@ -1869,6 +1902,12 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
     setEditingRecordId(null);
     setEditFormData(null);
   };
+
+  // Фильтрация записей по методу оплаты
+  const filteredRecords = currentReport?.records?.filter(record => {
+    if (paymentFilter === 'all') return true;
+    return record.paymentMethod.type === paymentFilter;
+  }) || [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -1912,6 +1951,50 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             </div>
           </div>
 
+          {/* Фильтры по методу оплаты */}
+          <div className="mb-4 flex flex-wrap gap-2">
+            <button
+              onClick={() => onPaymentFilterChange('all')}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                paymentFilter === 'all'
+                  ? 'bg-primary text-white'
+                  : 'bg-secondary/50 hover:bg-secondary'
+              }`}
+            >
+              Все
+            </button>
+            <button
+              onClick={() => onPaymentFilterChange('cash')}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                paymentFilter === 'cash'
+                  ? 'bg-primary text-white'
+                  : 'bg-secondary/50 hover:bg-secondary'
+              }`}
+            >
+              Наличные
+            </button>
+            <button
+              onClick={() => onPaymentFilterChange('card')}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                paymentFilter === 'card'
+                  ? 'bg-primary text-white'
+                  : 'bg-secondary/50 hover:bg-secondary'
+              }`}
+            >
+              Карта
+            </button>
+            <button
+              onClick={() => onPaymentFilterChange('organization')}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                paymentFilter === 'organization'
+                  ? 'bg-primary text-white'
+                  : 'bg-secondary/50 hover:bg-secondary'
+              }`}
+            >
+              Безнал
+            </button>
+          </div>
+
           <div className="overflow-x-auto max-h-[70vh]">
             <table className="w-full bg-card">
               <thead className="sticky top-0 bg-card z-10">
@@ -1927,8 +2010,8 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {currentReport?.records && currentReport.records.length > 0 ? (
-                  currentReport.records.map((record, index) => (
+                {filteredRecords.length > 0 ? (
+                  filteredRecords.map((record, index) => (
                     <tr key={record.id} className="border-b border-border hover:bg-muted/20 transition-colors">
                       <td className="py-4 px-4 text-card-foreground font-medium">{index + 1}</td>
                       <td className="py-4 px-4 text-card-foreground">{record.time}</td>
@@ -1966,7 +2049,10 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                 ) : (
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-muted-foreground">
-                      За выбранную дату нет записей.
+                      {paymentFilter === 'all'
+                        ? 'За выбранную дату нет записей.'
+                        : `Нет записей с выбранным методом оплаты.`
+                      }
                     </td>
                   </tr>
                 )}
@@ -1978,15 +2064,39 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
           {currentReport && (
             <div className="mt-4 pt-4 border-t border-border bg-muted/5 -mx-6 px-6 pb-2">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                <div
+                  className={`text-center p-3 rounded-lg cursor-pointer transition-colors ${
+                    paymentFilter === 'cash'
+                      ? 'bg-primary/10 border border-primary'
+                      : 'bg-muted/30 hover:bg-muted/50'
+                  }`}
+                  onClick={() => onPaymentFilterChange(paymentFilter === 'cash' ? 'all' : 'cash')}
+                  title="Нажмите для фильтрации по наличным"
+                >
                   <div className="text-xs font-medium text-muted-foreground mb-1">Наличные</div>
                   <div className="text-lg font-bold text-card-foreground">{currentReport.totalCash.toFixed(2)} BYN</div>
                 </div>
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                <div
+                  className={`text-center p-3 rounded-lg cursor-pointer transition-colors ${
+                    paymentFilter === 'card'
+                      ? 'bg-primary/10 border border-primary'
+                      : 'bg-muted/30 hover:bg-muted/50'
+                  }`}
+                  onClick={() => onPaymentFilterChange(paymentFilter === 'card' ? 'all' : 'card')}
+                  title="Нажмите для фильтрации по картам"
+                >
                   <div className="text-xs font-medium text-muted-foreground mb-1">Карта</div>
                   <div className="text-lg font-bold text-card-foreground">{currentReport.totalNonCash.toFixed(2)} BYN</div>
                 </div>
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
+                <div
+                  className={`text-center p-3 rounded-lg cursor-pointer transition-colors ${
+                    paymentFilter === 'organization'
+                      ? 'bg-primary/10 border border-primary'
+                      : 'bg-muted/30 hover:bg-muted/50'
+                  }`}
+                  onClick={() => onPaymentFilterChange(paymentFilter === 'organization' ? 'all' : 'organization')}
+                  title="Нажмите для фильтрации по безналу"
+                >
                   <div className="text-xs font-medium text-muted-foreground mb-1">Безнал</div>
                   <div className="text-lg font-bold text-card-foreground">
                     {(() => {
@@ -1997,7 +2107,15 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                     })()} BYN
                   </div>
                 </div>
-                <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <div
+                  className={`text-center p-3 rounded-lg cursor-pointer transition-colors ${
+                    paymentFilter === 'all'
+                      ? 'bg-primary/10 border border-primary'
+                      : 'bg-muted/30 hover:bg-muted/50'
+                  }`}
+                  onClick={() => onPaymentFilterChange('all')}
+                  title="Показать все записи"
+                >
                   <div className="text-xs font-medium text-muted-foreground mb-1">Всего</div>
                   <div className="text-lg font-bold text-primary">
                     {(() => {
