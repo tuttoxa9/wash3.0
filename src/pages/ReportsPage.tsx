@@ -677,10 +677,18 @@ const ReportsPage: React.FC = () => {
                   const handleEmployeeClick = () => {
                     const employee = state.employees.find(e => e.id === report.employeeId);
                     if (employee) {
-                      // Фильтруем записи для этого сотрудника
-                      const employeeRecords = records.filter(record =>
-                        record.employeeIds.includes(report.employeeId)
-                      );
+                      // Фильтруем записи для этого сотрудника и сортируем по времени
+                      const employeeRecords = records
+                        .filter(record => record.employeeIds.includes(report.employeeId))
+                        .sort((a, b) => {
+                          // Сначала сортируем по дате
+                          const dateCompare = a.date.localeCompare(b.date);
+                          if (dateCompare !== 0) return dateCompare;
+
+                          // Затем по времени
+                          if (!a.time || !b.time) return 0;
+                          return a.time.localeCompare(b.time);
+                        });
                       setSelectedEmployeeForModal(employee);
                       setIsModalOpen(true);
                     }
@@ -746,9 +754,18 @@ const ReportsPage: React.FC = () => {
             setSelectedEmployeeForModal(null);
           }}
           employee={selectedEmployeeForModal}
-          records={records.filter(record =>
-            record.employeeIds.includes(selectedEmployeeForModal.id)
-          )}
+          records={records
+            .filter(record => record.employeeIds.includes(selectedEmployeeForModal.id))
+            .sort((a, b) => {
+              // Сначала сортируем по дате
+              const dateCompare = a.date.localeCompare(b.date);
+              if (dateCompare !== 0) return dateCompare;
+
+              // Затем по времени
+              if (!a.time || !b.time) return 0;
+              return a.time.localeCompare(b.time);
+            })
+          }
           periodLabel={formatDateRange()}
           dailyRoles={dailyRoles}
         />
