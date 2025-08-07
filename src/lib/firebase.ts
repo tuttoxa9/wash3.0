@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore"; // Добавлено для работы с базой данных Firestore
+import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -35,4 +36,7 @@ try {
   console.error("Ошибка при инициализации Firebase:", error);
 }
 
-export { db, analytics, app }; // Экспортируем app для использования в других местах
+// Инициализация Auth
+const auth = getAuth(app);
+
+export { db, analytics, app, auth }; // Экспортируем app для использования в других местах
