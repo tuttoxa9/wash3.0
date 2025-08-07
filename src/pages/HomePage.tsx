@@ -1862,7 +1862,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
       />
 
       {/* Модальное окно снизу */}
-      <div className="relative w-full max-w-7xl bg-card rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-hidden border border-border">
+      <div className="relative w-full max-w-7xl bg-card rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[95vh] overflow-hidden border border-border">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-bold text-card-foreground">
@@ -1895,7 +1895,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             </div>
           </div>
 
-          <div className="overflow-x-auto max-h-[65vh]">
+          <div className="overflow-x-auto max-h-[75vh]">
             <table className="w-full bg-card">
               <thead className="sticky top-0 bg-card z-10">
                 <tr className="border-b border-border bg-muted/30">
