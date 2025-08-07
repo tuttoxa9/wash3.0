@@ -822,8 +822,11 @@ const HomePage: React.FC = () => {
                         ? 'bg-primary/10 border border-primary'
                         : 'hover:bg-muted/50'
                     }`}
-                    onClick={() => setPaymentFilter(paymentFilter === 'cash' ? 'all' : 'cash')}
-                    title="Нажмите для фильтрации по наличным"
+                    onClick={() => {
+                      setPaymentFilter('cash');
+                      openDailyReportModal();
+                    }}
+                    title="Нажмите для просмотра ведомости по наличным"
                   >
                     <span>Нал - </span>
                     <span className="font-medium">{currentReport.totalCash.toFixed(2)} BYN</span>
@@ -834,8 +837,11 @@ const HomePage: React.FC = () => {
                         ? 'bg-primary/10 border border-primary'
                         : 'hover:bg-muted/50'
                     }`}
-                    onClick={() => setPaymentFilter(paymentFilter === 'card' ? 'all' : 'card')}
-                    title="Нажмите для фильтрации по картам"
+                    onClick={() => {
+                      setPaymentFilter('card');
+                      openDailyReportModal();
+                    }}
+                    title="Нажмите для просмотра ведомости по картам"
                   >
                     <span>Карта - </span>
                     <span className="font-medium">{currentReport.totalNonCash.toFixed(2)} BYN</span>
@@ -846,8 +852,11 @@ const HomePage: React.FC = () => {
                         ? 'bg-primary/10 border border-primary'
                         : 'hover:bg-muted/50'
                     }`}
-                    onClick={() => setPaymentFilter(paymentFilter === 'organization' ? 'all' : 'organization')}
-                    title="Нажмите для фильтрации по безналу"
+                    onClick={() => {
+                      setPaymentFilter('organization');
+                      openDailyReportModal();
+                    }}
+                    title="Нажмите для просмотра ведомости по безналу"
                   >
                     <span>Безнал - </span>
                     <span className="font-medium">{(() => {
@@ -858,7 +867,14 @@ const HomePage: React.FC = () => {
                       return orgSum.toFixed(2);
                     })()} BYN</span>
                   </div>
-                  <div className="border-t border-border mt-4 pt-4 flex justify-between">
+                  <div
+                    className="border-t border-border mt-4 pt-4 flex justify-between cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
+                    onClick={() => {
+                      setPaymentFilter('all');
+                      openDailyReportModal();
+                    }}
+                    title="Нажмите для просмотра полной ведомости"
+                  >
                     <span className="font-medium">Всего:</span>
                     <span className="font-bold">
                       {(() => {
