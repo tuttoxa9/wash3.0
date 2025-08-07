@@ -1728,7 +1728,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const totalEarnings = employeeRecords.reduce((sum, record) => sum + record.price, 0);
 
   return (
-    <Modal isOpen={true} onClose={onClose} className="max-w-[98vw] max-h-[98vh]">
+    <Modal isOpen={true} onClose={onClose} className="max-w-6xl max-h-[95vh]">
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-card-foreground">Детали работы - {employee.name}</h3>
