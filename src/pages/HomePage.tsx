@@ -4,7 +4,7 @@ import { format, parseISO, isToday, isTomorrow, ru } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { useAppContext } from '@/lib/context/AppContext';
-import { Loader2, FileDown, Save, Check, Edit, Calendar, Plus, CheckCircle, X, ArrowRight, Trash2 } from 'lucide-react';
+import { Loader2, FileDown, Save, Check, Edit, Calendar, Plus, CheckCircle, X, ArrowRight, Trash2, User, Eye, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DailyReport, CarWashRecord, Employee, Appointment, EmployeeRole } from '@/lib/types';
 import { carWashService, dailyReportService, appointmentService, dailyRolesService } from '@/lib/services/firebaseService';
@@ -27,15 +27,24 @@ const HomePage: React.FC = () => {
   const [employeeRoles, setEmployeeRoles] = useState<Record<string, EmployeeRole>>({});
   const [isShiftLocked, setIsShiftLocked] = useState(false);
   const [isEditingShift, setIsEditingShift] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(state.currentDate); // Track the selected date
+  const [selectedDate, setSelectedDate] = useState(state.currentDate);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  // Состояния для модальных окон
+  const [employeeModalOpen, setEmployeeModalOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [dailyReportModalOpen, setDailyReportModalOpen] = useState(false);
 
   // Добавим состояние и обработчики для предзаполнения данных из записи
   const [appointmentToConvert, setAppointmentToConvert] = useState<Appointment | null>(null);
 
-  // Добавляем состояние для хранения позиции клика
+  // Добавляем состояния для хранения позиции клика
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // Добавляем состояние для отслеживания редактируемой записи
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<CarWashRecord> | null>(null);
 
   // Проверяем, является ли выбранная дата текущей
   const isCurrentDate = isToday(new Date(selectedDate));
@@ -60,6 +69,33 @@ const HomePage: React.FC = () => {
     return 'Неизвестный';
   };
 
+  // Функция для получения статистики работника
+  const getEmployeeStats = (employeeId: string) => {
+    if (!currentReport?.records) {
+      return { carCount: 0, totalEarnings: 0 };
+    }
+
+    const employeeRecords = currentReport.records.filter(record =>
+      record.employeeIds.includes(employeeId)
+    );
+
+    const carCount = employeeRecords.length;
+    const totalEarnings = employeeRecords.reduce((sum, record) => sum + record.price, 0);
+
+    return { carCount, totalEarnings };
+  };
+
+  // Обработчик открытия модального окна работника
+  const openEmployeeModal = (employeeId: string) => {
+    setSelectedEmployeeId(employeeId);
+    setEmployeeModalOpen(true);
+  };
+
+  // Обработчик открытия модального окна ежедневной ведомости
+  const openDailyReportModal = () => {
+    setDailyReportModalOpen(true);
+  };
+
   // Переключение модального окна
   const toggleModal = (event?: React.MouseEvent) => {
     // Если закрываем модальное окно, сбрасываем данные
@@ -82,6 +118,14 @@ const HomePage: React.FC = () => {
       setIsCalendarOpen(false);
     }
   };
+
+  // Toggle calendar visibility
+  const toggleCalendar = () => {
+    setIsCalendarOpen(!isCalendarOpen);
+  };
+
+  // Format date for display
+  const formattedDate = format(new Date(selectedDate), 'dd.MM.yyyy');
 
   // Функция для экспорта отчета в Word
   const exportToWord = async () => {
@@ -201,85 +245,6 @@ const HomePage: React.FC = () => {
       setLoading(prev => ({ ...prev, savingShift: false }));
     }
   };
-
-  // Загрузка данных
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(prev => ({ ...prev, dailyReport: true }));
-      try {
-        const report = await dailyReportService.getByDate(selectedDate);
-        if (report) {
-          dispatch({
-            type: 'SET_DAILY_REPORT',
-            payload: { date: selectedDate, report }
-          });
-
-          // Если в отчете уже есть сотрудники, устанавливаем и блокируем
-          if (report.employeeIds && report.employeeIds.length > 0) {
-            setShiftEmployees(report.employeeIds);
-            setIsShiftLocked(true);
-
-            // Загружаем ежедневные роли из отчета или из базы данных
-            if (report.dailyEmployeeRoles) {
-              setEmployeeRoles(report.dailyEmployeeRoles);
-            } else {
-              // Если в отчете нет ролей, пытаемся загрузить из dailyRoles коллекции
-              const dailyRoles = await dailyRolesService.getDailyRoles(selectedDate);
-              if (dailyRoles) {
-                setEmployeeRoles(dailyRoles);
-              } else {
-                // Если ролей нет нигде, устанавливаем роли по умолчанию (мойщик)
-                const defaultRoles: Record<string, EmployeeRole> = {};
-                report.employeeIds.forEach(empId => {
-                  defaultRoles[empId] = 'washer';
-                });
-                setEmployeeRoles(defaultRoles);
-              }
-            }
-          }
-
-          // Если в отчете уже есть записи, блокируем изменение смены
-          if (report.records && report.records.length > 0) {
-            setIsShiftLocked(true);
-          }
-        }
-      } catch (error) {
-        console.error('Ошибка при загрузке отчета:', error);
-        toast.error('Не удалось загрузить отчет');
-      } finally {
-        setLoading(prev => ({ ...prev, dailyReport: false }));
-      }
-    };
-
-    loadData();
-    // При изменении выбранной даты сбрасываем состояние смены
-    setIsShiftLocked(false);
-    setIsEditingShift(false);
-    setShiftEmployees([]);
-    setEmployeeRoles({});
-  }, [selectedDate, dispatch]);
-
-  // Handle clicks outside the calendar to close it
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
-        setIsCalendarOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [calendarRef]);
-
-  // Toggle calendar visibility
-  const toggleCalendar = () => {
-    setIsCalendarOpen(!isCalendarOpen);
-  };
-
-  // Format date for display
-  const formattedDate = format(new Date(selectedDate), 'dd.MM.yyyy');
 
   // Функция для обработки преобразования записи в запись о помытой машине
   const handleAppointmentConversion = (appointment: Appointment, event?: React.MouseEvent) => {
@@ -500,6 +465,77 @@ const HomePage: React.FC = () => {
     }
   };
 
+  // Загрузка данных
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(prev => ({ ...prev, dailyReport: true }));
+      try {
+        const report = await dailyReportService.getByDate(selectedDate);
+        if (report) {
+          dispatch({
+            type: 'SET_DAILY_REPORT',
+            payload: { date: selectedDate, report }
+          });
+
+          // Если в отчете уже есть сотрудники, устанавливаем и блокируем
+          if (report.employeeIds && report.employeeIds.length > 0) {
+            setShiftEmployees(report.employeeIds);
+            setIsShiftLocked(true);
+
+            // Загружаем ежедневные роли из отчета или из базы данных
+            if (report.dailyEmployeeRoles) {
+              setEmployeeRoles(report.dailyEmployeeRoles);
+            } else {
+              // Если в отчете нет ролей, пытаемся загрузить из dailyRoles коллекции
+              const dailyRoles = await dailyRolesService.getDailyRoles(selectedDate);
+              if (dailyRoles) {
+                setEmployeeRoles(dailyRoles);
+              } else {
+                // Если ролей нет нигде, устанавливаем роли по умолчанию (мойщик)
+                const defaultRoles: Record<string, EmployeeRole> = {};
+                report.employeeIds.forEach(empId => {
+                  defaultRoles[empId] = 'washer';
+                });
+                setEmployeeRoles(defaultRoles);
+              }
+            }
+          }
+
+          // Если в отчете уже есть записи, блокируем изменение смены
+          if (report.records && report.records.length > 0) {
+            setIsShiftLocked(true);
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке отчета:', error);
+        toast.error('Не удалось загрузить отчет');
+      } finally {
+        setLoading(prev => ({ ...prev, dailyReport: false }));
+      }
+    };
+
+    loadData();
+    // При изменении выбранной даты сбрасываем состояние смены
+    setIsShiftLocked(false);
+    setIsEditingShift(false);
+    setShiftEmployees([]);
+    setEmployeeRoles({});
+  }, [selectedDate, dispatch]);
+
+  // Handle clicks outside the calendar to close it
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setIsCalendarOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [calendarRef]);
+
   // В JSX HomePage передадим callback в AppointmentsWidget
   return (
     <div className="space-y-5">
@@ -507,26 +543,16 @@ const HomePage: React.FC = () => {
       <div className="flex flex-col gap-3 md:gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
           <h2 className="text-lg sm:text-xl md:text-2xl font-semibold truncate">
-            Ведомость ежедневная выполненных работ
+            Главная страница
           </h2>
 
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={exportToWord}
-              disabled={loading.exporting || !currentReport}
-              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/90 transition-colors disabled:opacity-50 text-sm touch-manipulation"
+              onClick={openDailyReportModal}
+              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm touch-manipulation"
             >
-              {loading.exporting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Экспорт...
-                </>
-              ) : (
-                <>
-                  <FileDown className="w-4 h-4" />
-                  Экспорт в Word
-                </>
-              )}
+              <Receipt className="w-4 h-4" />
+              Ежедневная ведомость
             </button>
             <button
               onClick={(e) => {
@@ -683,195 +709,70 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Основная секция с таблицей и виджетами */}
+      {/* Основная секция с квадратиками работников и виджетами */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 lg:gap-5">
         <div className="space-y-5">
-          {/* Таблица записей */}
-          <div className="card-with-shadow overflow-hidden">
+          {/* Квадратики работников */}
+          <div className="card-with-shadow p-4">
+            <h3 className="text-lg font-semibold mb-4">Сотрудники</h3>
             {loading.dailyReport ? (
               <div className="flex flex-col items-center justify-center p-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
                 <p className="text-muted-foreground">Загрузка данных...</p>
-                <div className="flex gap-1 mt-2">
-                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
-                </div>
+              </div>
+            ) : workingEmployees.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {workingEmployees.map(employee => {
+                  const stats = getEmployeeStats(employee.id);
+                  const role = employeeRoles[employee.id] || 'washer';
+
+                  return (
+                    <div
+                      key={employee.id}
+                      className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:scale-105"
+                      onClick={() => openEmployeeModal(employee.id)}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-primary" />
+                          </div>
+                          <h4 className="font-semibold text-sm">{employee.name}</h4>
+                        </div>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs text-white ${
+                            role === 'admin' ? 'bg-green-500' : 'bg-blue-500'
+                          }`}
+                        >
+                          {role === 'admin' ? 'Админ' : 'Мойщик'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-muted-foreground">Машин:</span>
+                          <span className="font-medium text-sm">{stats.carCount}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-muted-foreground">Сумма:</span>
+                          <span className="font-medium text-sm">{stats.totalEarnings.toFixed(2)} BYN</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-center gap-1 text-xs text-primary">
+                          <Eye className="w-3 h-3" />
+                          Нажмите для деталей
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="py-3 px-4 text-left text-sm font-medium">№</th>
-                      <th className="py-3 px-4 text-left text-sm font-medium">Время</th>
-                      <th className="py-3 px-4 text-left text-sm font-medium">Авто</th>
-                      <th className="py-3 px-4 text-left text-sm font-medium">Услуга</th>
-                      <th className="py-3 px-4 text-right text-sm font-medium">Стоимость</th>
-                      <th className="py-3 px-4 text-left text-sm font-medium">Оплата</th>
-                      <th className="py-3 px-4 text-left text-sm font-medium">•••</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentReport?.records && currentReport.records.length > 0 ? (
-                      currentReport.records.map((record, index) => (
-                        editingRecordId === record.id ? (
-                          // Режим редактирования
-                          <tr key={record.id} className="border-b border-border bg-secondary/10">
-                            <td className="py-2 px-4 align-middle">{index + 1}</td>
-                            <td className="py-2 px-4 align-middle">
-                              <input
-                                type="time"
-                                name="time"
-                                value={editFormData?.time || ''}
-                                onChange={handleEditFormChange}
-                                className="w-full px-2 py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                              />
-                            </td>
-                            <td className="py-2 px-4 align-middle">
-                              <input
-                                type="text"
-                                name="carInfo"
-                                value={editFormData?.carInfo || ''}
-                                onChange={handleEditFormChange}
-                                className="w-full px-2 py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                              />
-                            </td>
-                            <td className="py-2 px-4 align-middle">
-                              <input
-                                type="text"
-                                name="service"
-                                value={editFormData?.service || ''}
-                                onChange={handleEditFormChange}
-                                className="w-full px-2 py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                              />
-                            </td>
-                            <td className="py-2 px-4 align-middle">
-                              <input
-                                type="number"
-                                name="price"
-                                value={editFormData?.price || 0}
-                                onChange={handleEditFormChange}
-                                className="w-full px-2 py-1 border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring text-right"
-                                step="0.01"
-                                min="0"
-                              />
-                            </td>
-                            <td className="py-2 px-4 align-middle">
-                              <div className="flex flex-col gap-1">
-                                <div className="flex gap-1 flex-wrap">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEditPaymentTypeChange('cash')}
-                                    className={`px-2 py-1 border rounded text-sm transition-colors ${
-                                      editFormData?.paymentMethod?.type === 'cash'
-                                        ? 'bg-primary text-white border-primary'
-                                        : 'border-input hover:bg-secondary/50'
-                                    }`}
-                                  >
-                                    Нал
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEditPaymentTypeChange('card')}
-                                    className={`px-2 py-1 border rounded text-sm transition-colors ${
-                                      editFormData?.paymentMethod?.type === 'card'
-                                        ? 'bg-primary text-white border-primary'
-                                        : 'border-input hover:bg-secondary/50'
-                                    }`}
-                                  >
-                                    Карт
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEditPaymentTypeChange('organization')}
-                                    className={`px-2 py-1 border rounded text-sm transition-colors ${
-                                      editFormData?.paymentMethod?.type === 'organization'
-                                        ? 'bg-primary text-white border-primary'
-                                        : 'border-input hover:bg-secondary/50'
-                                    }`}
-                                  >
-                                    Орг
-                                  </button>
-                                </div>
-
-                                {editFormData?.paymentMethod?.type === 'organization' && (
-                                  <select
-                                    name="organizationId"
-                                    value={editFormData.paymentMethod.organizationId || ''}
-                                    onChange={handleEditOrganizationChange}
-                                    className="mt-1 px-2 py-1 border border-input rounded text-sm w-full"
-                                  >
-                                    <option value="" disabled>Выберите...</option>
-                                    {state.organizations.map(org => (
-                                      <option key={org.id} value={org.id}>
-                                        {org.name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-2 px-4 align-middle">
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={saveRecordChanges}
-                                  className="p-1 rounded bg-green-100 text-green-600 hover:bg-green-200"
-                                  title="Сохранить"
-                                >
-                                  <Check className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={cancelEditing}
-                                  className="p-1 rounded bg-red-100 text-red-600 hover:bg-red-200"
-                                  title="Отменить"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ) : (
-                          // Режим просмотра
-                          <tr key={record.id} className="border-b border-border hover:bg-muted/30">
-                            <td className="py-3 px-4">{index + 1}</td>
-                            <td className="py-3 px-4">{record.time}</td>
-                            <td className="py-3 px-4">{record.carInfo}</td>
-                            <td className="py-3 px-4">{record.service}</td>
-                            <td className="py-3 px-4 text-right font-medium">{record.price.toFixed(2)}</td>
-                            <td className="py-3 px-4">
-                              {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => startEditing(record)}
-                                  className="p-1 rounded hover:bg-secondary/50"
-                                  title="Редактировать"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => deleteRecord(record.id)}
-                                  className="p-1 rounded hover:bg-red-100 hover:text-red-600"
-                                  title="Удалить"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        )
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={7} className="py-8 text-center text-muted-foreground">
-                          За выбранную дату нет записей. Нажмите кнопку "Добавить помытую машину", чтобы создать запись.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              <div className="text-center py-8 text-muted-foreground">
+                <p>Нет работающих сотрудников на выбранную дату.</p>
+                <p className="text-sm mt-1">Выберите сотрудников для смены выше.</p>
               </div>
             )}
           </div>
@@ -1039,6 +940,33 @@ const HomePage: React.FC = () => {
             clickPosition={clickPosition}
             employeeRoles={employeeRoles}
           />}
+
+          {/* Модальное окно детальной таблицы работника */}
+          {employeeModalOpen && selectedEmployeeId && (
+            <EmployeeDetailModal
+              employeeId={selectedEmployeeId}
+              onClose={() => {
+                setEmployeeModalOpen(false);
+                setSelectedEmployeeId(null);
+              }}
+              currentReport={currentReport}
+              employees={state.employees}
+              organizations={state.organizations}
+            />
+          )}
+
+          {/* Модальное окно ежедневной ведомости */}
+          {dailyReportModalOpen && (
+            <DailyReportModal
+              onClose={() => setDailyReportModalOpen(false)}
+              currentReport={currentReport}
+              employees={state.employees}
+              organizations={state.organizations}
+              selectedDate={selectedDate}
+              onExport={exportToWord}
+              isExporting={loading.exporting}
+            />
+          )}
 
         </div>
 
@@ -1720,6 +1648,335 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
             )}
           </>
         )}
+      </div>
+    </div>
+  );
+};
+
+// Интерфейс модального окна детальной таблицы работника
+interface EmployeeDetailModalProps {
+  employeeId: string;
+  onClose: () => void;
+  currentReport: DailyReport | null;
+  employees: Employee[];
+  organizations: Organization[];
+}
+
+const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
+  employeeId,
+  onClose,
+  currentReport,
+  employees,
+  organizations
+}) => {
+  const employee = employees.find(emp => emp.id === employeeId);
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<CarWashRecord> | null>(null);
+
+  if (!employee || !currentReport) {
+    return null;
+  }
+
+  // Фильтруем записи для конкретного работника
+  const employeeRecords = currentReport.records?.filter(record =>
+    record.employeeIds.includes(employeeId)
+  ) || [];
+
+  // Получить название организации по ID
+  const getOrganizationName = (id: string): string => {
+    const organization = organizations.find(org => org.id === id);
+    return organization ? organization.name : 'Неизвестная организация';
+  };
+
+  // Формирование текстового представления способа оплаты для таблицы
+  const getPaymentMethodDisplay = (type: string, organizationId?: string): string => {
+    if (type === 'cash') return 'Наличные';
+    if (type === 'card') return 'Карта';
+    if (type === 'organization' && organizationId) return getOrganizationName(organizationId);
+    return 'Неизвестный';
+  };
+
+  // Функция для начала редактирования записи
+  const startEditing = (record: CarWashRecord) => {
+    setEditingRecordId(record.id);
+    setEditFormData({
+      ...record,
+    });
+  };
+
+  // Функция для отмены редактирования
+  const cancelEditing = () => {
+    setEditingRecordId(null);
+    setEditFormData(null);
+  };
+
+  // Общая сумма работника
+  const totalEarnings = employeeRecords.reduce((sum, record) => sum + record.price, 0);
+
+  return (
+    <Modal isOpen={true} onClose={onClose} className="max-w-4xl">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold">Детали работы - {employee.name}</h3>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Всего машин:</span>
+            <span className="font-medium">{employeeRecords.length}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Общая сумма:</span>
+            <span className="font-medium">{totalEarnings.toFixed(2)} BYN</span>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto max-h-96">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="py-3 px-4 text-left text-sm font-medium">№</th>
+                <th className="py-3 px-4 text-left text-sm font-medium">Время</th>
+                <th className="py-3 px-4 text-left text-sm font-medium">Авто</th>
+                <th className="py-3 px-4 text-left text-sm font-medium">Услуга</th>
+                <th className="py-3 px-4 text-right text-sm font-medium">Стоимость</th>
+                <th className="py-3 px-4 text-left text-sm font-medium">Оплата</th>
+                <th className="py-3 px-4 text-left text-sm font-medium">Другие работники</th>
+              </tr>
+            </thead>
+            <tbody>
+              {employeeRecords.length > 0 ? (
+                employeeRecords.map((record, index) => (
+                  <tr key={record.id} className="border-b border-border hover:bg-muted/30">
+                    <td className="py-3 px-4">{index + 1}</td>
+                    <td className="py-3 px-4">{record.time}</td>
+                    <td className="py-3 px-4">{record.carInfo}</td>
+                    <td className="py-3 px-4">{record.service}</td>
+                    <td className="py-3 px-4 text-right font-medium">{record.price.toFixed(2)}</td>
+                    <td className="py-3 px-4">
+                      {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
+                    </td>
+                    <td className="py-3 px-4 text-xs">
+                      {record.employeeIds
+                        .filter(id => id !== employeeId)
+                        .map(id => employees.find(emp => emp.id === id)?.name)
+                        .filter(Boolean)
+                        .join(', ') || 'Нет'}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                    У этого работника нет записей за выбранную дату.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+// Интерфейс модального окна ежедневной ведомости
+interface DailyReportModalProps {
+  onClose: () => void;
+  currentReport: DailyReport | null;
+  employees: Employee[];
+  organizations: Organization[];
+  selectedDate: string;
+  onExport: () => void;
+  isExporting: boolean;
+}
+
+const DailyReportModal: React.FC<DailyReportModalProps> = ({
+  onClose,
+  currentReport,
+  employees,
+  organizations,
+  selectedDate,
+  onExport,
+  isExporting
+}) => {
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<CarWashRecord> | null>(null);
+
+  // Получить название организации по ID
+  const getOrganizationName = (id: string): string => {
+    const organization = organizations.find(org => org.id === id);
+    return organization ? organization.name : 'Неизвестная организация';
+  };
+
+  // Формирование текстового представления способа оплаты для таблицы
+  const getPaymentMethodDisplay = (type: string, organizationId?: string): string => {
+    if (type === 'cash') return 'Наличные';
+    if (type === 'card') return 'Карта';
+    if (type === 'organization' && organizationId) return getOrganizationName(organizationId);
+    return 'Неизвестный';
+  };
+
+  // Функция для начала редактирования записи
+  const startEditing = (record: CarWashRecord) => {
+    setEditingRecordId(record.id);
+    setEditFormData({
+      ...record,
+    });
+  };
+
+  // Функция для отмены редактирования
+  const cancelEditing = () => {
+    setEditingRecordId(null);
+    setEditFormData(null);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
+      {/* Оверлей */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
+
+      {/* Модальное окно снизу */}
+      <div className="relative w-full max-w-6xl bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[80vh] overflow-hidden">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold">
+              Ежедневная ведомость - {format(new Date(selectedDate), 'dd.MM.yyyy')}
+            </h3>
+            <div className="flex gap-2">
+              <button
+                onClick={onExport}
+                disabled={isExporting || !currentReport}
+                className="inline-flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/90 transition-colors disabled:opacity-50 text-sm"
+              >
+                {isExporting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Экспорт...
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-4 h-4" />
+                    Экспорт в Word
+                  </>
+                )}
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto max-h-[60vh]">
+            <table className="w-full">
+              <thead className="sticky top-0 bg-white dark:bg-gray-800">
+                <tr className="border-b border-border">
+                  <th className="py-3 px-4 text-left text-sm font-medium">№</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium">Время</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium">Авто</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium">Услуга</th>
+                  <th className="py-3 px-4 text-right text-sm font-medium">Стоимость</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium">Оплата</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium">Сотрудники</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium">•••</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentReport?.records && currentReport.records.length > 0 ? (
+                  currentReport.records.map((record, index) => (
+                    <tr key={record.id} className="border-b border-border hover:bg-muted/30">
+                      <td className="py-3 px-4">{index + 1}</td>
+                      <td className="py-3 px-4">{record.time}</td>
+                      <td className="py-3 px-4">{record.carInfo}</td>
+                      <td className="py-3 px-4">{record.service}</td>
+                      <td className="py-3 px-4 text-right font-medium">{record.price.toFixed(2)}</td>
+                      <td className="py-3 px-4">
+                        {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
+                      </td>
+                      <td className="py-3 px-4 text-xs">
+                        {record.employeeIds
+                          .map(id => employees.find(emp => emp.id === id)?.name)
+                          .filter(Boolean)
+                          .join(', ')}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => startEditing(record)}
+                            className="p-1 rounded hover:bg-secondary/50"
+                            title="Редактировать"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="p-1 rounded hover:bg-red-100 hover:text-red-600"
+                            title="Удалить"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-muted-foreground">
+                      За выбранную дату нет записей.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Итоги */}
+          {currentReport && (
+            <div className="mt-4 pt-4 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">Наличные</div>
+                <div className="font-medium">{currentReport.totalCash.toFixed(2)} BYN</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">Карта</div>
+                <div className="font-medium">{currentReport.totalNonCash.toFixed(2)} BYN</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">Безнал</div>
+                <div className="font-medium">
+                  {(() => {
+                    const orgSum = currentReport.records?.reduce((sum, record) => {
+                      return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                    }, 0) || 0;
+                    return orgSum.toFixed(2);
+                  })()} BYN
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">Всего</div>
+                <div className="font-bold">
+                  {(() => {
+                    const totalRevenue = currentReport.records?.reduce((sum, record) => {
+                      return sum + record.price;
+                    }, 0) || 0;
+                    return totalRevenue.toFixed(2);
+                  })()} BYN
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
