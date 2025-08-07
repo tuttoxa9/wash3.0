@@ -206,49 +206,20 @@ h1, h2, h3, h4, h5, h6 {
   /* Стили для карточек сотрудников */
   .employee-card {
     @apply bg-card border border-border/20 text-card-foreground;
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+    background: hsl(var(--card));
     box-shadow: var(--card-shadow);
-  }
-
-  .employee-card:hover {
-    @apply shadow-xl border-border/40;
-    transform: translateY(-2px) scale(1.02);
-  }
-
-  /* Адаптация для светлой темы */
-  :root .employee-card {
-    background: linear-gradient(135deg,
-      hsl(var(--card)) 0%,
-      hsl(210 40% 99%) 50%,
-      hsl(var(--muted)) 100%);
   }
 
   /* Адаптация для темной темы */
   .dark .employee-card {
-    background: linear-gradient(135deg,
-      hsl(var(--card)) 0%,
-      hsl(222 47% 13%) 50%,
-      hsl(var(--muted)) 100%);
+    background: hsl(var(--card));
     @apply border-border/30;
-  }
-
-  .dark .employee-card:hover {
-    @apply border-border/50;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
   }
 
   /* Адаптация для черной темы */
   .black .employee-card {
-    background: linear-gradient(135deg,
-      hsl(var(--card)) 0%,
-      hsl(0 0% 6%) 50%,
-      hsl(var(--muted)) 100%);
+    background: hsl(var(--card));
     @apply border-border/40;
-  }
-
-  .black .employee-card:hover {
-    @apply border-border/60;
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.9);
   }
 
   /* Аватар сотрудника */
@@ -310,11 +281,7 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Дополнительные эффекты для улучшения UX */
   .employee-card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .employee-card:active {
-    transform: translateY(0) scale(0.98);
+    transition: none;
   }
 
   /* Shimmer эффект при загрузке */

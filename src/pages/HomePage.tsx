@@ -717,23 +717,37 @@ const HomePage: React.FC = () => {
                 <p className="text-muted-foreground">Загрузка данных...</p>
               </div>
             ) : workingEmployees.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {workingEmployees.map(employee => {
                   const stats = getEmployeeStats(employee.id);
                   const role = employeeRoles[employee.id] || 'washer';
 
+                  // Расчет заработной платы сотрудника
+                  let dailySalary = 0;
+                  if (state.salaryCalculationMethod === 'minimumWithPercentage' && currentReport?.records) {
+                    const salaryCalculator = createSalaryCalculator(
+                      state.minimumPaymentSettings,
+                      currentReport.records,
+                      employeeRoles,
+                      state.employees
+                    );
+                    const salaryResults = salaryCalculator.calculateSalaries();
+                    const employeeSalary = salaryResults.find(result => result.employeeId === employee.id);
+                    dailySalary = employeeSalary ? employeeSalary.calculatedSalary : 0;
+                  }
+
                   return (
                     <div
                       key={employee.id}
-                      className={`employee-card rounded-xl p-4 cursor-pointer ${loading.dailyReport ? 'loading' : ''}`}
+                      className={`employee-card rounded-xl p-6 cursor-pointer ${loading.dailyReport ? 'loading' : ''}`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
                           <div className="employee-avatar">
-                            <User className="w-5 h-5 text-primary" />
+                            <User className="w-6 h-6 text-primary" />
                           </div>
-                          <h4 className="font-semibold text-sm text-card-foreground">{employee.name}</h4>
+                          <h4 className="font-semibold text-lg text-card-foreground">{employee.name}</h4>
                         </div>
                         <span
                           className={`employee-role-badge ${
@@ -744,20 +758,24 @@ const HomePage: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">Машин:</span>
-                          <span className="font-medium text-sm text-card-foreground">{stats.carCount}</span>
+                          <span className="text-sm text-muted-foreground">Машин помыто:</span>
+                          <span className="font-semibold text-lg text-card-foreground">{stats.carCount}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">Сумма:</span>
-                          <span className="font-medium text-sm text-card-foreground">{stats.totalEarnings.toFixed(2)} BYN</span>
+                          <span className="text-sm text-muted-foreground">Сумма услуг:</span>
+                          <span className="font-semibold text-lg text-card-foreground">{stats.totalEarnings.toFixed(2)} BYN</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">ЗП за день:</span>
+                          <span className="font-bold text-lg text-primary">{dailySalary.toFixed(2)} BYN</span>
                         </div>
                       </div>
 
                       <div className="employee-card-footer">
-                        <div className="flex items-center justify-center gap-1 text-xs text-primary">
-                          <Eye className="w-3 h-3" />
+                        <div className="flex items-center justify-center gap-2 text-sm text-primary">
+                          <Eye className="w-4 h-4" />
                           Нажмите для деталей
                         </div>
                       </div>
@@ -816,7 +834,7 @@ const HomePage: React.FC = () => {
               {/* Зарплата сотрудников */}
               <div className="card-with-shadow">
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  Зарплата
+                  Заработок
                   <span className="inline-flex items-center relative group ml-4">
                     <span className="w-5 h-5 flex items-center justify-center rounded-full border border-primary text-primary text-xs cursor-help">i</span>
                     <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-popover text-popover-foreground rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
@@ -1710,55 +1728,57 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const totalEarnings = employeeRecords.reduce((sum, record) => sum + record.price, 0);
 
   return (
-    <Modal isOpen={true} onClose={onClose} className="max-w-4xl">
+    <Modal isOpen={true} onClose={onClose} className="max-w-6xl max-h-[90vh]">
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold">Детали работы - {employee.name}</h3>
+          <h3 className="text-xl font-bold text-card-foreground">Детали работы - {employee.name}</h3>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-muted rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Всего машин:</span>
-            <span className="font-medium">{employeeRecords.length}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Общая сумма:</span>
-            <span className="font-medium">{totalEarnings.toFixed(2)} BYN</span>
+        <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Всего машин:</span>
+              <span className="font-semibold text-card-foreground">{employeeRecords.length}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Общая сумма:</span>
+              <span className="font-semibold text-card-foreground">{totalEarnings.toFixed(2)} BYN</span>
+            </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto max-h-96">
-          <table className="w-full">
+        <div className="overflow-x-auto max-h-[60vh]">
+          <table className="w-full bg-card">
             <thead>
-              <tr className="border-b border-border">
-                <th className="py-3 px-4 text-left text-sm font-medium">№</th>
-                <th className="py-3 px-4 text-left text-sm font-medium">Время</th>
-                <th className="py-3 px-4 text-left text-sm font-medium">Авто</th>
-                <th className="py-3 px-4 text-left text-sm font-medium">Услуга</th>
-                <th className="py-3 px-4 text-right text-sm font-medium">Стоимость</th>
-                <th className="py-3 px-4 text-left text-sm font-medium">Оплата</th>
-                <th className="py-3 px-4 text-left text-sm font-medium">Другие работники</th>
+              <tr className="border-b border-border bg-muted/30">
+                <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">№</th>
+                <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Время</th>
+                <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Авто</th>
+                <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Услуга</th>
+                <th className="py-4 px-4 text-right text-sm font-semibold text-card-foreground">Стоимость</th>
+                <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Оплата</th>
+                <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Другие работники</th>
               </tr>
             </thead>
             <tbody>
               {employeeRecords.length > 0 ? (
                 employeeRecords.map((record, index) => (
-                  <tr key={record.id} className="border-b border-border hover:bg-muted/30">
-                    <td className="py-3 px-4">{index + 1}</td>
-                    <td className="py-3 px-4">{record.time}</td>
-                    <td className="py-3 px-4">{record.carInfo}</td>
-                    <td className="py-3 px-4">{record.service}</td>
-                    <td className="py-3 px-4 text-right font-medium">{record.price.toFixed(2)}</td>
-                    <td className="py-3 px-4">
+                  <tr key={record.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                    <td className="py-4 px-4 text-card-foreground font-medium">{index + 1}</td>
+                    <td className="py-4 px-4 text-card-foreground">{record.time}</td>
+                    <td className="py-4 px-4 text-card-foreground">{record.carInfo}</td>
+                    <td className="py-4 px-4 text-card-foreground">{record.service}</td>
+                    <td className="py-4 px-4 text-right font-semibold text-card-foreground">{record.price.toFixed(2)} BYN</td>
+                    <td className="py-4 px-4 text-card-foreground">
                       {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
                     </td>
-                    <td className="py-3 px-4 text-xs">
+                    <td className="py-4 px-4 text-sm text-muted-foreground">
                       {record.employeeIds
                         .filter(id => id !== employeeId)
                         .map(id => employees.find(emp => emp.id === id)?.name)
@@ -1769,7 +1789,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
                     У этого работника нет записей за выбранную дату.
                   </td>
                 </tr>
@@ -1842,17 +1862,17 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
       />
 
       {/* Модальное окно снизу */}
-      <div className="relative w-full max-w-6xl bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[80vh] overflow-hidden">
+      <div className="relative w-full max-w-7xl bg-card rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-hidden border border-border">
         <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-bold text-card-foreground">
               Ежедневная ведомость - {format(new Date(selectedDate), 'dd.MM.yyyy')}
             </h3>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={onExport}
                 disabled={isExporting || !currentReport}
-                className="inline-flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/90 transition-colors disabled:opacity-50 text-sm"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/90 transition-colors disabled:opacity-50"
               >
                 {isExporting ? (
                   <>
@@ -1868,56 +1888,56 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
               </button>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          <div className="overflow-x-auto max-h-[60vh]">
-            <table className="w-full">
-              <thead className="sticky top-0 bg-white dark:bg-gray-800">
-                <tr className="border-b border-border">
-                  <th className="py-3 px-4 text-left text-sm font-medium">№</th>
-                  <th className="py-3 px-4 text-left text-sm font-medium">Время</th>
-                  <th className="py-3 px-4 text-left text-sm font-medium">Авто</th>
-                  <th className="py-3 px-4 text-left text-sm font-medium">Услуга</th>
-                  <th className="py-3 px-4 text-right text-sm font-medium">Стоимость</th>
-                  <th className="py-3 px-4 text-left text-sm font-medium">Оплата</th>
-                  <th className="py-3 px-4 text-left text-sm font-medium">Сотрудники</th>
-                  <th className="py-3 px-4 text-left text-sm font-medium">•••</th>
+          <div className="overflow-x-auto max-h-[65vh]">
+            <table className="w-full bg-card">
+              <thead className="sticky top-0 bg-card z-10">
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">№</th>
+                  <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Время</th>
+                  <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Авто</th>
+                  <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Услуга</th>
+                  <th className="py-4 px-4 text-right text-sm font-semibold text-card-foreground">Стоимость</th>
+                  <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Оплата</th>
+                  <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Сотрудники</th>
+                  <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Действия</th>
                 </tr>
               </thead>
               <tbody>
                 {currentReport?.records && currentReport.records.length > 0 ? (
                   currentReport.records.map((record, index) => (
-                    <tr key={record.id} className="border-b border-border hover:bg-muted/30">
-                      <td className="py-3 px-4">{index + 1}</td>
-                      <td className="py-3 px-4">{record.time}</td>
-                      <td className="py-3 px-4">{record.carInfo}</td>
-                      <td className="py-3 px-4">{record.service}</td>
-                      <td className="py-3 px-4 text-right font-medium">{record.price.toFixed(2)}</td>
-                      <td className="py-3 px-4">
+                    <tr key={record.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                      <td className="py-4 px-4 text-card-foreground font-medium">{index + 1}</td>
+                      <td className="py-4 px-4 text-card-foreground">{record.time}</td>
+                      <td className="py-4 px-4 text-card-foreground">{record.carInfo}</td>
+                      <td className="py-4 px-4 text-card-foreground">{record.service}</td>
+                      <td className="py-4 px-4 text-right font-semibold text-card-foreground">{record.price.toFixed(2)} BYN</td>
+                      <td className="py-4 px-4 text-card-foreground">
                         {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
                       </td>
-                      <td className="py-3 px-4 text-xs">
+                      <td className="py-4 px-4 text-sm text-muted-foreground">
                         {record.employeeIds
                           .map(id => employees.find(emp => emp.id === id)?.name)
                           .filter(Boolean)
                           .join(', ')}
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-1">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
                           <button
                             onClick={() => startEditing(record)}
-                            className="p-1 rounded hover:bg-secondary/50"
+                            className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
                             title="Редактировать"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            className="p-1 rounded hover:bg-red-100 hover:text-red-600"
+                            className="p-2 rounded-lg hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 transition-colors"
                             title="Удалить"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1928,7 +1948,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
                       За выбранную дату нет записей.
                     </td>
                   </tr>
@@ -1939,35 +1959,37 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
 
           {/* Итоги */}
           {currentReport && (
-            <div className="mt-4 pt-4 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground">Наличные</div>
-                <div className="font-medium">{currentReport.totalCash.toFixed(2)} BYN</div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground">Карта</div>
-                <div className="font-medium">{currentReport.totalNonCash.toFixed(2)} BYN</div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground">Безнал</div>
-                <div className="font-medium">
-                  {(() => {
-                    const orgSum = currentReport.records?.reduce((sum, record) => {
-                      return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
-                    }, 0) || 0;
-                    return orgSum.toFixed(2);
-                  })()} BYN
+            <div className="mt-6 pt-6 border-t border-border">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center p-4 bg-muted/30 rounded-lg">
+                  <div className="text-sm font-medium text-muted-foreground mb-1">Наличные</div>
+                  <div className="text-xl font-bold text-card-foreground">{currentReport.totalCash.toFixed(2)} BYN</div>
                 </div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground">Всего</div>
-                <div className="font-bold">
-                  {(() => {
-                    const totalRevenue = currentReport.records?.reduce((sum, record) => {
-                      return sum + record.price;
-                    }, 0) || 0;
-                    return totalRevenue.toFixed(2);
-                  })()} BYN
+                <div className="text-center p-4 bg-muted/30 rounded-lg">
+                  <div className="text-sm font-medium text-muted-foreground mb-1">Карта</div>
+                  <div className="text-xl font-bold text-card-foreground">{currentReport.totalNonCash.toFixed(2)} BYN</div>
+                </div>
+                <div className="text-center p-4 bg-muted/30 rounded-lg">
+                  <div className="text-sm font-medium text-muted-foreground mb-1">Безнал</div>
+                  <div className="text-xl font-bold text-card-foreground">
+                    {(() => {
+                      const orgSum = currentReport.records?.reduce((sum, record) => {
+                        return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                      }, 0) || 0;
+                      return orgSum.toFixed(2);
+                    })()} BYN
+                  </div>
+                </div>
+                <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+                  <div className="text-sm font-medium text-muted-foreground mb-1">Всего</div>
+                  <div className="text-2xl font-bold text-primary">
+                    {(() => {
+                      const totalRevenue = currentReport.records?.reduce((sum, record) => {
+                        return sum + record.price;
+                      }, 0) || 0;
+                      return totalRevenue.toFixed(2);
+                    })()} BYN
+                  </div>
                 </div>
               </div>
             </div>
