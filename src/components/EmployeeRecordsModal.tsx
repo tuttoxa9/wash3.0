@@ -323,6 +323,21 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
 }) => {
   const { state } = useAppContext();
 
+  const getPaymentMethodLabel = (method: string, organizationId?: string) => {
+    switch (method) {
+      case 'cash': return 'Наличные';
+      case 'card': return 'Карта';
+      case 'organization': {
+        if (organizationId) {
+          const organization = state.organizations.find(org => org.id === organizationId);
+          return organization ? organization.name : 'Организация';
+        }
+        return 'Организация';
+      }
+      default: return method;
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
