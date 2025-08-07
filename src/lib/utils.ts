@@ -24,7 +24,7 @@ export const generatePeriodReportDocx = (
 
   // Заголовок отчета
   const title = new Paragraph({
-    text: `${periodTitle} ООО Автомойка МО`,
+    text: `${periodTitle} DetailLab`,
     heading: HeadingLevel.HEADING_1,
     spacing: { after: 100 }
   });
@@ -434,7 +434,7 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
         children: [
           // Заголовок отчета
           new Paragraph({
-            text: "Ведомость ежедневная выполненных работ ООО Автомойка МО",
+            text: "Ведомость ежедневная выполненных работ DetailLab",
             heading: HeadingLevel.HEADING_1,
             spacing: { after: 100 }
           }),
