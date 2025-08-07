@@ -717,7 +717,7 @@ const HomePage: React.FC = () => {
                 <p className="text-muted-foreground">Загрузка данных...</p>
               </div>
             ) : workingEmployees.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {workingEmployees.map(employee => {
                   const stats = getEmployeeStats(employee.id);
                   const role = employeeRoles[employee.id] || 'washer';
@@ -725,19 +725,19 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:scale-105"
+                      className={`employee-card rounded-xl p-4 cursor-pointer ${loading.dailyReport ? 'loading' : ''}`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          <div className="employee-avatar">
                             <User className="w-5 h-5 text-primary" />
                           </div>
-                          <h4 className="font-semibold text-sm">{employee.name}</h4>
+                          <h4 className="font-semibold text-sm text-card-foreground">{employee.name}</h4>
                         </div>
                         <span
-                          className={`px-2 py-1 rounded-full text-xs text-white ${
-                            role === 'admin' ? 'bg-green-500' : 'bg-blue-500'
+                          className={`employee-role-badge ${
+                            role === 'admin' ? 'admin' : 'washer'
                           }`}
                         >
                           {role === 'admin' ? 'Админ' : 'Мойщик'}
@@ -747,15 +747,15 @@ const HomePage: React.FC = () => {
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-muted-foreground">Машин:</span>
-                          <span className="font-medium text-sm">{stats.carCount}</span>
+                          <span className="font-medium text-sm text-card-foreground">{stats.carCount}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-muted-foreground">Сумма:</span>
-                          <span className="font-medium text-sm">{stats.totalEarnings.toFixed(2)} BYN</span>
+                          <span className="font-medium text-sm text-card-foreground">{stats.totalEarnings.toFixed(2)} BYN</span>
                         </div>
                       </div>
 
-                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                      <div className="employee-card-footer">
                         <div className="flex items-center justify-center gap-1 text-xs text-primary">
                           <Eye className="w-3 h-3" />
                           Нажмите для деталей
