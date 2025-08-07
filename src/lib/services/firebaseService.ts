@@ -403,7 +403,7 @@ export const dailyReportService = {
       );
 
       const totalNonCash = updatedRecords.reduce(
-        (sum, rec) => sum + (rec.paymentMethod.type !== 'cash' ? rec.price : 0),
+        (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
         0
       );
 

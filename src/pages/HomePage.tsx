@@ -419,6 +419,9 @@ const HomePage: React.FC = () => {
             0
           );
 
+          // Также пересчитываем организации, хотя они не хранятся отдельно
+          // totalOrganizations можно вычислить как totalRevenue - totalCash - totalNonCash
+
           updatedReport.totalCash = totalCash;
           updatedReport.totalNonCash = totalNonCash;
 
@@ -469,6 +472,9 @@ const HomePage: React.FC = () => {
             (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
             0
           );
+
+          // Также пересчитываем организации, хотя они не хранятся отдельно
+          // totalOrganizations можно вычислить как totalRevenue - totalCash - totalNonCash
 
           updatedReport.records = updatedRecords;
           updatedReport.totalCash = totalCash;
