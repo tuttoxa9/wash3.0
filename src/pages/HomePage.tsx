@@ -38,6 +38,7 @@ const HomePage: React.FC = () => {
 
   // Добавим состояние и обработчики для предзаполнения данных из записи
   const [appointmentToConvert, setAppointmentToConvert] = useState<Appointment | null>(null);
+  const [preselectedEmployeeId, setPreselectedEmployeeId] = useState<string | null>(null);
 
   // Добавляем состояния для хранения позиции клика
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
@@ -102,11 +103,20 @@ const HomePage: React.FC = () => {
     if (isModalOpen) {
       setAppointmentToConvert(null);
       setClickPosition(null);
+      setPreselectedEmployeeId(null);
     } else if (event) {
       // Сохраняем позицию клика для анимации
       setClickPosition({ x: event.clientX, y: event.clientY });
     }
     setIsModalOpen(!isModalOpen);
+  };
+
+  // Функция для открытия модального окна добавления записи с предвыбранным сотрудником
+  const openAddRecordModalForEmployee = (employeeId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Предотвращаем открытие детального модального окна
+    setPreselectedEmployeeId(employeeId);
+    setClickPosition({ x: event.clientX, y: event.clientY });
+    setIsModalOpen(true);
   };
 
   // Обработчик изменения даты через календарь
@@ -553,6 +563,7 @@ const HomePage: React.FC = () => {
             <button
               onClick={(e) => {
                 setAppointmentToConvert(null); // Явно сбрасываем данные предзаполнения
+                setPreselectedEmployeeId(null); // Сбрасываем предвыбранного сотрудника
                 toggleModal(e);
               }}
               className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors text-sm touch-manipulation"
@@ -744,9 +755,13 @@ const HomePage: React.FC = () => {
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="employee-avatar">
-                            <User className="w-6 h-6 text-primary" />
-                          </div>
+                          <button
+                            onClick={(e) => openAddRecordModalForEmployee(employee.id, e)}
+                            className="employee-avatar hover:bg-primary/20 transition-colors rounded-lg p-2"
+                            title="Добавить запись для этого сотрудника"
+                          >
+                            <Plus className="w-6 h-6 text-primary" />
+                          </button>
                           <h4 className="font-semibold text-lg text-card-foreground">{employee.name}</h4>
                         </div>
                         <span
@@ -953,6 +968,7 @@ const HomePage: React.FC = () => {
             prefilledData={appointmentToConvert}
             clickPosition={clickPosition}
             employeeRoles={employeeRoles}
+            preselectedEmployeeId={preselectedEmployeeId}
           />}
 
           {/* Модальное окно детальной таблицы работника */}
@@ -998,9 +1014,10 @@ interface AddCarWashModalProps {
   prefilledData?: Appointment | null;
   clickPosition?: { x: number; y: number } | null;
   employeeRoles: Record<string, EmployeeRole>;
+  preselectedEmployeeId?: string | null;
 }
 
-const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate, prefilledData, clickPosition, employeeRoles }) => {
+const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate, prefilledData, clickPosition, employeeRoles, preselectedEmployeeId }) => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
 
@@ -1017,7 +1034,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
         service: prefilledData.service,
         price: 0, // Нужно указать цену
         paymentMethod: { type: 'cash' } as PaymentMethod,
-        employeeIds: [] // Не предзаполняем сотрудников
+        employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : []
       };
     }
 
@@ -1027,7 +1044,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
       service: '',
       price: 0,
       paymentMethod: { type: 'cash' } as PaymentMethod,
-      employeeIds: [] // Не предзаполняем сотрудников
+      employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : []
     };
   });
 
@@ -1728,7 +1745,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const totalEarnings = employeeRecords.reduce((sum, record) => sum + record.price, 0);
 
   return (
-    <Modal isOpen={true} onClose={onClose} className="max-w-6xl max-h-[95vh]">
+    <Modal isOpen={true} onClose={onClose} className="max-w-[98vw] max-h-[95vh]">
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-card-foreground">Детали работы - {employee.name}</h3>
