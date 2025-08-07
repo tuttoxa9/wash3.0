@@ -400,7 +400,7 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
                       <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{formatDate(record.date)}</td>
                       <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{record.time}</td>
                       <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{record.carInfo}</td>
-                      <td className="py-3 px-4">{record.service}</td>
+                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{record.service}</td>
                       <td className="py-3 px-4 text-right font-medium">{record.price.toFixed(2)}</td>
                     </tr>
                   ))}

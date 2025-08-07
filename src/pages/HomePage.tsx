@@ -899,10 +899,11 @@ const HomePage: React.FC = () => {
                     <span className="font-medium">Всего:</span>
                     <span className="font-bold">
                       {(() => {
-                        const orgSum = currentReport.records?.reduce((sum, record) => {
-                          return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                        // Считаем общую сумму всех записей напрямую
+                        const totalRevenue = currentReport.records?.reduce((sum, record) => {
+                          return sum + record.price;
                         }, 0) || 0;
-                        return (currentReport.totalCash + currentReport.totalNonCash + orgSum).toFixed(2);
+                        return totalRevenue.toFixed(2);
                       })()} BYN
                     </span>
                   </div>
@@ -953,12 +954,17 @@ const HomePage: React.FC = () => {
                                   Индивидуальные зарплаты:
                                 </p>
                                 <div className="space-y-1">
-                                  {salaryResults.map(result => (
-                                    <div key={result.employeeId} className="flex justify-between text-sm">
-                                      <span>{result.employeeName} ({result.role === 'admin' ? 'Админ' : 'Мойщик'})</span>
-                                      <span className="font-medium">{result.calculatedSalary.toFixed(2)} BYN</span>
-                                    </div>
-                                  ))}
+                                  {salaryResults.map(result => {
+                                    // Расчет почасовой оплаты с 9:00 до 21:00 (12 часов)
+                                    const hourlyRate = result.calculatedSalary / 12;
+
+                                    return (
+                                      <div key={result.employeeId} className="flex justify-between text-sm">
+                                        <span>{result.employeeName} ({result.role === 'admin' ? 'Админ' : 'Мойщик'}) ({hourlyRate.toFixed(2)} BYN/час)</span>
+                                        <span className="font-medium">{result.calculatedSalary.toFixed(2)} BYN</span>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </div>

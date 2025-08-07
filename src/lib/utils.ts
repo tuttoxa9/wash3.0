@@ -335,21 +335,24 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
     // Расчет ЗП
     const totalRevenue = report.totalCash + report.totalNonCash;
 
-    // Определяем дату и метод расчета из localStorage
-    const savedSalaryDate = localStorage.getItem('salaryCalculationDate') || format(new Date(), 'yyyy-MM-dd');
-    const savedSalaryMethod = localStorage.getItem('salaryCalculationMethod') || 'percentage';
-
-    // Определяем, какой метод расчета использовать
-    const useCurrentMethod = date >= savedSalaryDate;
-    const calculationMethod = useCurrentMethod ? savedSalaryMethod : 'percentage';
+    // Используем настройки из localStorage или переданные в функцию
+    const savedSalaryMethod = localStorage.getItem('salaryCalculationMethod') || 'minimumWithPercentage';
+    const minimumPaymentSettings = JSON.parse(localStorage.getItem('minimumPaymentSettings') || '{"minimumPaymentWasher":0,"percentageWasher":10,"minimumPaymentAdmin":0,"adminCashPercentage":3,"adminCarWashPercentage":2}');
 
     let salary = 0;
-    if (calculationMethod === 'percentage') {
-      // 27% от общей выручки
-      salary = totalRevenue * 0.27;
+    if (savedSalaryMethod === 'minimumWithPercentage') {
+      // Используем текущие настройки минимальной оплаты + процент
+      // Для простоты в экспорте используем процент мойщика от общей выручки
+      salary = totalRevenue * (minimumPaymentSettings.percentageWasher / 100);
+
+      // Если есть минимальная оплата на всех сотрудников, учитываем её
+      if (workingEmployees.length > 0) {
+        const totalMinimum = minimumPaymentSettings.minimumPaymentWasher * workingEmployees.length;
+        salary = Math.max(salary, totalMinimum);
+      }
     } else {
-      // 60 руб + 10% от общей выручки
-      salary = 60 + (totalRevenue * 0.1);
+      // Fallback на процентный метод (старый)
+      salary = totalRevenue * 0.27;
     }
 
     // Распределение на сотрудников
@@ -421,10 +424,12 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
   );
 
   // Получаем метод расчета для отображения
-  const savedSalaryMethod = localStorage.getItem('salaryCalculationMethod') || 'percentage';
-  const salaryMethodDescription = savedSalaryMethod === 'percentage'
-    ? '27% от общей выручки'
-    : '60 руб. + 10% от общей выручки';
+  const savedSalaryMethod = localStorage.getItem('salaryCalculationMethod') || 'minimumWithPercentage';
+  const minimumPaymentSettings = JSON.parse(localStorage.getItem('minimumPaymentSettings') || '{"minimumPaymentWasher":0,"percentageWasher":10,"minimumPaymentAdmin":0,"adminCashPercentage":3,"adminCarWashPercentage":2}');
+
+  const salaryMethodDescription = savedSalaryMethod === 'minimumWithPercentage'
+    ? `Минимальная оплата + ${minimumPaymentSettings.percentageWasher}% от выручки`
+    : '27% от общей выручки';
 
   // Создаем экземпляр документа
   const doc = new Document({

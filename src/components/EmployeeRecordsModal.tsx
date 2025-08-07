@@ -44,11 +44,17 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
 }) => {
   const { state } = useAppContext();
 
-  const getPaymentMethodLabel = (method: string) => {
+  const getPaymentMethodLabel = (method: string, organizationId?: string) => {
     switch (method) {
       case 'cash': return 'Наличные';
       case 'card': return 'Карта';
-      case 'organization': return 'Организация';
+      case 'organization': {
+        if (organizationId) {
+          const organization = state.organizations.find(org => org.id === organizationId);
+          return organization ? organization.name : 'Организация';
+        }
+        return 'Организация';
+      }
       default: return method;
     }
   };
@@ -505,7 +511,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                         <span className={`text-sm font-medium ${
                           state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
                         }`}>
-                          {method === 'cash' ? 'Наличные' : method === 'card' ? 'Карта' : 'Организация'}
+                          {getPaymentMethodLabel(method)}
                         </span>
                         <div className="flex gap-3 text-xs">
                           <span>{stats.count} оп.</span>
@@ -659,13 +665,17 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     return format(dateObj, 'dd MMMM yyyy', { locale: ru });
   };
 
-  const getPaymentMethodLabel = (method: string) => {
+  const getPaymentMethodLabel = (method: string, organizationId?: string) => {
     switch (method) {
       case 'cash':
         return 'Наличные';
       case 'card':
         return 'Карта';
       case 'organization':
+        if (organizationId) {
+          const organization = state.organizations.find(org => org.id === organizationId);
+          return organization ? organization.name : 'Организация';
+        }
         return 'Организация';
       default:
         return method;
@@ -1080,7 +1090,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
                                       {record.time || '—'}
                                     </span>
                                     <span className={`px-2 py-0.5 rounded text-xs border ${getPaymentMethodColor(record.paymentMethod.type)}`}>
-                                      {getPaymentMethodLabel(record.paymentMethod.type)}
+                                      {getPaymentMethodLabel(record.paymentMethod.type, record.paymentMethod.organizationId)}
                                     </span>
                                   </div>
                                   <div className={`font-medium text-sm truncate ${
