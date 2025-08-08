@@ -531,19 +531,14 @@ export const appointmentService = {
       console.log('Обновление записи на мойку с ID:', appointment.id);
       const appointmentRef = doc(db, 'appointments', appointment.id);
 
-      // Создаем объект обновления без id и других служебных полей
-      const updateData = {
-        date: appointment.date,
-        time: appointment.time,
-        carInfo: appointment.carInfo,
-        service: appointment.service,
-        clientName: appointment.clientName || '',
-        clientPhone: appointment.clientPhone || '',
-        status: appointment.status,
-        updatedAt: serverTimestamp()
-      };
+      // Создаем копию без id для обновления
+      const { id, ...updateData } = appointment;
 
-      await updateDoc(appointmentRef, updateData);
+      await updateDoc(appointmentRef, {
+        ...updateData,
+        updatedAt: serverTimestamp()
+      });
+
       console.log('Запись на мойку успешно обновлена');
       return true;
     } catch (error) {

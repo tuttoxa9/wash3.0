@@ -77,6 +77,16 @@ const RecordsPage: React.FC = () => {
 
   const { state, dispatch } = useAppContext();
 
+  // Отслеживание состояния модальных окон
+  useEffect(() => {
+    console.log('Состояние модальных окон:', {
+      showAddModal,
+      showEditModal,
+      showDetailsModal,
+      selectedAppointment: selectedAppointment?.id || null
+    });
+  }, [showAddModal, showEditModal, showDetailsModal, selectedAppointment]);
+
   // Загрузка записей
   useEffect(() => {
     const loadAppointments = async () => {
@@ -164,6 +174,7 @@ const RecordsPage: React.FC = () => {
   };
 
   const handleEditAppointment = (appointment: Appointment, event: React.MouseEvent) => {
+    console.log('handleEditAppointment вызван для записи:', appointment.id);
     setClickPosition({ x: event.clientX, y: event.clientY });
     setSelectedAppointment(appointment);
     setFormData({
@@ -176,6 +187,7 @@ const RecordsPage: React.FC = () => {
       status: appointment.status
     });
     setShowEditModal(true);
+    console.log('showEditModal установлен в true');
   };
 
   const handleViewDetails = (appointment: Appointment, event: React.MouseEvent) => {
@@ -211,13 +223,7 @@ const RecordsPage: React.FC = () => {
       if (showEditModal && selectedAppointment) {
         const updatedAppointment: Appointment = {
           ...selectedAppointment,
-          date: formData.date,
-          time: formData.time,
-          carInfo: formData.carInfo,
-          service: formData.service,
-          clientName: formData.clientName,
-          clientPhone: formData.clientPhone,
-          status: formData.status
+          ...formData
         };
 
         console.log('Обновляем запись:', updatedAppointment);
@@ -628,6 +634,7 @@ const RecordsPage: React.FC = () => {
                                       )}
                                       <button
                                         onClick={(e) => {
+                                          console.log('Клик по кнопке редактирования для записи:', appointment.id);
                                           e.stopPropagation();
                                           handleEditAppointment(appointment, e);
                                         }}
@@ -638,6 +645,7 @@ const RecordsPage: React.FC = () => {
                                       </button>
                                       <button
                                         onClick={(e) => {
+                                          console.log('Клик по кнопке удаления для записи:', appointment.id);
                                           e.stopPropagation();
                                           handleDeleteAppointment(appointment.id);
                                         }}
