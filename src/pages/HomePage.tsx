@@ -785,7 +785,26 @@ const HomePage: React.FC = () => {
                           <span className="font-semibold text-lg text-card-foreground">{stats.totalEarnings.toFixed(2)} BYN</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">ЗП за день:</span>
+                          <span className="text-sm text-muted-foreground">
+                            {(() => {
+                              const now = new Date();
+                              const currentHour = now.getHours();
+                              const currentMinute = now.getMinutes();
+                              const currentTimeInMinutes = currentHour * 60 + currentMinute;
+                              const workStartMinutes = 9 * 60;
+                              const workEndMinutes = 21 * 60;
+
+                              if (currentTimeInMinutes < workStartMinutes) {
+                                return "ЗП за день:";
+                              } else if (currentTimeInMinutes >= workEndMinutes) {
+                                return "ЗП за день:";
+                              } else {
+                                const workedMinutes = currentTimeInMinutes - workStartMinutes;
+                                const workedHours = workedMinutes / 60;
+                                return `ЗП за ${workedHours.toFixed(1)}ч:`;
+                              }
+                            })()}
+                          </span>
                           <span className="font-bold text-lg text-primary">{dailySalary.toFixed(2)} BYN</span>
                         </div>
                       </div>
@@ -933,27 +952,60 @@ const HomePage: React.FC = () => {
                                 </p>
                                 <div className="space-y-1">
                                   {salaryResults.map(result => {
-                                    // Расчет почасовой оплаты: если заработок за день меньше минималки, то от минималки
+                                    // Расчет почасовой оплаты с учётом текущего времени
                                     const calculateHourlyRate = () => {
-                                      const minSalary = result.role === 'admin'
-                                        ? state.minimumPaymentSettings.minimumPaymentAdmin
-                                        : state.minimumPaymentSettings.minimumPaymentWasher;
+                                      const now = new Date();
+                                      const currentHour = now.getHours();
+                                      const currentMinute = now.getMinutes();
+                                      const currentTimeInMinutes = currentHour * 60 + currentMinute;
 
-                                      // Если заработок за день вышел на минималку или больше, считаем от заработка
-                                      // Иначе считаем от минималки
-                                      const baseAmount = result.calculatedSalary >= minSalary
-                                        ? result.calculatedSalary
-                                        : minSalary;
+                                      // Рабочее время: 09:00 - 21:00
+                                      const workStartMinutes = 9 * 60; // 09:00 в минутах
+                                      const workEndMinutes = 21 * 60;   // 21:00 в минутах
 
-                                      // Полный рабочий день 12 часов (9:00-21:00)
-                                      return baseAmount / 12;
+                                      // Если сейчас не рабочее время, показываем полную дневную ставку
+                                      if (currentTimeInMinutes < workStartMinutes || currentTimeInMinutes >= workEndMinutes) {
+                                        return result.calculatedSalary / 12; // Полный день 12 часов
+                                      }
+
+                                      // Рассчитываем отработанное время в часах
+                                      const workedMinutes = Math.max(0, currentTimeInMinutes - workStartMinutes);
+                                      const workedHours = workedMinutes / 60;
+
+                                      // Если отработано менее часа, показываем почасовую ставку
+                                      if (workedHours < 1) {
+                                        return result.calculatedSalary / 12;
+                                      }
+
+                                      // Возвращаем заработок на данный момент, разделённый на отработанные часы
+                                      return result.calculatedSalary / workedHours;
                                     };
 
                                     const hourlyRate = calculateHourlyRate();
 
                                     return (
                                       <div key={result.employeeId} className="flex justify-between text-sm">
-                                        <span>{result.employeeName} ({result.role === 'admin' ? 'Админ' : 'Мойщик'}) ({hourlyRate.toFixed(2)} BYN/час)</span>
+                                        <span>{result.employeeName} ({result.role === 'admin' ? 'Админ' : 'Мойщик'}) ({(() => {
+                                          const now = new Date();
+                                          const currentHour = now.getHours();
+                                          const currentMinute = now.getMinutes();
+                                          const currentTimeInMinutes = currentHour * 60 + currentMinute;
+                                          const workStartMinutes = 9 * 60;
+                                          const workEndMinutes = 21 * 60;
+
+                                          if (currentTimeInMinutes < workStartMinutes || currentTimeInMinutes >= workEndMinutes) {
+                                            return `${hourlyRate.toFixed(2)} BYN/час`;
+                                          }
+
+                                          const workedMinutes = Math.max(0, currentTimeInMinutes - workStartMinutes);
+                                          const workedHours = workedMinutes / 60;
+
+                                          if (workedHours < 1) {
+                                            return `${hourlyRate.toFixed(2)} BYN/час`;
+                                          }
+
+                                          return `${hourlyRate.toFixed(2)} BYN/час за ${workedHours.toFixed(1)}ч`;
+                                        })()})</span>
                                         <span className="font-medium">{result.calculatedSalary.toFixed(2)} BYN</span>
                                       </div>
                                     );
