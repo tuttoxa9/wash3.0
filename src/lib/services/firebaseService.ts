@@ -528,12 +528,23 @@ export const appointmentService = {
   // Обновить существующую запись на мойку
   async update(appointment: Appointment): Promise<boolean> {
     try {
+      console.log('Обновление записи на мойку с ID:', appointment.id);
       const appointmentRef = doc(db, 'appointments', appointment.id);
-      await updateDoc(appointmentRef, {
-        ...appointment,
-        updatedAt: serverTimestamp()
-      });
 
+      // Создаем объект обновления без id и других служебных полей
+      const updateData = {
+        date: appointment.date,
+        time: appointment.time,
+        carInfo: appointment.carInfo,
+        service: appointment.service,
+        clientName: appointment.clientName || '',
+        clientPhone: appointment.clientPhone || '',
+        status: appointment.status,
+        updatedAt: serverTimestamp()
+      };
+
+      await updateDoc(appointmentRef, updateData);
+      console.log('Запись на мойку успешно обновлена');
       return true;
     } catch (error) {
       logFirebaseError('Ошибка обновления записи на мойку', error);
@@ -544,9 +555,10 @@ export const appointmentService = {
   // Удалить запись на мойку
   async delete(id: string): Promise<boolean> {
     try {
+      console.log('Удаление записи на мойку с ID:', id);
       const appointmentRef = doc(db, 'appointments', id);
       await deleteDoc(appointmentRef);
-
+      console.log('Запись на мойку успешно удалена');
       return true;
     } catch (error) {
       logFirebaseError('Ошибка удаления записи на мойку', error);

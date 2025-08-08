@@ -211,9 +211,16 @@ const RecordsPage: React.FC = () => {
       if (showEditModal && selectedAppointment) {
         const updatedAppointment: Appointment = {
           ...selectedAppointment,
-          ...formData
+          date: formData.date,
+          time: formData.time,
+          carInfo: formData.carInfo,
+          service: formData.service,
+          clientName: formData.clientName,
+          clientPhone: formData.clientPhone,
+          status: formData.status
         };
 
+        console.log('Обновляем запись:', updatedAppointment);
         const success = await appointmentService.update(updatedAppointment);
         if (success) {
           dispatch({ type: 'UPDATE_APPOINTMENT', payload: updatedAppointment });
@@ -253,12 +260,15 @@ const RecordsPage: React.FC = () => {
     setLoading(prev => ({ ...prev, deleting: true }));
 
     try {
+      console.log('Начинаем удаление записи с ID:', id);
       const success = await appointmentService.delete(id);
       if (success) {
         dispatch({ type: 'REMOVE_APPOINTMENT', payload: id });
         toast.success('Запись успешно удалена');
         handleCloseModal();
+        console.log('Запись успешно удалена из состояния');
       } else {
+        console.error('Не удалось удалить запись из Firebase');
         toast.error('Не удалось удалить запись');
       }
     } catch (error) {
@@ -271,6 +281,7 @@ const RecordsPage: React.FC = () => {
 
   const handleStatusChange = async (appointment: Appointment, newStatus: 'scheduled' | 'completed' | 'cancelled') => {
     try {
+      console.log('Изменяем статус записи', appointment.id, 'на', newStatus);
       const updatedAppointment: Appointment = {
         ...appointment,
         status: newStatus
@@ -282,7 +293,9 @@ const RecordsPage: React.FC = () => {
         const statusText = newStatus === 'completed' ? 'завершена' :
                           newStatus === 'cancelled' ? 'отменена' : 'запланирована';
         toast.success(`Запись ${statusText}`);
+        console.log('Статус записи успешно обновлен');
       } else {
+        console.error('Не удалось обновить статус записи в Firebase');
         toast.error('Не удалось обновить статус записи');
       }
     } catch (error) {
