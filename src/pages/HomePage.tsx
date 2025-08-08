@@ -613,8 +613,7 @@ const HomePage: React.FC = () => {
           <div className="flex flex-wrap justify-between items-center mb-2">
             <h3 className="text-base font-medium">
               {isShiftLocked && !isEditingShift
-                ? `Работали: ${workingEmployees.map(e => e.name).join(', ')}`
-                : 'Выберите сотрудников на смене:'}
+                ? `Работали: ${workingEmployees.map(e => e.name).join(', ')}` : 'Выберите сотрудников на смене:'}
             </h3>
             {isShiftLocked && (
               <button
@@ -908,7 +907,7 @@ const HomePage: React.FC = () => {
                     // Всегда используем минимальную оплату + процент
                     const methodToUse = state.salaryCalculationMethod;
 
-                    // Используем новый компонент расчёта зарплаты
+                    // Используем новый компонент расчета зарплаты
                     if (methodToUse === 'minimumWithPercentage' && currentReport?.records) {
                       const salaryCalculator = createSalaryCalculator(
                         state.minimumPaymentSettings,
@@ -934,37 +933,23 @@ const HomePage: React.FC = () => {
                                 </p>
                                 <div className="space-y-1">
                                   {salaryResults.map(result => {
-                                    // Динамический расчет почасовой оплаты в зависимости от времени
-                                    const calculateCurrentHourlyRate = () => {
-                                      if (!isCurrentDate) {
-                                        // Если это не сегодняшний день, используем полный рабочий день (12 часов)
-                                        return result.calculatedSalary / 12;
-                                      }
+                                    // Расчет почасовой оплаты: если заработок за день меньше минималки, то от минималки
+                                    const calculateHourlyRate = () => {
+                                      const minSalary = result.role === 'admin'
+                                        ? state.minimumPaymentSettings.minimumPaymentAdmin
+                                        : state.minimumPaymentSettings.minimumPaymentWasher;
 
-                                      const now = new Date();
-                                      const currentHour = now.getHours();
-                                      const currentMinutes = now.getMinutes();
-                                      const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+                                      // Если заработок за день вышел на минималку или больше, считаем от заработка
+                                      // Иначе считаем от минималки
+                                      const baseAmount = result.calculatedSalary >= minSalary
+                                        ? result.calculatedSalary
+                                        : minSalary;
 
-                                      // Рабочий день с 9:00 до 21:00
-                                      const startTime = 9 * 60; // 9:00 в минутах
-                                      const endTime = 21 * 60; // 21:00 в минутах
-
-                                      if (currentTimeInMinutes < startTime) {
-                                        // Еще не начался рабочий день
-                                        return result.calculatedSalary / 12; // показываем полную ставку
-                                      } else if (currentTimeInMinutes >= endTime) {
-                                        // Рабочий день закончился
-                                        return result.calculatedSalary / 12; // показываем полную ставку
-                                      } else {
-                                        // В течение рабочего дня - пропорционально отработанному времени
-                                        const workedMinutes = currentTimeInMinutes - startTime;
-                                        const workedHours = workedMinutes / 60;
-                                        return workedHours > 0 ? result.calculatedSalary / workedHours : result.calculatedSalary / 12;
-                                      }
+                                      // Полный рабочий день 12 часов (9:00-21:00)
+                                      return baseAmount / 12;
                                     };
 
-                                    const hourlyRate = calculateCurrentHourlyRate();
+                                    const hourlyRate = calculateHourlyRate();
 
                                     return (
                                       <div key={result.employeeId} className="flex justify-between text-sm">
@@ -985,16 +970,16 @@ const HomePage: React.FC = () => {
                     if (methodToUse === 'none') {
                       return (
                         <div className="flex justify-between">
-                          <span>Выберите метод расчёта в настройках</span>
+                          <span>Выберите метод расчета в настройках</span>
                           <span className="font-medium">0.00 BYN</span>
                         </div>
                       );
                     }
 
-                    // Fallback - показываем что нет данных для расчёта
+                    // Fallback - показываем что нет данных для расчета
                     return (
                       <div className="flex justify-between">
-                        <span>Нет данных для расчёта</span>
+                        <span>Нет данных для расчета</span>
                         <span className="font-medium">0.00 BYN</span>
                       </div>
                     );
@@ -1888,6 +1873,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
   paymentFilter,
   onPaymentFilterChange
 }) => {
+  const { state, dispatch } = useAppContext();
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<CarWashRecord> | null>(null);
 
@@ -1917,6 +1903,187 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
   const cancelEditing = () => {
     setEditingRecordId(null);
     setEditFormData(null);
+  };
+
+  // Обработчик изменений в полях формы редактирования
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => {
+      if (!prev) return prev;
+
+      // Особая обработка для числовых значений
+      if (name === 'price') {
+        return { ...prev, [name]: Number.parseFloat(value) || 0 };
+      }
+
+      return { ...prev, [name]: value };
+    });
+  };
+
+  // Обработчик изменения способа оплаты при редактировании
+  const handleEditPaymentTypeChange = (type: 'cash' | 'card' | 'organization') => {
+    setEditFormData(prev => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        paymentMethod: {
+          type,
+          organizationId: type === 'organization' ? prev.paymentMethod?.organizationId : undefined,
+          organizationName: type === 'organization' ? prev.paymentMethod?.organizationName : undefined
+        }
+      };
+    });
+  };
+
+  // Обработчик выбора организации при редактировании
+  const handleEditOrganizationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const organizationId = e.target.value;
+    const organization = state.organizations.find(org => org.id === organizationId);
+
+    setEditFormData(prev => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        paymentMethod: {
+          ...prev.paymentMethod,
+          type: 'organization',
+          organizationId,
+          organizationName: organization?.name
+        }
+      };
+    });
+  };
+
+  // Обработчик выбора сотрудников при редактировании
+  const handleEditEmployeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+
+    setEditFormData(prev => {
+      if (!prev) return prev;
+
+      const currentEmployeeIds = prev.employeeIds || [];
+
+      if (checked) {
+        return {
+          ...prev,
+          employeeIds: [...currentEmployeeIds, value]
+        };
+      } else {
+        return {
+          ...prev,
+          employeeIds: currentEmployeeIds.filter(id => id !== value)
+        };
+      }
+    });
+  };
+
+  // Функция для сохранения изменений
+  const saveRecordChanges = async () => {
+    if (!editFormData || !editingRecordId) return;
+
+    try {
+      const record = {
+        ...editFormData,
+        id: editingRecordId
+      } as CarWashRecord;
+
+      // Обновляем запись в базе данных
+      const updatedRecord = await carWashService.update(record);
+
+      if (updatedRecord) {
+        // Обновляем запись в отчете
+        const updatedReport = {...currentReport};
+        if (updatedReport && updatedReport.records) {
+          updatedReport.records = updatedReport.records.map(rec =>
+            rec.id === editingRecordId ? record : rec
+          );
+
+          // Пересчитываем итоги
+          const totalCash = updatedReport.records.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === 'cash' ? rec.price : 0),
+            0
+          );
+
+          const totalNonCash = updatedReport.records.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
+            0
+          );
+
+          updatedReport.totalCash = totalCash;
+          updatedReport.totalNonCash = totalNonCash;
+
+          // Сохраняем обновленный отчет в базе данных
+          await dailyReportService.updateReport(updatedReport);
+
+          // Обновляем состояние
+          dispatch({
+            type: 'SET_DAILY_REPORT',
+            payload: { date: selectedDate, report: updatedReport }
+          });
+        }
+
+        // Сбрасываем состояние редактирования
+        cancelEditing();
+        toast.success('Запись успешно обновлена');
+      } else {
+        toast.error('Не удалось обновить запись');
+      }
+    } catch (error) {
+      console.error('Ошибка при обновлении записи:', error);
+      toast.error('Произошла ошибка при обновлении записи');
+    }
+  };
+
+  // Функция для удаления записи
+  const deleteRecord = async (recordId: string) => {
+    if (!confirm('Вы уверены, что хотите удалить эту запись?')) {
+      return;
+    }
+
+    try {
+      const success = await carWashService.delete(recordId);
+
+      if (success) {
+        // Обновляем отчет
+        const updatedReport = {...currentReport};
+        if (updatedReport && updatedReport.records) {
+          const updatedRecords = updatedReport.records.filter(rec => rec.id !== recordId);
+
+          // Пересчитываем итоги
+          const totalCash = updatedRecords.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === 'cash' ? rec.price : 0),
+            0
+          );
+
+          const totalNonCash = updatedRecords.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
+            0
+          );
+
+          updatedReport.records = updatedRecords;
+          updatedReport.totalCash = totalCash;
+          updatedReport.totalNonCash = totalNonCash;
+
+          // Сохраняем обновленный отчет в базе данных
+          await dailyReportService.updateReport(updatedReport);
+
+          // Обновляем состояние
+          dispatch({
+            type: 'SET_DAILY_REPORT',
+            payload: { date: selectedDate, report: updatedReport }
+          });
+        }
+
+        toast.success('Запись успешно удалена');
+      } else {
+        toast.error('Не удалось удалить запись');
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении записи:', error);
+      toast.error('Произошла ошибка при удалении записи');
+    }
   };
 
   // Фильтрация записей по методу оплаты
@@ -2027,41 +2194,181 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
               </thead>
               <tbody>
                 {filteredRecords.length > 0 ? (
-                  filteredRecords.map((record, index) => (
-                    <tr key={record.id} className="border-b border-border hover:bg-muted/20 transition-colors">
-                      <td className="py-4 px-4 text-card-foreground font-medium">{index + 1}</td>
-                      <td className="py-4 px-4 text-card-foreground">{record.time}</td>
-                      <td className="py-4 px-4 text-card-foreground">{record.carInfo}</td>
-                      <td className="py-4 px-4 text-card-foreground">{record.service}</td>
-                      <td className="py-4 px-4 text-right font-semibold text-card-foreground">{record.price.toFixed(2)} BYN</td>
-                      <td className="py-4 px-4 text-card-foreground">
-                        {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
-                      </td>
-                      <td className="py-4 px-4 text-sm text-muted-foreground">
-                        {record.employeeIds
-                          .map(id => employees.find(emp => emp.id === id)?.name)
-                          .filter(Boolean)
-                          .join(', ')}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => startEditing(record)}
-                            className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-                            title="Редактировать"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            className="p-2 rounded-lg hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 transition-colors"
-                            title="Удалить"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  filteredRecords.map((record, index) => {
+                    const isEditing = editingRecordId === record.id;
+
+                    if (isEditing && editFormData) {
+                      // Режим редактирования
+                      return (
+                        <tr key={record.id} className="border-b border-border bg-yellow-50 dark:bg-yellow-900/20">
+                          <td className="py-4 px-4 text-card-foreground font-medium">{index + 1}</td>
+                          <td className="py-4 px-4">
+                            <input
+                              type="time"
+                              name="time"
+                              value={editFormData.time || ''}
+                              onChange={handleEditFormChange}
+                              className="w-full px-2 py-1 border border-input rounded text-sm"
+                            />
+                          </td>
+                          <td className="py-4 px-4">
+                            <input
+                              type="text"
+                              name="carInfo"
+                              value={editFormData.carInfo || ''}
+                              onChange={handleEditFormChange}
+                              className="w-full px-2 py-1 border border-input rounded text-sm"
+                            />
+                          </td>
+                          <td className="py-4 px-4">
+                            <input
+                              type="text"
+                              name="service"
+                              value={editFormData.service || ''}
+                              onChange={handleEditFormChange}
+                              className="w-full px-2 py-1 border border-input rounded text-sm"
+                            />
+                          </td>
+                          <td className="py-4 px-4">
+                            <input
+                              type="number"
+                              name="price"
+                              value={editFormData.price || 0}
+                              onChange={handleEditFormChange}
+                              step="0.01"
+                              min="0"
+                              className="w-full px-2 py-1 border border-input rounded text-sm text-right"
+                            />
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="space-y-2">
+                              <div className="flex gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditPaymentTypeChange('cash')}
+                                  className={`px-2 py-1 text-xs rounded ${
+                                    editFormData.paymentMethod?.type === 'cash'
+                                      ? 'bg-primary text-white'
+                                      : 'bg-secondary'
+                                  }`}
+                                >
+                                  Нал
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditPaymentTypeChange('card')}
+                                  className={`px-2 py-1 text-xs rounded ${
+                                    editFormData.paymentMethod?.type === 'card'
+                                      ? 'bg-primary text-white'
+                                      : 'bg-secondary'
+                                  }`}
+                                >
+                                  Карта
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditPaymentTypeChange('organization')}
+                                  className={`px-2 py-1 text-xs rounded ${
+                                    editFormData.paymentMethod?.type === 'organization'
+                                      ? 'bg-primary text-white'
+                                      : 'bg-secondary'
+                                  }`}
+                                >
+                                  Орг
+                                </button>
+                              </div>
+                              {editFormData.paymentMethod?.type === 'organization' && (
+                                <select
+                                  value={editFormData.paymentMethod?.organizationId || ''}
+                                  onChange={handleEditOrganizationChange}
+                                  className="w-full px-2 py-1 border border-input rounded text-xs"
+                                >
+                                  <option value="">Выберите организацию</option>
+                                  {state.organizations.map(org => (
+                                    <option key={org.id} value={org.id}>
+                                      {org.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="space-y-1 max-h-20 overflow-y-auto">
+                              {employees.map(emp => (
+                                <label key={emp.id} className="flex items-center gap-1 text-xs">
+                                  <input
+                                    type="checkbox"
+                                    value={emp.id}
+                                    checked={editFormData.employeeIds?.includes(emp.id) || false}
+                                    onChange={handleEditEmployeeChange}
+                                    className="w-3 h-3"
+                                  />
+                                  <span className="truncate">{emp.name}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={saveRecordChanges}
+                                className="p-1 rounded-md bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
+                                title="Сохранить"
+                              >
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={cancelEditing}
+                                className="p-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                                title="Отмена"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    // Обычный режим просмотра
+                    return (
+                      <tr key={record.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                        <td className="py-4 px-4 text-card-foreground font-medium">{index + 1}</td>
+                        <td className="py-4 px-4 text-card-foreground">{record.time}</td>
+                        <td className="py-4 px-4 text-card-foreground">{record.carInfo}</td>
+                        <td className="py-4 px-4 text-card-foreground">{record.service}</td>
+                        <td className="py-4 px-4 text-right font-semibold text-card-foreground">{record.price.toFixed(2)} BYN</td>
+                        <td className="py-4 px-4 text-card-foreground">
+                          {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
+                        </td>
+                        <td className="py-4 px-4 text-sm text-muted-foreground">
+                          {record.employeeIds
+                            .map(id => employees.find(emp => emp.id === id)?.name)
+                            .filter(Boolean)
+                            .join(', ')}
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => startEditing(record)}
+                              className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+                              title="Редактировать"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => deleteRecord(record.id)}
+                              className="p-2 rounded-lg hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 transition-colors"
+                              title="Удалить"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-muted-foreground">
