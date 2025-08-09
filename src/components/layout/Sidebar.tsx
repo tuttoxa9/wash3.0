@@ -3,8 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download, LogOut } from 'lucide-react';
 import { useAppContext } from '@/lib/context/AppContext';
 import { useAuth } from '@/lib/context/AuthContext';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import type { ThemeMode } from '@/lib/types';
 
 interface SidebarProps {
@@ -22,7 +21,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     } catch (error) {
       console.error('Ошибка при выходе:', error);
     }
