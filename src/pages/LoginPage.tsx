@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -25,7 +24,8 @@ const LoginPage = () => {
     setError('');
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
       navigate('/');
     } catch (error: any) {
       setError('Неверный email или пароль');

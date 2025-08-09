@@ -1,7 +1,7 @@
 import { createContext, useReducer, useContext, type ReactNode, useEffect } from 'react';
 import type { AppState, AppAction, DailyReport, ThemeMode, Organization, Appointment, SalaryCalculationMethod, MinimumPaymentSettings } from '../types';
 import { format } from 'date-fns';
-import { employeeService, organizationService, serviceService, appointmentService, settingsService } from '@/lib/services/firebaseService';
+import { employeeService, organizationService, serviceService, appointmentService, settingsService } from '@/lib/services/supabaseService';
 
 // Начальное состояние приложения
 const initialState: AppState = {
