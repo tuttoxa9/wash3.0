@@ -164,7 +164,7 @@ const ThemeSettings: React.FC = () => {
             state.theme === 'black' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
           }`}
         >
-          <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center bg-black text-white ${
+          <div className={`w-4 h-4 sm:w-5 h-5 rounded-full flex items-center justify-center bg-black text-white ${
             state.theme === 'black' ? 'ring-2 ring-primary' : ''
           }`}>
             <span className="text-xs font-bold">B</span>
@@ -476,7 +476,7 @@ const SettingsPage: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  // Функция для загрузки сотрудников из Firebase
+  // Функция для загрузки сотрудников из Supabase
   const fetchEmployees = async () => {
     setLoading(prev => ({ ...prev, fetchEmployees: true }));
     try {
@@ -490,7 +490,7 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  // Функция для проверки соединения с Firebase
+  // Функция для проверки соединения с Supabase
   const checkFirebaseConnection = async () => {
     setConnectionStatus({ status: 'checking' });
     setLoading(prev => ({ ...prev, connection: true }));
@@ -498,20 +498,17 @@ const SettingsPage: React.FC = () => {
     const startTime = performance.now();
 
     try {
-      // Показываем информацию о попытке соединения
       toast.info('Проверка соединения с базой данных...');
-      console.log('Начинаем проверку соединения с Firebase...');
+      console.log('Начинаем проверку соединения с Supabase...');
 
-      // Используем оптимизированную функцию проверки соединения
       const connected = await databaseService.testConnection();
 
-      // Если успешно, вычисляем время
       const endTime = performance.now();
       const responseTime = Math.round(endTime - startTime);
 
       if (connected) {
         toast.success('Соединение с базой данных установлено успешно!');
-        console.log(`Соединение успешно, время отклика: ${responseTime}ms`);
+        console.log(`Соединение (Supabase) успешно, время отклика: ${responseTime}ms`);
 
         setTimeout(() => {
           setConnectionStatus({
@@ -519,25 +516,16 @@ const SettingsPage: React.FC = () => {
             time: responseTime
           });
           setLoading(prev => ({ ...prev, connection: false }));
-        }, 500); // Небольшая задержка для лучшего визуального эффекта
+        }, 500);
       } else {
         throw new Error('Не удалось подключиться к базе данных');
       }
     } catch (error: any) {
-      console.error('Ошибка при проверке соединения с Firebase:', error);
+      console.error('Ошибка при проверке соединения с Supabase:', error);
 
-      // Более информативное сообщение об ошибке
-      let errorMessage = 'Не удалось подключиться к базе данных. ';
-
-      if (error.code === 'permission-denied') {
-        errorMessage += 'У вас нет прав доступа. Проверьте правила безопасности Firebase.';
-      } else if (error.code && error.code.includes('network')) {
-        errorMessage += 'Проблема с сетевым подключением. Проверьте ваше интернет-соединение.';
-      } else {
-        errorMessage += `${error.message || 'Неизвестная ошибка.'}`;
-      }
-
+      let errorMessage = 'Не удалось подключиться к базе данных.';
       toast.error(errorMessage);
+
       setConnectionStatus({ status: 'error' });
       setLoading(prev => ({ ...prev, connection: false }));
     }
@@ -553,7 +541,6 @@ const SettingsPage: React.FC = () => {
 
     setLoading(prev => ({ ...prev, employee: true }));
     try {
-      // Показываем информацию о попытке добавления
       toast.info(`Добавление сотрудника "${newEmployee.trim()}"...`);
       console.log('Начинаем добавление нового сотрудника:', newEmployee.trim());
 
@@ -572,16 +559,8 @@ const SettingsPage: React.FC = () => {
     } catch (error: any) {
       console.error('Ошибка при добавлении сотрудника:', error);
 
-      // Более информативное сообщение об ошибке
       let errorMessage = 'Не удалось добавить сотрудника. ';
-
-      if (error.code === 'permission-denied') {
-        errorMessage += 'У вас нет прав доступа для записи. Проверьте правила безопасности Firebase.';
-      } else if (error.code && error.code.includes('network')) {
-        errorMessage += 'Проблема с сетевым подключением. Проверьте ваше интернет-соединение.';
-      } else {
-        errorMessage += `${error.message || 'Неизвестная ошибка.'}`;
-      }
+      errorMessage += `${error.message || 'Неизвестная ошибка.'}`;
 
       toast.error(errorMessage);
     } finally {
@@ -615,13 +594,11 @@ const SettingsPage: React.FC = () => {
       const success = await databaseService.clearAllData();
 
       if (success) {
-        // Полностью очищаем состояние приложения
         dispatch({ type: 'SET_EMPLOYEES', payload: [] });
         dispatch({ type: 'SET_ORGANIZATIONS', payload: [] });
         dispatch({ type: 'SET_SERVICES', payload: [] });
         dispatch({ type: 'SET_APPOINTMENTS', payload: [] });
 
-        // Очищаем текущий дневной отчет
         dispatch({
           type: 'SET_DAILY_REPORT',
           payload: {
@@ -637,7 +614,6 @@ const SettingsPage: React.FC = () => {
           }
         });
 
-        // Сбрасываем настройки на дефолтные значения (минималка + %)
         dispatch({
           type: 'SET_SALARY_CALCULATION_METHOD',
           payload: {
@@ -657,7 +633,6 @@ const SettingsPage: React.FC = () => {
           }
         });
 
-        // Очищаем также localStorage от сохранённых настроек
         localStorage.removeItem('salaryCalculationMethod');
         localStorage.removeItem('salaryCalculationDate');
         localStorage.removeItem('minimumPaymentSettings');
@@ -687,7 +662,7 @@ const SettingsPage: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="card-with-shadow max-w-4xl mx-auto" // Увеличиваем максимальную ширину
+          className="card-with-shadow max-w-4xl mx-auto"
         >
           <div className="flex items-center mb-4">
             <h2 className="text-xl font-bold gradient-heading flex-1">Настройки системы</h2>
@@ -697,18 +672,12 @@ const SettingsPage: React.FC = () => {
             Управление сотрудниками, организациями и параметрами системы
           </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5"> {/* Мобильная адаптация грида */}
-            {/* Левая колонка */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
             <div className="space-y-5">
-              {/* Theme Settings */}
               <ThemeSettings />
 
-              {/* Новый блок: Настройки расчета заработной платы */}
               <SalaryCalculationSettings />
 
-
-
-              {/* Проверка соединения с Firebase */}
               <motion.div
                 className="p-3 border border-border rounded-lg bg-card"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
@@ -765,9 +734,7 @@ const SettingsPage: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Правая колонка - Сотрудники и Организации */}
             <div className="space-y-5">
-              {/* Блок Сотрудники */}
               <motion.div
                 className="p-3 border border-border rounded-lg bg-card"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
@@ -866,10 +833,8 @@ const SettingsPage: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Блок Организации (переместили сюда из левой колонки) */}
               <OrganizationsSettings />
 
-              {/* Раздел Управление данными */}
               <motion.div
                 className="p-3 border border-border rounded-lg"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
@@ -957,14 +922,12 @@ const SalaryCalculationSettings: React.FC = () => {
   const [savingError, setSavingError] = useState<string | null>(null);
   const [minimumSettings, setMinimumSettings] = useState<MinimumPaymentSettings>(state.minimumPaymentSettings);
 
-  // Загрузка метода расчета зарплаты из базы данных при монтировании компонента
   useEffect(() => {
     const loadSalaryCalculationMethod = async () => {
       try {
         const result = await settingsService.getSalaryCalculationMethod();
 
         if (result) {
-          // Обновляем состояние если значение получено из базы данных
           dispatch({
             type: 'SET_SALARY_CALCULATION_METHOD',
             payload: {
@@ -982,20 +945,16 @@ const SalaryCalculationSettings: React.FC = () => {
     loadSalaryCalculationMethod();
   }, [dispatch]);
 
-  // Обработчик изменения метода расчета зарплаты
   const handleSalaryMethodChange = async (method: SalaryCalculationMethod) => {
     setLoading(true);
     setSavingError(null);
 
     try {
-      // Получаем текущую дату
       const today = format(new Date(), 'yyyy-MM-dd');
 
-      // Сохраняем метод расчета зарплаты в базе данных
       const success = await settingsService.saveSalaryCalculationMethod(method, today);
 
       if (success) {
-        // Обновляем метод расчета зарплаты в контексте
         dispatch({
           type: 'SET_SALARY_CALCULATION_METHOD',
           payload: {
@@ -1019,11 +978,9 @@ const SalaryCalculationSettings: React.FC = () => {
     }
   };
 
-  // Обработчик сохранения настроек минимальной оплаты
   const handleSaveMinimumSettings = async () => {
     setLoading(true);
     try {
-      // Сохраняем настройки в базе данных
       const success = await settingsService.saveMinimumPaymentSettings(minimumSettings);
 
       if (success) {
@@ -1061,8 +1018,6 @@ const SalaryCalculationSettings: React.FC = () => {
       )}
 
       <div className="flex flex-col gap-3 mb-2">
-
-
         <motion.button
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
@@ -1093,7 +1048,6 @@ const SalaryCalculationSettings: React.FC = () => {
           )}
         </motion.button>
 
-        {/* Настройки для минимальной оплаты */}
         {state.salaryCalculationMethod === 'minimumWithPercentage' && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
