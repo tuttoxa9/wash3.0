@@ -7,7 +7,7 @@ import { useAppContext } from '@/lib/context/AppContext';
 import { Loader2, FileDown, Save, Check, Edit, Calendar, Plus, CheckCircle, X, ArrowRight, Trash2, User, Eye, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DailyReport, CarWashRecord, Employee, Appointment, EmployeeRole } from '@/lib/types';
-import { carWashService, dailyReportService, appointmentService, dailyRolesService } from '@/lib/services/firebaseService';
+import { carWashService, dailyReportService, appointmentService, dailyRolesService } from '@/lib/services/supabaseService';
 import { createSalaryCalculator } from '@/components/SalaryCalculator';
 import { generateDailyReportDocx } from '@/lib/utils';
 import { saveAs } from 'file-saver';
@@ -907,7 +907,7 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Зарплата сотрудников */}
+              {/* Заработок сотрудников */}
               <div className="card-with-shadow">
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
                   Заработок
@@ -952,7 +952,7 @@ const HomePage: React.FC = () => {
                                 </p>
                                 <div className="space-y-1">
                                   {salaryResults.map(result => {
-                                    // Расчет почасовой оплаты с учётом текущего времени
+                                    // Расчет почасовой оплаты с учетом текущего времени
                                     const calculateHourlyRate = () => {
                                       const now = new Date();
                                       const currentHour = now.getHours();
@@ -977,7 +977,7 @@ const HomePage: React.FC = () => {
                                         return result.calculatedSalary / 12;
                                       }
 
-                                      // Возвращаем заработок на данный момент, разделённый на отработанные часы
+                                      // Возвращаем заработок на данный момент, разделенный на отработанные часы
                                       return result.calculatedSalary / workedHours;
                                     };
 
@@ -1079,7 +1079,6 @@ const HomePage: React.FC = () => {
               onPaymentFilterChange={setPaymentFilter}
             />
           )}
-
         </div>
 
         {/* Виджет "Записи на мойку" */}

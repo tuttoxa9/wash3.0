@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAppContext } from '@/lib/context/AppContext';
 import { format, parseISO } from 'date-fns';
 import { Building, Calendar, Loader2, FileDown, X } from 'lucide-react';
-import { carWashService } from '@/lib/services/firebaseService';
+import { carWashService } from '@/lib/services/supabaseService';
 import type { CarWashRecord, Organization } from '@/lib/types';
 import { useToast } from '@/lib/hooks/useToast';
 import { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, TextRun, AlignmentType, BorderStyle } from 'docx';

@@ -27,7 +27,7 @@ import {
   Trash2,
   MoreVertical
 } from 'lucide-react';
-import { appointmentService } from '@/lib/services/firebaseService';
+import { appointmentService } from '@/lib/services/supabaseService';
 import { toast } from 'sonner';
 import type { Appointment } from '@/lib/types';
 import Modal from '@/components/ui/modal';
@@ -372,7 +372,7 @@ const RecordsPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground truncate">Записи</h2>
-            <p className="text-muted-foreground mt-1 text-sm">Управление записями на автомойку</p>
+            <p className="text-muted-foreground- mt-1 text-sm">Управление записями на автомойку</p>
           </div>
 
           <button

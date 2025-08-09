@@ -5,7 +5,7 @@ import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isA
 import { ru } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Calendar as CalendarIcon, X, Filter, Building, TrendingUp, FileDown } from 'lucide-react';
-import { carWashService, dailyRolesService } from '@/lib/services/firebaseService';
+import { carWashService, dailyRolesService } from '@/lib/services/supabaseService';
 import type { CarWashRecord, Employee } from '@/lib/types';
 import { createSalaryCalculator } from '@/components/SalaryCalculator';
 import { useToast } from '@/lib/hooks/useToast';
@@ -1015,10 +1015,6 @@ const ReportsPage: React.FC = () => {
               </div>
             </div>
           </div>
-
-
-
-
 
           {/* Итоговая таблица по сотрудникам */}
           <div className="mt-4">

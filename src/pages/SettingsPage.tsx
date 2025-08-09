@@ -4,7 +4,7 @@ import { Plus, Save, Loader2, AlertTriangle, Trash, Lock, Check, Cloud, RefreshC
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { useAppContext } from '@/lib/context/AppContext';
-import { employeeService, serviceService, databaseService, organizationService, settingsService } from '@/lib/services/firebaseService';
+import { employeeService, serviceService, databaseService, organizationService, settingsService } from '@/lib/services/supabaseService';
 import type { Employee, ThemeMode, Organization, SalaryCalculationMethod, MinimumPaymentSettings } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
 

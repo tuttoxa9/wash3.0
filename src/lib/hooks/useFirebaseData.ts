@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { employeeService, serviceService, dailyReportService } from '../services/firebaseService';
+import { employeeService, serviceService, dailyReportService } from '../services/supabaseService';
 import { format } from 'date-fns';
 
 // Хук для загрузки данных из Firebase
