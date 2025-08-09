@@ -293,3 +293,39 @@ export const dailyRolesService = {
     return this.saveDailyRoles(date, current);
   }
 };
+
+export const databaseService = {
+  async testConnection(): Promise<boolean> {
+    try {
+      const { error } = await supabase.from('employees').select('id').limit(1);
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      logSupabaseError('database.testConnection', e);
+      return false;
+    }
+  },
+  async clearAllData(): Promise<boolean> {
+    try {
+      // Delete from child tables first if there are FKs (we have none here)
+      const tables = [
+        'appointments',
+        'car_wash_records',
+        'daily_reports',
+        'daily_roles',
+        'services',
+        'organizations',
+        'employees',
+        'settings'
+      ];
+      for (const t of tables) {
+        const { error } = await supabase.from(t).delete().neq('id', null as any);
+        if (error) throw error;
+      }
+      return true;
+    } catch (e) {
+      logSupabaseError('database.clearAllData', e);
+      return false;
+    }
+  }
+};
