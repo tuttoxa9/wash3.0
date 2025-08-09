@@ -74,7 +74,7 @@ export const carWashService = {
       service: record.service,
       price: record.price,
       payment_method: record.paymentMethod, // JSONB
-      employee_ids: record.employeeIds,     // text[]
+      washer_id: (record as any).washerId ?? (record as any).washer_id ?? (Array.isArray((record as any).employeeIds) ? (record as any).employeeIds[0] : null),
     };
     const { data, error } = await supabase.from('car_wash_records').insert(payload).select('*').single();
     if (error) { logSupabaseError('carWash.add', error); return null; }
@@ -86,7 +86,7 @@ export const carWashService = {
       service: data.service,
       price: data.price,
       paymentMethod: data.payment_method,
-      employeeIds: data.employee_ids || [],
+      employeeIds: data.washer_id ? [data.washer_id] : [],
     };
   },
   async getByDate(date: string): Promise<CarWashRecord[]> {
@@ -100,7 +100,7 @@ export const carWashService = {
       service: r.service,
       price: r.price,
       paymentMethod: r.payment_method,
-      employeeIds: r.employee_ids || [],
+      employeeIds: r.washer_id ? [r.washer_id] : [],
     }));
   },
   async getByOrganization(organizationId: string): Promise<CarWashRecord[]> {
@@ -117,7 +117,7 @@ export const carWashService = {
       service: r.service,
       price: r.price,
       paymentMethod: r.payment_method,
-      employeeIds: r.employee_ids || [],
+      employeeIds: r.washer_id ? [r.washer_id] : [],
     }));
   },
   async update(record: CarWashRecord): Promise<boolean> {
@@ -129,7 +129,7 @@ export const carWashService = {
       service: rest.service,
       price: rest.price,
       payment_method: rest.paymentMethod,
-      employee_ids: rest.employeeIds,
+      washer_id: Array.isArray(rest.employeeIds) ? rest.employeeIds[0] : (rest as any).washerId ?? null,
       updated_at: new Date().toISOString(),
     };
     const { error } = await supabase.from('car_wash_records').update(payload).eq('id', id);
@@ -187,7 +187,10 @@ export const dailyReportService = {
     const records = [...current.records, record];
     const totalCash = records.reduce((s, r) => s + (r.paymentMethod.type === 'cash' ? r.price : 0), 0);
     const totalNonCash = records.reduce((s, r) => s + (r.paymentMethod.type === 'card' ? r.price : 0), 0);
-    const employeeIds = Array.from(new Set([...current.employeeIds, ...record.employeeIds]));
+    const employeeIds = Array.from(new Set([
+      ...current.employeeIds,
+      ...(Array.isArray(record.employeeIds) ? record.employeeIds : ((record as any).washerId ? [(record as any).washerId] : []))
+    ]));
 
     return await this.updateReport({ ...current, records, totalCash, totalNonCash, employeeIds });
   }

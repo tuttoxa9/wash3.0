@@ -40,19 +40,20 @@ create table if not exists car_wash_records (
   service text not null,
   price numeric not null,
   payment_method jsonb not null, -- { type: 'cash'|'card'|'organization', organizationId?, organizationName? }
-  employee_ids text[] not null default '{}',
+  washer_id text not null, -- exactly one washer per car, admins do not wash
   created_at timestamptz default now(),
   updated_at timestamptz
 );
 create index if not exists car_wash_records_date_idx on car_wash_records(date);
 create index if not exists car_wash_records_payment_org_idx on car_wash_records using gin (payment_method);
+create index if not exists car_wash_records_washer_idx on car_wash_records(washer_id);
 
 -- daily reports
 create table if not exists daily_reports (
   id text primary key, -- use YYYY-MM-DD as id
   date date not null,
-  employee_ids text[] not null default '{}',
-  records jsonb not null default '[]', -- array of CarWashRecord
+  employee_ids text[] not null default '{}', -- unique washers present that day
+  records jsonb not null default '[]', -- array of CarWashRecord-like summaries
   total_cash numeric not null default 0,
   total_non_cash numeric not null default 0,
   daily_employee_roles jsonb, -- { employeeId: role }
@@ -103,26 +104,50 @@ alter table settings enable row level security;
 alter table daily_roles enable row level security;
 
 -- basic policies: authenticated users can CRUD
-create policy if not exists "employees read" on employees for select using (auth.role() = 'authenticated');
-create policy if not exists "employees write" on employees for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- EMPLOYEES
+drop policy if exists "employees read" on employees;
+drop policy if exists "employees write" on employees;
+create policy "employees read" on employees for select using (auth.role() = 'authenticated');
+create policy "employees write" on employees for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
-create policy if not exists "organizations read" on organizations for select using (auth.role() = 'authenticated');
-create policy if not exists "organizations write" on organizations for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- ORGANIZATIONS
+drop policy if exists "organizations read" on organizations;
+drop policy if exists "organizations write" on organizations;
+create policy "organizations read" on organizations for select using (auth.role() = 'authenticated');
+create policy "organizations write" on organizations for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
-create policy if not exists "services read" on services for select using (auth.role() = 'authenticated');
-create policy if not exists "services write" on services for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- SERVICES
+drop policy if exists "services read" on services;
+drop policy if exists "services write" on services;
+create policy "services read" on services for select using (auth.role() = 'authenticated');
+create policy "services write" on services for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
-create policy if not exists "car records read" on car_wash_records for select using (auth.role() = 'authenticated');
-create policy if not exists "car records write" on car_wash_records for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- CAR WASH RECORDS
+drop policy if exists "car records read" on car_wash_records;
+drop policy if exists "car records write" on car_wash_records;
+create policy "car records read" on car_wash_records for select using (auth.role() = 'authenticated');
+create policy "car records write" on car_wash_records for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
-create policy if not exists "daily reports read" on daily_reports for select using (auth.role() = 'authenticated');
-create policy if not exists "daily reports write" on daily_reports for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- DAILY REPORTS
+drop policy if exists "daily reports read" on daily_reports;
+drop policy if exists "daily reports write" on daily_reports;
+create policy "daily reports read" on daily_reports for select using (auth.role() = 'authenticated');
+create policy "daily reports write" on daily_reports for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
-create policy if not exists "appointments read" on appointments for select using (auth.role() = 'authenticated');
-create policy if not exists "appointments write" on appointments for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- APPOINTMENTS
+drop policy if exists "appointments read" on appointments;
+drop policy if exists "appointments write" on appointments;
+create policy "appointments read" on appointments for select using (auth.role() = 'authenticated');
+create policy "appointments write" on appointments for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
-create policy if not exists "settings read" on settings for select using (auth.role() = 'authenticated');
-create policy if not exists "settings write" on settings for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- SETTINGS
+drop policy if exists "settings read" on settings;
+drop policy if exists "settings write" on settings;
+create policy "settings read" on settings for select using (auth.role() = 'authenticated');
+create policy "settings write" on settings for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
-create policy if not exists "daily roles read" on daily_roles for select using (auth.role() = 'authenticated');
-create policy if not exists "daily roles write" on daily_roles for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+-- DAILY ROLES
+drop policy if exists "daily roles read" on daily_roles;
+drop policy if exists "daily roles write" on daily_roles;
+create policy "daily roles read" on daily_roles for select using (auth.role() = 'authenticated');
+create policy "daily roles write" on daily_roles for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
