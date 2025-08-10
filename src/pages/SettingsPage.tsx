@@ -453,53 +453,7 @@ const OrganizationsSettings: React.FC = () => {
   );
 };
 
-// Компонент управления данными (очистка БД)
-const DataManagement: React.FC = () => {
-  const [loading, setLoading] = useState(false);
 
-  const handleClearAll = async () => {
-    if (loading) return;
-    const confirmed = window.confirm('Вы действительно хотите удалить ВСЕ данные? Таблицы сохранятся, но все записи будут удалены. Это действие необратимо.');
-    if (!confirmed) return;
-    setLoading(true);
-    try {
-      const ok = await databaseService.clearAllData();
-      if (ok) {
-        toast.success('Все данные успешно удалены');
-      } else {
-        toast.error('Не удалось удалить данные');
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error('Ошибка при удалении данных');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <motion.div
-      className="p-3 border border-destructive/30 rounded-lg bg-destructive/5"
-      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-      transition={{ duration: 0.2 }}
-    >
-      <h3 className="text-sm font-medium mb-2 text-destructive flex items-center gap-2">
-        <Trash className="w-4 h-4" /> Управление данными
-      </h3>
-      <p className="text-xs text-muted-foreground mb-3">Удаление всех данных из Supabase (таблицы сохраняются).</p>
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={handleClearAll}
-        disabled={loading}
-        className="px-3 py-2 bg-destructive text-white rounded-md text-xs flex items-center gap-2 disabled:opacity-70"
-      >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" />}
-        {loading ? 'Удаление...' : 'Удалить все данные'}
-      </motion.button>
-    </motion.div>
-  );
-};
 
 const SettingsContent: React.FC = () => {
   const { state, dispatch } = useAppContext();
@@ -635,33 +589,20 @@ const SettingsContent: React.FC = () => {
     }
   };
 
-  // Очистка всей базы данных
+  // Очистка всей базы данных Supabase
   const handleClearDatabase = async () => {
     setLoading(prev => ({ ...prev, clearDatabase: true }));
     try {
       const success = await databaseService.clearAllData();
 
       if (success) {
+        // Очищаем состояние приложения
         dispatch({ type: 'SET_EMPLOYEES', payload: [] });
         dispatch({ type: 'SET_ORGANIZATIONS', payload: [] });
         dispatch({ type: 'SET_SERVICES', payload: [] });
         dispatch({ type: 'SET_APPOINTMENTS', payload: [] });
 
-        dispatch({
-          type: 'SET_DAILY_REPORT',
-          payload: {
-            date: state.currentDate,
-            report: {
-              id: state.currentDate,
-              date: state.currentDate,
-              employeeIds: [],
-              records: [],
-              totalCash: 0,
-              totalNonCash: 0
-            }
-          }
-        });
-
+        // Сбрасываем настройки к значениям по умолчанию
         dispatch({
           type: 'SET_SALARY_CALCULATION_METHOD',
           payload: {
@@ -681,18 +622,13 @@ const SettingsContent: React.FC = () => {
           }
         });
 
-        localStorage.removeItem('salaryCalculationMethod');
-        localStorage.removeItem('salaryCalculationDate');
-        localStorage.removeItem('minimumPaymentSettings');
-        localStorage.removeItem('appTheme');
-
-        toast.success('База данных полностью очищена, все данные удалены');
+        toast.success('Все данные из Supabase успешно удалены');
         setShowConfirmation(false);
       } else {
-        throw new Error('Не удалось полностью очистить базу данных');
+        throw new Error('Не удалось удалить данные из Supabase');
       }
     } catch (error) {
-      console.error('Ошибка при очистке базы данных:', error);
+      console.error('Ошибка при очистке базы данных Supabase:', error);
       toast.error('Произошла ошибка при очистке базы данных');
     } finally {
       setLoading(prev => ({ ...prev, clearDatabase: false }));
@@ -723,7 +659,6 @@ const SettingsContent: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
             <div className="space-y-5">
               <ThemeSettings />
-              <DataManagement />
               <SalaryCalculationSettings />
 
               <motion.div
@@ -884,13 +819,17 @@ const SettingsContent: React.FC = () => {
               <OrganizationsSettings />
 
               <motion.div
-                className="p-3 border border-border rounded-lg"
+                className="p-3 border border-destructive/30 rounded-lg bg-destructive/5"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
                 transition={{ duration: 0.2 }}
               >
-                <h3 className="text-sm font-medium mb-2 text-destructive">Управление данными</h3>
+                <h3 className="text-sm font-medium mb-2 text-destructive flex items-center gap-2">
+                  <Trash className="w-4 h-4" />
+                  Управление данными Supabase
+                </h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  <span className="font-bold">Внимание!</span> Эти операции необратимы.
+                  Удаление всех данных из базы данных Supabase.
+                  <span className="font-bold text-destructive"> Это действие необратимо!</span>
                 </p>
 
                 <AnimatePresence>
@@ -906,8 +845,8 @@ const SettingsContent: React.FC = () => {
                         <div>
                           <h4 className="font-medium text-destructive mb-1 text-sm">Подтверждение удаления</h4>
                           <p className="mb-3 text-xs">
-                            Вы уверены, что хотите удалить <span className="font-bold">ВСЕ данные</span>?
-                            Будут удалены сотрудники, услуги и записи о мойках.
+                            Вы действительно хотите удалить <span className="font-bold">ВСЕ данные из Supabase</span>?
+                            Будут удалены: сотрудники, организации, услуги, записи о мойках и все настройки.
                           </p>
                           <div className="flex gap-2">
                             <motion.button
@@ -934,7 +873,7 @@ const SettingsContent: React.FC = () => {
                               ) : (
                                 <>
                                   <Trash className="w-3 h-3" />
-                                  Да, удалить всё
+                                  Да, удалить всё из Supabase
                                 </>
                               )}
                             </motion.button>
@@ -944,13 +883,13 @@ const SettingsContent: React.FC = () => {
                     </motion.div>
                   ) : (
                     <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => setShowConfirmation(true)}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors text-xs w-full justify-center"
+                      className="w-full px-3 py-2 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors text-xs flex items-center justify-center gap-2"
                     >
-                      <Trash className="w-3 h-3" />
-                      <span>Удалить все данные</span>
+                      <Trash className="w-4 h-4" />
+                      <span>Удалить все данные из Supabase</span>
                     </motion.button>
                   )}
                 </AnimatePresence>
