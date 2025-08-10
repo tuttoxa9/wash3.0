@@ -661,11 +661,7 @@ const HomePage: React.FC = () => {
 
           {/* Top actions enhancements */}
           <div className="flex flex-wrap gap-3 items-center">
-            {!shiftStarted && (
-              <span className="text-[10px] uppercase tracking-wide bg-gradient-to-r from-muted/80 to-muted/60 text-muted-foreground px-3 py-1.5 rounded-xl border border-border/40 font-medium">
-                Заблокировано
-              </span>
-            )}
+
             <button
               onClick={shiftStarted ? openDailyReportModal : () => toast.info('Сначала выберите работников и начните смену')}
               disabled={!shiftStarted}
@@ -921,7 +917,7 @@ const HomePage: React.FC = () => {
                                     }}
                                     className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 shadow-lg border-2 ${
                                       ((employeeRoles as any)[`min_${employeeId}`] !== false)
-                                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 border-emerald-400 shadow-emerald-200/50'
+                                        ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 border-yellow-400 shadow-yellow-200/50'
                                         : 'bg-gradient-to-r from-slate-400 to-slate-500 dark:from-slate-600 dark:to-slate-700 border-slate-500 dark:border-slate-600 shadow-slate-200/50 dark:shadow-slate-800/50'
                                     }`}
                                     aria-label="Переключатель минималки"
@@ -935,8 +931,8 @@ const HomePage: React.FC = () => {
                                     onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
                                     className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
                                       employeeRoles[employeeId] === 'washer'
-                                        ? 'bg-gradient-to-r from-sky-500 to-sky-600 text-white border-sky-400 shadow-sky-200 dark:shadow-sky-900/50'
-                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
+                                        ? 'bg-gradient-to-r from-green-700 to-green-800 text-white border-green-600 shadow-green-300 dark:shadow-green-900/50'
+                                        : 'bg-gradient-to-r from-slate-700 to-slate-800 text-white border-slate-600 hover:from-slate-600 hover:to-slate-700 hover:border-slate-500'
                                     }`}
                                   >
                                     Мойщик
@@ -945,8 +941,8 @@ const HomePage: React.FC = () => {
                                     onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
                                     className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
                                       employeeRoles[employeeId] === 'admin'
-                                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-emerald-400 shadow-emerald-200 dark:shadow-emerald-900/50'
-                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
+                                        ? 'bg-gradient-to-r from-green-700 to-green-800 text-white border-green-600 shadow-green-300 dark:shadow-green-900/50'
+                                        : 'bg-gradient-to-r from-slate-700 to-slate-800 text-white border-slate-600 hover:from-slate-600 hover:to-slate-700 hover:border-slate-500'
                                     }`}
                                   >
                                     Админ
@@ -990,7 +986,7 @@ const HomePage: React.FC = () => {
                   <div className="absolute inset-0 bg-card/60 backdrop-blur-sm rounded-2xl border border-border/40" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="px-4 py-2 rounded-xl bg-muted/80 text-muted-foreground text-sm font-medium border border-border/40">
-                      Заблокировано до начала смены
+
                     </span>
                   </div>
                 </div>
@@ -1894,11 +1890,7 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
           <div className="w-1 h-5 bg-gradient-to-b from-accent to-primary rounded-full" />
           <h3 className="text-sm font-semibold flex items-center gap-3">
             Записи на мойку
-            {!canCreateRecords && (
-              <span className="text-[10px] uppercase tracking-wide bg-gradient-to-r from-muted/80 to-muted/60 text-muted-foreground px-2.5 py-1 rounded-lg border border-border/40 font-medium">
-                Заблокировано
-              </span>
-            )}
+
           </h3>
         </div>
         <a
