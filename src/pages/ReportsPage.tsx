@@ -388,7 +388,8 @@ const ReportsPage: React.FC = () => {
           state.minimumPaymentSettings,
           filteredRecords,
           employeeRolesForCalc,
-          state.employees
+          state.employees,
+          minimumOverride
         );
 
         const salaryResults = salaryCalculator.calculateSalaries();
@@ -592,12 +593,24 @@ const ReportsPage: React.FC = () => {
           employeeRolesForCalc[empId] = employeeRole;
         });
 
+        // Карта флагов минималки за период общего отчёта
+        const minimumOverride = Array.from(new Set(Object.keys(rolesMap).flatMap(d => Object.keys(rolesMap[d] || {})))).reduce<Record<string, boolean>>((acc, empId) => {
+          let respect = true;
+          Object.keys(rolesMap).forEach(date => {
+            const val = (rolesMap[date] as any)?.[`min_${empId}`];
+            if (val === false) respect = false;
+          });
+          acc[empId] = respect;
+          return acc;
+        }, {});
+
         // Создаём калькулятор зарплаты
         const salaryCalculator = createSalaryCalculator(
           state.minimumPaymentSettings,
           allRecords,
           employeeRolesForCalc,
-          state.employees
+          state.employees,
+          minimumOverride
         );
 
         totalSalaries = salaryCalculator.getTotalSalarySum();
