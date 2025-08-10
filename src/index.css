@@ -383,25 +383,50 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .sidebar-link {
-    @apply flex items-center gap-3 rounded-xl px-3 py-3 sm:py-2 text-muted-foreground transition-all hover:bg-secondary hover:text-foreground touch-manipulation;
-    min-height: 44px; /* Минимальная высота для сенсорных устройств */
+    @apply flex items-center gap-3 rounded-2xl px-3 py-3 sm:py-2 text-foreground/80 transition-all touch-manipulation relative;
+    min-height: 44px; /* Сенсорная цель */
+    background: linear-gradient(180deg, hsl(var(--sidebar-background)/0.18), hsl(var(--sidebar-background)/0.06));
+    border: 1px solid hsla(var(--foreground), 0.1);
+  }
+
+  .sidebar-link::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: 2px;
+    height: 1px;
+    background: linear-gradient(to right, hsla(var(--foreground),0.22), hsla(var(--foreground),0.08), hsla(var(--foreground),0.22));
+    pointer-events: none;
+  }
+
+  .sidebar-link:hover {
+    background: linear-gradient(180deg, hsl(var(--sidebar-background)/0.24), hsl(var(--sidebar-background)/0.08));
+    border-color: hsla(var(--foreground), 0.14);
   }
 
   .sidebar-link.active {
-    @apply text-primary;
-    background: linear-gradient(to right, hsl(var(--muted)), hsl(var(--muted)/0.4));
-    border: none !important;
-    position: relative;
+    @apply text-foreground;
+    background: linear-gradient(180deg, hsl(var(--sidebar-background)/0.26), hsl(var(--sidebar-background)/0.1));
+    border-color: hsla(var(--foreground), 0.18) !important;
   }
 
-  .sidebar-link.active::before {
-    content: '';
-    position: absolute;
-    top: 1px;
-    left: 8px;
-    right: 8px;
-    height: 1px;
-    background: linear-gradient(to right, hsl(var(--foreground)/0.3), hsl(var(--foreground)/0.05), hsl(var(--foreground)/0.3));
+  .dark .sidebar-link,
+  .black .sidebar-link {
+    background: linear-gradient(180deg, rgba(43,43,47,0.9), rgba(36,36,39,0.9));
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(231,231,234,0.92);
+  }
+
+  .dark .sidebar-link:hover,
+  .black .sidebar-link:hover {
+    background: linear-gradient(180deg, rgba(48,48,53,0.95), rgba(39,39,43,0.95));
+    border-color: rgba(255,255,255,0.14);
+  }
+
+  .dark .sidebar-link::before,
+  .black .sidebar-link::before {
+    background: linear-gradient(to right, rgba(255,255,255,0.22), rgba(255,255,255,0.08), rgba(255,255,255,0.22));
   }
 
   /* Mini Calendar Styles */
