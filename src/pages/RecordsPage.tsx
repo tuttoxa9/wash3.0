@@ -339,7 +339,6 @@ const RecordsPage: React.FC = () => {
 
   const formatDateGroup = (dateString: string) => {
     const date = parseISO(dateString);
-    if (isToday(date)) return 'Сегодня';
     if (isTomorrow(date)) return 'Завтра';
     return format(date, 'EEEE, d MMMM', { locale: ru });
   };
@@ -428,7 +427,6 @@ const RecordsPage: React.FC = () => {
             transition={{ duration: 0.2 }}
           >
             <div className="text-2xl font-bold text-orange-600">{stats.today}</div>
-            <div className="text-sm text-muted-foreground">Сегодня</div>
           </motion.div>
 
           <motion.div
@@ -489,7 +487,7 @@ const RecordsPage: React.FC = () => {
                 className="w-full px-3 py-2 border border-input rounded-lg bg-background"
               >
                 <option value="all">Все даты</option>
-                <option value="today">Сегодня</option>
+
                 <option value="tomorrow">Завтра</option>
                 <option value="week">Эта неделя</option>
               </select>
@@ -699,12 +697,7 @@ const RecordsPage: React.FC = () => {
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => setSelectedDate(new Date())}
-                        className="px-3 py-2 rounded-lg text-sm font-medium bg-muted hover:bg-muted/80 transition-colors"
-                      >
-                        Сегодня
-                      </button>
+
                       <button
                         onClick={() => setSelectedDate(addDays(selectedDate, 30))}
                         className="p-2 rounded-lg hover:bg-muted transition-colors"

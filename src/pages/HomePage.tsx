@@ -640,11 +640,7 @@ const HomePage: React.FC = () => {
                   onClick={toggleCalendar}
                 >
                   <span className="flex-1 font-semibold">{formattedDate}</span>
-                  {isCurrentDate &&
-                    <span className="ml-3 text-xs px-2.5 py-1 bg-gradient-to-r from-primary/20 to-primary/10 text-primary rounded-full border border-primary/20 font-medium">
-                      Сегодня
-                    </span>
-                  }
+
                 </div>
                 {isCalendarOpen && (
                   <div className="absolute top-full left-0 mt-2 z-10 bg-card rounded-xl shadow-xl border border-border/40 p-3 backdrop-blur-sm">
@@ -764,7 +760,7 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className={`relative group rounded-xl p-3 cursor-pointer transition-all duration-300 border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
+                      className={`relative group rounded-xl p-4 cursor-pointer transition-all duration-300 border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
                       {/* Декоративный градиент */}
@@ -1918,9 +1914,7 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
               <>
                 {todayAppointments.length > 0 && (
                   <div className="mb-0.5">
-                    <h4 className="text-xs font-medium px-2 py-0.5 bg-primary/5 border-l-2 border-primary">
-                      Сегодня
-                    </h4>
+
                     <div>
                       {todayAppointments.map(renderAppointment)}
                     </div>
