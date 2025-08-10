@@ -208,12 +208,20 @@ export function generateDailyReportDocx(report: DailyReport, employees: Employee
   const minimumPaymentSettings = JSON.parse(localStorage.getItem('minimumPaymentSettings') || '{"minimumPaymentWasher":0,"percentageWasher":10,"minimumPaymentAdmin":0,"adminCashPercentage":3,"adminCarWashPercentage":2}');
   const localEmployeeRoles = report.dailyEmployeeRoles || {};
 
-  // Создаем калькулятор зарплаты
+  // Карта флагов минималки из dailyEmployeeRoles (min_<id>)
+  const minimumOverride = Array.from(workingEmployeeIds).reduce<Record<string, boolean>>((acc, empId) => {
+    const val = (localEmployeeRoles as any)?.[`min_${empId}`];
+    acc[empId] = val !== false; // по умолчанию учитываем минималку
+    return acc;
+  }, {});
+
+  // Создаем калькулятор зарплаты с учетом флага минималки
   const salaryCalculator = new SalaryCalculator(
     minimumPaymentSettings,
     report.records,
     localEmployeeRoles,
-    workingEmployees
+    workingEmployees,
+    minimumOverride
   );
 
   const salaryResults = salaryCalculator.calculateSalaries();
