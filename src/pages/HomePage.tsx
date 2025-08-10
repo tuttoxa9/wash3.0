@@ -59,6 +59,9 @@ const HomePage: React.FC = () => {
     ? state.employees.filter(emp => currentReport.employeeIds.includes(emp.id))
     : [];
 
+  // Флаг: смена начата (есть работники в отчете)
+  const shiftStarted = (currentReport?.employeeIds?.length || 0) > 0;
+
   // Получить название организации по ID
   const getOrganizationName = (id: string): string => {
     const organization = state.organizations.find(org => org.id === id);
@@ -545,7 +548,6 @@ const HomePage: React.FC = () => {
     };
   }, [calendarRef]);
 
-  // В JSX HomePage передадим callback в AppointmentsWidget
   return (
     <div className="space-y-5">
       {/* Заголовок */}
@@ -557,19 +559,27 @@ const HomePage: React.FC = () => {
 
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={openDailyReportModal}
-              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm touch-manipulation"
+              onClick={shiftStarted ? openDailyReportModal : () => toast.info('Сначала выберите работников и начните смену')}
+              disabled={!shiftStarted}
+              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm touch-manipulation disabled:opacity-50"
+              title={shiftStarted ? undefined : 'Сначала выберите работников и начните смену'}
             >
               <Receipt className="w-4 h-4" />
               Ежедневная ведомость
             </button>
             <button
               onClick={(e) => {
-                setAppointmentToConvert(null); // Явно сбрасываем данные предзаполнения
-                setPreselectedEmployeeId(null); // Сбрасываем предвыбранного сотрудника
+                if (!shiftStarted) {
+                  toast.info('Сначала выберите работников и начните смену');
+                  return;
+                }
+                setAppointmentToConvert(null);
+                setPreselectedEmployeeId(null);
                 toggleModal(e);
               }}
-              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors text-sm touch-manipulation"
+              disabled={!shiftStarted}
+              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors text-sm touch-manipulation disabled:opacity-50"
+              title={shiftStarted ? undefined : 'Сначала выберите работников и начните смену'}
             >
               <Plus className="w-4 h-4" />
               Добавить помытую машину
@@ -758,9 +768,18 @@ const HomePage: React.FC = () => {
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <button
-                            onClick={(e) => openAddRecordModalForEmployee(employee.id, e)}
-                            className="employee-avatar hover:bg-primary/20 transition-colors rounded-lg p-2"
-                            title="Добавить запись для этого сотрудника"
+                            onClick={(e) => {
+                              if (!shiftStarted) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toast.info('Сначала выберите работников и начните смену');
+                                return;
+                              }
+                              openAddRecordModalForEmployee(employee.id, e);
+                            }}
+                            disabled={!shiftStarted}
+                            className="employee-avatar hover:bg-primary/20 transition-colors rounded-lg p-2 disabled:opacity-50"
+                            title={shiftStarted ? 'Добавить запись для этого сотрудника' : 'Сначала выберите работников и начните смену'}
                           >
                             <Plus className="w-6 h-6 text-primary" />
                           </button>
@@ -839,12 +858,13 @@ const HomePage: React.FC = () => {
                       paymentFilter === 'cash'
                         ? 'bg-primary/10 border border-primary'
                         : 'hover:bg-muted/50'
-                    }`}
+                    } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
+                      if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                       setPaymentFilter('cash');
                       openDailyReportModal();
                     }}
-                    title="Нажмите для просмотра ведомости по наличным"
+                    title={shiftStarted ? 'Нажмите для просмотра ведомости по наличным' : 'Сначала выберите работников и начните смену'}
                   >
                     <span>Нал - </span>
                     <span className="font-medium">{currentReport.totalCash.toFixed(2)} BYN</span>
@@ -854,12 +874,13 @@ const HomePage: React.FC = () => {
                       paymentFilter === 'card'
                         ? 'bg-primary/10 border border-primary'
                         : 'hover:bg-muted/50'
-                    }`}
+                    } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
+                      if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                       setPaymentFilter('card');
                       openDailyReportModal();
                     }}
-                    title="Нажмите для просмотра ведомости по картам"
+                    title={shiftStarted ? 'Нажмите для просмотра ведомости по картам' : 'Сначала выберите работников и начните смену'}
                   >
                     <span>Карта - </span>
                     <span className="font-medium">{currentReport.totalNonCash.toFixed(2)} BYN</span>
@@ -869,12 +890,13 @@ const HomePage: React.FC = () => {
                       paymentFilter === 'organization'
                         ? 'bg-primary/10 border border-primary'
                         : 'hover:bg-muted/50'
-                    }`}
+                    } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
+                      if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                       setPaymentFilter('organization');
                       openDailyReportModal();
                     }}
-                    title="Нажмите для просмотра ведомости по безналу"
+                    title={shiftStarted ? 'Нажмите для просмотра ведомости по безналу' : 'Сначала выберите работников и начните смену'}
                   >
                     <span>Безнал - </span>
                     <span className="font-medium">{(() => {
@@ -886,12 +908,13 @@ const HomePage: React.FC = () => {
                     })()} BYN</span>
                   </div>
                   <div
-                    className="border-t border-border mt-4 pt-4 flex justify-between cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
+                    className={`border-t border-border mt-4 pt-4 flex justify-between cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
+                      if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                       setPaymentFilter('all');
                       openDailyReportModal();
                     }}
-                    title="Нажмите для просмотра полной ведомости"
+                    title={shiftStarted ? 'Нажмите для просмотра полной ведомости' : 'Сначала выберите работников и начните смену'}
                   >
                     <span className="font-medium">Всего:</span>
                     <span className="font-bold">
@@ -1066,7 +1089,7 @@ const HomePage: React.FC = () => {
           )}
 
           {/* Модальное окно ежедневной ведомости */}
-          {dailyReportModalOpen && (
+          {dailyReportModalOpen && shiftStarted && (
             <DailyReportModal
               onClose={() => setDailyReportModalOpen(false)}
               currentReport={currentReport}
@@ -1082,7 +1105,7 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Виджет "Записи на мойку" */}
-        <AppointmentsWidget onStartAppointment={handleAppointmentConversion} />
+        <AppointmentsWidget onStartAppointment={handleAppointmentConversion} canCreateRecords={shiftStarted} />
       </div>
     </div>
   );
@@ -1553,9 +1576,10 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
 // Компонент AppointmentsWidget
 interface AppointmentsWidgetProps {
   onStartAppointment: (appointment: Appointment, event?: React.MouseEvent) => void;
+  canCreateRecords: boolean;
 }
 
-const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointment }) => {
+const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointment, canCreateRecords }) => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -1601,7 +1625,10 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
 
   // Обработка клика по иконке "Начать выполнение"
   const handleStartAppointment = (appointment: Appointment, event?: React.MouseEvent) => {
-    // Передаем запись и событие клика в родительский компонент для открытия модального окна с предзаполненными данными
+    if (!canCreateRecords) {
+      toast.info('Сначала выберите работников и начните смену');
+      return;
+    }
     onStartAppointment(appointment, event);
   };
 
@@ -1684,8 +1711,9 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
             <>
               <button
                 onClick={(e) => handleStartAppointment(appointment, e)}
-                className="p-0.5 rounded-md hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30"
-                title="Начать выполнение"
+                className="p-0.5 rounded-md hover:bg-green-100 hover:text-green-600 dark:hover:bg-green-900/30 disabled:opacity-50"
+                title={canCreateRecords ? 'Начать выполнение' : 'Сначала выберите работников и начните смену'}
+                disabled={!canCreateRecords}
               >
                 <CheckCircle className="w-3.5 h-3.5" />
               </button>
@@ -1708,8 +1736,10 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
       <div className="flex items-center justify-between p-1.5 border-b border-border/60">
         <h3 className="text-sm font-medium">Записи на мойку</h3>
         <a
-          href="/records"
+          href={canCreateRecords ? '/records' : '#'}
+          onClick={(e) => { if (!canCreateRecords) { e.preventDefault(); toast.info('Сначала выберите работников и начните смену'); } }}
           className="text-xs flex items-center text-primary hover:underline"
+          title={canCreateRecords ? undefined : 'Сначала выберите работников и начните смену'}
         >
           Все записи <ArrowRight className="w-3 h-3 ml-0.5" />
         </a>
@@ -1751,8 +1781,10 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
               <div className="text-center py-3 text-muted-foreground text-xs">
                 <p>Нет предстоящих записей</p>
                 <a
-                  href="/records"
+                  href={canCreateRecords ? '/records' : '#'}
+                  onClick={(e) => { if (!canCreateRecords) { e.preventDefault(); toast.info('Сначала выберите работников и начните смену'); } }}
                   className="text-xs text-primary hover:underline inline-flex items-center mt-1"
+                  title={canCreateRecords ? undefined : 'Сначала выберите работников и начните смену'}
                 >
                   Создать запись <Plus className="w-2.5 h-2.5 ml-0.5" />
                 </a>
