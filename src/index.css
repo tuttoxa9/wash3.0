@@ -818,6 +818,13 @@ h1, h2, h3, h4, h5, h6 {
   animation: highlight-pulse 1s ease-in-out;
 }
 
+/* Квадратные карточки сотрудников */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+  min-height: 180px;
+  max-height: 220px;
+}
+
 /* Дополнительные мобильные улучшения */
 @media (max-width: 768px) {
   /* Улучшенная адаптация таблиц */

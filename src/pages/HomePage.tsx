@@ -852,7 +852,7 @@ const HomePage: React.FC = () => {
                 <p className="text-muted-foreground mt-4 font-medium">Загрузка данных...</p>
               </div>
             ) : workingEmployees.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                 {workingEmployees.map(employee => {
                   const stats = getEmployeeStats(employee.id);
                   const role = employeeRoles[employee.id] || 'washer';
@@ -883,33 +883,33 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className={`relative group rounded-xl p-4 cursor-pointer transition-all duration-300 hover:scale-105 border border-border/40 shadow-lg hover:shadow-2xl bg-gradient-to-br from-card via-card/95 to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
+                      className={`relative group aspect-square rounded-xl p-3 cursor-pointer transition-all duration-300 hover:scale-105 border border-border/40 shadow-lg hover:shadow-2xl bg-gradient-to-br from-card via-card/95 to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
                       {/* Декоративный градиент */}
                       <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                      <div className="relative">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
+                      <div className="relative h-full flex flex-col">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
                             <button
                               onClick={(e) => {
                                 if (!shiftStarted) { e.preventDefault(); e.stopPropagation(); toast.info('Сначала выберите работников и начните смену'); return; }
                                 openAddRecordModalForEmployee(employee.id, e);
                               }}
                               disabled={!shiftStarted}
-                              className="relative p-2 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 transition-all duration-200 disabled:opacity-50 text-primary shadow-md hover:shadow-lg transform hover:scale-110"
+                              className="relative p-1.5 rounded-md bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 transition-all duration-200 disabled:opacity-50 text-primary shadow-md hover:shadow-lg transform hover:scale-110"
                               title={shiftStarted ? 'Добавить запись для этого сотрудника' : 'Сначала выберите работников и начните смену'}
                             >
                               {!shiftStarted && (
-                                <span className="absolute -top-2 -right-2 px-1.5 py-0.5 rounded-md bg-muted text-[9px] text-muted-foreground border border-border font-medium">Начните смену</span>
+                                <span className="absolute -top-1 -right-1 px-1 py-0.5 rounded-sm bg-muted text-[8px] text-muted-foreground border border-border font-medium">Начните</span>
                               )}
-                              <Plus className="w-5 h-5" />
+                              <Plus className="w-4 h-4" />
                             </button>
-                            <h4 className="font-bold text-lg text-card-foreground">{employee.name}</h4>
+                            <h4 className="font-bold text-sm text-card-foreground leading-tight">{employee.name}</h4>
                           </div>
                           <span
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold shadow-sm border ${
+                            className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm border ${
                               role === 'admin'
                                 ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400/30'
                                 : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400/30'
@@ -919,17 +919,17 @@ const HomePage: React.FC = () => {
                           </span>
                         </div>
 
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center p-2.5 rounded-lg bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
-                            <span className="text-sm font-medium text-muted-foreground">Машин помыто:</span>
-                            <span className="font-bold text-lg text-card-foreground">{stats.carCount}</span>
+                        <div className="flex-1 space-y-1.5">
+                          <div className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
+                            <span className="text-xs font-medium text-muted-foreground">Машин помыто:</span>
+                            <span className="font-bold text-sm text-card-foreground">{stats.carCount}</span>
                           </div>
-                          <div className="flex justify-between items-center p-2.5 rounded-lg bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
-                            <span className="text-sm font-medium text-muted-foreground">Сумма услуг:</span>
-                            <span className="font-bold text-lg text-card-foreground">{stats.totalEarnings.toFixed(2)} BYN</span>
+                          <div className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
+                            <span className="text-xs font-medium text-muted-foreground">Сумма услуг:</span>
+                            <span className="font-bold text-sm text-card-foreground">{stats.totalEarnings.toFixed(2)} BYN</span>
                           </div>
-                          <div className="flex justify-between items-center p-2.5 rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
-                            <span className="text-sm font-medium text-muted-foreground">
+                          <div className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
+                            <span className="text-xs font-medium text-muted-foreground leading-tight">
                               {(() => {
                                 const now = new Date();
                                 const currentHour = now.getHours();
@@ -949,13 +949,13 @@ const HomePage: React.FC = () => {
                                 }
                               })()}
                             </span>
-                            <span className="font-bold text-lg text-primary">{dailySalary.toFixed(2)} BYN</span>
+                            <span className="font-bold text-sm text-primary">{dailySalary.toFixed(2)} BYN</span>
                           </div>
                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-border/30">
-                          <div className="flex items-center justify-center gap-2 text-sm text-primary font-medium">
-                            <Eye className="w-4 h-4" />
+                        <div className="mt-2 pt-2 border-t border-border/30">
+                          <div className="flex items-center justify-center gap-1 text-xs text-primary font-medium">
+                            <Eye className="w-3 h-3" />
                             Нажмите для деталей
                           </div>
                         </div>
