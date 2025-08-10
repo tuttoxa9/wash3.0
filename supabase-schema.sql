@@ -151,3 +151,22 @@ drop policy if exists "daily roles read" on daily_roles;
 drop policy if exists "daily roles write" on daily_roles;
 create policy "daily roles read" on daily_roles for select using (auth.role() = 'authenticated');
 create policy "daily roles write" on daily_roles for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- Function to clear all data
+create or replace function clear_all_data()
+returns void
+language plpgsql
+security definer
+as $
+begin
+  -- Clear all tables in the correct order to avoid foreign key issues
+  delete from appointments;
+  delete from car_wash_records;
+  delete from daily_reports;
+  delete from daily_roles;
+  delete from services;
+  delete from organizations;
+  delete from employees;
+  delete from settings;
+end;
+$;
