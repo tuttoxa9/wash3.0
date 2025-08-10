@@ -312,10 +312,7 @@ export const databaseService = {
   },
   async clearAllData(): Promise<boolean> {
     try {
-      // Prefer secure RPC if available
-      const { error: rpcError } = await supabase.rpc('clear_all_data');
-      if (!rpcError) return true;
-      // Fallback to client-side deletes (may be restricted by RLS)
+      // Use client-side deletes to clear all data
       const tables = [
         'appointments',
         'car_wash_records',
@@ -326,9 +323,13 @@ export const databaseService = {
         'employees',
         'settings'
       ];
+
       for (const t of tables) {
         const { error } = await supabase.from(t).delete().neq('id', null as any);
-        if (error) throw error;
+        if (error) {
+          logSupabaseError(`database.clearAllData - table ${t}`, error);
+          throw error;
+        }
       }
       return true;
     } catch (e) {

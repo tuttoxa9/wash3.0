@@ -152,21 +152,5 @@ drop policy if exists "daily roles write" on daily_roles;
 create policy "daily roles read" on daily_roles for select using (auth.role() = 'authenticated');
 create policy "daily roles write" on daily_roles for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
--- Function to clear all data
-CREATE OR REPLACE FUNCTION clear_all_data()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY definer
-AS $
-BEGIN
-  -- Clear all tables in the correct order to avoid foreign key issues
-  DELETE FROM appointments;
-  DELETE FROM car_wash_records;
-  DELETE FROM daily_reports;
-  DELETE FROM daily_roles;
-  DELETE FROM services;
-  DELETE FROM organizations;
-  DELETE FROM employees;
-  DELETE FROM settings;
-END;
-$;
+-- Note: clear_all_data function removed due to Supabase SQL editor compatibility issues
+-- The databaseService.clearAllData() will use client-side DELETE statements instead
