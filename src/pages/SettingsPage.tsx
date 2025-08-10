@@ -4,7 +4,7 @@ import { Plus, Save, Loader2, AlertTriangle, Trash, Lock, Check, Cloud, RefreshC
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { useAppContext } from '@/lib/context/AppContext';
-import { employeeService, serviceService, organizationService, settingsService } from '@/lib/services/supabaseService';
+import { employeeService, serviceService, organizationService, settingsService, databaseService } from '@/lib/services/supabaseService';
 import type { Employee, ThemeMode, Organization, SalaryCalculationMethod, MinimumPaymentSettings } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -453,7 +453,55 @@ const OrganizationsSettings: React.FC = () => {
   );
 };
 
-const SettingsPage: React.FC = () => {
+// Компонент управления данными (очистка БД)
+const DataManagement: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleClearAll = async () => {
+    if (loading) return;
+    const confirmed = window.confirm('Вы действительно хотите удалить ВСЕ данные? Таблицы сохранятся, но все записи будут удалены. Это действие необратимо.');
+    if (!confirmed) return;
+    setLoading(true);
+    try {
+      const ok = await databaseService.clearAllData();
+      if (ok) {
+        toast.success('Все данные успешно удалены');
+      } else {
+        toast.error('Не удалось удалить данные');
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Ошибка при удалении данных');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      className="p-3 border border-destructive/30 rounded-lg bg-destructive/5"
+      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
+      transition={{ duration: 0.2 }}
+    >
+      <h3 className="text-sm font-medium mb-2 text-destructive flex items-center gap-2">
+        <Trash className="w-4 h-4" /> Управление данными
+      </h3>
+      <p className="text-xs text-muted-foreground mb-3">Удаление всех данных из Supabase (таблицы сохраняются).</p>
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleClearAll}
+        disabled={loading}
+        className="px-3 py-2 bg-destructive text-white rounded-md text-xs flex items-center gap-2 disabled:opacity-70"
+      >
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" />}
+        {loading ? 'Удаление...' : 'Удалить все данные'}
+      </motion.button>
+    </motion.div>
+  );
+};
+
+const SettingsContent: React.FC = () => {
   const { state, dispatch } = useAppContext();
   const [newEmployee, setNewEmployee] = useState('');
   const [loading, setLoading] = useState({
@@ -675,7 +723,7 @@ const SettingsPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
             <div className="space-y-5">
               <ThemeSettings />
-
+              <DataManagement />
               <SalaryCalculationSettings />
 
               <motion.div
@@ -1199,4 +1247,10 @@ const SalaryCalculationSettings: React.FC = () => {
   );
 };
 
-export default SettingsPage;
+export default function SettingsPage() {
+  return (
+    <div className="p-3 sm:p-4 space-y-3">
+      <SettingsContent />
+    </div>
+  );
+};
