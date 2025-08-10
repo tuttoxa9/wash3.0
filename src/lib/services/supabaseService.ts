@@ -1,5 +1,5 @@
 // Create Supabase-based data access layer replacing Firebase Firestore
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import type { Employee, Service, CarWashRecord, DailyReport, Organization, Appointment } from '../types';
 
 // Helper to map errors
@@ -302,7 +302,7 @@ export const dailyRolesService = {
 export const databaseService = {
   async testConnection(): Promise<boolean> {
     try {
-      const { error } = await supabase.from('employees').select('id').limit(1);
+      const { error } = await supabaseAdmin.from('employees').select('id').limit(1);
       if (error) throw error;
       return true;
     } catch (e) {
@@ -312,7 +312,7 @@ export const databaseService = {
   },
   async clearAllData(): Promise<boolean> {
     try {
-      // Use client-side deletes to clear all data
+      // Use admin client to clear all data (bypasses RLS)
       const tables = [
         'appointments',
         'car_wash_records',
@@ -325,7 +325,7 @@ export const databaseService = {
       ];
 
       for (const t of tables) {
-        const { error } = await supabase.from(t).delete().neq('id', null as any);
+        const { error } = await supabaseAdmin.from(t).delete().neq('id', null as any);
         if (error) {
           logSupabaseError(`database.clearAllData - table ${t}`, error);
           throw error;
