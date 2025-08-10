@@ -103,7 +103,7 @@ alter table appointments enable row level security;
 alter table settings enable row level security;
 alter table daily_roles enable row level security;
 
--- basic policies: allow anonymous and authenticated users
+-- basic policies: allow anonymous users for public app access
 -- EMPLOYEES
 drop policy if exists "employees read" on employees;
 drop policy if exists "employees write" on employees;
