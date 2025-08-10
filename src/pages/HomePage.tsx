@@ -661,36 +661,51 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Выбор даты - теперь расположен ниже заголовка */}
-        <div className="flex items-center gap-6 p-4 rounded-2xl bg-gradient-to-r from-muted/30 via-background to-muted/20 border border-border/40 shadow-md">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary">
-              <Calendar className="h-5 w-5" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-muted/30 via-background to-muted/20 border border-border/40 shadow-md">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <span className="text-muted-foreground font-medium">Дата:</span>
             </div>
-            <span className="text-muted-foreground font-medium">Дата:</span>
+
+            <div className="relative" ref={calendarRef}>
+              <div
+                className="flex h-11 items-center rounded-xl border border-border/40 bg-gradient-to-r from-background to-background/90 px-4 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring cursor-pointer hover:from-secondary/30 hover:to-secondary/20 transition-all duration-200 shadow-sm"
+                onClick={toggleCalendar}
+              >
+                <span className="flex-1 font-semibold">{formattedDate}</span>
+                {isCurrentDate &&
+                  <span className="ml-3 text-xs px-2.5 py-1 bg-gradient-to-r from-primary/20 to-primary/10 text-primary rounded-full border border-primary/20 font-medium">
+                    Сегодня
+                  </span>
+                }
+              </div>
+              {isCalendarOpen && (
+                <div className="absolute top-full left-0 mt-2 z-10 bg-card rounded-xl shadow-xl border border-border/40 p-3 backdrop-blur-sm">
+                  <DayPicker
+                    mode="single"
+                    selected={new Date(selectedDate)}
+                    onDayClick={handleDaySelect}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="relative" ref={calendarRef}>
-            <div
-              className="flex h-11 items-center rounded-xl border border-border/40 bg-gradient-to-r from-background to-background/90 px-4 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring cursor-pointer hover:from-secondary/30 hover:to-secondary/20 transition-all duration-200 shadow-sm"
-              onClick={toggleCalendar}
-            >
-              <span className="flex-1 font-semibold">{formattedDate}</span>
-              {isCurrentDate &&
-                <span className="ml-3 text-xs px-2.5 py-1 bg-gradient-to-r from-primary/20 to-primary/10 text-primary rounded-full border border-primary/20 font-medium">
-                  Сегодня
-                </span>
-              }
-            </div>
-            {isCalendarOpen && (
-              <div className="absolute top-full left-0 mt-2 z-10 bg-card rounded-xl shadow-xl border border-border/40 p-3 backdrop-blur-sm">
-                <DayPicker
-                  mode="single"
-                  selected={new Date(selectedDate)}
-                  onDayClick={handleDaySelect}
-                />
+          {/* Блок "Работали" справа от даты */}
+          {isShiftLocked && !isEditingShift && workingEmployees.length > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground font-medium">Работали:</span>
               </div>
-            )}
-          </div>
+              <span className="text-sm font-semibold text-card-foreground">
+                {workingEmployees.map(e => e.name).join(', ')}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Выбор сотрудников на смене - более компактный дизайн */}
@@ -705,7 +720,7 @@ const HomePage: React.FC = () => {
               <div className="w-1.5 h-6 bg-gradient-to-b from-accent to-primary rounded-full" />
               <h3 className="text-lg font-semibold">
                 {isShiftLocked && !isEditingShift
-                  ? `Работали: ${workingEmployees.map(e => e.name).join(', ')}` : 'Выберите сотрудников на смене'}
+                  ? 'Состав смены' : 'Выберите сотрудников на смене'}
               </h3>
             </div>
             {isShiftLocked && (
@@ -852,7 +867,7 @@ const HomePage: React.FC = () => {
                 <p className="text-muted-foreground mt-4 font-medium">Загрузка данных...</p>
               </div>
             ) : workingEmployees.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {workingEmployees.map(employee => {
                   const stats = getEmployeeStats(employee.id);
                   const role = employeeRoles[employee.id] || 'washer';
@@ -883,33 +898,31 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className={`relative group aspect-square rounded-xl p-3 cursor-pointer transition-all duration-300 hover:scale-105 border border-border/40 shadow-lg hover:shadow-2xl bg-gradient-to-br from-card via-card/95 to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
+                      className={`relative group rounded-xl p-3 cursor-pointer transition-all duration-300 hover:scale-[1.02] border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
                       {/* Декоративный градиент */}
                       <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                      <div className="relative h-full flex flex-col">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
+                      <div className="relative">
+                        {/* Заголовок с плюсиком и именем */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
                             <button
                               onClick={(e) => {
                                 if (!shiftStarted) { e.preventDefault(); e.stopPropagation(); toast.info('Сначала выберите работников и начните смену'); return; }
                                 openAddRecordModalForEmployee(employee.id, e);
                               }}
                               disabled={!shiftStarted}
-                              className="relative p-1.5 rounded-md bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 transition-all duration-200 disabled:opacity-50 text-primary shadow-md hover:shadow-lg transform hover:scale-110"
+                              className="shrink-0 p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 transition-all duration-200 disabled:opacity-50 text-primary shadow-sm hover:shadow-md transform hover:scale-110"
                               title={shiftStarted ? 'Добавить запись для этого сотрудника' : 'Сначала выберите работников и начните смену'}
                             >
-                              {!shiftStarted && (
-                                <span className="absolute -top-1 -right-1 px-1 py-0.5 rounded-sm bg-muted text-[8px] text-muted-foreground border border-border font-medium">Начните</span>
-                              )}
                               <Plus className="w-4 h-4" />
                             </button>
-                            <h4 className="font-bold text-sm text-card-foreground leading-tight">{employee.name}</h4>
+                            <h4 className="font-semibold text-sm text-card-foreground truncate">{employee.name}</h4>
                           </div>
                           <span
-                            className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-sm border ${
+                            className={`shrink-0 px-2 py-0.5 rounded-md text-[10px] font-medium shadow-sm border ${
                               role === 'admin'
                                 ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400/30'
                                 : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400/30'
@@ -919,17 +932,21 @@ const HomePage: React.FC = () => {
                           </span>
                         </div>
 
-                        <div className="flex-1 space-y-1.5">
-                          <div className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
-                            <span className="text-xs font-medium text-muted-foreground">Машин помыто:</span>
-                            <span className="font-bold text-sm text-card-foreground">{stats.carCount}</span>
+                        {/* Статистика в компактном формате */}
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="text-center p-2 rounded-lg bg-gradient-to-r from-muted/20 to-muted/10 border border-border/20">
+                              <div className="text-muted-foreground font-medium">Машин</div>
+                              <div className="font-bold text-card-foreground">{stats.carCount}</div>
+                            </div>
+                            <div className="text-center p-2 rounded-lg bg-gradient-to-r from-muted/20 to-muted/10 border border-border/20">
+                              <div className="text-muted-foreground font-medium">Сумма</div>
+                              <div className="font-bold text-card-foreground">{stats.totalEarnings.toFixed(0)} BYN</div>
+                            </div>
                           </div>
-                          <div className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
-                            <span className="text-xs font-medium text-muted-foreground">Сумма услуг:</span>
-                            <span className="font-bold text-sm text-card-foreground">{stats.totalEarnings.toFixed(2)} BYN</span>
-                          </div>
-                          <div className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
-                            <span className="text-xs font-medium text-muted-foreground leading-tight">
+
+                          <div className="text-center p-2 rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
+                            <div className="text-xs text-muted-foreground font-medium">
                               {(() => {
                                 const now = new Date();
                                 const currentHour = now.getHours();
@@ -939,24 +956,25 @@ const HomePage: React.FC = () => {
                                 const workEndMinutes = 21 * 60;
 
                                 if (currentTimeInMinutes < workStartMinutes) {
-                                  return "ЗП за день:";
+                                  return "ЗП за день";
                                 } else if (currentTimeInMinutes >= workEndMinutes) {
-                                  return "ЗП за день:";
+                                  return "ЗП за день";
                                 } else {
                                   const workedMinutes = currentTimeInMinutes - workStartMinutes;
                                   const workedHours = workedMinutes / 60;
-                                  return `ЗП за ${workedHours.toFixed(1)}ч:`;
+                                  return `ЗП за ${workedHours.toFixed(1)}ч`;
                                 }
                               })()}
-                            </span>
-                            <span className="font-bold text-sm text-primary">{dailySalary.toFixed(2)} BYN</span>
+                            </div>
+                            <div className="font-bold text-sm text-primary">{dailySalary.toFixed(0)} BYN</div>
                           </div>
                         </div>
 
-                        <div className="mt-2 pt-2 border-t border-border/30">
-                          <div className="flex items-center justify-center gap-1 text-xs text-primary font-medium">
+                        {/* Кнопка для деталей */}
+                        <div className="mt-3 pt-2 border-t border-border/30">
+                          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
                             <Eye className="w-3 h-3" />
-                            Нажмите для деталей
+                            Подробнее
                           </div>
                         </div>
                       </div>
