@@ -103,54 +103,54 @@ alter table appointments enable row level security;
 alter table settings enable row level security;
 alter table daily_roles enable row level security;
 
--- basic policies: authenticated users can CRUD
+-- basic policies: allow anonymous and authenticated users
 -- EMPLOYEES
 drop policy if exists "employees read" on employees;
 drop policy if exists "employees write" on employees;
-create policy "employees read" on employees for select using (auth.role() = 'authenticated');
-create policy "employees write" on employees for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "employees read" on employees for select using (true);
+create policy "employees write" on employees for all using (true) with check (true);
 
 -- ORGANIZATIONS
 drop policy if exists "organizations read" on organizations;
 drop policy if exists "organizations write" on organizations;
-create policy "organizations read" on organizations for select using (auth.role() = 'authenticated');
-create policy "organizations write" on organizations for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "organizations read" on organizations for select using (true);
+create policy "organizations write" on organizations for all using (true) with check (true);
 
 -- SERVICES
 drop policy if exists "services read" on services;
 drop policy if exists "services write" on services;
-create policy "services read" on services for select using (auth.role() = 'authenticated');
-create policy "services write" on services for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "services read" on services for select using (true);
+create policy "services write" on services for all using (true) with check (true);
 
 -- CAR WASH RECORDS
 drop policy if exists "car records read" on car_wash_records;
 drop policy if exists "car records write" on car_wash_records;
-create policy "car records read" on car_wash_records for select using (auth.role() = 'authenticated');
-create policy "car records write" on car_wash_records for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "car records read" on car_wash_records for select using (true);
+create policy "car records write" on car_wash_records for all using (true) with check (true);
 
 -- DAILY REPORTS
 drop policy if exists "daily reports read" on daily_reports;
 drop policy if exists "daily reports write" on daily_reports;
-create policy "daily reports read" on daily_reports for select using (auth.role() = 'authenticated');
-create policy "daily reports write" on daily_reports for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "daily reports read" on daily_reports for select using (true);
+create policy "daily reports write" on daily_reports for all using (true) with check (true);
 
 -- APPOINTMENTS
 drop policy if exists "appointments read" on appointments;
 drop policy if exists "appointments write" on appointments;
-create policy "appointments read" on appointments for select using (auth.role() = 'authenticated');
-create policy "appointments write" on appointments for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "appointments read" on appointments for select using (true);
+create policy "appointments write" on appointments for all using (true) with check (true);
 
 -- SETTINGS
 drop policy if exists "settings read" on settings;
 drop policy if exists "settings write" on settings;
-create policy "settings read" on settings for select using (auth.role() = 'authenticated');
-create policy "settings write" on settings for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "settings read" on settings for select using (true);
+create policy "settings write" on settings for all using (true) with check (true);
 
 -- DAILY ROLES
 drop policy if exists "daily roles read" on daily_roles;
 drop policy if exists "daily roles write" on daily_roles;
-create policy "daily roles read" on daily_roles for select using (auth.role() = 'authenticated');
-create policy "daily roles write" on daily_roles for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "daily roles read" on daily_roles for select using (true);
+create policy "daily roles write" on daily_roles for all using (true) with check (true);
 
 -- Note: clear_all_data function removed due to Supabase SQL editor compatibility issues
 -- The databaseService.clearAllData() will use client-side DELETE statements instead
