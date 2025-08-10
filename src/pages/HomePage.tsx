@@ -719,27 +719,50 @@ const HomePage: React.FC = () => {
                         return (
                           <div key={employeeId} className="flex items-center justify-between gap-2">
                             <span className="text-xs font-medium flex-1">{employee.name}</span>
-                            <div className="flex gap-1">
-                              <button
-                                onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
-                                className={`px-2 py-1 rounded text-xs transition-colors touch-manipulation ${
-                                  employeeRoles[employeeId] === 'washer'
-                                    ? 'bg-blue-500 text-white'
-                                    : 'bg-secondary/50 hover:bg-secondary'
-                                }`}
-                              >
-                                Мойщик
-                              </button>
-                              <button
-                                onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
-                                className={`px-2 py-1 rounded text-xs transition-colors touch-manipulation ${
-                                  employeeRoles[employeeId] === 'admin'
-                                    ? 'bg-green-500 text-white'
-                                    : 'bg-secondary/50 hover:bg-secondary'
-                                }`}
-                              >
-                                Админ
-                              </button>
+                            <div className="flex items-center gap-3">
+                              {/* Переключатель учета минималки */}
+                              <label className="flex items-center gap-2 select-none">
+                                <span className="text-[11px] text-muted-foreground">Минималка</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEmployeeRoles(prev => ({ ...prev })); // no-op to keep state sync
+                                    // флаг храним в dailyEmployeeRoles как специальное поле позже при сохранении смены
+                                    const key = `min_${employeeId}` as any;
+                                    // @ts-ignore - динамическое хранение в объекте ролей до расширения схемы
+                                    const current = (employeeRoles as any)[key] !== false;
+                                    const newRoles: any = { ...employeeRoles };
+                                    newRoles[key] = !current; // true=включено, false=выключено
+                                    setEmployeeRoles(newRoles);
+                                  }}
+                                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'bg-green-500' : 'bg-gray-300'}`}
+                                  aria-label="Переключатель минималки"
+                                >
+                                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'translate-x-4' : 'translate-x-1'}`} />
+                                </button>
+                              </label>
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
+                                  className={`px-2 py-1 rounded text-xs transition-colors touch-manipulation ${
+                                    employeeRoles[employeeId] === 'washer'
+                                      ? 'bg-blue-500 text-white'
+                                      : 'bg-secondary/50 hover:bg-secondary'
+                                  }`}
+                                >
+                                  Мойщик
+                                </button>
+                                <button
+                                  onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
+                                  className={`px-2 py-1 rounded text-xs transition-colors touch-manipulation ${
+                                    employeeRoles[employeeId] === 'admin'
+                                      ? 'bg-green-500 text-white'
+                                      : 'bg-secondary/50 hover:bg-secondary'
+                                  }`}
+                                >
+                                  Админ
+                                </button>
+                              </div>
                             </div>
                           </div>
                         );
@@ -791,11 +814,20 @@ const HomePage: React.FC = () => {
                   // Расчет заработной платы сотрудника
                   let dailySalary = 0;
                   if (state.salaryCalculationMethod === 'minimumWithPercentage' && currentReport?.records) {
+                    // Построим карту флагов минималки из employeeRoles с ключами min_<id>
+                    const minimumOverride = shiftEmployees.reduce<Record<string, boolean>>((acc, id) => {
+                      const key = `min_${id}` as any;
+                      // @ts-ignore
+                      const val = (employeeRoles as any)[key];
+                      acc[id] = val !== false; // по умолчанию true
+                      return acc;
+                    }, {});
                     const salaryCalculator = createSalaryCalculator(
                       state.minimumPaymentSettings,
                       currentReport.records,
                       employeeRoles,
-                      state.employees
+                      state.employees,
+                      minimumOverride
                     );
                     const salaryResults = salaryCalculator.calculateSalaries();
                     const employeeSalary = salaryResults.find(result => result.employeeId === employee.id);
@@ -902,7 +934,7 @@ const HomePage: React.FC = () => {
                   <div
                     className={`flex justify-between p-2 rounded-lg cursor-pointer transition-colors ${
                       paymentFilter === 'cash'
-                        ? 'bg-primary/10 border border-primary'
+                        ? 'bg-primary text-white border border-primary'
                         : 'hover:bg-muted/50'
                     } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
@@ -918,7 +950,7 @@ const HomePage: React.FC = () => {
                   <div
                     className={`flex justify-between p-2 rounded-lg cursor-pointer transition-colors ${
                       paymentFilter === 'card'
-                        ? 'bg-primary/10 border border-primary'
+                        ? 'bg-primary text-white border border-primary'
                         : 'hover:bg-muted/50'
                     } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
@@ -934,7 +966,7 @@ const HomePage: React.FC = () => {
                   <div
                     className={`flex justify-between p-2 rounded-lg cursor-pointer transition-colors ${
                       paymentFilter === 'organization'
-                        ? 'bg-primary/10 border border-primary'
+                        ? 'bg-primary text-white border border-primary'
                         : 'hover:bg-muted/50'
                     } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
@@ -997,11 +1029,20 @@ const HomePage: React.FC = () => {
 
                     // Используем новый компонент расчета зарплаты
                     if (methodToUse === 'minimumWithPercentage' && currentReport?.records) {
+                      // Построим карту флагов минималки из employeeRoles с ключами min_<id>
+                      const minimumOverride = shiftEmployees.reduce<Record<string, boolean>>((acc, id) => {
+                        const key = `min_${id}` as any;
+                        // @ts-ignore
+                        const val = (employeeRoles as any)[key];
+                        acc[id] = val !== false; // по умолчанию true
+                        return acc;
+                      }, {});
                       const salaryCalculator = createSalaryCalculator(
                         state.minimumPaymentSettings,
                         currentReport.records,
                         employeeRoles,
-                        state.employees
+                        state.employees,
+                        minimumOverride
                       );
 
                       const salaryResults = salaryCalculator.calculateSalaries();
@@ -1337,20 +1378,15 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
               const success = await appointmentService.update(updatedAppointment);
 
               if (success) {
-                // Обновляем состояние
-                dispatch({
-                  type: 'UPDATE_APPOINTMENT',
-                  payload: updatedAppointment
-                });
+                // Обновляем список записей
+                setAppointments(appointments.map(app =>
+                  app.id === appointment.id ? updatedAppointment : app
+                ));
 
-                // Отправляем событие, чтобы уведомить виджет об изменении
-                // Создаем пользовательское событие для обновления виджета
-                const appointmentUpdatedEvent = new CustomEvent('appointmentCompleted', {
-                  detail: { id: updatedAppointment.id }
-                });
-                document.dispatchEvent(appointmentUpdatedEvent);
+                // Обновляем в глобальном состоянии
+                dispatch({ type: 'UPDATE_APPOINTMENT', payload: updatedAppointment });
 
-                toast.success('Запись о мойке добавлена, запись отмечена как выполненная');
+                toast.success('Запись отмечена как выполненная');
               }
             } catch (error) {
               console.error('Ошибка при обновлении статуса записи:', error);

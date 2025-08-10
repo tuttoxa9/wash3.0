@@ -1,5 +1,8 @@
 import type { CarWashRecord, MinimumPaymentSettings, EmployeeRole } from '@/lib/types';
 
+// Флаг отключения минимальной оплаты по сотруднику на день
+export type MinimumOverrideMap = Record<string, boolean>; // true = учитывать минималку, false = не учитывать
+
 // Интерфейс для результата расчёта зарплаты сотрудника
 export interface SalaryCalculationResult {
   employeeId: string;
@@ -25,17 +28,20 @@ export class SalaryCalculator {
   private records: CarWashRecord[];
   private employeeRoles: Record<string, EmployeeRole>;
   private employees: Array<{ id: string; name: string }>;
+  private minimumOverride: MinimumOverrideMap;
 
   constructor(
     settings: MinimumPaymentSettings,
     records: CarWashRecord[],
     employeeRoles: Record<string, EmployeeRole>,
-    employees: Array<{ id: string; name: string }>
+    employees: Array<{ id: string; name: string }>,
+    minimumOverride: MinimumOverrideMap = {}
   ) {
     this.settings = settings;
     this.records = records;
     this.employeeRoles = employeeRoles;
     this.employees = employees;
+    this.minimumOverride = minimumOverride;
   }
 
   // Основной метод для расчёта зарплат всех сотрудников
@@ -111,7 +117,10 @@ export class SalaryCalculator {
     const totalPercentageEarnings = baseCashBonus + carWashBonus;
 
     // 4. Итоговая сумма (не меньше минималки)
-    const finalAmount = Math.max(totalPercentageEarnings, this.settings.minimumPaymentAdmin);
+    const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
+    const finalAmount = respectMinimum
+      ? Math.max(totalPercentageEarnings, this.settings.minimumPaymentAdmin)
+      : totalPercentageEarnings;
 
     return {
       employeeId,
@@ -122,7 +131,7 @@ export class SalaryCalculator {
       breakdown: {
         adminCashBonus: baseCashBonus,
         adminCarWashBonus: carWashBonus,
-        minimumGuaranteed: this.settings.minimumPaymentAdmin,
+        minimumGuaranteed: respectMinimum ? this.settings.minimumPaymentAdmin : 0,
         finalAmount
       }
     };
@@ -139,7 +148,10 @@ export class SalaryCalculator {
     const percentageEarnings = personalRevenue * (this.settings.percentageWasher / 100);
 
     // 2. Итоговая сумма (не меньше минималки)
-    const finalAmount = Math.max(percentageEarnings, this.settings.minimumPaymentWasher);
+    const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
+    const finalAmount = respectMinimum
+      ? Math.max(percentageEarnings, this.settings.minimumPaymentWasher)
+      : percentageEarnings;
 
     return {
       employeeId,
@@ -149,7 +161,7 @@ export class SalaryCalculator {
       calculatedSalary: finalAmount,
       breakdown: {
         washerPercentage: percentageEarnings,
-        minimumGuaranteed: this.settings.minimumPaymentWasher,
+        minimumGuaranteed: respectMinimum ? this.settings.minimumPaymentWasher : 0,
         finalAmount
       }
     };
@@ -214,7 +226,8 @@ export function createSalaryCalculator(
   settings: MinimumPaymentSettings,
   records: CarWashRecord[],
   employeeRoles: Record<string, EmployeeRole>,
-  employees: Array<{ id: string; name: string }>
+  employees: Array<{ id: string; name: string }>,
+  minimumOverride: MinimumOverrideMap = {}
 ): SalaryCalculator {
-  return new SalaryCalculator(settings, records, employeeRoles, employees);
+  return new SalaryCalculator(settings, records, employeeRoles, employees, minimumOverride);
 }
