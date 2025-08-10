@@ -776,8 +776,8 @@ const HomePage: React.FC = () => {
                             <span className="text-sm font-medium flex-1">{employee.name}</span>
                             <div className="flex items-center gap-4">
                               {/* Переключатель учета минималки */}
-                              <label className="flex items-center gap-2 select-none">
-                                <span className="text-xs text-muted-foreground font-medium">Минималка</span>
+                              <div className="flex items-center gap-3 p-2 rounded-lg border border-border/40 bg-background/50">
+                                <span className="text-xs font-medium text-foreground">Минималка</span>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -790,29 +790,36 @@ const HomePage: React.FC = () => {
                                     newRoles[key] = !current; // true=включено, false=выключено
                                     setEmployeeRoles(newRoles);
                                   }}
-                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 shadow-sm ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-muted to-muted-foreground/60 dark:from-muted-foreground/40 dark:to-muted-foreground/60'}`}
+                                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 shadow-lg border-2 ${
+                                    ((employeeRoles as any)[`min_${employeeId}`] !== false)
+                                      ? 'bg-gradient-to-r from-green-500 to-green-600 border-green-400'
+                                      : 'bg-gradient-to-r from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700 border-slate-400 dark:border-slate-500'
+                                  }`}
                                   aria-label="Переключатель минималки"
                                 >
-                                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-md ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'translate-x-5' : 'translate-x-1'}`} />
+                                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-lg ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'translate-x-5' : 'translate-x-1'}`} />
                                 </button>
-                              </label>
-                              <div className="flex gap-2">
+                                <span className={`text-xs font-semibold ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'text-green-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                  {((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'ВКЛ' : 'ВЫКЛ'}
+                                </span>
+                              </div>
+                              <div className="flex gap-3">
                                 <button
                                   onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border shadow-sm ${
+                                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
                                     employeeRoles[employeeId] === 'washer'
-                                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400/30'
-                                      : 'bg-muted hover:bg-muted/80 text-foreground border-border hover:border-border/60'
+                                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400 shadow-blue-200 dark:shadow-blue-900/50'
+                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
                                   }`}
                                 >
                                   Мойщик
                                 </button>
                                 <button
                                   onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border shadow-sm ${
+                                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
                                     employeeRoles[employeeId] === 'admin'
-                                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400/30'
-                                      : 'bg-muted hover:bg-muted/80 text-foreground border-border hover:border-border/60'
+                                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400 shadow-green-200 dark:shadow-green-900/50'
+                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
                                   }`}
                                 >
                                   Админ
