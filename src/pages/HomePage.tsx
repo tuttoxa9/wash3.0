@@ -34,11 +34,28 @@ const HomePage: React.FC = () => {
   // Add ref for shift section scroll
   const shiftSectionRef = useRef<HTMLDivElement>(null);
 
-  // Smooth scroll to shift selection
+  // Добавляем состояние для подсветки блока выбора сотрудников
+  const [isShiftSectionHighlighted, setIsShiftSectionHighlighted] = useState(false);
+
+  // Smooth scroll to shift selection with highlight
   const scrollToShift = () => {
     if (shiftSectionRef.current) {
-      const y = shiftSectionRef.current.getBoundingClientRect().top + window.scrollY - 16;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      // Подсвечиваем блок
+      setIsShiftSectionHighlighted(true);
+
+      // Убираем подсветку через 1 секунду
+      setTimeout(() => {
+        setIsShiftSectionHighlighted(false);
+      }, 1000);
+
+      // Проверяем, является ли это мобильным устройством
+      const isMobile = window.innerWidth < 768;
+
+      if (isMobile) {
+        // На мобильных устройствах делаем скролл
+        const y = shiftSectionRef.current.getBoundingClientRect().top + window.scrollY - 16;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
     }
   };
 
@@ -560,7 +577,7 @@ const HomePage: React.FC = () => {
   }, [calendarRef]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Pre-shift banner: visible only if shift not started */}
       {!shiftStarted && (
         <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -677,7 +694,12 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Выбор сотрудников на смене - более компактный дизайн */}
-        <div ref={shiftSectionRef} className="p-6 rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
+        <div
+          ref={shiftSectionRef}
+          className={`p-4 rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl transition-all duration-300 ${
+            isShiftSectionHighlighted ? 'ring-4 ring-primary/30 shadow-2xl bg-gradient-to-br from-primary/5 via-card/95 to-primary/5' : ''
+          }`}
+        >
           <div className="flex flex-wrap justify-between items-center mb-4">
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-6 bg-gradient-to-b from-accent to-primary rounded-full" />
@@ -813,11 +835,11 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* Основная секция с квадратиками работников и виджетами */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 lg:gap-5">
-        <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-3 lg:gap-4">
+        <div className="space-y-4">
           {/* Квадратики работников */}
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
               <div className="w-1.5 h-6 bg-gradient-to-b from-accent to-primary rounded-full" />
               <h3 className="text-xl font-bold">Сотрудники</h3>
             </div>
@@ -830,7 +852,7 @@ const HomePage: React.FC = () => {
                 <p className="text-muted-foreground mt-4 font-medium">Загрузка данных...</p>
               </div>
             ) : workingEmployees.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {workingEmployees.map(employee => {
                   const stats = getEmployeeStats(employee.id);
                   const role = employeeRoles[employee.id] || 'washer';
@@ -861,33 +883,33 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className={`relative group rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:scale-105 border border-border/40 shadow-lg hover:shadow-2xl bg-gradient-to-br from-card via-card/95 to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
+                      className={`relative group rounded-xl p-4 cursor-pointer transition-all duration-300 hover:scale-105 border border-border/40 shadow-lg hover:shadow-2xl bg-gradient-to-br from-card via-card/95 to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
                       {/* Декоративный градиент */}
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                       <div className="relative">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
                             <button
                               onClick={(e) => {
                                 if (!shiftStarted) { e.preventDefault(); e.stopPropagation(); toast.info('Сначала выберите работников и начните смену'); return; }
                                 openAddRecordModalForEmployee(employee.id, e);
                               }}
                               disabled={!shiftStarted}
-                              className="relative p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 transition-all duration-200 disabled:opacity-50 text-primary shadow-md hover:shadow-lg transform hover:scale-110"
+                              className="relative p-2 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 transition-all duration-200 disabled:opacity-50 text-primary shadow-md hover:shadow-lg transform hover:scale-110"
                               title={shiftStarted ? 'Добавить запись для этого сотрудника' : 'Сначала выберите работников и начните смену'}
                             >
                               {!shiftStarted && (
-                                <span className="absolute -top-2 -right-2 px-2 py-1 rounded-lg bg-muted text-[10px] text-muted-foreground border border-border font-medium">Начните смену</span>
+                                <span className="absolute -top-2 -right-2 px-1.5 py-0.5 rounded-md bg-muted text-[9px] text-muted-foreground border border-border font-medium">Начните смену</span>
                               )}
-                              <Plus className="w-6 h-6" />
+                              <Plus className="w-5 h-5" />
                             </button>
-                            <h4 className="font-bold text-xl text-card-foreground">{employee.name}</h4>
+                            <h4 className="font-bold text-lg text-card-foreground">{employee.name}</h4>
                           </div>
                           <span
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm border ${
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold shadow-sm border ${
                               role === 'admin'
                                 ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400/30'
                                 : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400/30'
@@ -897,16 +919,16 @@ const HomePage: React.FC = () => {
                           </span>
                         </div>
 
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center p-3 rounded-xl bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center p-2.5 rounded-lg bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
                             <span className="text-sm font-medium text-muted-foreground">Машин помыто:</span>
-                            <span className="font-bold text-xl text-card-foreground">{stats.carCount}</span>
+                            <span className="font-bold text-lg text-card-foreground">{stats.carCount}</span>
                           </div>
-                          <div className="flex justify-between items-center p-3 rounded-xl bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
+                          <div className="flex justify-between items-center p-2.5 rounded-lg bg-gradient-to-r from-muted/30 to-muted/20 border border-border/30">
                             <span className="text-sm font-medium text-muted-foreground">Сумма услуг:</span>
-                            <span className="font-bold text-xl text-card-foreground">{stats.totalEarnings.toFixed(2)} BYN</span>
+                            <span className="font-bold text-lg text-card-foreground">{stats.totalEarnings.toFixed(2)} BYN</span>
                           </div>
-                          <div className="flex justify-between items-center p-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
+                          <div className="flex justify-between items-center p-2.5 rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
                             <span className="text-sm font-medium text-muted-foreground">
                               {(() => {
                                 const now = new Date();
@@ -927,11 +949,11 @@ const HomePage: React.FC = () => {
                                 }
                               })()}
                             </span>
-                            <span className="font-bold text-xl text-primary">{dailySalary.toFixed(2)} BYN</span>
+                            <span className="font-bold text-lg text-primary">{dailySalary.toFixed(2)} BYN</span>
                           </div>
                         </div>
 
-                        <div className="mt-4 pt-4 border-t border-border/30">
+                        <div className="mt-3 pt-3 border-t border-border/30">
                           <div className="flex items-center justify-center gap-2 text-sm text-primary font-medium">
                             <Eye className="w-4 h-4" />
                             Нажмите для деталей
@@ -964,10 +986,10 @@ const HomePage: React.FC = () => {
                 </div>
               )}
               {/* Сводка по оплатам */}
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
-                <div className="flex items-center gap-3 mb-6">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
+                <div className="flex items-center gap-3 mb-4">
                   <div className="w-1.5 h-6 bg-gradient-to-b from-green-500 to-green-600 rounded-full" />
-                  <h3 className="text-xl font-bold">Итого:</h3>
+                  <h3 className="text-lg font-bold">Итого:</h3>
                 </div>
                 <div className="space-y-3">
                   <div
@@ -1048,13 +1070,13 @@ const HomePage: React.FC = () => {
               </div>
 
               {/* Заработок сотрудников */}
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
-                <div className="flex items-center gap-3 mb-6">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
+                <div className="flex items-center gap-3 mb-4">
                   <div className="w-1.5 h-6 bg-gradient-to-b from-amber-500 to-amber-600 rounded-full" />
-                  <h3 className="text-xl font-bold flex items-center">
+                  <h3 className="text-lg font-bold flex items-center">
                     Заработок
                     <span className="inline-flex items-center relative group ml-4">
-                      <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 text-primary text-xs cursor-help font-bold">i</div>
+                      <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary text-primary text-xs cursor-help font-bold">i</div>
                       <div className="absolute bottom-full left-0 mb-3 w-64 p-3 bg-popover text-popover-foreground rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-border/40">
                         <p className="text-sm font-medium">
                           Расчет ЗП: минимальная оплата + процент с учетом ролей
