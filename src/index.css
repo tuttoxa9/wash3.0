@@ -392,11 +392,15 @@ h1, h2, h3, h4, h5, h6 {
   .sidebar-link::before {
     content: '';
     position: absolute;
-    left: 8px;
-    right: 8px;
-    top: 2px;
-    height: 1px;
-    background: linear-gradient(to right, hsla(var(--foreground),0.22), hsla(var(--foreground),0.08), hsla(var(--foreground),0.22));
+    inset: 0; /* полностью накрываем кнопку */
+    border-radius: 1rem; /* должен совпадать с rounded-2xl */
+    padding: 1px; /* толщина подсветки */
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    background: radial-gradient(100% 60% at 50% 0%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 60%, rgba(255,255,255,0) 100%);
     pointer-events: none;
   }
 
@@ -426,7 +430,8 @@ h1, h2, h3, h4, h5, h6 {
 
   .dark .sidebar-link::before,
   .black .sidebar-link::before {
-    background: linear-gradient(to right, rgba(255,255,255,0.22), rgba(255,255,255,0.08), rgba(255,255,255,0.22));
+    border-radius: 1rem;
+    background: radial-gradient(100% 60% at 50% 0%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.1) 60%, rgba(255,255,255,0) 100%);
   }
 
   /* Mini Calendar Styles */
