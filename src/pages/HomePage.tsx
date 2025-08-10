@@ -31,6 +31,17 @@ const HomePage: React.FC = () => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
+  // Add ref for shift section scroll
+  const shiftSectionRef = useRef<HTMLDivElement>(null);
+
+  // Smooth scroll to shift selection
+  const scrollToShift = () => {
+    if (shiftSectionRef.current) {
+      const y = shiftSectionRef.current.getBoundingClientRect().top + window.scrollY - 16;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
   // Состояния для модальных окон
   const [employeeModalOpen, setEmployeeModalOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
@@ -550,6 +561,37 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-5">
+      {/* Pre-shift banner: visible only if shift not started */}
+      {!shiftStarted && (
+        <div className="relative overflow-hidden rounded-xl border border-border bg-muted/30">
+          <div className="p-4 sm:p-5 flex flex-col gap-3">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 rounded-lg p-2 bg-primary/10 text-primary">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-card-foreground font-medium">Чтобы начать работу, выберите работников и начните смену</span>
+                  <span className="px-2 py-0.5 rounded-full text-xs bg-secondary/60 text-secondary-foreground">Режим ожидания</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  1) Выберите сотрудников на смену. 2) Назначьте роли (при необходимости). 3) Нажмите «Начать смену».
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button onClick={scrollToShift} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors text-sm">
+                    Перейти к выбору работников
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs text-muted-foreground">После начала смены функции станут доступны</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="pointer-events-none absolute -right-10 -top-10 w-40 h-40 rounded-full bg-primary/5" />
+          <div className="pointer-events-none absolute -right-24 -top-6 w-64 h-64 rounded-full bg-primary/5" />
+        </div>
+      )}
+
       {/* Заголовок */}
       <div className="flex flex-col gap-3 md:gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
@@ -557,22 +599,28 @@ const HomePage: React.FC = () => {
             Главная страница
           </h2>
 
-          <div className="flex flex-wrap gap-2">
+          {/* Top actions enhancements */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {!shiftStarted && (
+              <span className="text-[10px] uppercase tracking-wide bg-muted/60 text-muted-foreground px-2 py-1 rounded-md border border-border">Заблокировано</span>
+            )}
             <button
               onClick={shiftStarted ? openDailyReportModal : () => toast.info('Сначала выберите работников и начните смену')}
               disabled={!shiftStarted}
-              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm touch-manipulation disabled:opacity-50"
+              className="mobile-button inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm touch-manipulation disabled:opacity-50 relative"
               title={shiftStarted ? undefined : 'Сначала выберите работников и начните смену'}
             >
               <Receipt className="w-4 h-4" />
               Ежедневная ведомость
+              {!shiftStarted && (
+                <span className="absolute -top-2 -right-2 text-[10px] bg-secondary text-secondary-foreground border border-border px-1 py-0.5 rounded">
+                  Требует смену
+                </span>
+              )}
             </button>
             <button
               onClick={(e) => {
-                if (!shiftStarted) {
-                  toast.info('Сначала выберите работников и начните смену');
-                  return;
-                }
+                if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                 setAppointmentToConvert(null);
                 setPreselectedEmployeeId(null);
                 toggleModal(e);
@@ -619,7 +667,7 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Выбор сотрудников на смене - более компактный дизайн */}
-        <div className="card-with-shadow p-3 sm:p-4">
+        <div ref={shiftSectionRef} className="card-with-shadow p-3 sm:p-4">
           <div className="flex flex-wrap justify-between items-center mb-2">
             <h3 className="text-base font-medium">
               {isShiftLocked && !isEditingShift
@@ -769,18 +817,16 @@ const HomePage: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <button
                             onClick={(e) => {
-                              if (!shiftStarted) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                toast.info('Сначала выберите работников и начните смену');
-                                return;
-                              }
+                              if (!shiftStarted) { e.preventDefault(); e.stopPropagation(); toast.info('Сначала выберите работников и начните смену'); return; }
                               openAddRecordModalForEmployee(employee.id, e);
                             }}
                             disabled={!shiftStarted}
-                            className="employee-avatar hover:bg-primary/20 transition-colors rounded-lg p-2 disabled:opacity-50"
+                            className="employee-avatar hover:bg-primary/20 transition-colors rounded-lg p-2 disabled:opacity-50 relative"
                             title={shiftStarted ? 'Добавить запись для этого сотрудника' : 'Сначала выберите работников и начните смену'}
                           >
+                            {!shiftStarted && (
+                              <span className="absolute -top-1 -right-1 px-1 py-0.5 rounded bg-muted text-[10px] text-muted-foreground border border-border">Начните смену</span>
+                            )}
                             <Plus className="w-6 h-6 text-primary" />
                           </button>
                           <h4 className="font-semibold text-lg text-card-foreground">{employee.name}</h4>
@@ -848,7 +894,12 @@ const HomePage: React.FC = () => {
 
           {/* Итоги */}
           {currentReport && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 relative">
+              {!shiftStarted && (
+                <div className="absolute inset-0 z-10 rounded-xl pointer-events-none">
+                  <div className="absolute inset-0 bg-card/40 backdrop-blur-[1px] rounded-xl" />
+                </div>
+              )}
               {/* Сводка по оплатам */}
               <div className="card-with-shadow">
                 <h3 className="text-lg font-semibold mb-4">Итого:</h3>
@@ -1734,11 +1785,16 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
   return (
     <div className="card-with-shadow overflow-hidden max-h-[calc(100vh-350px)]">
       <div className="flex items-center justify-between p-1.5 border-b border-border/60">
-        <h3 className="text-sm font-medium">Записи на мойку</h3>
+        <h3 className="text-sm font-medium flex items-center gap-2">
+          Записи на мойку
+          {!canCreateRecords && (
+            <span className="text-[10px] uppercase tracking-wide bg-muted/60 text-muted-foreground px-2 py-1 rounded-md border border-border ml-2">Заблокировано</span>
+          )}
+        </h3>
         <a
           href={canCreateRecords ? '/records' : '#'}
           onClick={(e) => { if (!canCreateRecords) { e.preventDefault(); toast.info('Сначала выберите работников и начните смену'); } }}
-          className="text-xs flex items-center text-primary hover:underline"
+          className={`text-xs flex items-center text-primary hover:underline ${!canCreateRecords ? 'pointer-events-none opacity-60' : ''}`}
           title={canCreateRecords ? undefined : 'Сначала выберите работников и начните смену'}
         >
           Все записи <ArrowRight className="w-3 h-3 ml-0.5" />
@@ -1783,7 +1839,7 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({ onStartAppointm
                 <a
                   href={canCreateRecords ? '/records' : '#'}
                   onClick={(e) => { if (!canCreateRecords) { e.preventDefault(); toast.info('Сначала выберите работников и начните смену'); } }}
-                  className="text-xs text-primary hover:underline inline-flex items-center mt-1"
+                  className={`text-xs text-primary hover:underline inline-flex items-center mt-1 ${!canCreateRecords ? 'pointer-events-none opacity-60' : ''}`}
                   title={canCreateRecords ? undefined : 'Сначала выберите работников и начните смену'}
                 >
                   Создать запись <Plus className="w-2.5 h-2.5 ml-0.5" />
