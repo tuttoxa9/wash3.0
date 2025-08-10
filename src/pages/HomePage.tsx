@@ -600,7 +600,7 @@ const HomePage: React.FC = () => {
                 <div className="flex flex-wrap gap-3 items-center">
                   <button
                     onClick={scrollToShift}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary/90 text-white hover:from-primary/90 hover:to-primary/80 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 border border-primary/20"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary/90 text-white hover:from-primary/90 hover:to-primary/80 transition-all duration-200 font-medium shadow-lg hover:shadow-xl border border-primary/20"
                   >
                     Перейти к выбору работников
                     <ArrowRight className="w-4 h-4" />
@@ -637,7 +637,7 @@ const HomePage: React.FC = () => {
             <button
               onClick={shiftStarted ? openDailyReportModal : () => toast.info('Сначала выберите работников и начните смену')}
               disabled={!shiftStarted}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 border border-blue-400/30"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-xl disabled:opacity-50 border border-blue-400/30"
               title={shiftStarted ? undefined : 'Сначала выберите работников и начните смену'}
             >
               <Receipt className="w-4 h-4" />
@@ -651,7 +651,7 @@ const HomePage: React.FC = () => {
                 toggleModal(e);
               }}
               disabled={!shiftStarted}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 border border-primary/30"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-200 text-sm font-medium shadow-lg hover:shadow-xl disabled:opacity-50 border border-primary/30"
               title={shiftStarted ? undefined : 'Сначала выберите работников и начните смену'}
             >
               <Plus className="w-4 h-4" />
@@ -751,7 +751,7 @@ const HomePage: React.FC = () => {
                     <button
                       key={employee.id}
                       onClick={() => handleEmployeeSelection(employee.id)}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border shadow-sm transform hover:scale-105 ${
+                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border shadow-sm ${
                         shiftEmployees.includes(employee.id)
                           ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg'
                           : 'bg-gradient-to-r from-secondary/60 to-secondary/40 hover:from-secondary/80 hover:to-secondary/60 border-border/40'
@@ -790,7 +790,7 @@ const HomePage: React.FC = () => {
                                     newRoles[key] = !current; // true=включено, false=выключено
                                     setEmployeeRoles(newRoles);
                                   }}
-                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 shadow-sm ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-gray-300 to-gray-400'}`}
+                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 shadow-sm ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-muted to-muted-foreground/60 dark:from-muted-foreground/40 dark:to-muted-foreground/60'}`}
                                   aria-label="Переключатель минималки"
                                 >
                                   <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-md ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'translate-x-5' : 'translate-x-1'}`} />
@@ -802,7 +802,7 @@ const HomePage: React.FC = () => {
                                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border shadow-sm ${
                                     employeeRoles[employeeId] === 'washer'
                                       ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400/30'
-                                      : 'bg-gradient-to-r from-secondary/60 to-secondary/40 hover:from-secondary/80 hover:to-secondary/60 border-border/40'
+                                      : 'bg-muted hover:bg-muted/80 text-foreground border-border hover:border-border/60'
                                   }`}
                                 >
                                   Мойщик
@@ -812,7 +812,7 @@ const HomePage: React.FC = () => {
                                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border shadow-sm ${
                                     employeeRoles[employeeId] === 'admin'
                                       ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400/30'
-                                      : 'bg-gradient-to-r from-secondary/60 to-secondary/40 hover:from-secondary/80 hover:to-secondary/60 border-border/40'
+                                      : 'bg-muted hover:bg-muted/80 text-foreground border-border hover:border-border/60'
                                   }`}
                                 >
                                   Админ
@@ -830,7 +830,7 @@ const HomePage: React.FC = () => {
               <button
                 onClick={startShift}
                 disabled={loading.savingShift || shiftEmployees.length === 0}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 border border-primary/30"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-200 disabled:opacity-50 text-sm font-semibold shadow-lg hover:shadow-xl border border-primary/30"
               >
                 {loading.savingShift ? (
                   <>
@@ -898,7 +898,7 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className={`relative group rounded-xl p-3 cursor-pointer transition-all duration-300 hover:scale-[1.02] border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
+                      className={`relative group rounded-xl p-3 cursor-pointer transition-all duration-300 border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
                       {/* Декоративный градиент */}
@@ -914,7 +914,7 @@ const HomePage: React.FC = () => {
                                 openAddRecordModalForEmployee(employee.id, e);
                               }}
                               disabled={!shiftStarted}
-                              className="shrink-0 p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 transition-all duration-200 disabled:opacity-50 text-primary shadow-sm hover:shadow-md transform hover:scale-110"
+                              className="shrink-0 p-1.5 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 transition-all duration-200 disabled:opacity-50 text-primary shadow-sm hover:shadow-md"
                               title={shiftStarted ? 'Добавить запись для этого сотрудника' : 'Сначала выберите работников и начните смену'}
                             >
                               <Plus className="w-4 h-4" />
@@ -1013,9 +1013,9 @@ const HomePage: React.FC = () => {
                   <div
                     className={`flex justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
                       paymentFilter === 'cash'
-                        ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg transform scale-105'
-                        : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md hover:scale-105'
-                    } ${!shiftStarted ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
+                        ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg'
+                        : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md'
+                    } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
                       if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                       setPaymentFilter('cash');
@@ -1029,9 +1029,9 @@ const HomePage: React.FC = () => {
                   <div
                     className={`flex justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
                       paymentFilter === 'card'
-                        ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg transform scale-105'
-                        : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md hover:scale-105'
-                    } ${!shiftStarted ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
+                        ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg'
+                        : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md'
+                    } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
                       if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                       setPaymentFilter('card');
@@ -1045,9 +1045,9 @@ const HomePage: React.FC = () => {
                   <div
                     className={`flex justify-between p-4 rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
                       paymentFilter === 'organization'
-                        ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg transform scale-105'
-                        : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md hover:scale-105'
-                    } ${!shiftStarted ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
+                        ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg'
+                        : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md'
+                    } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
                       if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                       setPaymentFilter('organization');
@@ -1065,7 +1065,7 @@ const HomePage: React.FC = () => {
                     })()} BYN</span>
                   </div>
                   <div
-                    className={`border-t border-border/40 mt-6 pt-6 flex justify-between cursor-pointer transition-all duration-200 p-4 rounded-xl border shadow-md bg-gradient-to-r from-accent/10 via-primary/5 to-accent/10 hover:from-accent/20 hover:via-primary/10 hover:to-accent/20 hover:shadow-lg hover:scale-105 ${!shiftStarted ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
+                    className={`border-t border-border/40 mt-6 pt-6 flex justify-between cursor-pointer transition-all duration-200 p-4 rounded-xl border shadow-md bg-gradient-to-r from-accent/10 via-primary/5 to-accent/10 hover:from-accent/20 hover:via-primary/10 hover:to-accent/20 hover:shadow-lg ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
                       if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                       setPaymentFilter('all');
