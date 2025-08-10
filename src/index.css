@@ -786,6 +786,105 @@ h1, h2, h3, h4, h5, h6 {
     .card-with-shadow {
       border-radius: 12px;
     }
+
+    /* Исправление центрирования иконок в кнопках на мобильных */
+    button {
+      @apply flex items-center justify-center;
+    }
+
+    button svg {
+      @apply flex-shrink-0;
+    }
+
+    /* Специальное центрирование для кнопок с текстом и иконками */
+    button.sidebar-link {
+      @apply justify-start;
+    }
+
+    /* Центрирование иконок в мобильных кнопках */
+    .mobile-button {
+      @apply flex items-center justify-center;
+    }
+
+    .mobile-button svg {
+      @apply mx-auto;
+    }
+
+    /* Скролл для табов на мобильных */
+    [role="tablist"] {
+      @apply overflow-x-auto overflow-y-hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    [role="tablist"]::-webkit-scrollbar {
+      display: none;
+    }
+
+    [role="tablist"] [role="tab"] {
+      @apply flex-shrink-0 whitespace-nowrap;
+      min-width: fit-content;
+    }
+
+    /* Центрирование иконок в кнопках переключателя темы */
+    .sidebar button {
+      @apply flex items-center justify-center;
+    }
+
+    .sidebar button svg {
+      @apply mx-auto;
+    }
+
+    /* Исключение для кнопок с текстом и иконками */
+    .sidebar button.w-full {
+      @apply justify-start;
+    }
+
+    .sidebar button.w-full svg {
+      @apply mx-0 mr-3;
+    }
+
+    /* Центрирование иконок в панели уведомлений */
+    .notification-panel button {
+      @apply flex items-center justify-center;
+    }
+
+    .notification-panel button svg {
+      @apply mx-auto;
+    }
+
+    /* Центрирование иконок в кнопках отчётов и других компонентов */
+    .reports-buttons button {
+      @apply flex items-center justify-center gap-2;
+    }
+
+    .reports-buttons button svg {
+      @apply flex-shrink-0;
+    }
+
+    /* Общие стили для всех кнопок с иконками */
+    button:not(.sidebar-link):not(.w-full) {
+      @apply flex items-center justify-center;
+    }
+
+    button:not(.sidebar-link):not(.w-full) svg {
+      @apply flex-shrink-0;
+    }
+
+    /* Специальные стили для кнопок с gap-2 (кнопки с иконкой и текстом) */
+    button.gap-2 {
+      @apply justify-center;
+    }
+
+    /* Дополнительные стили для лучшего выравнивания */
+    button.inline-flex {
+      @apply items-center justify-center;
+    }
+
+    /* Исправление для кнопок календаря */
+    .cursor-pointer {
+      @apply flex items-center;
+    }
   }
 
   /* Стилизация форм для темных тем */

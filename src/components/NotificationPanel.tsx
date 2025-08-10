@@ -58,7 +58,7 @@ const NotificationPanel: React.FC = () => {
   };
 
   return (
-    <div className="relative" ref={panelRef}>
+    <div className="relative notification-panel" ref={panelRef}>
       {/* Кнопка уведомлений */}
       <motion.button
         whileHover={{ scale: 1.05 }}

@@ -869,7 +869,7 @@ const ReportsPage: React.FC = () => {
 
             <div className="space-y-4">
               {/* Period type selector */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 reports-buttons">
                 <button
                   onClick={() => setPeriodType('day')}
                   className={`px-4 py-2 rounded-lg text-sm transition-colors ${
@@ -1190,7 +1190,7 @@ const ReportsPage: React.FC = () => {
                     className="px-3 py-2 border border-input rounded-lg bg-background"
                   />
                 </div>
-                <div className="flex items-end">
+                <div className="flex items-end reports-buttons">
                   <button
                     onClick={loadGeneralReport}
                     disabled={generalReportLoading}
@@ -1217,13 +1217,15 @@ const ReportsPage: React.FC = () => {
                 <h3 className="font-medium">
                   Период: {format(generalStartDate, 'dd.MM.yyyy')} - {format(generalEndDate, 'dd.MM.yyyy')}
                 </h3>
-                <button
-                  onClick={exportGeneralReportToWord}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors text-sm"
-                >
-                  <FileDown className="w-4 h-4" />
-                  Экспорт в Word
-                </button>
+                <div className="reports-buttons">
+                  <button
+                    onClick={exportGeneralReportToWord}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors text-sm"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    Экспорт в Word
+                  </button>
+                </div>
               </div>
 
               <div className="p-6">
