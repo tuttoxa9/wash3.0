@@ -383,6 +383,17 @@ const ReportsPage: React.FC = () => {
           employeeRolesForCalc[r.employeeId] = employeeRole;
         });
 
+        // Собираем карту флагов минималки на основе dailyRoles для диапазона
+        const minimumOverride = Array.from(new Set(Object.keys(dailyRoles).flatMap(d => Object.keys(dailyRoles[d] || {})))).reduce<Record<string, boolean>>((acc, empId) => {
+          let respect = true;
+          Object.keys(dailyRoles).forEach(date => {
+            const val = (dailyRoles[date] as any)?.[`min_${empId}`];
+            if (val === false) respect = false;
+          });
+          acc[empId] = respect;
+          return acc;
+        }, {});
+
         // Создаём калькулятор зарплаты и получаем результаты
         const salaryCalculator = createSalaryCalculator(
           state.minimumPaymentSettings,
