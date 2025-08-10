@@ -106,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
       {/* Сайдбар */}
       <aside
-        className={`fixed top-0 left-0 z-50 w-[85vw] max-w-[320px] sm:w-80 md:w-64 h-screen bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-3 sm:p-4 border-r border-border/40 shadow-xl transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:z-0 ${
+        className={`sidebar fixed top-0 left-0 z-50 w-[85vw] max-w-[320px] sm:w-80 md:w-64 h-screen bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-3 sm:p-4 border-r border-border/40 shadow-xl transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:z-0 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -182,7 +182,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
           <div className="mt-auto mb-4">
             <button
               onClick={handleInstallPWA}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 transition-colors"
+              className="w-full flex items-center gap-3 p-3 rounded-xl install-pwa-btn"
             >
               <Download className="w-5 h-5 text-primary" />
               <span className="text-sm font-medium text-primary">Установить приложение</span>
@@ -198,7 +198,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
                 className={`p-2 rounded-lg transition-colors ${
                   state.theme === 'light'
                     ? 'bg-primary text-white'
-                    : 'hover:bg-secondary'
+                    : ''
                 }`}
                 aria-label="Светлая тема"
               >
@@ -209,7 +209,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
                 className={`p-2 rounded-lg transition-colors ${
                   state.theme === 'dark'
                     ? 'bg-primary text-white'
-                    : 'hover:bg-secondary'
+                    : ''
                 }`}
                 aria-label="Темная тема"
               >
@@ -220,7 +220,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
                 className={`p-2 rounded-lg transition-colors ${
                   state.theme === 'black'
                     ? 'bg-primary text-white'
-                    : 'hover:bg-secondary'
+                    : ''
                 }`}
                 aria-label="Черная тема"
               >
@@ -234,7 +234,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             <div className="mt-4">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 border border-red-500/20 text-red-500 hover:text-red-400 transition-colors"
+                className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500"
               >
                 <LogOut className="w-5 h-5" />
                 <span className="text-sm font-medium">Выйти</span>
