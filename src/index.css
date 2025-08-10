@@ -803,7 +803,6 @@ h1, h2, h3, h4, h5, h6 {
   .black button:not([class*="bg-"]) {
     @apply hover:bg-secondary/80;
   }
-}
 
 /* Дополнительные мобильные улучшения */
 @media (max-width: 768px) {
