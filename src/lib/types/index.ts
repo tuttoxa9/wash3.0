@@ -38,7 +38,7 @@ export interface CarWashRecord {
   service: string; // Название услуги
   price: number;
   paymentMethod: PaymentMethod;
-  employeeIds: string[]; // ID сотрудников, выполнивших работу (для совместимости). Фактически один ID мойщика
+  employeeIds: string[]; // ID сотрудников, выполнивших работу (несколько человек могут мыть одну машину, включая админов)
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 

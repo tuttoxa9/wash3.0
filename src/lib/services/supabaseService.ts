@@ -74,7 +74,9 @@ export const carWashService = {
       service: record.service,
       price: record.price,
       payment_method: record.paymentMethod, // JSONB
-      washer_id: (record as any).washerId ?? (record as any).washer_id ?? (Array.isArray((record as any).employeeIds) ? (record as any).employeeIds[0] : null),
+      participant_ids: Array.isArray((record as any).employeeIds)
+        ? (record as any).employeeIds
+        : ((record as any).washerId ? [(record as any).washerId] : []),
     };
     const { data, error } = await supabase.from('car_wash_records').insert(payload).select('*').single();
     if (error) { logSupabaseError('carWash.add', error); return null; }
@@ -86,7 +88,7 @@ export const carWashService = {
       service: data.service,
       price: data.price,
       paymentMethod: data.payment_method,
-      employeeIds: data.washer_id ? [data.washer_id] : [],
+      employeeIds: Array.isArray(data.participant_ids) ? data.participant_ids : [],
     };
   },
   async getByDate(date: string): Promise<CarWashRecord[]> {
@@ -100,7 +102,7 @@ export const carWashService = {
       service: r.service,
       price: r.price,
       paymentMethod: r.payment_method,
-      employeeIds: r.washer_id ? [r.washer_id] : [],
+      employeeIds: Array.isArray(r.participant_ids) ? r.participant_ids : [],
     }));
   },
   async getByOrganization(organizationId: string): Promise<CarWashRecord[]> {
@@ -117,7 +119,7 @@ export const carWashService = {
       service: r.service,
       price: r.price,
       paymentMethod: r.payment_method,
-      employeeIds: r.washer_id ? [r.washer_id] : [],
+      employeeIds: Array.isArray(r.participant_ids) ? r.participant_ids : [],
     }));
   },
   async update(record: CarWashRecord): Promise<boolean> {
@@ -129,7 +131,7 @@ export const carWashService = {
       service: rest.service,
       price: rest.price,
       payment_method: rest.paymentMethod,
-      washer_id: Array.isArray(rest.employeeIds) ? rest.employeeIds[0] : (rest as any).washerId ?? null,
+      participant_ids: Array.isArray(rest.employeeIds) ? rest.employeeIds : ((rest as any).washerId ? [(rest as any).washerId] : []),
       updated_at: new Date().toISOString(),
     };
     const { error } = await supabase.from('car_wash_records').update(payload).eq('id', id);
