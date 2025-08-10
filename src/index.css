@@ -385,28 +385,14 @@ h1, h2, h3, h4, h5, h6 {
   .sidebar-link {
     @apply flex items-center gap-3 rounded-2xl px-3 py-3 sm:py-2 text-foreground/80 transition-all touch-manipulation relative;
     min-height: 44px; /* Сенсорная цель */
+    /* Light theme base */
     background: linear-gradient(180deg, hsl(var(--sidebar-background)/0.18), hsl(var(--sidebar-background)/0.06));
-    border: 1px solid hsla(var(--foreground), 0.1);
-  }
-
-  .sidebar-link::before {
-    content: '';
-    position: absolute;
-    inset: 0; /* полностью накрываем кнопку */
-    border-radius: 1rem; /* должен совпадать с rounded-2xl */
-    padding: 1px; /* толщина подсветки */
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-            mask-composite: exclude;
-    background: radial-gradient(100% 60% at 50% 0%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 60%, rgba(255,255,255,0) 100%);
-    pointer-events: none;
+    border: 1px solid hsla(var(--foreground), 0.12);
   }
 
   .sidebar-link:hover {
     background: linear-gradient(180deg, hsl(var(--sidebar-background)/0.24), hsl(var(--sidebar-background)/0.08));
-    border-color: hsla(var(--foreground), 0.14);
+    border-color: hsla(var(--foreground), 0.16);
   }
 
   .sidebar-link.active {
@@ -415,23 +401,56 @@ h1, h2, h3, h4, h5, h6 {
     border-color: hsla(var(--foreground), 0.18) !important;
   }
 
-  .dark .sidebar-link,
-  .black .sidebar-link {
-    background: linear-gradient(180deg, rgba(43,43,47,0.9), rgba(36,36,39,0.9));
-    border-color: rgba(255,255,255,0.1);
-    color: rgba(231,231,234,0.92);
+  /* Верхний хайлайт по краю (light) */
+  .sidebar-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem; /* должен совпадать с rounded-2xl */
+    padding: 1px; /* толщина подсветки */
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    background: radial-gradient(120% 65% at 50% 0%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 55%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
   }
 
-  .dark .sidebar-link:hover,
-  .black .sidebar-link:hover {
+  /* Dark theme overrides */
+  .dark .sidebar-link {
+    background: linear-gradient(180deg, rgba(43,43,47,0.9), rgba(36,36,39,0.9));
+    border-color: rgba(255,255,255,0.10);
+    color: rgba(231,231,234,0.92);
+  }
+  .dark .sidebar-link:hover {
     background: linear-gradient(180deg, rgba(48,48,53,0.95), rgba(39,39,43,0.95));
     border-color: rgba(255,255,255,0.14);
   }
+  .dark .sidebar-link.active {
+    border-color: rgba(255,255,255,0.18) !important;
+  }
+  .dark .sidebar-link::before {
+    border-radius: 1rem;
+    background: radial-gradient(120% 65% at 50% 0%, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.10) 55%, rgba(255,255,255,0) 100%);
+  }
 
-  .dark .sidebar-link::before,
+  /* Black theme overrides */
+  .black .sidebar-link {
+    background: linear-gradient(180deg, rgba(28,28,30,0.95), rgba(22,22,24,0.95));
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(235,235,238,0.94);
+  }
+  .black .sidebar-link:hover {
+    background: linear-gradient(180deg, rgba(34,34,38,0.98), rgba(26,26,30,0.98));
+    border-color: rgba(255,255,255,0.16);
+  }
+  .black .sidebar-link.active {
+    border-color: rgba(255,255,255,0.20) !important;
+  }
   .black .sidebar-link::before {
     border-radius: 1rem;
-    background: radial-gradient(100% 60% at 50% 0%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.1) 60%, rgba(255,255,255,0) 100%);
+    background: radial-gradient(120% 65% at 50% 0%, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0) 100%);
   }
 
   /* Mini Calendar Styles */
