@@ -312,7 +312,10 @@ export const databaseService = {
   },
   async clearAllData(): Promise<boolean> {
     try {
-      // Delete from child tables first if there are FKs (we have none here)
+      // Prefer secure RPC if available
+      const { error: rpcError } = await supabase.rpc('clear_all_data');
+      if (!rpcError) return true;
+      // Fallback to client-side deletes (may be restricted by RLS)
       const tables = [
         'appointments',
         'car_wash_records',
