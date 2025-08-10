@@ -660,73 +660,47 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Выбор даты - теперь расположен ниже заголовка */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-muted/30 via-background to-muted/20 border border-border/40 shadow-md">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary">
-                <Calendar className="h-5 w-5" />
-              </div>
-              <span className="text-muted-foreground font-medium">Дата:</span>
-            </div>
-
-            <div className="relative" ref={calendarRef}>
-              <div
-                className="flex h-11 items-center rounded-xl border border-border/40 bg-gradient-to-r from-background to-background/90 px-4 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring cursor-pointer hover:from-secondary/30 hover:to-secondary/20 transition-all duration-200 shadow-sm"
-                onClick={toggleCalendar}
-              >
-                <span className="flex-1 font-semibold">{formattedDate}</span>
-                {isCurrentDate &&
-                  <span className="ml-3 text-xs px-2.5 py-1 bg-gradient-to-r from-primary/20 to-primary/10 text-primary rounded-full border border-primary/20 font-medium">
-                    Сегодня
-                  </span>
-                }
-              </div>
-              {isCalendarOpen && (
-                <div className="absolute top-full left-0 mt-2 z-10 bg-card rounded-xl shadow-xl border border-border/40 p-3 backdrop-blur-sm">
-                  <DayPicker
-                    mode="single"
-                    selected={new Date(selectedDate)}
-                    onDayClick={handleDaySelect}
-                  />
+        {/* Выбор даты и состав смены */}
+        <div className="space-y-4">
+          {/* Дата */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-muted/30 via-background to-muted/20 border border-border/40 shadow-md">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary">
+                  <Calendar className="h-5 w-5" />
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Блок "Работали" справа от даты */}
-          {isShiftLocked && !isEditingShift && workingEmployees.length > 0 && (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground font-medium">Работали:</span>
+                <span className="text-muted-foreground font-medium">Дата:</span>
               </div>
-              <span className="text-sm font-semibold text-card-foreground">
-                {workingEmployees.map(e => e.name).join(', ')}
-              </span>
-            </div>
-          )}
-        </div>
 
-        {/* Выбор сотрудников на смене - более компактный дизайн */}
-        <div
-          ref={shiftSectionRef}
-          className={`p-4 rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl transition-all duration-300 ${
-            isShiftSectionHighlighted ? 'ring-4 ring-primary/30 shadow-2xl bg-gradient-to-br from-primary/5 via-card/95 to-primary/5' : ''
-          }`}
-        >
-          <div className="flex flex-wrap justify-between items-center mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-1.5 h-6 bg-gradient-to-b from-accent to-primary rounded-full" />
-              <h3 className="text-lg font-semibold">
-                {isShiftLocked && !isEditingShift
-                  ? 'Состав смены' : 'Выберите сотрудников на смене'}
-              </h3>
+              <div className="relative" ref={calendarRef}>
+                <div
+                  className="flex h-11 items-center rounded-xl border border-border/40 bg-gradient-to-r from-background to-background/90 px-4 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring cursor-pointer hover:from-secondary/30 hover:to-secondary/20 transition-all duration-200 shadow-sm"
+                  onClick={toggleCalendar}
+                >
+                  <span className="flex-1 font-semibold">{formattedDate}</span>
+                  {isCurrentDate &&
+                    <span className="ml-3 text-xs px-2.5 py-1 bg-gradient-to-r from-primary/20 to-primary/10 text-primary rounded-full border border-primary/20 font-medium">
+                      Сегодня
+                    </span>
+                  }
+                </div>
+                {isCalendarOpen && (
+                  <div className="absolute top-full left-0 mt-2 z-10 bg-card rounded-xl shadow-xl border border-border/40 p-3 backdrop-blur-sm">
+                    <DayPicker
+                      mode="single"
+                      selected={new Date(selectedDate)}
+                      onDayClick={handleDaySelect}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Кнопка изменить состав смены */}
             {isShiftLocked && (
               <button
                 onClick={() => setIsEditingShift(!isEditingShift)}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-border/40 bg-gradient-to-r from-background to-background/90 hover:from-secondary/30 hover:to-secondary/20 transition-all duration-200 text-sm font-medium shadow-sm"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border/40 bg-gradient-to-r from-background to-background/90 hover:from-secondary/30 hover:to-secondary/20 transition-all duration-200 text-sm font-medium shadow-sm"
               >
                 {isEditingShift ? (
                   <>
@@ -736,122 +710,167 @@ const HomePage: React.FC = () => {
                 ) : (
                   <>
                     <Edit className="w-4 h-4" />
-                    Изменить
+                    Изменить состав
                   </>
                 )}
               </button>
             )}
           </div>
 
-          {(!isShiftLocked || isEditingShift) && (
-            <>
-              <div className="space-y-4 mb-4">
+          {/* Состав смены */}
+          <div
+            ref={shiftSectionRef}
+            className={`p-4 rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl transition-all duration-300 ${
+              isShiftSectionHighlighted ? 'ring-4 ring-primary/30 shadow-2xl bg-gradient-to-br from-primary/5 via-card/95 to-primary/5' : ''
+            }`}
+          >
+            <div className="flex flex-wrap justify-between items-center mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-6 bg-gradient-to-b from-accent to-primary rounded-full" />
+                <h3 className="text-lg font-semibold">
+                  {isShiftLocked && !isEditingShift
+                    ? 'Состав смены' : 'Выберите сотрудников на смене'}
+                </h3>
+              </div>
+            </div>
+
+            {/* Показ состава смены если заблокирован */}
+            {isShiftLocked && !isEditingShift && workingEmployees.length > 0 && (
+              <div className="space-y-3">
                 <div className="flex flex-wrap gap-3">
-                  {state.employees.map(employee => (
-                    <button
-                      key={employee.id}
-                      onClick={() => handleEmployeeSelection(employee.id)}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border shadow-sm ${
-                        shiftEmployees.includes(employee.id)
-                          ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg'
-                          : 'bg-gradient-to-r from-secondary/60 to-secondary/40 hover:from-secondary/80 hover:to-secondary/60 border-border/40'
-                      }`}
-                    >
-                      {employee.name}
-                    </button>
-                  ))}
+                  {workingEmployees.map(employee => {
+                    const role = employeeRoles[employee.id] || 'washer';
+                    return (
+                      <div key={employee.id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-muted/20 to-muted/10 border border-border/30">
+                        <span className="text-sm font-medium">{employee.name}</span>
+                        <span
+                          className={`px-2 py-0.5 rounded-md text-xs font-medium shadow-sm border ${
+                            role === 'admin'
+                              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400/30'
+                              : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400/30'
+                          }`}
+                        >
+                          {role === 'admin' ? 'Админ' : 'Мойщик'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
+              </div>
+            )}
 
-                {/* Выбор ролей для выбранных сотрудников */}
-                {shiftEmployees.length > 0 && state.salaryCalculationMethod === 'minimumWithPercentage' && (
-                  <div className="p-4 border border-border/40 rounded-xl bg-gradient-to-r from-muted/20 to-muted/10 shadow-sm">
-                    <h4 className="text-sm font-semibold mb-3 text-foreground">Назначение ролей сотрудников:</h4>
-                    <div className="space-y-3">
-                      {shiftEmployees.map(employeeId => {
-                        const employee = state.employees.find(emp => emp.id === employeeId);
-                        if (!employee) return null;
+            {(!isShiftLocked || isEditingShift) && (
+              <>
+                <div className="space-y-4 mb-4">
+                  <div className="flex flex-wrap gap-3">
+                    {state.employees.map(employee => (
+                      <button
+                        key={employee.id}
+                        onClick={() => handleEmployeeSelection(employee.id)}
+                        className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border shadow-sm ${
+                          shiftEmployees.includes(employee.id)
+                            ? 'bg-gradient-to-r from-sky-500 to-sky-600 text-white border-sky-400/30 shadow-lg'
+                            : 'bg-gradient-to-r from-secondary/60 to-secondary/40 hover:from-secondary/80 hover:to-secondary/60 border-border/40'
+                        }`}
+                      >
+                        {employee.name}
+                      </button>
+                    ))}
+                  </div>
 
-                        return (
-                          <div key={employeeId} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-gradient-to-r from-background/80 to-background/60 border border-border/30">
-                            <span className="text-sm font-medium flex-1">{employee.name}</span>
-                            <div className="flex items-center gap-4">
-                              {/* Переключатель учета минималки */}
-                              <div className="flex items-center gap-3 p-2 rounded-lg border border-border/40 bg-background/50">
-                                <span className="text-xs font-medium text-foreground">Минималка</span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEmployeeRoles(prev => ({ ...prev })); // no-op to keep state sync
-                                    // флаг храним в dailyEmployeeRoles как специальное поле позже при сохранении смены
-                                    const key = `min_${employeeId}` as any;
-                                    // @ts-ignore - динамическое хранение в объекте ролей до расширения схемы
-                                    const current = (employeeRoles as any)[key] !== false;
-                                    const newRoles: any = { ...employeeRoles };
-                                    newRoles[key] = !current; // true=включено, false=выключено
-                                    setEmployeeRoles(newRoles);
-                                  }}
-                                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 shadow-lg border-2 ${
-                                    ((employeeRoles as any)[`min_${employeeId}`] !== false)
-                                      ? 'bg-gradient-to-r from-green-500 to-green-600 border-green-400'
-                                      : 'bg-gradient-to-r from-slate-300 to-slate-400 dark:from-slate-600 dark:to-slate-700 border-slate-400 dark:border-slate-500'
-                                  }`}
-                                  aria-label="Переключатель минималки"
-                                >
-                                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-lg ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'translate-x-5' : 'translate-x-1'}`} />
-                                </button>
+                  {/* Выбор ролей для выбранных сотрудников */}
+                  {shiftEmployees.length > 0 && state.salaryCalculationMethod === 'minimumWithPercentage' && (
+                    <div className="p-4 border border-border/40 rounded-xl bg-gradient-to-r from-muted/20 to-muted/10 shadow-sm">
+                      <h4 className="text-sm font-semibold mb-3 text-foreground">Назначение ролей сотрудников:</h4>
+                      <div className="space-y-3">
+                        {shiftEmployees.map(employeeId => {
+                          const employee = state.employees.find(emp => emp.id === employeeId);
+                          if (!employee) return null;
 
-                              </div>
-                              <div className="flex gap-3">
-                                <button
-                                  onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
-                                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
-                                    employeeRoles[employeeId] === 'washer'
-                                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400 shadow-blue-200 dark:shadow-blue-900/50'
-                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
-                                  }`}
-                                >
-                                  Мойщик
-                                </button>
-                                <button
-                                  onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
-                                  className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
-                                    employeeRoles[employeeId] === 'admin'
-                                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400 shadow-green-200 dark:shadow-green-900/50'
-                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
-                                  }`}
-                                >
-                                  Админ
-                                </button>
+                          return (
+                            <div key={employeeId} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-gradient-to-r from-background/80 to-background/60 border border-border/30">
+                              <span className="text-sm font-medium flex-1">{employee.name}</span>
+                              <div className="flex items-center gap-4">
+                                {/* Переключатель учета минималки */}
+                                <div className="flex items-center gap-3 p-2 rounded-lg border border-border/40 bg-background/50">
+                                  <span className="text-xs font-medium text-foreground">Минималка</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEmployeeRoles(prev => ({ ...prev })); // no-op to keep state sync
+                                      // флаг храним в dailyEmployeeRoles как специальное поле позже при сохранении смены
+                                      const key = `min_${employeeId}` as any;
+                                      // @ts-ignore - динамическое хранение в объекте ролей до расширения схемы
+                                      const current = (employeeRoles as any)[key] !== false;
+                                      const newRoles: any = { ...employeeRoles };
+                                      newRoles[key] = !current; // true=включено, false=выключено
+                                      setEmployeeRoles(newRoles);
+                                    }}
+                                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 shadow-lg border-2 ${
+                                      ((employeeRoles as any)[`min_${employeeId}`] !== false)
+                                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 border-emerald-400 shadow-emerald-200/50'
+                                        : 'bg-gradient-to-r from-slate-400 to-slate-500 dark:from-slate-600 dark:to-slate-700 border-slate-500 dark:border-slate-600 shadow-slate-200/50 dark:shadow-slate-800/50'
+                                    }`}
+                                    aria-label="Переключатель минималки"
+                                  >
+                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-lg ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'translate-x-5' : 'translate-x-1'}`} />
+                                  </button>
+
+                                </div>
+                                <div className="flex gap-3">
+                                  <button
+                                    onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
+                                    className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
+                                      employeeRoles[employeeId] === 'washer'
+                                        ? 'bg-gradient-to-r from-sky-500 to-sky-600 text-white border-sky-400 shadow-sky-200 dark:shadow-sky-900/50'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
+                                    }`}
+                                  >
+                                    Мойщик
+                                  </button>
+                                  <button
+                                    onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
+                                    className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
+                                      employeeRoles[employeeId] === 'admin'
+                                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-emerald-400 shadow-emerald-200 dark:shadow-emerald-900/50'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
+                                    }`}
+                                  >
+                                    Админ
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              <button
-                onClick={startShift}
-                disabled={loading.savingShift || shiftEmployees.length === 0}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-200 disabled:opacity-50 text-sm font-semibold shadow-lg hover:shadow-xl border border-primary/30"
-              >
-                {loading.savingShift ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Сохранение...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-5 h-5" />
-                    {isEditingShift ? 'Сохранить изменения' : 'Начать смену'}
-                  </>
-                )}
-              </button>
-            </>
-          )}
+                <button
+                  onClick={startShift}
+                  disabled={loading.savingShift || shiftEmployees.length === 0}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-200 disabled:opacity-50 text-sm font-semibold shadow-lg hover:shadow-xl border border-primary/30"
+                >
+                  {loading.savingShift ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Сохранение...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      {isEditingShift ? 'Сохранить изменения' : 'Начать смену'}
+                    </>
+                  )}
+                </button>
+              </>
+            )}
+          </div>
         </div>
+
+
       </div>
 
       {/* Основная секция с квадратиками работников и виджетами */}
