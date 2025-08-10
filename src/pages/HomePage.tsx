@@ -575,7 +575,7 @@ const HomePage: React.FC = () => {
                   <span className="px-2 py-0.5 rounded-full text-xs bg-secondary/60 text-secondary-foreground">Режим ожидания</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  1) Выберите сотрудников на смену. 2) Назначьте роли (при необходимости). 3) Нажмите «Начать смену».
+                  1) Выберите сотрудников на смену. 2) Назначьте роли. 3) Нажмите «Начать смену».
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button onClick={scrollToShift} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors text-sm">
@@ -612,11 +612,6 @@ const HomePage: React.FC = () => {
             >
               <Receipt className="w-4 h-4" />
               Ежедневная ведомость
-              {!shiftStarted && (
-                <span className="absolute -top-2 -right-2 text-[10px] bg-secondary text-secondary-foreground border border-border px-1 py-0.5 rounded">
-                  Требует смену
-                </span>
-              )}
             </button>
             <button
               onClick={(e) => {
