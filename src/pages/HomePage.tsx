@@ -799,9 +799,7 @@ const HomePage: React.FC = () => {
                                 >
                                   <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-lg ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'translate-x-5' : 'translate-x-1'}`} />
                                 </button>
-                                <span className={`text-xs font-semibold ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'text-green-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                                  {((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'ВКЛ' : 'ВЫКЛ'}
-                                </span>
+
                               </div>
                               <div className="flex gap-3">
                                 <button
