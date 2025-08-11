@@ -896,6 +896,14 @@ const HomePage: React.FC = () => {
                             <div key={employeeId} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-gradient-to-r from-background/80 to-background/60 border border-border/30">
                               <span className="text-sm font-medium flex-1">{employee.name}</span>
                               <div className="flex items-center gap-4">
+                                {/* Кнопка удаления сотрудника из смены */}
+                                <button
+                                  onClick={() => handleEmployeeSelection(employeeId)}
+                                  className="p-2 rounded-lg hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-800 text-red-500"
+                                  title="Удалить из смены"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
                                 {/* Переключатель учета минималки */}
                                 <div className="flex items-center gap-3 p-2 rounded-lg border border-border/40 bg-background/50">
                                   <span className="text-xs font-medium text-foreground">Минималка</span>
