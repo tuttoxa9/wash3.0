@@ -2071,7 +2071,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
       />
 
       {/* Модальное окно снизу */}
-      <div className="relative w-full max-w-7xl bg-card rounded-t-xl sm:rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[95vh] sm:max-h-[98vh] lg:h-[60vh] lg:max-h-none overflow-hidden border border-border">
+      <div className="relative w-full max-w-7xl bg-card rounded-t-xl sm:rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[95vh] sm:max-h-[98vh] lg:h-[75vh] lg:max-h-none overflow-hidden border border-border">
         <div className="p-3 sm:p-4 md:p-6 lg:flex lg:flex-col lg:h-full">
           <div className="flex justify-between items-center mb-3 sm:mb-4">
             <h3 className="text-base sm:text-lg md:text-xl font-bold text-card-foreground">Детали работы - {employee.name}</h3>
@@ -2096,7 +2096,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto max-h-[60vh] sm:max-h-[65vh] lg:flex-1 lg:max-h-none lg:overflow-y-auto">
+        <div className="overflow-x-auto max-h-[75vh] sm:max-h-[75vh] lg:flex-1 lg:max-h-none lg:overflow-y-auto">
           <table className="w-full bg-card min-w-[700px]">
             <thead>
               <tr className="border-b border-border bg-muted/30">
@@ -2408,7 +2408,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
       />
 
       {/* Модальное окно снизу */}
-      <div className="relative w-full max-w-7xl bg-card rounded-t-xl sm:rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[95vh] sm:max-h-[98vh] lg:h-[60vh] lg:max-h-none overflow-hidden border border-border">
+      <div className="relative w-full max-w-7xl bg-card rounded-t-xl sm:rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[95vh] sm:max-h-[98vh] lg:h-[75vh] lg:max-h-none overflow-hidden border border-border">
         <div className="p-3 sm:p-4 md:p-6 lg:flex lg:flex-col lg:h-full">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
             <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-card-foreground">
@@ -2489,7 +2489,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             </button>
           </div>
 
-          <div className="overflow-x-auto max-h-[60vh] sm:max-h-[70vh] lg:flex-1 lg:max-h-none lg:overflow-y-auto">
+          <div className="overflow-x-auto max-h-[75vh] sm:max-h-[75vh] lg:flex-1 lg:max-h-none lg:overflow-y-auto">
             <table className="w-full bg-card min-w-[800px]">
               <thead className="sticky top-0 bg-card z-10">
                 <tr className="border-b border-border bg-muted/30">
