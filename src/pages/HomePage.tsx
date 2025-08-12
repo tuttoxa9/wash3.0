@@ -679,7 +679,7 @@ const HomePage: React.FC = () => {
               title={shiftStarted ? undefined : 'Сначала выберите работников и начните смену'}
             >
               <Plus className="w-4 h-4" />
-              Добавить помытую машину
+              Добавить услугу
             </button>
           </div>
         </div>
@@ -1297,6 +1297,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
         time: prefilledData.time,
         carInfo: prefilledData.carInfo,
         service: prefilledData.service,
+        serviceType: 'wash' as 'wash' | 'dryclean',
         price: 0, // Нужно указать цену
         paymentMethod: { type: 'cash' } as PaymentMethod,
         employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : []
@@ -1307,6 +1308,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
       time: format(new Date(), 'HH:mm'),
       carInfo: '',
       service: '',
+      serviceType: 'wash' as 'wash' | 'dryclean',
       price: 0,
       paymentMethod: { type: 'cash' } as PaymentMethod,
       employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : []
@@ -1414,6 +1416,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
         time: formData.time,
         carInfo: formData.carInfo,
         service: formData.service,
+        serviceType: formData.serviceType,
         price,
         paymentMethod,
         employeeIds: formData.employeeIds
@@ -1497,7 +1500,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
       className="max-w-lg"
     >
       <div className="p-6">
-        <h3 className="text-xl font-bold mb-4">Добавить помытую машину</h3>
+        <h3 className="text-xl font-bold mb-4">Добавить услугу</h3>
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
@@ -1534,6 +1537,37 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
               />
             </div>
 
+            {/* Тип услуги */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Тип услуги
+              </label>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, serviceType: 'wash' })}
+                  className={`px-3 py-2 border rounded-xl flex items-center justify-center text-sm font-medium transition-colors ${
+                    formData.serviceType === 'wash'
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'border-input hover:bg-secondary/50'
+                  }`}
+                >
+                  Мойка
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, serviceType: 'dryclean' })}
+                  className={`px-3 py-2 border rounded-xl flex items-center justify-center text-sm font-medium transition-colors ${
+                    formData.serviceType === 'dryclean'
+                      ? 'bg-purple-500 text-white border-purple-500'
+                      : 'border-input hover:bg-secondary/50'
+                  }`}
+                >
+                  Химчистка
+                </button>
+              </div>
+            </div>
+
             {/* Услуга */}
             <div>
               <label htmlFor="service" className="block text-sm font-medium mb-1">
@@ -1545,7 +1579,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                 name="service"
                 value={formData.service}
                 onChange={handleChange}
-                placeholder="Например: Комплекс"
+                placeholder={formData.serviceType === 'wash' ? "Например: Комплекс" : "Например: Химчистка салона"}
                 className="w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                 required
               />
@@ -2054,6 +2088,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                 <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Время</th>
                 <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Авто</th>
                 <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Услуга</th>
+                <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Тип</th>
                 <th className="py-4 px-4 text-right text-sm font-semibold text-card-foreground">Стоимость</th>
                 <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Оплата</th>
                 <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Другие работники</th>
@@ -2067,6 +2102,15 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                     <td className="py-4 px-4 text-card-foreground">{record.time}</td>
                     <td className="py-4 px-4 text-card-foreground">{record.carInfo}</td>
                     <td className="py-4 px-4 text-card-foreground">{record.service}</td>
+                    <td className="py-4 px-4">
+                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        record.serviceType === 'dryclean'
+                          ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                          : 'bg-blue-100 text-blue-700 border border-blue-200'
+                      }`}>
+                        {record.serviceType === 'dryclean' ? 'Химчистка' : 'Мойка'}
+                      </span>
+                    </td>
                     <td className="py-4 px-4 text-right font-semibold text-card-foreground">{record.price.toFixed(2)} BYN</td>
                     <td className="py-4 px-4 text-card-foreground">
                       {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
@@ -2082,7 +2126,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={8} className="py-12 text-center text-muted-foreground">
                     У этого работника нет записей за выбранную дату.
                   </td>
                 </tr>
@@ -2432,6 +2476,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Время</th>
                   <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Авто</th>
                   <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Услуга</th>
+                  <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Тип</th>
                   <th className="py-4 px-4 text-right text-sm font-semibold text-card-foreground">Стоимость</th>
                   <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Оплата</th>
                   <th className="py-4 px-4 text-left text-sm font-semibold text-card-foreground">Сотрудники</th>
@@ -2474,6 +2519,32 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                               onChange={handleEditFormChange}
                               className="w-full px-2 py-1 border border-input rounded text-sm"
                             />
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setEditFormData({...editFormData, serviceType: 'wash'})}
+                                className={`px-2 py-1 text-xs rounded ${
+                                  editFormData.serviceType === 'wash'
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-secondary'
+                                }`}
+                              >
+                                Мойка
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditFormData({...editFormData, serviceType: 'dryclean'})}
+                                className={`px-2 py-1 text-xs rounded ${
+                                  editFormData.serviceType === 'dryclean'
+                                    ? 'bg-purple-500 text-white'
+                                    : 'bg-secondary'
+                                }`}
+                              >
+                                Хим
+                              </button>
+                            </div>
                           </td>
                           <td className="py-4 px-4">
                             <input
@@ -2584,6 +2655,15 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                         <td className="py-4 px-4 text-card-foreground">{record.time}</td>
                         <td className="py-4 px-4 text-card-foreground">{record.carInfo}</td>
                         <td className="py-4 px-4 text-card-foreground">{record.service}</td>
+                        <td className="py-4 px-4">
+                          <span className={`px-2 py-1 rounded-md text-xs font-medium ${
+                            record.serviceType === 'dryclean'
+                              ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                              : 'bg-blue-100 text-blue-700 border border-blue-200'
+                          }`}>
+                            {record.serviceType === 'dryclean' ? 'Химчистка' : 'Мойка'}
+                          </span>
+                        </td>
                         <td className="py-4 px-4 text-right font-semibold text-card-foreground">{record.price.toFixed(2)} BYN</td>
                         <td className="py-4 px-4 text-card-foreground">
                           {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
@@ -2617,7 +2697,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   })
                 ) : (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                    <td colSpan={9} className="py-12 text-center text-muted-foreground">
                       {paymentFilter === 'all'
                         ? 'За выбранную дату нет записей.'
                         : `Нет записей с выбранным методом оплаты.`

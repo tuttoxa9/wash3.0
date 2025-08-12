@@ -38,6 +38,7 @@ create table if not exists car_wash_records (
   time text not null,
   car_info text not null,
   service text not null,
+  service_type text default 'wash' check (service_type in ('wash','dryclean')), -- тип услуги: мойка или химчистка
   price numeric not null,
   payment_method jsonb not null, -- { type: 'cash'|'card'|'organization', organizationId?, organizationName? }
   participant_ids text[] not null default '{}', -- list of employee ids (washers and/or admins)

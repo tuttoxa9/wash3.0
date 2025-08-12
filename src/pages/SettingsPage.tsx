@@ -616,9 +616,11 @@ const SettingsContent: React.FC = () => {
           payload: {
             minimumPaymentWasher: 0,
             percentageWasher: 10,
+            percentageWasherDryclean: 15,
             minimumPaymentAdmin: 0,
             adminCashPercentage: 3,
-            adminCarWashPercentage: 2
+            adminCarWashPercentage: 2,
+            adminDrycleanPercentage: 3
           }
         });
 
@@ -1027,7 +1029,7 @@ const SalaryCalculationSettings: React.FC = () => {
           <div className="flex-1">
             <p className="font-medium text-sm">Минимальная оплата + процент</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Мойщик: % от всей выручки или минимальная оплата. Админ: % от кассы + % от лично помытых машин или минимальная оплата. Если админ не мыл машины - получает только % от кассы.
+              Мойщик: % от выручки мойки и химчистки (раздельно) или минимальная оплата. Админ: % от кассы + % от лично выполненных услуг (мойка и химчистка раздельно) или минимальная оплата.
             </p>
           </div>
           {loading && (
@@ -1065,7 +1067,7 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1">
-                    Процент мойщика (%)
+                    Процент мойщика - мойка (%)
                   </label>
                   <input
                     type="number"
@@ -1076,6 +1078,24 @@ const SalaryCalculationSettings: React.FC = () => {
                     })}
                     className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="10"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
+                    Процент мойщика - химчистка (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={minimumSettings.percentageWasherDryclean}
+                    onChange={(e) => setMinimumSettings({
+                      ...minimumSettings,
+                      percentageWasherDryclean: Number.parseFloat(e.target.value) || 0
+                    })}
+                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="15"
                     step="0.1"
                     min="0"
                     max="100"
@@ -1125,7 +1145,7 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1">
-                    % админа от вымытых машин (%)
+                    % админа от мойки (%)
                   </label>
                   <input
                     type="number"
@@ -1136,6 +1156,24 @@ const SalaryCalculationSettings: React.FC = () => {
                     })}
                     className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="2"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
+                    % админа от химчистки (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={minimumSettings.adminDrycleanPercentage}
+                    onChange={(e) => setMinimumSettings({
+                      ...minimumSettings,
+                      adminDrycleanPercentage: Number.parseFloat(e.target.value) || 0
+                    })}
+                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="3"
                     step="0.1"
                     min="0"
                     max="100"

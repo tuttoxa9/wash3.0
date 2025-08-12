@@ -36,6 +36,7 @@ export interface CarWashRecord {
   time: string;
   carInfo: string; // Информация об авто, включая гос.номер
   service: string; // Название услуги
+  serviceType?: 'wash' | 'dryclean'; // Тип услуги: мойка или химчистка
   price: number;
   paymentMethod: PaymentMethod;
   employeeIds: string[]; // ID сотрудников, выполнивших работу (несколько человек могут мыть одну машину, включая админов)
@@ -76,10 +77,12 @@ export type EmployeeRole = 'washer' | 'admin';
 // Интерфейс для настроек минимальной оплаты
 export interface MinimumPaymentSettings {
   minimumPaymentWasher: number; // Минимальная оплата за день для мойщика
-  percentageWasher: number; // Процент от выручки для мойщика
+  percentageWasher: number; // Процент от выручки для мойщика (мойка)
+  percentageWasherDryclean: number; // Процент от выручки для мойщика (химчистка)
   minimumPaymentAdmin: number; // Минимальная оплата за день для админа
   adminCashPercentage: number; // Процент админа от кассы
-  adminCarWashPercentage: number; // Процент админа от вымытых машин
+  adminCarWashPercentage: number; // Процент админа от вымытых машин (мойка)
+  adminDrycleanPercentage: number; // Процент админа от вымытых машин (химчистка)
 }
 
 // Тип для настроек темы

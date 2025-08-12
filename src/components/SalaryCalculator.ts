@@ -110,13 +110,18 @@ export class SalaryCalculator {
       ? (totalRevenue * (this.settings.adminCashPercentage / 100)) / adminCount
       : totalRevenue * (this.settings.adminCashPercentage / 100);
 
-    // 2. Процент от машин, которые лично помыл этот админ
-    const carWashBonus = personalRevenue * (this.settings.adminCarWashPercentage / 100);
+    // 2. Процент от машин, которые лично помыл этот админ (мойка)
+    const personalWashRevenue = this.calculatePersonalRevenueByType(employeeId, 'wash');
+    const washBonus = personalWashRevenue * (this.settings.adminCarWashPercentage / 100);
 
-    // 3. Общий доход от процентов
-    const totalPercentageEarnings = baseCashBonus + carWashBonus;
+    // 3. Процент от химчистки, которую лично выполнил этот админ
+    const personalDrycleanRevenue = this.calculatePersonalRevenueByType(employeeId, 'dryclean');
+    const drycleanBonus = personalDrycleanRevenue * (this.settings.adminDrycleanPercentage / 100);
 
-    // 4. Итоговая сумма (не меньше минималки)
+    // 4. Общий доход от процентов
+    const totalPercentageEarnings = baseCashBonus + washBonus + drycleanBonus;
+
+    // 5. Итоговая сумма (не меньше минималки)
     const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
     const finalAmount = respectMinimum
       ? Math.max(totalPercentageEarnings, this.settings.minimumPaymentAdmin)
@@ -130,7 +135,7 @@ export class SalaryCalculator {
       calculatedSalary: finalAmount,
       breakdown: {
         adminCashBonus: baseCashBonus,
-        adminCarWashBonus: carWashBonus,
+        adminCarWashBonus: washBonus + drycleanBonus,
         minimumGuaranteed: respectMinimum ? this.settings.minimumPaymentAdmin : 0,
         finalAmount
       }
@@ -144,10 +149,18 @@ export class SalaryCalculator {
     personalRevenue: number
   ): SalaryCalculationResult {
 
-    // 1. Процент от машин, которые лично помыл
-    const percentageEarnings = personalRevenue * (this.settings.percentageWasher / 100);
+    // 1. Процент от машин, которые лично помыл (мойка)
+    const personalWashRevenue = this.calculatePersonalRevenueByType(employeeId, 'wash');
+    const washEarnings = personalWashRevenue * (this.settings.percentageWasher / 100);
 
-    // 2. Итоговая сумма (не меньше минималки)
+    // 2. Процент от химчистки, которую лично выполнил
+    const personalDrycleanRevenue = this.calculatePersonalRevenueByType(employeeId, 'dryclean');
+    const drycleanEarnings = personalDrycleanRevenue * (this.settings.percentageWasherDryclean / 100);
+
+    // 3. Общий доход от процентов
+    const percentageEarnings = washEarnings + drycleanEarnings;
+
+    // 4. Итоговая сумма (не меньше минималки)
     const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
     const finalAmount = respectMinimum
       ? Math.max(percentageEarnings, this.settings.minimumPaymentWasher)
@@ -175,6 +188,24 @@ export class SalaryCalculator {
 
     this.records.forEach(record => {
       if (record.employeeIds.includes(employeeId)) {
+        // Доля сотрудника от стоимости машины
+        const employeeShare = record.price / record.employeeIds.length;
+        personalRevenue += employeeShare;
+      }
+    });
+
+    return personalRevenue;
+  }
+
+  // Расчёт личного дохода сотрудника по типу услуги
+  private calculatePersonalRevenueByType(employeeId: string, serviceType: 'wash' | 'dryclean'): number {
+    let personalRevenue = 0;
+
+    this.records.forEach(record => {
+      // Если тип услуги не указан, считаем мойкой для обратной совместимости
+      const recordServiceType = record.serviceType || 'wash';
+
+      if (record.employeeIds.includes(employeeId) && recordServiceType === serviceType) {
         // Доля сотрудника от стоимости машины
         const employeeShare = record.price / record.employeeIds.length;
         personalRevenue += employeeShare;
