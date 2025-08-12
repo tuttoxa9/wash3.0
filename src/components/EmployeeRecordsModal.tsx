@@ -479,7 +479,11 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
                                 : 'text-purple-600 bg-purple-50 border-purple-200'
                             }`}>
                               {record.paymentMethod.type === 'cash' ? 'Наличные' :
-                               record.paymentMethod.type === 'card' ? 'Карта' : 'Организация'}
+                               record.paymentMethod.type === 'card' ? 'Карта' :
+                               record.paymentMethod.organizationName ||
+                               (record.paymentMethod.organizationId ?
+                                 state.organizations.find(org => org.id === record.paymentMethod.organizationId)?.name || 'Организация'
+                                 : 'Организация')}
                             </span>
                           </div>
                           <div className="font-medium text-sm truncate text-foreground">
