@@ -325,6 +325,8 @@ interface DailyBreakdownModalProps {
   onDayClick: (date: string, dayRecords: CarWashRecord[]) => void;
   selectedDate: string | null;
   selectedDateRecords: CarWashRecord[];
+  showAnalyticsButton?: boolean;
+  onAnalyticsClick?: () => void;
 }
 
 // Компонент модального окна группировки по дням
@@ -339,7 +341,9 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
   calculateEmployeeEarnings,
   onDayClick,
   selectedDate,
-  selectedDateRecords
+  selectedDateRecords,
+  showAnalyticsButton = false,
+  onAnalyticsClick
 }) => {
   const { state } = useAppContext();
 
@@ -432,12 +436,25 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
                   </p>
                 )}
               </div>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-md hover:bg-muted transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {showAnalyticsButton && onAnalyticsClick && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onAnalyticsClick}
+                    className="px-3 py-1.5 rounded-md font-medium text-sm transition-colors bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/30"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-1 inline" />
+                    Аналитика
+                  </motion.button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-md hover:bg-muted transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-3">
@@ -850,7 +867,6 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   const [showPaymentDetail, setShowPaymentDetail] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
   const [paymentMethodRecords, setPaymentMethodRecords] = useState<CarWashRecord[]>([]);
-  const [showDailyBreakdown, setShowDailyBreakdown] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDateRecords, setSelectedDateRecords] = useState<CarWashRecord[]>([]);
 
@@ -943,14 +959,6 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   const handleDayClick = (date: string, dayRecords: CarWashRecord[]) => {
     setSelectedDate(date);
     setSelectedDateRecords(dayRecords);
-    setShowDailyBreakdown(true);
-  };
-
-  // Функция для закрытия окна разбивки по дням
-  const handleCloseDailyBreakdown = () => {
-    setShowDailyBreakdown(false);
-    setSelectedDate(null);
-    setSelectedDateRecords([]);
   };
 
   // Функция для расчёта заработка сотрудника от конкретной записи
@@ -1118,281 +1126,22 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
 
   return (
     <>
-      <AnimatePresence>
-        {/* Основное модальное окно */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 z-50"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className={`w-full max-w-4xl max-h-[75vh] rounded-lg shadow-lg overflow-hidden ${
-              state.theme === 'dark'
-                ? 'bg-slate-900 border border-slate-700'
-                : state.theme === 'black'
-                ? 'bg-black border border-gray-800'
-                : 'bg-white border border-gray-200'
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Компактный заголовок */}
-            <div className={`p-3 border-b flex items-center justify-between ${
-              state.theme === 'dark'
-                ? 'border-slate-700'
-                : state.theme === 'black'
-                ? 'border-gray-800'
-                : 'border-gray-200'
-            }`}>
-              <div>
-                <h2 className={`text-lg font-semibold ${
-                  state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                }`}>
-                  {employee.name}
-                </h2>
-                <p className={`text-sm ${
-                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                }`}>
-                  {periodLabel}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowDailyBreakdown(true)}
-                  className={`px-2 py-1 rounded-md font-medium text-sm transition-colors ${
-                    state.theme === 'dark'
-                      ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-                      : state.theme === 'black'
-                      ? 'bg-green-500/20 text-green-300 hover:bg-green-500/30'
-                      : 'bg-green-50 text-green-600 hover:bg-green-100'
-                  }`}
-                >
-                  <Calendar className="w-4 h-4 mr-1 inline" />
-                  По дням
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowAnalytics(true)}
-                  className={`px-2 py-1 rounded-md font-medium text-sm transition-colors ${
-                    state.theme === 'dark'
-                      ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
-                      : state.theme === 'black'
-                      ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
-                      : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                  }`}
-                >
-                  <BarChart3 className="w-4 h-4 mr-1 inline" />
-                  Аналитика
-                </motion.button>
-                <button
-                  onClick={onClose}
-                  className={`p-1 rounded-md transition-colors ${
-                    state.theme === 'dark'
-                      ? 'hover:bg-slate-700 text-gray-400'
-                      : state.theme === 'black'
-                      ? 'hover:bg-gray-800 text-gray-500'
-                      : 'hover:bg-gray-100 text-gray-500'
-                  }`}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Компактная статистика */}
-            <div className="overflow-y-auto max-h-[calc(75vh-80px)] p-3">
-              {/* Основные показатели - компактные */}
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                <div className={`p-2 rounded-md text-center ${
-                  state.theme === 'dark'
-                    ? 'bg-slate-800'
-                    : state.theme === 'black'
-                    ? 'bg-gray-900'
-                    : 'bg-gray-50'
-                }`}>
-                  <div className={`text-lg font-bold ${
-                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    {statistics.totalRecords}
-                  </div>
-                  <div className={`text-xs ${
-                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                  }`}>
-                    Машин
-                  </div>
-                </div>
-
-                <div className={`p-2 rounded-md text-center ${
-                  state.theme === 'dark'
-                    ? 'bg-slate-800'
-                    : state.theme === 'black'
-                    ? 'bg-gray-900'
-                    : 'bg-gray-50'
-                }`}>
-                  <div className={`text-lg font-bold ${
-                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    {statistics.totalEarnings.toFixed(0)}
-                  </div>
-                  <div className={`text-xs ${
-                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                  }`}>
-                    Заработок
-                  </div>
-                </div>
-
-                <div className={`p-2 rounded-md text-center ${
-                  state.theme === 'dark'
-                    ? 'bg-slate-800'
-                    : state.theme === 'black'
-                    ? 'bg-gray-900'
-                    : 'bg-gray-50'
-                }`}>
-                  <div className={`text-lg font-bold ${
-                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    {Object.keys(statistics.serviceStats).length}
-                  </div>
-                  <div className={`text-xs ${
-                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                  }`}>
-                    Услуг
-                  </div>
-                </div>
-
-                <div className={`p-2 rounded-md text-center ${
-                  state.theme === 'dark'
-                    ? 'bg-slate-800'
-                    : state.theme === 'black'
-                    ? 'bg-gray-900'
-                    : 'bg-gray-50'
-                }`}>
-                  <div className={`text-lg font-bold ${
-                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    {(statistics.totalEarnings / Math.max(statistics.totalRecords, 1)).toFixed(0)}
-                  </div>
-                  <div className={`text-xs ${
-                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                  }`}>
-                    Среднее
-                  </div>
-                </div>
-              </div>
-
-              {/* Список записей */}
-              {statistics.totalRecords === 0 ? (
-                <div className={`text-center py-8 ${
-                  state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                }`}>
-                  <Car className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Нет записей за выбранный период</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {sortedDates.map(date => (
-                    <div key={date}>
-                      {/* Заголовок дня */}
-                      <div className={`text-sm font-medium mb-2 ${
-                        state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                      }`}>
-                        {formatDate(date)} • {groupedRecords[date].length} записей
-                      </div>
-
-                      {/* Записи дня */}
-                      <div className="space-y-2 mb-4">
-                        {groupedRecords[date].map(record => {
-                          const isExpanded = expandedRecords.has(record.id);
-
-                          return (
-                            <div
-                              key={record.id}
-                              className={`p-2 rounded-md cursor-pointer transition-colors ${
-                                state.theme === 'dark'
-                                  ? 'bg-slate-800 hover:bg-slate-700'
-                                  : state.theme === 'black'
-                                  ? 'bg-gray-900 hover:bg-gray-800'
-                                  : 'bg-gray-50 hover:bg-gray-100'
-                              }`}
-                              onClick={() => toggleRecordExpansion(record.id)}
-                            >
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 text-xs mb-1">
-                                    <span className={`${
-                                      state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-600'
-                                    }`}>
-                                      {record.time || '—'}
-                                    </span>
-                                    <span className={`px-2 py-0.5 rounded text-xs border ${getPaymentMethodColor(record.paymentMethod.type)}`}>
-                                      {getPaymentMethodLabel(record.paymentMethod.type, record.paymentMethod.organizationId)}
-                                    </span>
-                                  </div>
-                                  <div className={`font-medium text-sm truncate ${
-                                    state.theme === 'dark' ? 'text-white' : state.theme === 'black' ? 'text-gray-100' : 'text-gray-900'
-                                  }`}>
-                                    {record.carInfo}
-                                  </div>
-                                  <div className={`text-xs truncate ${
-                                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                                  }`}>
-                                    {record.service}
-                                  </div>
-                                </div>
-                                <div className="text-right ml-2">
-                                  <div className="text-sm font-bold text-green-500">
-                                    +{calculateEmployeeEarnings(record, employee.id).toFixed(2)}
-                                  </div>
-                                  <div className={`text-xs ${
-                                    state.theme === 'dark' ? 'text-gray-400' : state.theme === 'black' ? 'text-gray-500' : 'text-gray-500'
-                                  }`}>
-                                    из {record.price.toFixed(2)}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Развернутая информация */}
-                              <AnimatePresence>
-                                {isExpanded && (
-                                  <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="mt-2 pt-2 border-t border-gray-600/30"
-                                  >
-                                    <div className="text-xs space-y-1">
-                                      <div>Сотрудников: {record.employeeIds.length}</div>
-                                      {record.paymentMethod.organizationName && (
-                                        <div>Организация: {record.paymentMethod.organizationName}</div>
-                                      )}
-                                      {record.notes && (
-                                        <div>Примечания: {record.notes}</div>
-                                      )}
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
+      {/* Сразу открываем модальное окно группировки по дням */}
+      <DailyBreakdownModal
+        isOpen={isOpen}
+        onClose={onClose}
+        employee={employee}
+        groupedRecords={groupedRecords}
+        sortedDates={sortedDates}
+        periodLabel={periodLabel}
+        dailyRoles={dailyRoles}
+        calculateEmployeeEarnings={calculateEmployeeEarnings}
+        onDayClick={handleDayClick}
+        selectedDate={selectedDate}
+        selectedDateRecords={selectedDateRecords}
+        showAnalyticsButton={true}
+        onAnalyticsClick={() => setShowAnalytics(true)}
+      />
 
       {/* Модальное окно аналитики */}
       <AnalyticsModal
@@ -1414,20 +1163,6 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
         periodLabel={periodLabel}
       />
 
-      {/* Модальное окно группировки по дням */}
-      <DailyBreakdownModal
-        isOpen={showDailyBreakdown}
-        onClose={handleCloseDailyBreakdown}
-        employee={employee}
-        groupedRecords={groupedRecords}
-        sortedDates={sortedDates}
-        periodLabel={periodLabel}
-        dailyRoles={dailyRoles}
-        calculateEmployeeEarnings={calculateEmployeeEarnings}
-        onDayClick={handleDayClick}
-        selectedDate={selectedDate}
-        selectedDateRecords={selectedDateRecords}
-      />
     </>
   );
 };
