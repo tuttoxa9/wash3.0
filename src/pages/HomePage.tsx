@@ -661,7 +661,7 @@ const HomePage: React.FC = () => {
               <button
                 onClick={shiftStarted ? openDailyReportModal : () => toast.info('Сначала выберите работников и начните смену')}
                 disabled={!shiftStarted}
-                className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg sm:rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-xs sm:text-sm font-medium shadow-lg hover:shadow-xl disabled:opacity-50 border border-blue-400/30"
+                className="btn-daily-report inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-lg disabled:opacity-50"
                 title={shiftStarted ? undefined : 'Сначала выберите работников и начните смену'}
               >
                 <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -676,7 +676,7 @@ const HomePage: React.FC = () => {
                   toggleModal(e);
                 }}
                 disabled={!shiftStarted}
-                className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-primary to-primary/90 text-white rounded-lg sm:rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-200 text-xs sm:text-sm font-medium shadow-lg hover:shadow-xl disabled:opacity-50 border border-primary/30"
+                className="btn-add-service inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-lg disabled:opacity-50"
                 title={shiftStarted ? undefined : 'Сначала выберите работников и начните смену'}
               >
                 <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -2063,17 +2063,25 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const totalEarnings = employeeRecords.reduce((sum, record) => sum + record.price, 0);
 
   return (
-    <Modal isOpen={true} onClose={onClose} className="max-w-[98vw] max-h-[95vh]">
-      <div className="p-3 sm:p-4 md:p-6">
-        <div className="flex justify-between items-center mb-3 sm:mb-4">
-          <h3 className="text-base sm:text-lg md:text-xl font-bold text-card-foreground">Детали работы - {employee.name}</h3>
-          <button
-            onClick={onClose}
-            className="p-1.5 sm:p-2 hover:bg-muted rounded-md sm:rounded-lg transition-colors"
-          >
-            <X className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
+      {/* Оверлей */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
+
+      {/* Модальное окно снизу */}
+      <div className="relative w-full max-w-7xl bg-card rounded-t-xl sm:rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[95vh] sm:max-h-[98vh] overflow-hidden border border-border">
+        <div className="p-3 sm:p-4 md:p-6">
+          <div className="flex justify-between items-center mb-3 sm:mb-4">
+            <h3 className="text-base sm:text-lg md:text-xl font-bold text-card-foreground">Детали работы - {employee.name}</h3>
+            <button
+              onClick={onClose}
+              className="p-1.5 sm:p-2 hover:bg-muted rounded-md sm:rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          </div>
 
         <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-muted/50 rounded-lg">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -2142,8 +2150,9 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
             </tbody>
           </table>
         </div>
+        </div>
       </div>
-    </Modal>
+    </div>
   );
 };
 
