@@ -427,6 +427,7 @@ const RecordsPage: React.FC = () => {
             transition={{ duration: 0.2 }}
           >
             <div className="text-2xl font-bold text-orange-600">{stats.today}</div>
+            <div className="text-sm text-muted-foreground">Сегодня</div>
           </motion.div>
 
           <motion.div
