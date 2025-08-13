@@ -90,7 +90,7 @@ const Layout: React.FC = () => {
           </div>
 
           {/* Содержимое страницы */}
-          <div className="max-w-6xl mx-auto min-h-[calc(100vh-120px)]">
+          <div className="w-full md:max-w-6xl md:mx-auto min-h-[calc(100vh-120px)]">
             <Outlet />
           </div>
         </div>
