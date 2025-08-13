@@ -42,8 +42,10 @@ const ReportsPage: React.FC = () => {
   const [earningsReport, setEarningsReport] = useState<EarningsReport[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [dailyRoles, setDailyRoles] = useState<Record<string, Record<string, string>>>({});
+  const [minimumFlags, setMinimumFlags] = useState<Record<string, boolean>>({});
 
   // Состояние для общего отчёта
+  const [generalMinimumFlags, setGeneralMinimumFlags] = useState<Record<string, boolean>>({});
   const [generalReportLoading, setGeneralReportLoading] = useState(false);
   const [generalStartDate, setGeneralStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [generalEndDate, setGeneralEndDate] = useState(new Date());
@@ -399,6 +401,9 @@ const ReportsPage: React.FC = () => {
           return acc;
         }, {});
 
+        // Сохраняем флаги минималки в состояние для отображения
+        setMinimumFlags(minimumOverride);
+
         // Создаём калькулятор зарплаты и получаем результаты
         const salaryCalculator = createSalaryCalculator(
           state.minimumPaymentSettings,
@@ -654,6 +659,9 @@ const ReportsPage: React.FC = () => {
           acc[empId] = respect;
           return acc;
         }, {});
+
+        // Сохраняем флаги минималки для общего отчёта
+        setGeneralMinimumFlags(minimumOverride);
 
         // Создаём калькулятор зарплаты
         const salaryCalculator = createSalaryCalculator(
@@ -1166,7 +1174,12 @@ const ReportsPage: React.FC = () => {
                         className="grid grid-cols-6 px-2 md:px-4 py-1.5 md:py-2 hover:bg-muted/30 cursor-pointer transition-colors"
                         onClick={handleEmployeeClick}
                       >
-                        <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate" title={report.employeeName}>{report.employeeName}</div>
+                        <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate flex items-center gap-1" title={report.employeeName}>
+                          {report.employeeName}
+                          {minimumFlags[report.employeeId] === false && (
+                            <span className="text-orange-500 text-xs" title="Минималка отключена">⚠</span>
+                          )}
+                        </div>
                         <div className="text-right text-xs md:text-sm">{report.totalCash.toFixed(2)}</div>
                         <div className="text-right text-xs md:text-sm">{report.totalNonCash.toFixed(2)}</div>
                         <div className="text-right text-xs md:text-sm">{report.totalOrganizations.toFixed(2)}</div>
@@ -1233,11 +1246,14 @@ const ReportsPage: React.FC = () => {
                     return (
                       <>
                         <div
-                          className="px-2 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-left text-primary hover:text-primary/80 font-medium truncate border-b"
+                          className="px-2 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-left text-primary hover:text-primary/80 font-medium truncate border-b flex items-center gap-1"
                           onClick={handleEmployeeClick}
                           title={report.employeeName}
                         >
                           {report.employeeName.length > 10 ? report.employeeName.substring(0, 10) + '...' : report.employeeName}
+                          {minimumFlags[report.employeeId] === false && (
+                            <span className="text-orange-500 text-xs" title="Минималка отключена">⚠</span>
+                          )}
                         </div>
                         <div className="px-1 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-right border-b" onClick={handleEmployeeClick}>
                           {report.totalCash.toFixed(0)}
