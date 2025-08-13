@@ -329,6 +329,230 @@ interface DailyBreakdownModalProps {
   onAnalyticsClick?: () => void;
 }
 
+// Компонент модального окна только для мобильных - список дней
+const MobileDaysListModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  employee: Employee;
+  groupedRecords: Record<string, CarWashRecord[]>;
+  sortedDates: string[];
+  periodLabel: string;
+  calculateEmployeeEarnings: (record: CarWashRecord, employeeId: string) => number;
+  onDayClick: (date: string, dayRecords: CarWashRecord[]) => void;
+}> = ({
+  isOpen,
+  onClose,
+  employee,
+  groupedRecords,
+  sortedDates,
+  periodLabel,
+  calculateEmployeeEarnings,
+  onDayClick
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 z-[60]"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="w-full max-w-md h-[75vh] rounded-lg shadow-lg overflow-hidden bg-background border border-border flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Дни работы: {employee.name}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {periodLabel}
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-md hover:bg-muted transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-3">
+            <div className="space-y-2">
+              {sortedDates.map(date => {
+                const dayRecords = groupedRecords[date];
+                const dayEarnings = dayRecords.reduce((sum, record) =>
+                  sum + calculateEmployeeEarnings(record, employee.id), 0
+                );
+                const dayRevenue = dayRecords.reduce((sum, record) =>
+                  sum + (record.price / record.employeeIds.length), 0
+                );
+
+                return (
+                  <div
+                    key={date}
+                    className="p-3 rounded-lg cursor-pointer transition-all duration-200 border bg-muted/20 border-border hover:bg-muted/40"
+                    onClick={() => onDayClick(date, dayRecords)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-medium text-foreground">
+                          {format(parseISO(date), 'dd MMMM yyyy', { locale: ru })}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {dayRecords.length} записей
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-green-600">
+                          +{dayEarnings.toFixed(2)} BYN
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          из {dayRevenue.toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+// Компонент модального окна деталей дня для мобильных
+const MobileDayDetailsModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onBack: () => void;
+  employee: Employee;
+  selectedDate: string;
+  selectedDateRecords: CarWashRecord[];
+  calculateEmployeeEarnings: (record: CarWashRecord, employeeId: string) => number;
+}> = ({
+  isOpen,
+  onClose,
+  onBack,
+  employee,
+  selectedDate,
+  selectedDateRecords,
+  calculateEmployeeEarnings
+}) => {
+  const { state } = useAppContext();
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 z-[70]"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="w-full max-w-md h-[75vh] rounded-lg shadow-lg overflow-hidden bg-background border border-border flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={onBack}
+                  className="p-1 rounded-md hover:bg-muted transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    {format(parseISO(selectedDate), 'dd MMMM yyyy', { locale: ru })}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedDateRecords.length} записей
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-md hover:bg-muted transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-3">
+            <div className="space-y-2">
+              {selectedDateRecords.map(record => (
+                <div
+                  key={record.id}
+                  className="p-3 rounded-lg bg-muted/20 border border-border"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 text-sm mb-1">
+                        <span className="text-muted-foreground">
+                          {record.time || '—'}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-xs border ${
+                          record.paymentMethod.type === 'cash'
+                            ? 'text-green-600 bg-green-50 border-green-200'
+                            : record.paymentMethod.type === 'card'
+                            ? 'text-blue-600 bg-blue-50 border-blue-200'
+                            : 'text-purple-600 bg-purple-50 border-purple-200'
+                        }`}>
+                          {record.paymentMethod.type === 'cash' ? 'Наличные' :
+                           record.paymentMethod.type === 'card' ? 'Карта' :
+                           record.paymentMethod.organizationName ||
+                           (record.paymentMethod.organizationId ?
+                             state.organizations.find(org => org.id === record.paymentMethod.organizationId)?.name || 'Организация'
+                             : 'Организация')}
+                        </span>
+                      </div>
+                      <div className="font-medium text-sm truncate text-foreground">
+                        {record.carInfo}
+                      </div>
+                      <div className="text-xs truncate text-muted-foreground">
+                        {record.service}
+                      </div>
+                    </div>
+                    <div className="text-right ml-2">
+                      <div className="text-sm font-bold text-green-600">
+                        +{calculateEmployeeEarnings(record, employee.id).toFixed(2)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        из {record.price.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 // Компонент модального окна группировки по дням
 const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
   isOpen,
@@ -874,6 +1098,35 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDateRecords, setSelectedDateRecords] = useState<CarWashRecord[]>([]);
 
+  // Состояния для мобильной навигации
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileDaysList, setShowMobileDaysList] = useState(false);
+  const [showMobileDayDetails, setShowMobileDayDetails] = useState(false);
+
+  // Проверка размера экрана
+  React.useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768); // sm breakpoint
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
+  // При открытии модального окна показываем соответствующий интерфейс
+  React.useEffect(() => {
+    if (isOpen) {
+      if (isMobile) {
+        setShowMobileDaysList(true);
+        setShowMobileDayDetails(false);
+      }
+      setSelectedDate(null);
+      setSelectedDateRecords([]);
+    }
+  }, [isOpen, isMobile]);
+
   const toggleRecordExpansion = (recordId: string) => {
     setExpandedRecords(prev => {
       const newSet = new Set(prev);
@@ -963,6 +1216,29 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   const handleDayClick = (date: string, dayRecords: CarWashRecord[]) => {
     setSelectedDate(date);
     setSelectedDateRecords(dayRecords);
+
+    // На мобильных переходим к деталям дня
+    if (isMobile) {
+      setShowMobileDaysList(false);
+      setShowMobileDayDetails(true);
+    }
+  };
+
+  // Функция для возврата к списку дней на мобильных
+  const handleMobileBackToDaysList = () => {
+    setShowMobileDayDetails(false);
+    setShowMobileDaysList(true);
+    setSelectedDate(null);
+    setSelectedDateRecords([]);
+  };
+
+  // Функция для закрытия всех мобильных модальных окон
+  const handleMobileClose = () => {
+    setShowMobileDaysList(false);
+    setShowMobileDayDetails(false);
+    setSelectedDate(null);
+    setSelectedDateRecords([]);
+    onClose();
   };
 
   // Функция для расчёта заработка сотрудника от конкретной записи
@@ -1130,22 +1406,50 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
 
   return (
     <>
-      {/* Сразу открываем модальное окно группировки по дням */}
-      <DailyBreakdownModal
-        isOpen={isOpen}
-        onClose={onClose}
-        employee={employee}
-        groupedRecords={groupedRecords}
-        sortedDates={sortedDates}
-        periodLabel={periodLabel}
-        dailyRoles={dailyRoles}
-        calculateEmployeeEarnings={calculateEmployeeEarnings}
-        onDayClick={handleDayClick}
-        selectedDate={selectedDate}
-        selectedDateRecords={selectedDateRecords}
-        showAnalyticsButton={true}
-        onAnalyticsClick={() => setShowAnalytics(true)}
-      />
+      {/* Для мобильных устройств */}
+      {isMobile ? (
+        <>
+          {/* Мобильное модальное окно со списком дней */}
+          <MobileDaysListModal
+            isOpen={showMobileDaysList && isOpen}
+            onClose={handleMobileClose}
+            employee={employee}
+            groupedRecords={groupedRecords}
+            sortedDates={sortedDates}
+            periodLabel={periodLabel}
+            calculateEmployeeEarnings={calculateEmployeeEarnings}
+            onDayClick={handleDayClick}
+          />
+
+          {/* Мобильное модальное окно с деталями дня */}
+          <MobileDayDetailsModal
+            isOpen={showMobileDayDetails && selectedDate !== null}
+            onClose={handleMobileClose}
+            onBack={handleMobileBackToDaysList}
+            employee={employee}
+            selectedDate={selectedDate || ''}
+            selectedDateRecords={selectedDateRecords}
+            calculateEmployeeEarnings={calculateEmployeeEarnings}
+          />
+        </>
+      ) : (
+        /* Для десктопных устройств - двухколоночный интерфейс */
+        <DailyBreakdownModal
+          isOpen={isOpen}
+          onClose={onClose}
+          employee={employee}
+          groupedRecords={groupedRecords}
+          sortedDates={sortedDates}
+          periodLabel={periodLabel}
+          dailyRoles={dailyRoles}
+          calculateEmployeeEarnings={calculateEmployeeEarnings}
+          onDayClick={handleDayClick}
+          selectedDate={selectedDate}
+          selectedDateRecords={selectedDateRecords}
+          showAnalyticsButton={true}
+          onAnalyticsClick={() => setShowAnalytics(true)}
+        />
+      )}
 
       {/* Модальное окно аналитики */}
       <AnalyticsModal
