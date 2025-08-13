@@ -1208,18 +1208,16 @@ const ReportsPage: React.FC = () => {
             </div>
 
             <div className="border rounded-md overflow-hidden">
-              {/* Десктопная версия таблицы */}
-              <div className="hidden sm:block">
-                <div className="grid grid-cols-6 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
-                  <div className="font-medium text-xs md:text-sm">Сотрудник</div>
-                  <div className="font-medium text-xs md:text-sm text-right">Нал</div>
-                  <div className="font-medium text-xs md:text-sm text-right">Карт</div>
-                  <div className="font-medium text-xs md:text-sm text-right">Безнал</div>
-                  <div className="font-medium text-xs md:text-sm text-right">Всего</div>
-                  <div className="font-medium text-xs md:text-sm text-right">ЗП</div>
-                </div>
-                <div className="divide-y">
-                  {earningsReport.map(report => {
+              <div className="grid grid-cols-6 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
+                <div className="font-medium text-xs md:text-sm">Сотрудник</div>
+                <div className="font-medium text-xs md:text-sm text-right">Нал</div>
+                <div className="font-medium text-xs md:text-sm text-right">Карт</div>
+                <div className="font-medium text-xs md:text-sm text-right">Безнал</div>
+                <div className="font-medium text-xs md:text-sm text-right">Всего</div>
+                <div className="font-medium text-xs md:text-sm text-right">ЗП</div>
+              </div>
+              <div className="divide-y">
+                {earningsReport.map(report => {
                   const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
 
                   // Рассчитываем зарплату сотрудника с учетом роли
@@ -1256,121 +1254,26 @@ const ReportsPage: React.FC = () => {
                     }
                   };
 
-                    return (
-                      <div
-                        key={report.employeeId}
-                        className="grid grid-cols-6 px-2 md:px-4 py-1.5 md:py-2 hover:bg-muted/30 cursor-pointer transition-colors"
-                        onClick={handleEmployeeClick}
-                      >
-                        <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate flex items-center gap-1" title={report.employeeName}>
-                          {report.employeeName}
-                        </div>
-                        <div className="text-right text-xs md:text-sm">{report.totalCash.toFixed(2)}</div>
-                        <div className="text-right text-xs md:text-sm">{report.totalNonCash.toFixed(2)}</div>
-                        <div className="text-right text-xs md:text-sm">{report.totalOrganizations.toFixed(2)}</div>
-                        <div className="text-right text-xs md:text-sm">{totalRevenueEmp.toFixed(2)}</div>
-                        <div className="text-right font-medium text-xs md:text-sm">{perEmployee.toFixed(2)}</div>
-                      </div>
-                    );
-                  })}
-                  {earningsReport.length === 0 && (
-                    <div className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
-                      Нет данных для выбранного периода и фильтра
+                  return (
+                    <div
+                      key={report.employeeId}
+                      className="grid grid-cols-6 px-2 md:px-4 py-1.5 md:py-2 hover:bg-muted/30 cursor-pointer transition-colors"
+                      onClick={handleEmployeeClick}
+                    >
+                      <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate" title={report.employeeName}>{report.employeeName}</div>
+                      <div className="text-right text-xs md:text-sm">{report.totalCash.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm">{report.totalNonCash.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm">{report.totalOrganizations.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm">{totalRevenueEmp.toFixed(2)}</div>
+                      <div className="text-right font-medium text-xs md:text-sm">{perEmployee.toFixed(2)}</div>
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Мобильная версия таблицы - оптимизированная */}
-              <div className="sm:hidden overflow-x-auto">
-                <table className="min-w-full text-xs">
-                  <thead>
-                    <tr className="bg-muted/50 border-b">
-                      <th className="px-2 py-2 text-left font-medium">Сотрудник</th>
-                      <th className="px-1 py-2 text-right font-medium w-14">Нал</th>
-                      <th className="px-1 py-2 text-right font-medium w-14">Карт</th>
-                      <th className="px-1 py-2 text-right font-medium w-14">Безн</th>
-                      <th className="px-1 py-2 text-right font-medium w-16">Всего</th>
-                      <th className="px-1 py-2 text-right font-medium w-14">ЗП</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {earningsReport.map(report => {
-                      const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
-
-                      // Рассчитываем зарплату сотрудника с учетом роли
-                      const reportDate = startDate.toISOString().split('T')[0];
-                      let employeeRole: 'admin' | 'washer' = 'washer';
-
-                      if (dailyRoles[reportDate]) {
-                        employeeRole = dailyRoles[reportDate][report.employeeId] as 'admin' | 'washer' || 'washer';
-                      }
-
-                      // Всегда используем выбранный метод (минималка + %)
-                      const methodToUse = state.salaryCalculationMethod;
-
-                      // Используем уже рассчитанное значение calculatedEarnings из useEffect
-                      let perEmployee = report.calculatedEarnings;
-
-                      const handleEmployeeClick = () => {
-                        const employee = state.employees.find(e => e.id === report.employeeId);
-                        if (employee) {
-                          // Фильтруем записи для этого сотрудника и сортируем по времени
-                          const employeeRecords = records
-                            .filter(record => record.employeeIds.includes(report.employeeId))
-                            .sort((a, b) => {
-                              // Сначала сортируем по дате
-                              const dateCompare = a.date.localeCompare(b.date);
-                              if (dateCompare !== 0) return dateCompare;
-
-                              // Затем по времени
-                              if (!a.time || !b.time) return 0;
-                              return a.time.localeCompare(b.time);
-                            });
-                          setSelectedEmployeeForModal(employee);
-                          setIsModalOpen(true);
-                        }
-                      };
-
-                      return (
-                        <tr
-                          key={report.employeeId}
-                          className="border-b hover:bg-muted/30 cursor-pointer transition-colors"
-                          onClick={handleEmployeeClick}
-                        >
-                          <td className="px-2 py-2 text-left text-primary hover:text-primary/80 font-medium">
-                            <div className="truncate" title={report.employeeName}>
-                              {report.employeeName.length > 12 ? report.employeeName.substring(0, 12) + '...' : report.employeeName}
-                            </div>
-                          </td>
-                          <td className="px-1 py-2 text-right">
-                            {report.totalCash.toFixed(0)}
-                          </td>
-                          <td className="px-1 py-2 text-right">
-                            {report.totalNonCash.toFixed(0)}
-                          </td>
-                          <td className="px-1 py-2 text-right">
-                            {report.totalOrganizations.toFixed(0)}
-                          </td>
-                          <td className="px-1 py-2 text-right">
-                            {totalRevenueEmp.toFixed(0)}
-                          </td>
-                          <td className="px-1 py-2 text-right font-medium">
-                            {perEmployee.toFixed(0)}
-                          </td>
-                        </tr>
-                      );
-                    })}
-
-                    {earningsReport.length === 0 && (
-                      <tr>
-                        <td colSpan={6} className="px-2 py-4 text-center text-muted-foreground">
-                          Нет данных для выбранного периода и фильтра
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                  );
+                })}
+                {earningsReport.length === 0 && (
+                  <div className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
+                    Нет данных для выбранного периода и фильтра
+                  </div>
+                )}
               </div>
             </div>
 

@@ -783,9 +783,9 @@ const HomePage: React.FC = () => {
                       {/* Декоративный градиент */}
                       <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                      <div className="relative">
+                      <div className="relative w-full">
                         {/* Заголовок с плюсиком и именем */}
-                        <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <div className="flex items-center justify-between mb-2 sm:mb-3 w-full">
                           <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
                             <button
                               onClick={(e) => {
@@ -798,7 +798,7 @@ const HomePage: React.FC = () => {
                             >
                               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                             </button>
-                            <h4 className="font-semibold text-xs sm:text-sm text-card-foreground truncate">{employee.name}</h4>
+                            <h4 className="font-semibold text-xs sm:text-sm text-card-foreground truncate flex-1">{employee.name}</h4>
                           </div>
                           <span
                             className={`shrink-0 px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium shadow-sm border ${
@@ -812,19 +812,19 @@ const HomePage: React.FC = () => {
                         </div>
 
                         {/* Статистика в компактном формате */}
-                        <div className="space-y-1.5 sm:space-y-2">
-                          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-xs">
-                            <div className="text-center p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-gradient-to-r from-muted/20 to-muted/10 border border-border/20">
+                        <div className="space-y-1.5 sm:space-y-2 w-full">
+                          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-xs w-full">
+                            <div className="text-center p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-gradient-to-r from-muted/20 to-muted/10 border border-border/20 w-full">
                               <div className="text-muted-foreground font-medium text-[10px] sm:text-xs">Машин</div>
                               <div className="font-bold text-card-foreground text-xs sm:text-sm">{stats.carCount}</div>
                             </div>
-                            <div className="text-center p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-gradient-to-r from-muted/20 to-muted/10 border border-border/20">
+                            <div className="text-center p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-gradient-to-r from-muted/20 to-muted/10 border border-border/20 w-full">
                               <div className="text-muted-foreground font-medium text-[10px] sm:text-xs">Сумма</div>
                               <div className="font-bold text-card-foreground text-xs sm:text-sm">{stats.totalEarnings.toFixed(0)} BYN</div>
                             </div>
                           </div>
 
-                          <div className="text-center p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20">
+                          <div className="text-center p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20 w-full">
                             <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">
                               {(() => {
                                 const now = new Date();
@@ -850,7 +850,7 @@ const HomePage: React.FC = () => {
                         </div>
 
                         {/* Кнопка для деталей */}
-                        <div className="mt-2 sm:mt-3 pt-1.5 sm:pt-2 border-t border-border/30">
+                        <div className="mt-2 sm:mt-3 pt-1.5 sm:pt-2 border-t border-border/30 w-full">
                           <div className="flex items-center justify-center gap-1 text-[10px] sm:text-xs text-muted-foreground hover:text-primary transition-colors">
                             <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                             <span className="hidden sm:inline">Подробнее</span>
