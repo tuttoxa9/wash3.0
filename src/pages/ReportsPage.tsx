@@ -1208,13 +1208,13 @@ const ReportsPage: React.FC = () => {
             </div>
 
             <div className="border rounded-md overflow-hidden">
-              <div className="grid grid-cols-6 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
-                <div className="font-medium text-xs md:text-sm">Сотрудник</div>
-                <div className="font-medium text-xs md:text-sm text-right">Нал</div>
-                <div className="font-medium text-xs md:text-sm text-right">Карт</div>
-                <div className="font-medium text-xs md:text-sm text-right">Безнал</div>
-                <div className="font-medium text-xs md:text-sm text-right">Всего</div>
-                <div className="font-medium text-xs md:text-sm text-right">ЗП</div>
+              <div className="grid grid-cols-6 gap-1 sm:gap-2 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
+                <div className="font-medium text-xs md:text-sm px-1">Сотрудник</div>
+                <div className="font-medium text-xs md:text-sm text-right px-1">Нал</div>
+                <div className="font-medium text-xs md:text-sm text-right px-1">Карт</div>
+                <div className="font-medium text-xs md:text-sm text-right px-1">Безнал</div>
+                <div className="font-medium text-xs md:text-sm text-right px-1">Всего</div>
+                <div className="font-medium text-xs md:text-sm text-right px-1">ЗП</div>
               </div>
               <div className="divide-y">
                 {earningsReport.map(report => {
@@ -1257,15 +1257,15 @@ const ReportsPage: React.FC = () => {
                   return (
                     <div
                       key={report.employeeId}
-                      className="grid grid-cols-6 px-2 md:px-4 py-1.5 md:py-2 hover:bg-muted/30 cursor-pointer transition-colors"
+                      className="grid grid-cols-6 gap-1 sm:gap-2 px-2 md:px-4 py-1.5 md:py-2 hover:bg-muted/30 cursor-pointer transition-colors"
                       onClick={handleEmployeeClick}
                     >
-                      <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate" title={report.employeeName}>{report.employeeName}</div>
-                      <div className="text-right text-xs md:text-sm">{report.totalCash.toFixed(2)}</div>
-                      <div className="text-right text-xs md:text-sm">{report.totalNonCash.toFixed(2)}</div>
-                      <div className="text-right text-xs md:text-sm">{report.totalOrganizations.toFixed(2)}</div>
-                      <div className="text-right text-xs md:text-sm">{totalRevenueEmp.toFixed(2)}</div>
-                      <div className="text-right font-medium text-xs md:text-sm">{perEmployee.toFixed(2)}</div>
+                      <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate px-1" title={report.employeeName}>{report.employeeName}</div>
+                      <div className="text-right text-xs md:text-sm px-1">{report.totalCash.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm px-1">{report.totalNonCash.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm px-1">{report.totalOrganizations.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm px-1">{totalRevenueEmp.toFixed(2)}</div>
+                      <div className="text-right font-medium text-xs md:text-sm px-1">{perEmployee.toFixed(2)}</div>
                     </div>
                   );
                 })}
