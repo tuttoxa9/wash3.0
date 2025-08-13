@@ -1182,76 +1182,82 @@ const ReportsPage: React.FC = () => {
               </div>
 
               {/* Мобильная версия таблицы - оптимизированная */}
-              <div className="sm:hidden">
-                <div className="grid grid-cols-6 bg-muted/50 px-2 py-2 border-b text-xs">
-                  <div className="font-medium">Сотрудник</div>
-                  <div className="font-medium text-right">Нал</div>
-                  <div className="font-medium text-right">Карт</div>
-                  <div className="font-medium text-right">Безн</div>
-                  <div className="font-medium text-right">Всего</div>
-                  <div className="font-medium text-right">ЗП</div>
-                </div>
-                <div className="divide-y">
-                  {earningsReport.map(report => {
-                    const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
+              <div className="sm:hidden overflow-x-auto">
+                <table className="w-full min-w-max text-xs">
+                  <thead>
+                    <tr className="bg-muted/50 border-b">
+                      <th className="text-left p-2 font-medium min-w-20">Сотрудник</th>
+                      <th className="text-right p-2 font-medium min-w-12">Нал</th>
+                      <th className="text-right p-2 font-medium min-w-12">Карт</th>
+                      <th className="text-right p-2 font-medium min-w-12">Безн</th>
+                      <th className="text-right p-2 font-medium min-w-12">Всего</th>
+                      <th className="text-right p-2 font-medium min-w-12">ЗП</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {earningsReport.map(report => {
+                      const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
 
-                    // Рассчитываем зарплату сотрудника с учетом роли
-                    const reportDate = startDate.toISOString().split('T')[0];
-                    let employeeRole: 'admin' | 'washer' = 'washer';
+                      // Рассчитываем зарплату сотрудника с учетом роли
+                      const reportDate = startDate.toISOString().split('T')[0];
+                      let employeeRole: 'admin' | 'washer' = 'washer';
 
-                    if (dailyRoles[reportDate]) {
-                      employeeRole = dailyRoles[reportDate][report.employeeId] as 'admin' | 'washer' || 'washer';
-                    }
-
-                    // Всегда используем выбранный метод (минималка + %)
-                    const methodToUse = state.salaryCalculationMethod;
-
-                    // Используем уже рассчитанное значение calculatedEarnings из useEffect
-                    let perEmployee = report.calculatedEarnings;
-
-                    const handleEmployeeClick = () => {
-                      const employee = state.employees.find(e => e.id === report.employeeId);
-                      if (employee) {
-                        // Фильтруем записи для этого сотрудника и сортируем по времени
-                        const employeeRecords = records
-                          .filter(record => record.employeeIds.includes(report.employeeId))
-                          .sort((a, b) => {
-                            // Сначала сортируем по дате
-                            const dateCompare = a.date.localeCompare(b.date);
-                            if (dateCompare !== 0) return dateCompare;
-
-                            // Затем по времени
-                            if (!a.time || !b.time) return 0;
-                            return a.time.localeCompare(b.time);
-                          });
-                        setSelectedEmployeeForModal(employee);
-                        setIsModalOpen(true);
+                      if (dailyRoles[reportDate]) {
+                        employeeRole = dailyRoles[reportDate][report.employeeId] as 'admin' | 'washer' || 'washer';
                       }
-                    };
 
-                    return (
-                      <div
-                        key={report.employeeId}
-                        className="grid grid-cols-6 px-2 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs"
-                        onClick={handleEmployeeClick}
-                      >
-                        <div className="text-primary hover:text-primary/80 font-medium truncate" title={report.employeeName}>
-                          {report.employeeName.length > 8 ? report.employeeName.substring(0, 8) + '...' : report.employeeName}
-                        </div>
-                        <div className="text-right">{report.totalCash.toFixed(0)}</div>
-                        <div className="text-right">{report.totalNonCash.toFixed(0)}</div>
-                        <div className="text-right">{report.totalOrganizations.toFixed(0)}</div>
-                        <div className="text-right">{totalRevenueEmp.toFixed(0)}</div>
-                        <div className="text-right font-medium">{perEmployee.toFixed(0)}</div>
-                      </div>
-                    );
-                  })}
-                  {earningsReport.length === 0 && (
-                    <div className="px-2 py-4 text-center text-muted-foreground text-xs">
-                      Нет данных для выбранного периода и фильтра
-                    </div>
-                  )}
-                </div>
+                      // Всегда используем выбранный метод (минималка + %)
+                      const methodToUse = state.salaryCalculationMethod;
+
+                      // Используем уже рассчитанное значение calculatedEarnings из useEffect
+                      let perEmployee = report.calculatedEarnings;
+
+                      const handleEmployeeClick = () => {
+                        const employee = state.employees.find(e => e.id === report.employeeId);
+                        if (employee) {
+                          // Фильтруем записи для этого сотрудника и сортируем по времени
+                          const employeeRecords = records
+                            .filter(record => record.employeeIds.includes(report.employeeId))
+                            .sort((a, b) => {
+                              // Сначала сортируем по дате
+                              const dateCompare = a.date.localeCompare(b.date);
+                              if (dateCompare !== 0) return dateCompare;
+
+                              // Затем по времени
+                              if (!a.time || !b.time) return 0;
+                              return a.time.localeCompare(b.time);
+                            });
+                          setSelectedEmployeeForModal(employee);
+                          setIsModalOpen(true);
+                        }
+                      };
+
+                      return (
+                        <tr
+                          key={report.employeeId}
+                          className="hover:bg-muted/30 cursor-pointer transition-colors"
+                          onClick={handleEmployeeClick}
+                        >
+                          <td className="p-2 text-primary hover:text-primary/80 font-medium truncate max-w-20" title={report.employeeName}>
+                            {report.employeeName.length > 10 ? report.employeeName.substring(0, 10) + '...' : report.employeeName}
+                          </td>
+                          <td className="p-2 text-right">{report.totalCash.toFixed(0)}</td>
+                          <td className="p-2 text-right">{report.totalNonCash.toFixed(0)}</td>
+                          <td className="p-2 text-right">{report.totalOrganizations.toFixed(0)}</td>
+                          <td className="p-2 text-right">{totalRevenueEmp.toFixed(0)}</td>
+                          <td className="p-2 text-right font-medium">{perEmployee.toFixed(0)}</td>
+                        </tr>
+                      );
+                    })}
+                    {earningsReport.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-4 text-center text-muted-foreground">
+                          Нет данных для выбранного периода и фильтра
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
 
