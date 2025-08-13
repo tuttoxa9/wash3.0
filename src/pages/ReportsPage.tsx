@@ -1263,9 +1263,6 @@ const ReportsPage: React.FC = () => {
                       >
                         <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate flex items-center gap-1" title={report.employeeName}>
                           {report.employeeName}
-                          {(minimumFlags[report.employeeId] === false) && (
-                            <span className="text-orange-500 text-xs" title="Минималка отключена">⚠</span>
-                          )}
                         </div>
                         <div className="text-right text-xs md:text-sm">{report.totalCash.toFixed(2)}</div>
                         <div className="text-right text-xs md:text-sm">{report.totalNonCash.toFixed(2)}</div>
@@ -1338,9 +1335,6 @@ const ReportsPage: React.FC = () => {
                           title={report.employeeName}
                         >
                           {report.employeeName.length > 10 ? report.employeeName.substring(0, 10) + '...' : report.employeeName}
-                          {(minimumFlags[report.employeeId] === false) && (
-                            <span className="text-orange-500 text-xs" title="Минималка отключена">⚠</span>
-                          )}
                         </div>
                         <div className="px-1 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-right border-b" onClick={handleEmployeeClick}>
                           {report.totalCash.toFixed(0)}
@@ -1405,6 +1399,67 @@ const ReportsPage: React.FC = () => {
             </h3>
 
             <div className="space-y-4">
+              {/* Быстрые периоды */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    setGeneralStartDate(today);
+                    setGeneralEndDate(today);
+                  }}
+                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                >
+                  Сегодня
+                </button>
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    const weekAgo = new Date(today);
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    setGeneralStartDate(weekAgo);
+                    setGeneralEndDate(today);
+                  }}
+                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                >
+                  7 дней
+                </button>
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    const monthAgo = new Date(today);
+                    monthAgo.setMonth(monthAgo.getMonth() - 1);
+                    setGeneralStartDate(monthAgo);
+                    setGeneralEndDate(today);
+                  }}
+                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                >
+                  30 дней
+                </button>
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    setGeneralStartDate(startOfMonth);
+                    setGeneralEndDate(today);
+                  }}
+                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                >
+                  Текущий месяц
+                </button>
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+                    setGeneralStartDate(lastMonthStart);
+                    setGeneralEndDate(lastMonthEnd);
+                  }}
+                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                >
+                  Прошлый месяц
+                </button>
+              </div>
+
               {/* Выбор периода */}
               <div className="flex flex-wrap gap-4">
                 <div>
@@ -1464,223 +1519,493 @@ const ReportsPage: React.FC = () => {
               </div>
 
               <div className="p-6">
-                {/* Общая сводка */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                    <div className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">Наличные</div>
-                    <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                      {generalReportData.totalCash.toFixed(2)} BYN
-                    </div>
-                  </div>
-
-                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                    <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">Карта</div>
-                    <div className="text-2xl font-bold text-green-900 dark:text-green-100">
-                      {generalReportData.totalCard.toFixed(2)} BYN
-                    </div>
-                  </div>
-
-                  <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-                    <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">Безнал</div>
-                    <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
-                      {generalReportData.totalOrganizations.toFixed(2)} BYN
-                    </div>
-                  </div>
-
-                  <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-                    <div className="text-sm font-medium text-primary mb-1">Общая выручка</div>
-                    <div className="text-2xl font-bold text-primary">
-                      {generalReportData.totalRevenue.toFixed(2)} BYN
-                    </div>
-                  </div>
-                </div>
-
-                {/* Зарплаты и прибыль */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
-                    <div className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-1">Итого зарплаты</div>
-                    <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                      {generalReportData.totalSalaries.toFixed(2)} BYN
-                    </div>
-                  </div>
-
-                  <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
-                    <div className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">Чистая прибыль</div>
-                    <div className="text-2xl font-bold text-red-900 dark:text-red-100">
-                      {(generalReportData.totalRevenue - generalReportData.totalSalaries).toFixed(2)} BYN
-                    </div>
-                  </div>
-                </div>
-
-                {/* Аналитика */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-                    <div className="text-sm font-medium text-yellow-600 dark:text-yellow-400 mb-1">Средняя выручка/день</div>
-                    <div className="text-lg font-bold text-yellow-900 dark:text-yellow-100">
-                      {generalReportData.averageDaily.toFixed(2)} BYN
-                    </div>
-                  </div>
-
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg">
-                    <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">Лучший день</div>
-                    <div className="text-lg font-bold text-emerald-900 dark:text-emerald-100">
-                      {generalReportData.maxDay.amount.toFixed(2)} BYN
-                    </div>
-                    <div className="text-xs text-emerald-600 dark:text-emerald-400">
-                      {generalReportData.maxDay.date}
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 dark:bg-slate-900/20 p-4 rounded-lg">
-                    <div className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Минимальный день</div>
-                    <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                      {generalReportData.minDay.amount.toFixed(2)} BYN
-                    </div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400">
-                      {generalReportData.minDay.date}
-                    </div>
-                  </div>
-                </div>
-
-                {/* График выручки по дням */}
+                {/* КПЭ директора */}
                 <div className="mb-6">
-                  <h4 className="text-lg font-semibold mb-4">График выручки по дням</h4>
-                  <div className="bg-card border border-border rounded-lg p-4">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={generalReportData.dailyData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                          dataKey="date"
-                          fontSize={12}
-                          angle={-45}
-                          textAnchor="end"
-                          height={60}
-                        />
-                        <YAxis fontSize={12} />
-                        <Tooltip
-                          formatter={(value: number, name: string) => [
-                            `${value.toFixed(2)} BYN`,
-                            name === 'total' ? 'Общая выручка' :
-                            name === 'cash' ? 'Наличные' :
-                            name === 'card' ? 'Карта' : 'Безнал'
-                          ]}
-                          labelFormatter={(label) => `Дата: ${label}`}
-                        />
-                        <Legend />
-                        <Line
-                          type="monotone"
-                          dataKey="total"
-                          stroke="#8884d8"
-                          strokeWidth={3}
-                          name="Общая выручка"
-                          dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="cash"
-                          stroke="#82ca9d"
-                          strokeWidth={2}
-                          name="Наличные"
-                          dot={{ fill: '#82ca9d', strokeWidth: 2, r: 3 }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="card"
-                          stroke="#ffc658"
-                          strokeWidth={2}
-                          name="Карта"
-                          dot={{ fill: '#ffc658', strokeWidth: 2, r: 3 }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="organizations"
-                          stroke="#ff7300"
-                          strokeWidth={2}
-                          name="Безнал"
-                          dot={{ fill: '#ff7300', strokeWidth: 2, r: 3 }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                  <h4 className="text-lg font-semibold mb-4 flex items-center">
+                    📊 КПЭ для директора
+                  </h4>
+
+                  {/* Основные показатели */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Наличные</div>
+                      <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                        {generalReportData.totalCash.toFixed(0)} BYN
+                      </div>
+                      <div className="text-xs text-blue-700 dark:text-blue-300">
+                        {((generalReportData.totalCash / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">Карта</div>
+                      <div className="text-lg font-bold text-green-900 dark:text-green-100">
+                        {generalReportData.totalCard.toFixed(0)} BYN
+                      </div>
+                      <div className="text-xs text-green-700 dark:text-green-300">
+                        {((generalReportData.totalCard / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <div className="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1">Безнал</div>
+                      <div className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                        {generalReportData.totalOrganizations.toFixed(0)} BYN
+                      </div>
+                      <div className="text-xs text-purple-700 dark:text-purple-300">
+                        {((generalReportData.totalOrganizations / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-primary/10 to-primary/20 p-3 rounded-lg border border-primary/30">
+                      <div className="text-xs font-medium text-primary mb-1">Общая выручка</div>
+                      <div className="text-lg font-bold text-primary">
+                        {generalReportData.totalRevenue.toFixed(0)} BYN
+                      </div>
+                      <div className="text-xs text-primary/80">
+                        {generalReportData.dailyData.reduce((sum, day) => sum + day.recordsCount, 0)} авто
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <div className="text-xs font-medium text-orange-600 dark:text-orange-400 mb-1">Зарплаты</div>
+                      <div className="text-lg font-bold text-orange-900 dark:text-orange-100">
+                        {generalReportData.totalSalaries.toFixed(0)} BYN
+                      </div>
+                      <div className="text-xs text-orange-700 dark:text-orange-300">
+                        {((generalReportData.totalSalaries / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 p-3 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                      <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-1">Чистая прибыль</div>
+                      <div className="text-lg font-bold text-emerald-900 dark:text-emerald-100">
+                        {(generalReportData.totalRevenue - generalReportData.totalSalaries).toFixed(0)} BYN
+                      </div>
+                      <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                        {(((generalReportData.totalRevenue - generalReportData.totalSalaries) / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Детальная аналитика */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+                    <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                      <div className="text-xs font-medium text-yellow-600 dark:text-yellow-400 mb-1">Средний чек</div>
+                      <div className="text-lg font-bold text-yellow-900 dark:text-yellow-100">
+                        {generalReportData.dailyData.reduce((sum, day) => sum + day.recordsCount, 0) > 0 ?
+                          (generalReportData.totalRevenue / generalReportData.dailyData.reduce((sum, day) => sum + day.recordsCount, 0)).toFixed(0) : 0} BYN
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 p-3 rounded-lg border border-cyan-200 dark:border-cyan-800">
+                      <div className="text-xs font-medium text-cyan-600 dark:text-cyan-400 mb-1">Среднее/день</div>
+                      <div className="text-lg font-bold text-cyan-900 dark:text-cyan-100">
+                        {generalReportData.averageDaily.toFixed(0)} BYN
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20 p-3 rounded-lg border border-rose-200 dark:border-rose-800">
+                      <div className="text-xs font-medium text-rose-600 dark:text-rose-400 mb-1">Лучший день</div>
+                      <div className="text-lg font-bold text-rose-900 dark:text-rose-100">
+                        {generalReportData.maxDay.amount.toFixed(0)} BYN
+                      </div>
+                      <div className="text-xs text-rose-700 dark:text-rose-300">
+                        {generalReportData.maxDay.date}
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/20 dark:to-slate-800/20 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+                      <div className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Худший день</div>
+                      <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                        {generalReportData.minDay.amount.toFixed(0)} BYN
+                      </div>
+                      <div className="text-xs text-slate-700 dark:text-slate-300">
+                        {generalReportData.minDay.date}
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 p-3 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                      <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-1">Рентабельность</div>
+                      <div className="text-lg font-bold text-indigo-900 dark:text-indigo-100">
+                        {(((generalReportData.totalRevenue - generalReportData.totalSalaries) / generalReportData.totalSalaries) * 100).toFixed(0)}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Дополнительные метрики */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-card border border-border p-3 rounded-lg">
+                      <div className="text-xs font-medium text-muted-foreground mb-1">Рабочих дней</div>
+                      <div className="text-lg font-bold">
+                        {generalReportData.dailyData.filter(day => day.recordsCount > 0).length}
+                      </div>
+                    </div>
+
+                    <div className="bg-card border border-border p-3 rounded-lg">
+                      <div className="text-xs font-medium text-muted-foreground mb-1">Авто в день</div>
+                      <div className="text-lg font-bold">
+                        {generalReportData.dailyData.filter(day => day.recordsCount > 0).length > 0 ?
+                          Math.round(generalReportData.dailyData.reduce((sum, day) => sum + day.recordsCount, 0) /
+                          generalReportData.dailyData.filter(day => day.recordsCount > 0).length) : 0}
+                      </div>
+                    </div>
+
+                    <div className="bg-card border border-border p-3 rounded-lg">
+                      <div className="text-xs font-medium text-muted-foreground mb-1">Макс авто/день</div>
+                      <div className="text-lg font-bold">
+                        {Math.max(...generalReportData.dailyData.map(day => day.recordsCount))}
+                      </div>
+                    </div>
+
+                    <div className="bg-card border border-border p-3 rounded-lg">
+                      <div className="text-xs font-medium text-muted-foreground mb-1">Дней без работы</div>
+                      <div className="text-lg font-bold">
+                        {generalReportData.dailyData.filter(day => day.recordsCount === 0).length}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Столбчатая диаграмма количества записей */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-semibold mb-4">Количество обслуженных автомобилей по дням</h4>
-                  <div className="bg-card border border-border rounded-lg p-4">
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={generalReportData.dailyData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                          dataKey="date"
-                          fontSize={12}
-                          angle={-45}
-                          textAnchor="end"
-                          height={60}
-                        />
-                        <YAxis fontSize={12} />
-                        <Tooltip
-                          formatter={(value: number) => [`${value} авто`, 'Количество']}
-                          labelFormatter={(label) => `Дата: ${label}`}
-                        />
-                        <Bar
-                          dataKey="recordsCount"
-                          fill="#8884d8"
-                          name="Количество автомобилей"
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                {/* Интерактивные графики */}
+                <div className="space-y-6">
+                  {/* График выручки по дням */}
+                  <div>
+                    <h4 className="text-lg font-semibold mb-4 flex items-center">
+                      📈 Динамика выручки
+                    </h4>
+                    <div className="bg-card border border-border rounded-lg p-4">
+                      <ResponsiveContainer width="100%" height={350}>
+                        <LineChart data={generalReportData.dailyData}>
+                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                          <XAxis
+                            dataKey="date"
+                            fontSize={12}
+                            angle={-45}
+                            textAnchor="end"
+                            height={60}
+                          />
+                          <YAxis fontSize={12} />
+                          <Tooltip
+                            formatter={(value: number, name: string) => [
+                              `${value.toFixed(2)} BYN`,
+                              name === 'total' ? 'Общая выручка' :
+                              name === 'cash' ? 'Наличные' :
+                              name === 'card' ? 'Карта' : 'Безнал'
+                            ]}
+                            labelFormatter={(label) => `Дата: ${label}`}
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Legend />
+                          <Line
+                            type="monotone"
+                            dataKey="total"
+                            stroke="#8b5cf6"
+                            strokeWidth={3}
+                            name="Общая выручка"
+                            dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 5 }}
+                            activeDot={{ r: 7, stroke: '#8b5cf6', strokeWidth: 2 }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="cash"
+                            stroke="#10b981"
+                            strokeWidth={2}
+                            name="Наличные"
+                            dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                            activeDot={{ r: 6 }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="card"
+                            stroke="#f59e0b"
+                            strokeWidth={2}
+                            name="Карта"
+                            dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                            activeDot={{ r: 6 }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="organizations"
+                            stroke="#ef4444"
+                            strokeWidth={2}
+                            name="Безнал"
+                            dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                            activeDot={{ r: 6 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Комбинированный график: выручка и количество авто */}
+                  <div>
+                    <h4 className="text-lg font-semibold mb-4 flex items-center">
+                      🚗 Выручка vs Количество автомобилей
+                    </h4>
+                    <div className="bg-card border border-border rounded-lg p-4">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={generalReportData.dailyData}>
+                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                          <XAxis
+                            dataKey="date"
+                            fontSize={12}
+                            angle={-45}
+                            textAnchor="end"
+                            height={60}
+                          />
+                          <YAxis yAxisId="left" fontSize={12} />
+                          <YAxis yAxisId="right" orientation="right" fontSize={12} />
+                          <Tooltip
+                            formatter={(value: number, name: string) => [
+                              name === 'recordsCount' ? `${value} авто` : `${value.toFixed(2)} BYN`,
+                              name === 'recordsCount' ? 'Количество авто' : 'Выручка'
+                            ]}
+                            labelFormatter={(label) => `Дата: ${label}`}
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Legend />
+                          <Bar
+                            yAxisId="left"
+                            dataKey="total"
+                            fill="#8b5cf6"
+                            name="Выручка (BYN)"
+                            radius={[2, 2, 0, 0]}
+                          />
+                          <Line
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="recordsCount"
+                            stroke="#f97316"
+                            strokeWidth={3}
+                            name="Количество авто"
+                            dot={{ fill: '#f97316', strokeWidth: 2, r: 5 }}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Структура оплат - круговая диаграмма */}
+                  <div>
+                    <h4 className="text-lg font-semibold mb-4 flex items-center">
+                      💳 Структура платежей
+                    </h4>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                              <span className="font-medium">Наличные</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-bold">{generalReportData.totalCash.toFixed(0)} BYN</div>
+                              <div className="text-sm text-muted-foreground">
+                                {((generalReportData.totalCash / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                              <span className="font-medium">Карта</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-bold">{generalReportData.totalCard.toFixed(0)} BYN</div>
+                              <div className="text-sm text-muted-foreground">
+                                {((generalReportData.totalCard / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                              <span className="font-medium">Безнал</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-bold">{generalReportData.totalOrganizations.toFixed(0)} BYN</div>
+                              <div className="text-sm text-muted-foreground">
+                                {((generalReportData.totalOrganizations / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <h5 className="font-medium mb-3">Тенденции оплат</h5>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Доля наличных:</span>
+                            <span className={`font-medium ${
+                              (generalReportData.totalCash / generalReportData.totalRevenue) > 0.5 ? 'text-orange-600' : 'text-green-600'
+                            }`}>
+                              {((generalReportData.totalCash / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Безналичные платежи:</span>
+                            <span className="font-medium text-blue-600">
+                              {(((generalReportData.totalCard + generalReportData.totalOrganizations) / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Наибольшая доля:</span>
+                            <span className="font-medium">
+                              {generalReportData.totalCash > generalReportData.totalCard && generalReportData.totalCash > generalReportData.totalOrganizations
+                                ? 'Наличные'
+                                : generalReportData.totalCard > generalReportData.totalOrganizations
+                                ? 'Карта'
+                                : 'Безнал'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Детализация по организациям */}
                 {generalReportData.organizationBreakdown.length > 0 && (
                   <div>
-                    <h4 className="text-lg font-semibold mb-4">Детализация по организациям</h4>
+                    <h4 className="text-lg font-semibold mb-4 flex items-center">
+                      🏢 Анализ по организациям
+                    </h4>
 
-                    {/* Десктопная версия таблицы */}
-                    <div className="hidden sm:block overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-border">
-                            <th className="py-3 px-4 text-left text-sm font-medium">Организация</th>
-                            <th className="py-3 px-4 text-right text-sm font-medium">Сумма</th>
-                            <th className="py-3 px-4 text-right text-sm font-medium">% от общей выручки</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {generalReportData.organizationBreakdown
-                            .sort((a, b) => b.amount - a.amount)
-                            .map((org, index) => (
-                            <tr key={index} className="border-b border-border hover:bg-muted/30">
-                              <td className="py-3 px-4 text-sm">{org.name}</td>
-                              <td className="py-3 px-4 text-right font-medium">{org.amount.toFixed(2)} BYN</td>
-                              <td className="py-3 px-4 text-right text-sm text-muted-foreground">
-                                {((org.amount / generalReportData.totalRevenue) * 100).toFixed(1)}%
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    {/* Краткая сводка */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Количество организаций</div>
+                        <div className="text-2xl font-bold">{generalReportData.organizationBreakdown.length}</div>
+                      </div>
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Крупнейший клиент</div>
+                        <div className="text-lg font-bold">
+                          {generalReportData.organizationBreakdown.sort((a, b) => b.amount - a.amount)[0]?.name || 'Нет данных'}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {generalReportData.organizationBreakdown.sort((a, b) => b.amount - a.amount)[0]?.amount.toFixed(0)} BYN
+                        </div>
+                      </div>
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Доля безнала</div>
+                        <div className="text-2xl font-bold">
+                          {((generalReportData.totalOrganizations / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Мобильная версия - компактная */}
-                    <div className="sm:hidden space-y-2">
-                      {generalReportData.organizationBreakdown
-                        .sort((a, b) => b.amount - a.amount)
-                        .map((org, index) => (
-                        <div key={index} className="bg-card border border-border rounded-lg p-3">
-                          <div className="flex justify-between items-center">
-                            <h5 className="font-medium text-xs truncate pr-2 flex-1">{org.name}</h5>
-                            <div className="text-right">
-                              <div className="font-bold text-sm">{org.amount.toFixed(2)}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {((org.amount / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                    {/* Рейтинг организаций */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Топ организации */}
+                      <div>
+                        <h5 className="font-medium mb-3">🏆 Топ-5 организаций</h5>
+                        <div className="space-y-2">
+                          {generalReportData.organizationBreakdown
+                            .sort((a, b) => b.amount - a.amount)
+                            .slice(0, 5)
+                            .map((org, index) => (
+                            <div key={index} className="bg-card border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                                    index === 0 ? 'bg-yellow-500' :
+                                    index === 1 ? 'bg-gray-400' :
+                                    index === 2 ? 'bg-amber-600' :
+                                    'bg-blue-500'
+                                  }`}>
+                                    {index + 1}
+                                  </div>
+                                  <div>
+                                    <div className="font-medium">{org.name}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {((org.amount / generalReportData.totalOrganizations) * 100).toFixed(1)}% от безнала
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="font-bold">{org.amount.toFixed(0)} BYN</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {((org.amount / generalReportData.totalRevenue) * 100).toFixed(1)}% общей выручки
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Прогресс бар */}
+                              <div className="mt-2">
+                                <div className="w-full bg-secondary/30 rounded-full h-2">
+                                  <div
+                                    className={`h-2 rounded-full transition-all duration-300 ${
+                                      index === 0 ? 'bg-yellow-500' :
+                                      index === 1 ? 'bg-gray-400' :
+                                      index === 2 ? 'bg-amber-600' :
+                                      'bg-blue-500'
+                                    }`}
+                                    style={{
+                                      width: `${(org.amount / generalReportData.organizationBreakdown[0].amount) * 100}%`
+                                    }}
+                                  ></div>
+                                </div>
                               </div>
                             </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Полная таблица для остальных */}
+                      <div>
+                        <h5 className="font-medium mb-3">📊 Все организации</h5>
+                        <div className="bg-card border border-border rounded-lg overflow-hidden">
+                          <div className="max-h-96 overflow-y-auto">
+                            <table className="w-full">
+                              <thead className="bg-muted/50 sticky top-0">
+                                <tr>
+                                  <th className="py-3 px-4 text-left text-sm font-medium">Организация</th>
+                                  <th className="py-3 px-4 text-right text-sm font-medium">Сумма</th>
+                                  <th className="py-3 px-4 text-right text-sm font-medium">%</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {generalReportData.organizationBreakdown
+                                  .sort((a, b) => b.amount - a.amount)
+                                  .map((org, index) => (
+                                  <tr key={index} className="border-b border-border hover:bg-muted/30 transition-colors">
+                                    <td className="py-3 px-4 text-sm font-medium">
+                                      {index < 3 && (
+                                        <span className="mr-2">
+                                          {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                        </span>
+                                      )}
+                                      {org.name}
+                                    </td>
+                                    <td className="py-3 px-4 text-right font-bold">{org.amount.toFixed(0)} BYN</td>
+                                    <td className="py-3 px-4 text-right text-sm">
+                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                        (org.amount / generalReportData.totalRevenue) * 100 > 10
+                                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                          : (org.amount / generalReportData.totalRevenue) * 100 > 5
+                                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                                      }`}>
+                                        {((org.amount / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
                 )}

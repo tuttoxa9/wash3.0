@@ -590,44 +590,44 @@ const HomePage: React.FC = () => {
     <div className="space-y-4">
       {/* Pre-shift banner: visible only if shift not started */}
       {!shiftStarted && (
-        <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10" />
-          <div className="relative p-6 sm:p-8">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 rounded-xl p-3 bg-gradient-to-br from-primary/20 to-primary/10 text-primary shadow-lg">
-                <Calendar className="w-6 h-6" />
+        <div className="relative overflow-hidden rounded-lg sm:rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5" />
+          <div className="relative p-3 sm:p-6 md:p-8">
+            <div className="flex items-start gap-2 sm:gap-4">
+              <div className="shrink-0 rounded-lg sm:rounded-xl p-2 sm:p-3 bg-primary/10 text-primary">
+                <Calendar className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 flex-wrap mb-2">
-                  <span className="text-card-foreground font-semibold text-lg sm:text-lg text-base">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-2">
+                  <span className="text-card-foreground font-semibold text-sm sm:text-lg leading-tight">
                     <span className="hidden sm:inline">Чтобы начать работу, выберите работников и начните смену</span>
                     <span className="sm:hidden">Выберите работников и начните смену</span>
                   </span>
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-secondary/80 to-secondary/60 text-secondary-foreground border border-border/30">
+                  <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground border border-border/30 w-fit">
                     Режим ожидания
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 leading-relaxed">
                   <span className="hidden sm:inline">Следуйте простым шагам: 1) Выберите сотрудников на смену. 2) Назначьте роли. 3) Нажмите «Начать смену».</span>
-                  <span className="sm:hidden">1) Выберите сотрудников. 2) Назначьте роли. 3) Начните смену.</span>
+                  <span className="sm:hidden">1) Выберите сотрудников 2) Назначьте роли 3) Начните смену</span>
                 </p>
-                <div className="flex flex-wrap gap-3 items-center">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <button
                     onClick={scrollToShift}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary/90 text-white hover:from-primary/90 hover:to-primary/80 transition-all duration-200 font-medium shadow-lg hover:shadow-xl border border-primary/20"
+                    className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-primary text-white hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-md hover:shadow-lg"
                   >
-                    Перейти к выбору работников
-                    <ArrowRight className="w-4 h-4" />
+                    <span className="hidden sm:inline">Перейти к выбору работников</span>
+                    <span className="sm:hidden">К выбору работников</span>
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                   </button>
-                  <span className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-lg">
-                    После начала смены функции станут доступны
+                  <span className="text-xs text-muted-foreground bg-muted/40 px-2 sm:px-3 py-1 rounded-md sm:rounded-lg w-fit">
+                    <span className="hidden sm:inline">После начала смены функции станут доступны</span>
+                    <span className="sm:hidden">После смены функции доступны</span>
                   </span>
                 </div>
               </div>
             </div>
           </div>
-          <div className="pointer-events-none absolute -right-12 -top-12 w-48 h-48 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 blur-xl" />
-          <div className="pointer-events-none absolute -right-28 -top-8 w-72 h-72 rounded-full bg-gradient-to-br from-accent/8 to-primary/8 blur-2xl" />
         </div>
       )}
 
