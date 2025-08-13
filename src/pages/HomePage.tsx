@@ -777,7 +777,7 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className={`relative group rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 cursor-pointer transition-all duration-300 border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 ${loading.dailyReport ? 'loading' : ''}`}
+                      className={`relative group rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 cursor-pointer transition-all duration-300 border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 w-full ${loading.dailyReport ? 'loading' : ''}`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
                       {/* Декоративный градиент */}
@@ -1024,7 +1024,7 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="space-y-2 sm:space-y-3">
                   <div
-                    className={`flex justify-between p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
+                    className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
                       paymentFilter === 'cash'
                         ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg'
                         : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md'
@@ -1036,11 +1036,11 @@ const HomePage: React.FC = () => {
                     }}
                     title={shiftStarted ? 'Нажмите для просмотра ведомости по наличным' : 'Сначала выберите работников и начните смену'}
                   >
-                    <span className="font-medium text-sm sm:text-base">Наличные</span>
-                    <span className="font-bold text-sm sm:text-base md:text-lg">{currentReport.totalCash.toFixed(2)} BYN</span>
+                    <span className="font-medium text-sm sm:text-base flex-shrink-0">Наличные</span>
+                    <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">{currentReport.totalCash.toFixed(2)} BYN</span>
                   </div>
                   <div
-                    className={`flex justify-between p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
+                    className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
                       paymentFilter === 'card'
                         ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg'
                         : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md'
@@ -1052,11 +1052,11 @@ const HomePage: React.FC = () => {
                     }}
                     title={shiftStarted ? 'Нажмите для просмотра ведомости по картам' : 'Сначала выберите работников и начните смену'}
                   >
-                    <span className="font-medium text-sm sm:text-base">Карта</span>
-                    <span className="font-bold text-sm sm:text-base md:text-lg">{currentReport.totalNonCash.toFixed(2)} BYN</span>
+                    <span className="font-medium text-sm sm:text-base flex-shrink-0">Карта</span>
+                    <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">{currentReport.totalNonCash.toFixed(2)} BYN</span>
                   </div>
                   <div
-                    className={`flex justify-between p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
+                    className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
                       paymentFilter === 'organization'
                         ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg'
                         : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md'
@@ -1068,8 +1068,8 @@ const HomePage: React.FC = () => {
                     }}
                     title={shiftStarted ? 'Нажмите для просмотра ведомости по безналу' : 'Сначала выберите работников и начните смену'}
                   >
-                    <span className="font-medium text-sm sm:text-base">Безналичные</span>
-                    <span className="font-bold text-sm sm:text-base md:text-lg">{(() => {
+                    <span className="font-medium text-sm sm:text-base flex-shrink-0">Безналичные</span>
+                    <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">{(() => {
                       // Подсчитываем сумму за организации
                       const orgSum = currentReport.records?.reduce((sum, record) => {
                         return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
@@ -1078,7 +1078,7 @@ const HomePage: React.FC = () => {
                     })()} BYN</span>
                   </div>
                   <div
-                    className={`border-t border-border/40 mt-4 sm:mt-6 pt-4 sm:pt-6 flex justify-between cursor-pointer transition-all duration-200 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border shadow-md bg-gradient-to-r from-accent/10 via-primary/5 to-accent/10 hover:from-accent/20 hover:via-primary/10 hover:to-accent/20 hover:shadow-lg ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`border-t border-border/40 mt-4 sm:mt-6 pt-4 sm:pt-6 flex justify-between items-center cursor-pointer transition-all duration-200 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border shadow-md bg-gradient-to-r from-accent/10 via-primary/5 to-accent/10 hover:from-accent/20 hover:via-primary/10 hover:to-accent/20 hover:shadow-lg ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
                       if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
                       setPaymentFilter('all');
@@ -1086,8 +1086,8 @@ const HomePage: React.FC = () => {
                     }}
                     title={shiftStarted ? 'Нажмите для просмотра полной ведомости' : 'Сначала выберите работников и начните смену'}
                   >
-                    <span className="font-semibold text-sm sm:text-base md:text-lg">Всего:</span>
-                    <span className="font-bold text-base sm:text-lg md:text-xl text-primary">
+                    <span className="font-semibold text-sm sm:text-base md:text-lg flex-shrink-0">Всего:</span>
+                    <span className="font-bold text-base sm:text-lg md:text-xl text-primary text-right ml-2 break-words">
                       {(() => {
                         // Считаем общую сумму всех записей напрямую
                         const totalRevenue = currentReport.records?.reduce((sum, record) => {
@@ -2823,29 +2823,38 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                         <span className="text-sm font-medium shrink-0">{record.time}</span>
                         <span className={`px-1.5 py-0.5 rounded text-xs font-medium shrink-0 ${
                           record.serviceType === 'dryclean'
-                            ? 'bg-purple-100 text-purple-700'
-                            : 'bg-blue-100 text-blue-700'
+                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-100'
+                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
                         }`}>
                           {record.serviceType === 'dryclean' ? 'Х' : 'М'}
                         </span>
                       </div>
-                      <div className="text-right">
-                        <div className="font-bold text-sm">{record.price.toFixed(2)}</div>
-                        <div className="text-xs text-muted-foreground">BYN</div>
+                      <div className="text-right shrink-0 ml-2">
+                        <div className="font-bold text-sm leading-tight">{record.price.toFixed(2)}</div>
+                        <div className="text-xs text-muted-foreground leading-none">BYN</div>
                       </div>
                     </div>
 
                     <div className="space-y-1">
-                      <div className="text-xs">
+                      <div className="text-xs leading-tight">
                         <span className="font-medium">{record.carInfo}</span>
                         <span className="text-muted-foreground"> • </span>
                         <span className="text-muted-foreground">{record.service}</span>
                       </div>
+                      <div className="text-xs text-muted-foreground leading-tight">
+                        <span className="font-medium">Сотрудники: </span>
+                        <span>
+                          {record.employeeIds
+                            .map(id => employees.find(emp => emp.id === id)?.name)
+                            .filter(Boolean)
+                            .join(', ') || 'Не указано'}
+                        </span>
+                      </div>
                       <div className="flex justify-between items-center text-xs">
-                        <span className="text-muted-foreground truncate">
+                        <span className="text-muted-foreground truncate flex-1 min-w-0 pr-2">
                           {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
                         </span>
-                        <div className="flex gap-1 ml-2">
+                        <div className="flex gap-1 shrink-0">
                           <button
                             onClick={() => startEditing(record)}
                             className="p-1 rounded hover:bg-secondary/50 transition-colors"
@@ -2889,8 +2898,8 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   onClick={() => onPaymentFilterChange(paymentFilter === 'cash' ? 'all' : 'cash')}
                   title="Нажмите для фильтрации по наличным"
                 >
-                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1">Наличные</div>
-                  <div className="text-sm sm:text-base md:text-lg font-bold text-card-foreground">{currentReport.totalCash.toFixed(2)} BYN</div>
+                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">Наличные</div>
+                  <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words">{currentReport.totalCash.toFixed(2)} BYN</div>
                 </div>
                 <div
                   className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors ${
@@ -2901,8 +2910,8 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   onClick={() => onPaymentFilterChange(paymentFilter === 'card' ? 'all' : 'card')}
                   title="Нажмите для фильтрации по картам"
                 >
-                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1">Карта</div>
-                  <div className="text-sm sm:text-base md:text-lg font-bold text-card-foreground">{currentReport.totalNonCash.toFixed(2)} BYN</div>
+                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">Карта</div>
+                  <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words">{currentReport.totalNonCash.toFixed(2)} BYN</div>
                 </div>
                 <div
                   className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors ${
@@ -2913,8 +2922,8 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   onClick={() => onPaymentFilterChange(paymentFilter === 'organization' ? 'all' : 'organization')}
                   title="Нажмите для фильтрации по безналу"
                 >
-                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1">Безнал</div>
-                  <div className="text-sm sm:text-base md:text-lg font-bold text-card-foreground">
+                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">Безнал</div>
+                  <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words">
                     {(() => {
                       const orgSum = currentReport.records?.reduce((sum, record) => {
                         return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
@@ -2932,8 +2941,8 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   onClick={() => onPaymentFilterChange('all')}
                   title="Показать все записи"
                 >
-                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1">Всего</div>
-                  <div className="text-sm sm:text-base md:text-lg font-bold text-primary">
+                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">Всего</div>
+                  <div className="text-xs sm:text-sm md:text-base font-bold text-primary leading-tight break-words">
                     {(() => {
                       const totalRevenue = currentReport.records?.reduce((sum, record) => {
                         return sum + record.price;
