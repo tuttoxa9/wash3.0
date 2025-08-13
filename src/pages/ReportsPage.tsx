@@ -390,16 +390,59 @@ const ReportsPage: React.FC = () => {
           employeeRolesForCalc[r.employeeId] = employeeRole;
         });
 
-        // Собираем карту флагов минималки на основе dailyRoles для диапазона
-        const minimumOverride = Array.from(new Set(Object.keys(dailyRoles).flatMap(d => Object.keys(dailyRoles[d] || {})))).reduce<Record<string, boolean>>((acc, empId) => {
-          let respect = true;
-          Object.keys(dailyRoles).forEach(date => {
-            const val = (dailyRoles[date] as any)?.[`min_${empId}`];
-            if (val === false) respect = false;
+        // Собираем карту флагов минималки для отчёта
+        // Для дневного отчёта берём флаги конкретного дня, для диапазона - проверяем все дни
+        const minimumOverride: Record<string, boolean> = {};
+        const reportDateStr = startDate.toISOString().split('T')[0];
+
+        // Собираем всех сотрудников из записей
+        const allEmployeeIdsFromRecords = new Set<string>();
+        filteredRecords.forEach(record => {
+          record.employeeIds.forEach(id => allEmployeeIdsFromRecords.add(id));
+        });
+
+        if (periodType === 'day') {
+          // Для дневного отчёта используем роли конкретного дня
+          const dayRoles = dailyRoles[reportDateStr] || {};
+
+          // Сначала обрабатываем сотрудников из ролей
+          Object.keys(dayRoles).forEach(empId => {
+            if (!empId.startsWith('min_')) {
+              const minKey = `min_${empId}`;
+              const val = (dayRoles as any)[minKey];
+              minimumOverride[empId] = val !== false; // по умолчанию true
+            }
           });
-          acc[empId] = respect;
-          return acc;
-        }, {});
+
+          // Затем добавляем сотрудников из записей, которых нет в ролях (для них минималка включена по умолчанию)
+          allEmployeeIdsFromRecords.forEach(empId => {
+            if (!(empId in minimumOverride)) {
+              minimumOverride[empId] = true;
+            }
+          });
+        } else {
+          // Для диапазона: если хотя бы в одном дне минималка отключена, то отключена для всего периода
+          const allEmployeeIds = new Set<string>();
+          Object.keys(dailyRoles).forEach(date => {
+            Object.keys(dailyRoles[date] || {}).forEach(key => {
+              if (!key.startsWith('min_')) {
+                allEmployeeIds.add(key);
+              }
+            });
+          });
+
+          // Добавляем сотрудников из записей
+          allEmployeeIdsFromRecords.forEach(id => allEmployeeIds.add(id));
+
+          allEmployeeIds.forEach(empId => {
+            let respect = true;
+            Object.keys(dailyRoles).forEach(date => {
+              const val = (dailyRoles[date] as any)?.[`min_${empId}`];
+              if (val === false) respect = false;
+            });
+            minimumOverride[empId] = respect;
+          });
+        }
 
         // Сохраняем флаги минималки в состояние для отображения
         setMinimumFlags(minimumOverride);
@@ -650,15 +693,32 @@ const ReportsPage: React.FC = () => {
         });
 
         // Карта флагов минималки за период общего отчёта
-        const minimumOverride = Array.from(new Set(Object.keys(rolesMap).flatMap(d => Object.keys(rolesMap[d] || {})))).reduce<Record<string, boolean>>((acc, empId) => {
+        // Если хотя бы в одном дне минималка отключена, то отключена для всего периода
+        const minimumOverride: Record<string, boolean> = {};
+        const allEmployeeIds = new Set<string>();
+
+        // Добавляем сотрудников из ролей
+        Object.keys(rolesMap).forEach(date => {
+          Object.keys(rolesMap[date] || {}).forEach(key => {
+            if (!key.startsWith('min_')) {
+              allEmployeeIds.add(key);
+            }
+          });
+        });
+
+        // Добавляем сотрудников из записей
+        allRecords.forEach(record => {
+          record.employeeIds.forEach(id => allEmployeeIds.add(id));
+        });
+
+        allEmployeeIds.forEach(empId => {
           let respect = true;
           Object.keys(rolesMap).forEach(date => {
             const val = (rolesMap[date] as any)?.[`min_${empId}`];
             if (val === false) respect = false;
           });
-          acc[empId] = respect;
-          return acc;
-        }, {});
+          minimumOverride[empId] = respect;
+        });
 
         // Сохраняем флаги минималки для общего отчёта
         setGeneralMinimumFlags(minimumOverride);
@@ -1176,7 +1236,7 @@ const ReportsPage: React.FC = () => {
                       >
                         <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate flex items-center gap-1" title={report.employeeName}>
                           {report.employeeName}
-                          {minimumFlags[report.employeeId] === false && (
+                          {(minimumFlags[report.employeeId] === false) && (
                             <span className="text-orange-500 text-xs" title="Минималка отключена">⚠</span>
                           )}
                         </div>
@@ -1251,7 +1311,7 @@ const ReportsPage: React.FC = () => {
                           title={report.employeeName}
                         >
                           {report.employeeName.length > 10 ? report.employeeName.substring(0, 10) + '...' : report.employeeName}
-                          {minimumFlags[report.employeeId] === false && (
+                          {(minimumFlags[report.employeeId] === false) && (
                             <span className="text-orange-500 text-xs" title="Минималка отключена">⚠</span>
                           )}
                         </div>
