@@ -1184,16 +1184,15 @@ const ReportsPage: React.FC = () => {
               </div>
 
               {/* Мобильная версия таблицы - оптимизированная */}
-              <div className="sm:hidden">
-                <div className="grid grid-cols-6 gap-1 bg-muted/50 px-2 py-2 border-b text-xs font-medium">
-                  <div className="text-left">Сотрудник</div>
-                  <div className="text-right">Нал</div>
-                  <div className="text-right">Карт</div>
-                  <div className="text-right">Безн</div>
-                  <div className="text-right">Всего</div>
-                  <div className="text-right">ЗП</div>
-                </div>
-                <div className="divide-y">
+              <div className="sm:hidden overflow-x-auto">
+                <div className="min-w-full" style={{ display: 'grid', gridTemplateColumns: '1fr 50px 50px 50px 50px 50px' }}>
+                  <div className="bg-muted/50 px-2 py-2 border-b text-xs font-medium text-left">Сотрудник</div>
+                  <div className="bg-muted/50 px-1 py-2 border-b text-xs font-medium text-right">Нал</div>
+                  <div className="bg-muted/50 px-1 py-2 border-b text-xs font-medium text-right">Карт</div>
+                  <div className="bg-muted/50 px-1 py-2 border-b text-xs font-medium text-right">Безн</div>
+                  <div className="bg-muted/50 px-1 py-2 border-b text-xs font-medium text-right">Всего</div>
+                  <div className="bg-muted/50 px-1 py-2 border-b text-xs font-medium text-right">ЗП</div>
+
                   {earningsReport.map(report => {
                     const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
 
@@ -1232,24 +1231,35 @@ const ReportsPage: React.FC = () => {
                     };
 
                     return (
-                      <div
-                        key={report.employeeId}
-                        className="grid grid-cols-6 gap-1 px-2 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs"
-                        onClick={handleEmployeeClick}
-                      >
-                        <div className="text-left text-primary hover:text-primary/80 font-medium truncate" title={report.employeeName}>
-                          {report.employeeName.length > 8 ? report.employeeName.substring(0, 8) + '...' : report.employeeName}
+                      <>
+                        <div
+                          className="px-2 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-left text-primary hover:text-primary/80 font-medium truncate border-b"
+                          onClick={handleEmployeeClick}
+                          title={report.employeeName}
+                        >
+                          {report.employeeName.length > 10 ? report.employeeName.substring(0, 10) + '...' : report.employeeName}
                         </div>
-                        <div className="text-right">{report.totalCash.toFixed(0)}</div>
-                        <div className="text-right">{report.totalNonCash.toFixed(0)}</div>
-                        <div className="text-right">{report.totalOrganizations.toFixed(0)}</div>
-                        <div className="text-right">{totalRevenueEmp.toFixed(0)}</div>
-                        <div className="text-right font-medium">{perEmployee.toFixed(0)}</div>
-                      </div>
+                        <div className="px-1 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-right border-b" onClick={handleEmployeeClick}>
+                          {report.totalCash.toFixed(0)}
+                        </div>
+                        <div className="px-1 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-right border-b" onClick={handleEmployeeClick}>
+                          {report.totalNonCash.toFixed(0)}
+                        </div>
+                        <div className="px-1 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-right border-b" onClick={handleEmployeeClick}>
+                          {report.totalOrganizations.toFixed(0)}
+                        </div>
+                        <div className="px-1 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-right border-b" onClick={handleEmployeeClick}>
+                          {totalRevenueEmp.toFixed(0)}
+                        </div>
+                        <div className="px-1 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs text-right font-medium border-b" onClick={handleEmployeeClick}>
+                          {perEmployee.toFixed(0)}
+                        </div>
+                      </>
                     );
                   })}
+
                   {earningsReport.length === 0 && (
-                    <div className="px-2 py-4 text-center text-muted-foreground text-xs">
+                    <div className="px-2 py-4 text-center text-muted-foreground text-xs col-span-6">
                       Нет данных для выбранного периода и фильтра
                     </div>
                   )}
