@@ -339,6 +339,7 @@ const MobileDaysListModal: React.FC<{
   periodLabel: string;
   calculateEmployeeEarnings: (record: CarWashRecord, employeeId: string) => number;
   onDayClick: (date: string, dayRecords: CarWashRecord[]) => void;
+  onAnalyticsClick: () => void;
 }> = ({
   isOpen,
   onClose,
@@ -347,7 +348,8 @@ const MobileDaysListModal: React.FC<{
   sortedDates,
   periodLabel,
   calculateEmployeeEarnings,
-  onDayClick
+  onDayClick,
+  onAnalyticsClick
 }) => {
   if (!isOpen) return null;
 
@@ -378,12 +380,23 @@ const MobileDaysListModal: React.FC<{
                   {periodLabel}
                 </p>
               </div>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-md hover:bg-muted transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onAnalyticsClick}
+                  className="px-3 py-1.5 rounded-md font-medium text-sm transition-colors bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/30"
+                >
+                  <BarChart3 className="w-4 h-4 mr-1 inline" />
+                  Аналитика
+                </motion.button>
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-md hover:bg-muted transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1419,6 +1432,10 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
             periodLabel={periodLabel}
             calculateEmployeeEarnings={calculateEmployeeEarnings}
             onDayClick={handleDayClick}
+            onAnalyticsClick={() => {
+              setShowMobileDaysList(false);
+              setShowAnalytics(true);
+            }}
           />
 
           {/* Мобильное модальное окно с деталями дня */}
@@ -1454,7 +1471,13 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
       {/* Модальное окно аналитики */}
       <AnalyticsModal
         isOpen={showAnalytics}
-        onClose={() => setShowAnalytics(false)}
+        onClose={() => {
+          setShowAnalytics(false);
+          // На мобильных возвращаемся к списку дней
+          if (isMobile) {
+            setShowMobileDaysList(true);
+          }
+        }}
         employee={employee}
         statistics={statistics}
         periodLabel={periodLabel}
