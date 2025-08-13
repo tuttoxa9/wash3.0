@@ -984,7 +984,7 @@ const ReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 min-h-screen pb-20 overflow-x-hidden">
       <h2 className="text-xl sm:text-2xl font-semibold border-b pb-3">Отчеты</h2>
 
       <Tabs defaultValue="employee-earnings" className="w-full">
@@ -1522,11 +1522,11 @@ const ReportsPage: React.FC = () => {
                 {/* КПЭ директора */}
                 <div className="mb-6">
                   <h4 className="text-lg font-semibold mb-4 flex items-center">
-                    📊 КПЭ для директора
+                    Ключевые бизнес-показатели
                   </h4>
 
                   {/* Основные показатели */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
                     <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                       <div className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Наличные</div>
                       <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
@@ -1589,7 +1589,7 @@ const ReportsPage: React.FC = () => {
                   </div>
 
                   {/* Детальная аналитика */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
                     <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
                       <div className="text-xs font-medium text-yellow-600 dark:text-yellow-400 mb-1">Средний чек</div>
                       <div className="text-lg font-bold text-yellow-900 dark:text-yellow-100">
@@ -1634,7 +1634,7 @@ const ReportsPage: React.FC = () => {
                   </div>
 
                   {/* Дополнительные метрики */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="bg-card border border-border p-3 rounded-lg">
                       <div className="text-xs font-medium text-muted-foreground mb-1">Рабочих дней</div>
                       <div className="text-lg font-bold">
@@ -1665,6 +1665,187 @@ const ReportsPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Аналитика эффективности */}
+                  <div className="mt-6">
+                    <h5 className="text-md font-semibold mb-4">Аналитика эффективности</h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="bg-card border border-border p-3 rounded-lg">
+                        <div className="text-xs font-medium text-muted-foreground mb-1">Выручка/рабочий день</div>
+                        <div className="text-lg font-bold">
+                          {generalReportData.dailyData.filter(day => day.recordsCount > 0).length > 0 ?
+                            (generalReportData.totalRevenue / generalReportData.dailyData.filter(day => day.recordsCount > 0).length).toFixed(0) : 0} BYN
+                        </div>
+                      </div>
+
+                      <div className="bg-card border border-border p-3 rounded-lg">
+                        <div className="text-xs font-medium text-muted-foreground mb-1">Стабильность дохода</div>
+                        <div className="text-lg font-bold">
+                          {(() => {
+                            const workingDays = generalReportData.dailyData.filter(day => day.recordsCount > 0);
+                            if (workingDays.length === 0) return '0%';
+                            const avg = workingDays.reduce((sum, day) => sum + day.total, 0) / workingDays.length;
+                            const variance = workingDays.reduce((sum, day) => sum + Math.pow(day.total - avg, 2), 0) / workingDays.length;
+                            const coefficient = avg > 0 ? (Math.sqrt(variance) / avg) : 0;
+                            return (100 - Math.min(100, coefficient * 100)).toFixed(0) + '%';
+                          })()}
+                        </div>
+                      </div>
+
+                      <div className="bg-card border border-border p-3 rounded-lg">
+                        <div className="text-xs font-medium text-muted-foreground mb-1">Потенциал роста</div>
+                        <div className="text-lg font-bold">
+                          {(() => {
+                            const maxDay = generalReportData.maxDay.amount;
+                            const avgDay = generalReportData.averageDaily;
+                            return avgDay > 0 ? Math.round((maxDay / avgDay - 1) * 100) + '%' : '0%';
+                          })()}
+                        </div>
+                      </div>
+
+                      <div className="bg-card border border-border p-3 rounded-lg">
+                        <div className="text-xs font-medium text-muted-foreground mb-1">Эффективность персонала</div>
+                        <div className="text-lg font-bold">
+                          {generalReportData.totalSalaries > 0 ?
+                            (generalReportData.totalRevenue / generalReportData.totalSalaries).toFixed(1) + 'x' : '0x'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Прогнозы и тренды */}
+                  <div className="mt-6">
+                    <h5 className="text-md font-semibold mb-4">Прогнозы и тренды</h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">Прогноз на следующий месяц</div>
+                        <div className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                          {(() => {
+                            const daysInPeriod = generalReportData.dailyData.length;
+                            const avgDaily = generalReportData.averageDaily;
+                            const daysInMonth = 30;
+                            return (avgDaily * daysInMonth).toFixed(0);
+                          })()} BYN
+                        </div>
+                        <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                          Основано на текущем среднем
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">Тренд роста</div>
+                        <div className="text-xl font-bold text-green-900 dark:text-green-100">
+                          {(() => {
+                            const data = generalReportData.dailyData.filter(day => day.total > 0);
+                            if (data.length < 2) return '0%';
+                            const firstHalf = data.slice(0, Math.floor(data.length / 2));
+                            const secondHalf = data.slice(Math.floor(data.length / 2));
+                            const firstAvg = firstHalf.reduce((sum, day) => sum + day.total, 0) / firstHalf.length;
+                            const secondAvg = secondHalf.reduce((sum, day) => sum + day.total, 0) / secondHalf.length;
+                            const growth = firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg * 100) : 0;
+                            return (growth > 0 ? '+' : '') + growth.toFixed(1) + '%';
+                          })()}
+                        </div>
+                        <div className="text-xs text-green-700 dark:text-green-300 mt-1">
+                          Сравнение периодов
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-2">Оптимальная нагрузка</div>
+                        <div className="text-xl font-bold text-purple-900 dark:text-purple-100">
+                          {Math.round(generalReportData.maxDay.amount * 0.8).toFixed(0)} BYN
+                        </div>
+                        <div className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                          80% от максимума
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Детальная сегментация */}
+                  <div className="mt-6">
+                    <h5 className="text-md font-semibold mb-4">Детальная сегментация</h5>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Анализ по дням недели */}
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <h6 className="font-medium mb-3">Анализ по дням недели</h6>
+                        <div className="space-y-2">
+                          {(() => {
+                            const weekdayStats = generalReportData.dailyData.reduce((acc, day, index) => {
+                              const date = new Date(generalStartDate);
+                              date.setDate(date.getDate() + index);
+                              const dayOfWeek = date.getDay();
+                              const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+                              const dayName = dayNames[dayOfWeek];
+
+                              if (!acc[dayName]) {
+                                acc[dayName] = { total: 0, count: 0, cars: 0 };
+                              }
+                              acc[dayName].total += day.total;
+                              acc[dayName].cars += day.recordsCount;
+                              acc[dayName].count += 1;
+                              return acc;
+                            }, {});
+
+                            return Object.entries(weekdayStats)
+                              .sort(([, a], [, b]) => b.total / b.count - a.total / a.count)
+                              .map(([day, stats]) => (
+                                <div key={day} className="flex justify-between items-center p-2 rounded bg-muted/30">
+                                  <span className="text-sm font-medium">{day}</span>
+                                  <div className="text-right">
+                                    <div className="text-sm font-bold">
+                                      {stats.count > 0 ? (stats.total / stats.count).toFixed(0) : 0} BYN
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {stats.count > 0 ? Math.round(stats.cars / stats.count) : 0} авто
+                                    </div>
+                                  </div>
+                                </div>
+                              ));
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Качество обслуживания */}
+                      <div className="bg-card border border-border rounded-lg p-4">
+                        <h6 className="font-medium mb-3">Качество обслуживания</h6>
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Загруженность мойки</span>
+                            <span className="text-sm font-bold">
+                              {(() => {
+                                const maxCarsPerDay = Math.max(...generalReportData.dailyData.map(day => day.recordsCount));
+                                const avgCarsPerDay = generalReportData.dailyData.reduce((sum, day) => sum + day.recordsCount, 0) / generalReportData.dailyData.length;
+                                return maxCarsPerDay > 0 ? Math.round((avgCarsPerDay / maxCarsPerDay) * 100) + '%' : '0%';
+                              })()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Пиковые дни</span>
+                            <span className="text-sm font-bold">
+                              {generalReportData.dailyData.filter(day =>
+                                day.recordsCount > generalReportData.dailyData.reduce((sum, d) => sum + d.recordsCount, 0) / generalReportData.dailyData.length * 1.5
+                              ).length}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Стабильность потока</span>
+                            <span className="text-sm font-bold">
+                              {(() => {
+                                const workingDays = generalReportData.dailyData.filter(day => day.recordsCount > 0);
+                                if (workingDays.length === 0) return '0%';
+                                const avgCars = workingDays.reduce((sum, day) => sum + day.recordsCount, 0) / workingDays.length;
+                                const variance = workingDays.reduce((sum, day) => sum + Math.pow(day.recordsCount - avgCars, 2), 0) / workingDays.length;
+                                const stability = avgCars > 0 ? Math.max(0, 100 - (Math.sqrt(variance) / avgCars * 100)) : 0;
+                                return Math.round(stability) + '%';
+                              })()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Интерактивные графики */}
@@ -1672,10 +1853,10 @@ const ReportsPage: React.FC = () => {
                   {/* График выручки по дням */}
                   <div>
                     <h4 className="text-lg font-semibold mb-4 flex items-center">
-                      📈 Динамика выручки
+                      Динамика выручки
                     </h4>
-                    <div className="bg-card border border-border rounded-lg p-4">
-                      <ResponsiveContainer width="100%" height={350}>
+                    <div className="bg-card border border-border rounded-lg p-2 sm:p-4 overflow-hidden">
+                      <ResponsiveContainer width="100%" height={300} className="sm:h-[350px]">
                         <LineChart data={generalReportData.dailyData}>
                           <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                           <XAxis
@@ -1745,10 +1926,10 @@ const ReportsPage: React.FC = () => {
                   {/* Комбинированный график: выручка и количество авто */}
                   <div>
                     <h4 className="text-lg font-semibold mb-4 flex items-center">
-                      🚗 Выручка vs Количество автомобилей
+                      Выручка vs Количество автомобилей
                     </h4>
-                    <div className="bg-card border border-border rounded-lg p-4">
-                      <ResponsiveContainer width="100%" height={300}>
+                    <div className="bg-card border border-border rounded-lg p-2 sm:p-4 overflow-hidden">
+                      <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                         <BarChart data={generalReportData.dailyData}>
                           <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                           <XAxis
@@ -1797,7 +1978,7 @@ const ReportsPage: React.FC = () => {
                   {/* Структура оплат - круговая диаграмма */}
                   <div>
                     <h4 className="text-lg font-semibold mb-4 flex items-center">
-                      💳 Структура платежей
+                      Структура платежей
                     </h4>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div className="bg-card border border-border rounded-lg p-4">
@@ -1878,7 +2059,7 @@ const ReportsPage: React.FC = () => {
                 {generalReportData.organizationBreakdown.length > 0 && (
                   <div>
                     <h4 className="text-lg font-semibold mb-4 flex items-center">
-                      🏢 Анализ по организациям
+                      Анализ по организациям
                     </h4>
 
                     {/* Краткая сводка */}
@@ -1908,7 +2089,7 @@ const ReportsPage: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       {/* Топ организации */}
                       <div>
-                        <h5 className="font-medium mb-3">🏆 Топ-5 организаций</h5>
+                        <h5 className="font-medium mb-3">Топ-5 организаций</h5>
                         <div className="space-y-2">
                           {generalReportData.organizationBreakdown
                             .sort((a, b) => b.amount - a.amount)
@@ -1963,7 +2144,7 @@ const ReportsPage: React.FC = () => {
 
                       {/* Полная таблица для остальных */}
                       <div>
-                        <h5 className="font-medium mb-3">📊 Все организации</h5>
+                        <h5 className="font-medium mb-3">Все организации</h5>
                         <div className="bg-card border border-border rounded-lg overflow-hidden">
                           <div className="max-h-96 overflow-y-auto">
                             <table className="w-full">
@@ -1981,8 +2162,8 @@ const ReportsPage: React.FC = () => {
                                   <tr key={index} className="border-b border-border hover:bg-muted/30 transition-colors">
                                     <td className="py-3 px-4 text-sm font-medium">
                                       {index < 3 && (
-                                        <span className="mr-2">
-                                          {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                        <span className="mr-2 font-bold text-primary">
+                                          #{index + 1}
                                         </span>
                                       )}
                                       {org.name}

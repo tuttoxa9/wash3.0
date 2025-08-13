@@ -1151,4 +1151,47 @@ h1, h2, h3, h4, h5, h6 {
   .mobile-header {
     padding-top: env(safe-area-inset-top);
   }
+
+  /* Исправление проблем с скроллингом на мобильных */
+  .space-y-5 {
+    @apply pb-16; /* Дополнительный отступ внизу */
+  }
+
+  /* Улучшение отчётов на мобильных */
+  .reports-page-mobile {
+    @apply min-h-screen pb-20;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Адаптивные графики */
+  .recharts-responsive-container {
+    @apply min-w-0 !important;
+  }
+
+  /* Адаптивные карточки отчётов */
+  .report-card-mobile {
+    @apply p-2 rounded-lg shadow-sm border bg-card mb-4;
+    min-height: auto;
+  }
+
+  /* Горизонтальный скролл для широких таблиц */
+  .mobile-scroll-table {
+    @apply overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .mobile-scroll-table::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .mobile-scroll-table::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  .mobile-scroll-table::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 2px;
+  }
 }
