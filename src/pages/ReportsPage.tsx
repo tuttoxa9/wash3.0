@@ -1185,7 +1185,7 @@ const ReportsPage: React.FC = () => {
 
               {/* Мобильная версия таблицы - оптимизированная */}
               <div className="sm:hidden overflow-x-auto">
-                <div className="min-w-full" style={{ display: 'grid', gridTemplateColumns: '1fr 50px 50px 50px 50px 50px' }}>
+                <div className="min-w-full" style={{ display: 'grid', gridTemplateColumns: '1fr 55px 55px 55px 55px 55px' }}>
                   <div className="bg-muted/50 px-2 py-2 border-b text-xs font-medium text-left">Сотрудник</div>
                   <div className="bg-muted/50 px-1 py-2 border-b text-xs font-medium text-right">Нал</div>
                   <div className="bg-muted/50 px-1 py-2 border-b text-xs font-medium text-right">Карт</div>
