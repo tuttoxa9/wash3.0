@@ -14,6 +14,7 @@ import EmployeeRecordsModal from '@/components/EmployeeRecordsModal';
 import { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, TextRun, AlignmentType, BorderStyle } from 'docx';
 import { Packer } from 'docx';
 import { saveAs } from 'file-saver';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
 type PeriodType = 'day' | 'week' | 'month' | 'custom';
 
@@ -53,6 +54,10 @@ const ReportsPage: React.FC = () => {
     totalRevenue: number;
     totalSalaries: number;
     organizationBreakdown: { name: string; amount: number }[];
+    dailyData: { date: string; cash: number; card: number; organizations: number; total: number; recordsCount: number }[];
+    averageDaily: number;
+    maxDay: { date: string; amount: number };
+    minDay: { date: string; amount: number };
   } | null>(null);
 
   // Modal state
@@ -541,19 +546,35 @@ const ReportsPage: React.FC = () => {
         rolesMap[date] = roles;
       });
 
-      // Подсчитываем итоги
+      // Подсчитываем итоги и данные по дням
       let totalCash = 0;
       let totalCard = 0;
       let totalOrganizations = 0;
       const organizationBreakdown: Record<string, number> = {};
+      const dailyBreakdown: Record<string, { cash: number; card: number; organizations: number; recordsCount: number }> = {};
+
+      // Инициализируем данные для каждого дня
+      dateRange.forEach(date => {
+        dailyBreakdown[date] = { cash: 0, card: 0, organizations: 0, recordsCount: 0 };
+      });
 
       allRecords.forEach(record => {
+        const recordDate = record.date;
+        if (!dailyBreakdown[recordDate]) {
+          dailyBreakdown[recordDate] = { cash: 0, card: 0, organizations: 0, recordsCount: 0 };
+        }
+
+        dailyBreakdown[recordDate].recordsCount++;
+
         if (record.paymentMethod.type === 'cash') {
           totalCash += record.price;
+          dailyBreakdown[recordDate].cash += record.price;
         } else if (record.paymentMethod.type === 'card') {
           totalCard += record.price;
+          dailyBreakdown[recordDate].card += record.price;
         } else if (record.paymentMethod.type === 'organization') {
           totalOrganizations += record.price;
+          dailyBreakdown[recordDate].organizations += record.price;
           const orgName = record.paymentMethod.organizationName ||
                           state.organizations.find(org => org.id === record.paymentMethod.organizationId)?.name ||
                           'Неизвестная организация';
@@ -562,6 +583,25 @@ const ReportsPage: React.FC = () => {
       });
 
       const totalRevenue = totalCash + totalCard + totalOrganizations;
+
+      // Подготавливаем данные для графика
+      const dailyData = dateRange.map(date => {
+        const dayData = dailyBreakdown[date] || { cash: 0, card: 0, organizations: 0, recordsCount: 0 };
+        const total = dayData.cash + dayData.card + dayData.organizations;
+        return {
+          date: format(parseISO(date), 'dd.MM'),
+          cash: dayData.cash,
+          card: dayData.card,
+          organizations: dayData.organizations,
+          total,
+          recordsCount: dayData.recordsCount
+        };
+      });
+
+      // Вычисляем статистику
+      const averageDaily = dailyData.length > 0 ? totalRevenue / dailyData.length : 0;
+      const maxDay = dailyData.reduce((max, day) => day.total > max.amount ? { date: day.date, amount: day.total } : max, { date: '', amount: 0 });
+      const minDay = dailyData.reduce((min, day) => day.total < min.amount || min.amount === 0 ? { date: day.date, amount: day.total } : min, { date: '', amount: Number.MAX_VALUE });
 
       // Подсчитываем общую зарплату
       let totalSalaries = 0;
@@ -633,7 +673,11 @@ const ReportsPage: React.FC = () => {
         totalOrganizations,
         totalRevenue,
         totalSalaries,
-        organizationBreakdown: Object.entries(organizationBreakdown).map(([name, amount]) => ({ name, amount }))
+        organizationBreakdown: Object.entries(organizationBreakdown).map(([name, amount]) => ({ name, amount })),
+        dailyData,
+        averageDaily,
+        maxDay,
+        minDay: minDay.amount === Number.MAX_VALUE ? { date: '', amount: 0 } : minDay
       });
 
     } catch (error) {
@@ -1137,85 +1181,77 @@ const ReportsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Мобильная версия таблицы - компактная */}
-              <div className="sm:hidden space-y-2 p-2">
-                {earningsReport.map(report => {
-                  const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
+              {/* Мобильная версия таблицы - оптимизированная */}
+              <div className="sm:hidden">
+                <div className="grid grid-cols-6 bg-muted/50 px-2 py-2 border-b text-xs">
+                  <div className="font-medium">Сотрудник</div>
+                  <div className="font-medium text-right">Нал</div>
+                  <div className="font-medium text-right">Карт</div>
+                  <div className="font-medium text-right">Безн</div>
+                  <div className="font-medium text-right">Всего</div>
+                  <div className="font-medium text-right">ЗП</div>
+                </div>
+                <div className="divide-y">
+                  {earningsReport.map(report => {
+                    const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
 
-                  // Рассчитываем зарплату сотрудника с учетом роли
-                  const reportDate = startDate.toISOString().split('T')[0];
-                  let employeeRole: 'admin' | 'washer' = 'washer';
+                    // Рассчитываем зарплату сотрудника с учетом роли
+                    const reportDate = startDate.toISOString().split('T')[0];
+                    let employeeRole: 'admin' | 'washer' = 'washer';
 
-                  if (dailyRoles[reportDate]) {
-                    employeeRole = dailyRoles[reportDate][report.employeeId] as 'admin' | 'washer' || 'washer';
-                  }
-
-                  // Всегда используем выбранный метод (минималка + %)
-                  const methodToUse = state.salaryCalculationMethod;
-
-                  // Используем уже рассчитанное значение calculatedEarnings из useEffect
-                  let perEmployee = report.calculatedEarnings;
-
-                  const handleEmployeeClick = () => {
-                    const employee = state.employees.find(e => e.id === report.employeeId);
-                    if (employee) {
-                      // Фильтруем записи для этого сотрудника и сортируем по времени
-                      const employeeRecords = records
-                        .filter(record => record.employeeIds.includes(report.employeeId))
-                        .sort((a, b) => {
-                          // Сначала сортируем по дате
-                          const dateCompare = a.date.localeCompare(b.date);
-                          if (dateCompare !== 0) return dateCompare;
-
-                          // Затем по времени
-                          if (!a.time || !b.time) return 0;
-                          return a.time.localeCompare(b.time);
-                        });
-                      setSelectedEmployeeForModal(employee);
-                      setIsModalOpen(true);
+                    if (dailyRoles[reportDate]) {
+                      employeeRole = dailyRoles[reportDate][report.employeeId] as 'admin' | 'washer' || 'washer';
                     }
-                  };
 
-                  return (
-                    <div
-                      key={report.employeeId}
-                      className="bg-card border border-border rounded-lg p-3 cursor-pointer hover:bg-muted/30 transition-colors"
-                      onClick={handleEmployeeClick}
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="font-medium text-primary text-sm truncate pr-2">{report.employeeName}</h3>
-                        <div className="text-right">
-                          <div className="text-base font-bold">{perEmployee.toFixed(2)}</div>
-                          <div className="text-xs text-muted-foreground">ЗП</div>
-                        </div>
-                      </div>
+                    // Всегда используем выбранный метод (минималка + %)
+                    const methodToUse = state.salaryCalculationMethod;
 
-                      <div className="grid grid-cols-4 gap-2 text-xs">
-                        <div className="text-center p-1.5 bg-muted/20 rounded">
-                          <div className="font-medium">{report.totalCash.toFixed(0)}</div>
-                          <div className="text-xs text-muted-foreground">Нал</div>
+                    // Используем уже рассчитанное значение calculatedEarnings из useEffect
+                    let perEmployee = report.calculatedEarnings;
+
+                    const handleEmployeeClick = () => {
+                      const employee = state.employees.find(e => e.id === report.employeeId);
+                      if (employee) {
+                        // Фильтруем записи для этого сотрудника и сортируем по времени
+                        const employeeRecords = records
+                          .filter(record => record.employeeIds.includes(report.employeeId))
+                          .sort((a, b) => {
+                            // Сначала сортируем по дате
+                            const dateCompare = a.date.localeCompare(b.date);
+                            if (dateCompare !== 0) return dateCompare;
+
+                            // Затем по времени
+                            if (!a.time || !b.time) return 0;
+                            return a.time.localeCompare(b.time);
+                          });
+                        setSelectedEmployeeForModal(employee);
+                        setIsModalOpen(true);
+                      }
+                    };
+
+                    return (
+                      <div
+                        key={report.employeeId}
+                        className="grid grid-cols-6 px-2 py-2 hover:bg-muted/30 cursor-pointer transition-colors text-xs"
+                        onClick={handleEmployeeClick}
+                      >
+                        <div className="text-primary hover:text-primary/80 font-medium truncate" title={report.employeeName}>
+                          {report.employeeName.length > 8 ? report.employeeName.substring(0, 8) + '...' : report.employeeName}
                         </div>
-                        <div className="text-center p-1.5 bg-muted/20 rounded">
-                          <div className="font-medium">{report.totalNonCash.toFixed(0)}</div>
-                          <div className="text-xs text-muted-foreground">Карт</div>
-                        </div>
-                        <div className="text-center p-1.5 bg-muted/20 rounded">
-                          <div className="font-medium">{report.totalOrganizations.toFixed(0)}</div>
-                          <div className="text-xs text-muted-foreground">Безн</div>
-                        </div>
-                        <div className="text-center p-1.5 bg-primary/10 rounded">
-                          <div className="font-medium text-primary">{totalRevenueEmp.toFixed(0)}</div>
-                          <div className="text-xs text-muted-foreground">Итог</div>
-                        </div>
+                        <div className="text-right">{report.totalCash.toFixed(0)}</div>
+                        <div className="text-right">{report.totalNonCash.toFixed(0)}</div>
+                        <div className="text-right">{report.totalOrganizations.toFixed(0)}</div>
+                        <div className="text-right">{totalRevenueEmp.toFixed(0)}</div>
+                        <div className="text-right font-medium">{perEmployee.toFixed(0)}</div>
                       </div>
+                    );
+                  })}
+                  {earningsReport.length === 0 && (
+                    <div className="px-2 py-4 text-center text-muted-foreground text-xs">
+                      Нет данных для выбранного периода и фильтра
                     </div>
-                  );
-                })}
-                {earningsReport.length === 0 && (
-                  <div className="py-6 text-center text-muted-foreground text-xs">
-                    Нет данных для выбранного периода и фильтра
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1344,7 +1380,7 @@ const ReportsPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Зарплаты */}
+                {/* Зарплаты и прибыль */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
                     <div className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-1">Итого зарплаты</div>
@@ -1358,6 +1394,127 @@ const ReportsPage: React.FC = () => {
                     <div className="text-2xl font-bold text-red-900 dark:text-red-100">
                       {(generalReportData.totalRevenue - generalReportData.totalSalaries).toFixed(2)} BYN
                     </div>
+                  </div>
+                </div>
+
+                {/* Аналитика */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                    <div className="text-sm font-medium text-yellow-600 dark:text-yellow-400 mb-1">Средняя выручка/день</div>
+                    <div className="text-lg font-bold text-yellow-900 dark:text-yellow-100">
+                      {generalReportData.averageDaily.toFixed(2)} BYN
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg">
+                    <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">Лучший день</div>
+                    <div className="text-lg font-bold text-emerald-900 dark:text-emerald-100">
+                      {generalReportData.maxDay.amount.toFixed(2)} BYN
+                    </div>
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400">
+                      {generalReportData.maxDay.date}
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 dark:bg-slate-900/20 p-4 rounded-lg">
+                    <div className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Минимальный день</div>
+                    <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                      {generalReportData.minDay.amount.toFixed(2)} BYN
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                      {generalReportData.minDay.date}
+                    </div>
+                  </div>
+                </div>
+
+                {/* График выручки по дням */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold mb-4">График выручки по дням</h4>
+                  <div className="bg-card border border-border rounded-lg p-4">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={generalReportData.dailyData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="date"
+                          fontSize={12}
+                          angle={-45}
+                          textAnchor="end"
+                          height={60}
+                        />
+                        <YAxis fontSize={12} />
+                        <Tooltip
+                          formatter={(value: number, name: string) => [
+                            `${value.toFixed(2)} BYN`,
+                            name === 'total' ? 'Общая выручка' :
+                            name === 'cash' ? 'Наличные' :
+                            name === 'card' ? 'Карта' : 'Безнал'
+                          ]}
+                          labelFormatter={(label) => `Дата: ${label}`}
+                        />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="total"
+                          stroke="#8884d8"
+                          strokeWidth={3}
+                          name="Общая выручка"
+                          dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="cash"
+                          stroke="#82ca9d"
+                          strokeWidth={2}
+                          name="Наличные"
+                          dot={{ fill: '#82ca9d', strokeWidth: 2, r: 3 }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="card"
+                          stroke="#ffc658"
+                          strokeWidth={2}
+                          name="Карта"
+                          dot={{ fill: '#ffc658', strokeWidth: 2, r: 3 }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="organizations"
+                          stroke="#ff7300"
+                          strokeWidth={2}
+                          name="Безнал"
+                          dot={{ fill: '#ff7300', strokeWidth: 2, r: 3 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Столбчатая диаграмма количества записей */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold mb-4">Количество обслуженных автомобилей по дням</h4>
+                  <div className="bg-card border border-border rounded-lg p-4">
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={generalReportData.dailyData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="date"
+                          fontSize={12}
+                          angle={-45}
+                          textAnchor="end"
+                          height={60}
+                        />
+                        <YAxis fontSize={12} />
+                        <Tooltip
+                          formatter={(value: number) => [`${value} авто`, 'Количество']}
+                          labelFormatter={(label) => `Дата: ${label}`}
+                        />
+                        <Bar
+                          dataKey="recordsCount"
+                          fill="#8884d8"
+                          name="Количество автомобилей"
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
 
