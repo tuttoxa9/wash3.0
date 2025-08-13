@@ -893,19 +893,21 @@ const ReportsPage: React.FC = () => {
       <h2 className="text-xl sm:text-2xl font-semibold border-b pb-3">Отчеты</h2>
 
       <Tabs defaultValue="employee-earnings" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="employee-earnings" className="flex items-center gap-2">
-            Расчет ЗП
-          </TabsTrigger>
-          <TabsTrigger value="organizations" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Отчеты по организациям
-          </TabsTrigger>
-          <TabsTrigger value="general-revenue" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Общий отчёт по выручке
-          </TabsTrigger>
-        </TabsList>
+        <div className="mb-4 overflow-x-auto">
+          <TabsList className="flex w-max min-w-full">
+            <TabsTrigger value="employee-earnings" className="flex items-center gap-2 whitespace-nowrap">
+              Расчет ЗП
+            </TabsTrigger>
+            <TabsTrigger value="organizations" className="flex items-center gap-2 whitespace-nowrap">
+              <Building className="h-4 w-4" />
+              Отчеты по организациям
+            </TabsTrigger>
+            <TabsTrigger value="general-revenue" className="flex items-center gap-2 whitespace-nowrap">
+              <TrendingUp className="h-4 w-4" />
+              Общий отчёт по выручке
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="employee-earnings" className="space-y-5">
           <div className="card-with-shadow p-4">
