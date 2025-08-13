@@ -150,6 +150,20 @@ const ReportsPage: React.FC = () => {
 
         setRecords(allRecords);
         setDailyRoles(rolesMap);
+
+        // Отладка: посмотрим что загрузилось
+        console.log('=== ОТЛАДКА ЗАГРУЗКИ РОЛЕЙ ===');
+        console.log('rolesMap:', rolesMap);
+        dateRange.forEach(date => {
+          const roles = rolesMap[date];
+          if (roles) {
+            Object.keys(roles).forEach(key => {
+              if (key.startsWith('min_')) {
+                console.log(`Дата ${date}, флаг минималки ${key}: ${roles[key]}`);
+              }
+            });
+          }
+        });
       } catch (error) {
         console.error('Error loading records:', error);
         toast.error('Ошибка при загрузке данных');
@@ -412,9 +426,9 @@ const ReportsPage: React.FC = () => {
           const dayRoles = dailyRoles[reportDateStr] || {};
           console.log('dayRoles для даты', reportDateStr, ':', dayRoles);
 
-          // Инициализируем всех сотрудников из записей со значением по умолчанию (минималка включена)
+          // Инициализируем всех сотрудников из записей со значением по умолчанию (минималка отключена)
           allEmployeeIdsFromRecords.forEach(empId => {
-            minimumOverride[empId] = true; // по умолчанию минималка включена
+            minimumOverride[empId] = false; // по умолчанию минималка отключена, включается только явно
           });
 
           // Затем обновляем для тех, у кого есть явная настройка в ролях
@@ -441,10 +455,10 @@ const ReportsPage: React.FC = () => {
           allEmployeeIdsFromRecords.forEach(id => allEmployeeIds.add(id));
 
           allEmployeeIds.forEach(empId => {
-            let respect = true;
+            let respect = false; // по умолчанию отключена
             Object.keys(dailyRoles).forEach(date => {
               const val = (dailyRoles[date] as any)?.[`min_${empId}`];
-              if (val !== true) respect = false;
+              if (val === true) respect = true; // включается если хоть в одном дне включена
             });
             minimumOverride[empId] = respect;
           });
@@ -720,10 +734,10 @@ const ReportsPage: React.FC = () => {
         });
 
         allEmployeeIds.forEach(empId => {
-          let respect = true; // по умолчанию минималка включена
+          let respect = false; // по умолчанию минималка отключена
           Object.keys(rolesMap).forEach(date => {
             const val = (rolesMap[date] as any)?.[`min_${empId}`];
-            if (val !== true) respect = false; // если хоть в одном дне отключена (false или undefined)
+            if (val === true) respect = true; // если хоть в одном дне включена
           });
           minimumOverride[empId] = respect;
         });

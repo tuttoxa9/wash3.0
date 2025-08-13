@@ -46,6 +46,8 @@ export class SalaryCalculator {
 
   // Основной метод для расчёта зарплат всех сотрудников
   calculateSalaries(): SalaryCalculationResult[] {
+    console.log('=== ОТЛАДКА SALARY CALCULATOR ===');
+    console.log('minimumOverride карта:', this.minimumOverride);
     const results: SalaryCalculationResult[] = [];
 
     // Получаем всех участников (из ролей и из записей)
@@ -122,7 +124,7 @@ export class SalaryCalculator {
     const totalPercentageEarnings = baseCashBonus + washBonus + drycleanBonus;
 
     // 5. Итоговая сумма (не меньше минималки)
-    const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
+    const respectMinimum = this.minimumOverride[employeeId] === true; // минималка только если явно включена
     const finalAmount = respectMinimum
       ? Math.max(totalPercentageEarnings, this.settings.minimumPaymentAdmin)
       : totalPercentageEarnings;
@@ -161,7 +163,7 @@ export class SalaryCalculator {
     const percentageEarnings = washEarnings + drycleanEarnings;
 
     // 4. Итоговая сумма (не меньше минималки)
-    const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
+    const respectMinimum = this.minimumOverride[employeeId] === true; // минималка только если явно включена
     const finalAmount = respectMinimum
       ? Math.max(percentageEarnings, this.settings.minimumPaymentWasher)
       : percentageEarnings;

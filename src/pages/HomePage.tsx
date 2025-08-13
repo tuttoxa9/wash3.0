@@ -238,6 +238,16 @@ const HomePage: React.FC = () => {
     try {
       setLoading(prev => ({ ...prev, savingShift: true }));
 
+      // Отладка: посмотрим что сохраняем
+      console.log('=== ОТЛАДКА СОХРАНЕНИЯ РОЛЕЙ ===');
+      console.log('selectedDate:', selectedDate);
+      console.log('employeeRoles перед сохранением:', employeeRoles);
+      Object.keys(employeeRoles).forEach(key => {
+        if (key.startsWith('min_')) {
+          console.log(`Флаг минималки ${key}: ${employeeRoles[key]}`);
+        }
+      });
+
       // Сохраняем ежедневные роли в базе данных
       const success = await dailyRolesService.saveDailyRoles(selectedDate, employeeRoles);
       if (!success) {
