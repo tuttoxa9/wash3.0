@@ -2735,49 +2735,49 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             </table>
           </div>
 
-          {/* Мобильная версия таблицы */}
-          <div className="sm:hidden max-h-[70vh] overflow-y-auto p-4 space-y-3">
+          {/* Мобильная версия таблицы - компактная */}
+          <div className="sm:hidden max-h-[70vh] overflow-y-auto p-2 space-y-2">
             {filteredRecords.length > 0 ? (
               filteredRecords.map((record, index) => {
                 const isEditing = editingRecordId === record.id;
 
                 if (isEditing && editFormData) {
-                  // Режим редактирования для мобильных
+                  // Режим редактирования для мобильных - компактный
                   return (
-                    <div key={record.id} className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 space-y-3">
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="font-medium text-sm">Редактирование записи #{index + 1}</span>
-                        <div className="flex gap-2">
+                    <div key={record.id} className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3 space-y-2">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium text-xs">Ред. #{index + 1}</span>
+                        <div className="flex gap-1">
                           <button
                             onClick={saveRecordChanges}
-                            className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
+                            className="p-1.5 rounded-md bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
                             title="Сохранить"
                           >
-                            <Check className="w-4 h-4" />
+                            <Check className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={cancelEditing}
-                            className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                            className="p-1.5 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                             title="Отмена"
                           >
-                            <X className="w-4 h-4" />
+                            <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <label className="block text-xs font-medium mb-1">Время</label>
+                          <label className="block font-medium mb-0.5">Время</label>
                           <input
                             type="time"
                             name="time"
                             value={editFormData.time || ''}
                             onChange={handleEditFormChange}
-                            className="w-full px-2 py-1 border border-input rounded text-sm"
+                            className="w-full px-2 py-1 border border-input rounded text-xs"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium mb-1">Стоимость</label>
+                          <label className="block font-medium mb-0.5">Цена</label>
                           <input
                             type="number"
                             name="price"
@@ -2785,101 +2785,79 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                             onChange={handleEditFormChange}
                             step="0.01"
                             min="0"
-                            className="w-full px-2 py-1 border border-input rounded text-sm"
+                            className="w-full px-2 py-1 border border-input rounded text-xs"
                           />
                         </div>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-medium mb-1">Авто</label>
+                      <div className="text-xs">
+                        <label className="block font-medium mb-0.5">Авто</label>
                         <input
                           type="text"
                           name="carInfo"
                           value={editFormData.carInfo || ''}
                           onChange={handleEditFormChange}
-                          className="w-full px-2 py-1 border border-input rounded text-sm"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium mb-1">Услуга</label>
-                        <input
-                          type="text"
-                          name="service"
-                          value={editFormData.service || ''}
-                          onChange={handleEditFormChange}
-                          className="w-full px-2 py-1 border border-input rounded text-sm"
+                          className="w-full px-2 py-1 border border-input rounded text-xs"
                         />
                       </div>
                     </div>
                   );
                 }
 
-                // Обычный режим просмотра для мобильных
+                // Компактный режим просмотра для мобильных
                 return (
-                  <div key={record.id} className="border border-border rounded-lg p-4 hover:bg-muted/20 transition-colors">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-muted-foreground">#{index + 1}</span>
-                        <span className="text-sm font-medium">{record.time}</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                  <div key={record.id} className="border border-border rounded-lg p-2.5 hover:bg-muted/20 transition-colors">
+                    <div className="flex justify-between items-start mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <span className="text-xs font-medium text-muted-foreground shrink-0">#{index + 1}</span>
+                        <span className="text-sm font-medium shrink-0">{record.time}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-xs font-medium shrink-0 ${
                           record.serviceType === 'dryclean'
-                            ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                            : 'bg-blue-100 text-blue-700 border border-blue-200'
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-blue-100 text-blue-700'
                         }`}>
-                          {record.serviceType === 'dryclean' ? 'Хим' : 'Мойка'}
+                          {record.serviceType === 'dryclean' ? 'Х' : 'М'}
                         </span>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-base">{record.price.toFixed(2)} BYN</div>
+                        <div className="font-bold text-sm">{record.price.toFixed(2)}</div>
+                        <div className="text-xs text-muted-foreground">BYN</div>
                       </div>
                     </div>
 
-                    <div className="space-y-2 mb-3">
-                      <div>
-                        <span className="text-xs text-muted-foreground">Авто: </span>
-                        <span className="text-sm font-medium">{record.carInfo}</span>
+                    <div className="space-y-1">
+                      <div className="text-xs">
+                        <span className="font-medium">{record.carInfo}</span>
+                        <span className="text-muted-foreground"> • </span>
+                        <span className="text-muted-foreground">{record.service}</span>
                       </div>
-                      <div>
-                        <span className="text-xs text-muted-foreground">Услуга: </span>
-                        <span className="text-sm">{record.service}</span>
-                      </div>
-                      <div>
-                        <span className="text-xs text-muted-foreground">Оплата: </span>
-                        <span className="text-sm">{getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}</span>
-                      </div>
-                      <div>
-                        <span className="text-xs text-muted-foreground">Сотрудники: </span>
-                        <span className="text-sm">
-                          {record.employeeIds
-                            .map(id => employees.find(emp => emp.id === id)?.name)
-                            .filter(Boolean)
-                            .join(', ')}
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-muted-foreground truncate">
+                          {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
                         </span>
+                        <div className="flex gap-1 ml-2">
+                          <button
+                            onClick={() => startEditing(record)}
+                            className="p-1 rounded hover:bg-secondary/50 transition-colors"
+                            title="Редактировать"
+                          >
+                            <Edit className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => deleteRecord(record.id)}
+                            className="p-1 rounded hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 transition-colors"
+                            title="Удалить"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-2 border-t border-border/30">
-                      <button
-                        onClick={() => startEditing(record)}
-                        className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-                        title="Редактировать"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => deleteRecord(record.id)}
-                        className="p-2 rounded-lg hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 transition-colors"
-                        title="Удалить"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
                     </div>
                   </div>
                 );
               })
             ) : (
-              <div className="py-12 text-center text-muted-foreground">
+              <div className="py-8 text-center text-muted-foreground text-xs">
                 {paymentFilter === 'all'
                   ? 'За выбранную дату нет записей.'
                   : `Нет записей с выбранным методом оплаты.`

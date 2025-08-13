@@ -1137,8 +1137,8 @@ const ReportsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Мобильная версия таблицы */}
-              <div className="sm:hidden space-y-3 p-4">
+              {/* Мобильная версия таблицы - компактная */}
+              <div className="sm:hidden space-y-2 p-2">
                 {earningsReport.map(report => {
                   const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
 
@@ -1179,43 +1179,40 @@ const ReportsPage: React.FC = () => {
                   return (
                     <div
                       key={report.employeeId}
-                      className="bg-card border border-border rounded-lg p-4 cursor-pointer hover:bg-muted/30 transition-colors"
+                      className="bg-card border border-border rounded-lg p-3 cursor-pointer hover:bg-muted/30 transition-colors"
                       onClick={handleEmployeeClick}
                     >
-                      <div className="flex justify-between items-center mb-3">
-                        <h3 className="font-medium text-primary text-base">{report.employeeName}</h3>
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-medium text-primary text-sm truncate pr-2">{report.employeeName}</h3>
                         <div className="text-right">
-                          <div className="text-lg font-bold">{perEmployee.toFixed(2)} BYN</div>
-                          <div className="text-xs text-muted-foreground">Зарплата</div>
+                          <div className="text-base font-bold">{perEmployee.toFixed(2)}</div>
+                          <div className="text-xs text-muted-foreground">ЗП</div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div className="text-center p-2 bg-muted/20 rounded-md">
-                          <div className="font-medium">{report.totalCash.toFixed(2)}</div>
-                          <div className="text-xs text-muted-foreground">Наличные</div>
+                      <div className="grid grid-cols-4 gap-2 text-xs">
+                        <div className="text-center p-1.5 bg-muted/20 rounded">
+                          <div className="font-medium">{report.totalCash.toFixed(0)}</div>
+                          <div className="text-xs text-muted-foreground">Нал</div>
                         </div>
-                        <div className="text-center p-2 bg-muted/20 rounded-md">
-                          <div className="font-medium">{report.totalNonCash.toFixed(2)}</div>
-                          <div className="text-xs text-muted-foreground">Карта</div>
+                        <div className="text-center p-1.5 bg-muted/20 rounded">
+                          <div className="font-medium">{report.totalNonCash.toFixed(0)}</div>
+                          <div className="text-xs text-muted-foreground">Карт</div>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3 text-sm mt-2">
-                        <div className="text-center p-2 bg-muted/20 rounded-md">
-                          <div className="font-medium">{report.totalOrganizations.toFixed(2)}</div>
-                          <div className="text-xs text-muted-foreground">Безнал</div>
+                        <div className="text-center p-1.5 bg-muted/20 rounded">
+                          <div className="font-medium">{report.totalOrganizations.toFixed(0)}</div>
+                          <div className="text-xs text-muted-foreground">Безн</div>
                         </div>
-                        <div className="text-center p-2 bg-primary/10 rounded-md">
-                          <div className="font-medium text-primary">{totalRevenueEmp.toFixed(2)}</div>
-                          <div className="text-xs text-muted-foreground">Всего</div>
+                        <div className="text-center p-1.5 bg-primary/10 rounded">
+                          <div className="font-medium text-primary">{totalRevenueEmp.toFixed(0)}</div>
+                          <div className="text-xs text-muted-foreground">Итог</div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
                 {earningsReport.length === 0 && (
-                  <div className="py-8 text-center text-muted-foreground text-sm">
+                  <div className="py-6 text-center text-muted-foreground text-xs">
                     Нет данных для выбранного периода и фильтра
                   </div>
                 )}
@@ -1395,18 +1392,18 @@ const ReportsPage: React.FC = () => {
                       </table>
                     </div>
 
-                    {/* Мобильная версия */}
-                    <div className="sm:hidden space-y-3">
+                    {/* Мобильная версия - компактная */}
+                    <div className="sm:hidden space-y-2">
                       {generalReportData.organizationBreakdown
                         .sort((a, b) => b.amount - a.amount)
                         .map((org, index) => (
-                        <div key={index} className="bg-card border border-border rounded-lg p-4">
-                          <div className="flex justify-between items-center mb-2">
-                            <h5 className="font-medium text-sm truncate pr-2">{org.name}</h5>
+                        <div key={index} className="bg-card border border-border rounded-lg p-3">
+                          <div className="flex justify-between items-center">
+                            <h5 className="font-medium text-xs truncate pr-2 flex-1">{org.name}</h5>
                             <div className="text-right">
-                              <div className="font-bold text-base">{org.amount.toFixed(2)} BYN</div>
+                              <div className="font-bold text-sm">{org.amount.toFixed(2)}</div>
                               <div className="text-xs text-muted-foreground">
-                                {((org.amount / generalReportData.totalRevenue) * 100).toFixed(1)}% от общей выручки
+                                {((org.amount / generalReportData.totalRevenue) * 100).toFixed(1)}%
                               </div>
                             </div>
                           </div>
