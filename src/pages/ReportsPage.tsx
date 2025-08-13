@@ -423,7 +423,7 @@ const ReportsPage: React.FC = () => {
               const empId = key.substring(4); // убираем префикс 'min_'
               const val = dayRoles[key];
               console.log(`Флаг минималки для сотрудника ${empId}: ${val}`);
-              minimumOverride[empId] = val !== false; // false = отключена, всё остальное = включена
+              minimumOverride[empId] = val === true; // true = включена, false или undefined = отключена
             }
           });
         } else {
@@ -444,7 +444,7 @@ const ReportsPage: React.FC = () => {
             let respect = true;
             Object.keys(dailyRoles).forEach(date => {
               const val = (dailyRoles[date] as any)?.[`min_${empId}`];
-              if (val === false) respect = false;
+              if (val !== true) respect = false;
             });
             minimumOverride[empId] = respect;
           });
@@ -723,7 +723,7 @@ const ReportsPage: React.FC = () => {
           let respect = true; // по умолчанию минималка включена
           Object.keys(rolesMap).forEach(date => {
             const val = (rolesMap[date] as any)?.[`min_${empId}`];
-            if (val === false) respect = false; // если хоть в одном дне отключена
+            if (val !== true) respect = false; // если хоть в одном дне отключена (false или undefined)
           });
           minimumOverride[empId] = respect;
         });
