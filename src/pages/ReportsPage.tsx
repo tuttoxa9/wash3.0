@@ -276,40 +276,49 @@ const ReportsPage: React.FC = () => {
       }>();
 
       if (selectedEmployeeId) {
-        // Only specific employee
-        employeeMap.set(selectedEmployeeId, {
-          id: selectedEmployeeId,
-          name: state.employees.find(e => e.id === selectedEmployeeId)?.name || 'Неизвестный',
-          totalCash: 0,
-          totalNonCash: 0,
-          totalOrganizations: 0,
-          recordsCount: 0
-        });
-      } else {
-        // All employees involved in the records
-        employeeIdsSet.forEach(empId => {
-          employeeMap.set(empId, {
-            id: empId,
-            name: state.employees.find(e => e.id === empId)?.name || 'Неизвестный',
+        // Only specific employee - проверяем что сотрудник существует
+        const selectedEmployee = state.employees.find(e => e.id === selectedEmployeeId);
+        if (selectedEmployee) {
+          employeeMap.set(selectedEmployeeId, {
+            id: selectedEmployeeId,
+            name: selectedEmployee.name,
             totalCash: 0,
             totalNonCash: 0,
             totalOrganizations: 0,
             recordsCount: 0
           });
+        }
+      } else {
+        // All employees involved in the records - только те, которые есть в списке сотрудников
+        employeeIdsSet.forEach(empId => {
+          const employee = state.employees.find(e => e.id === empId);
+          if (employee) {
+            employeeMap.set(empId, {
+              id: empId,
+              name: employee.name,
+              totalCash: 0,
+              totalNonCash: 0,
+              totalOrganizations: 0,
+              recordsCount: 0
+            });
+          }
         });
 
-        // Добавляем всех админов за период (даже если они не мыли машины)
+        // Добавляем всех админов за период (даже если они не мыли машины) - только если есть в списке сотрудников
         Object.entries(dailyRoles).forEach(([date, roles]) => {
           Object.entries(roles).forEach(([empId, role]) => {
             if (role === 'admin' && !employeeMap.has(empId)) {
-              employeeMap.set(empId, {
-                id: empId,
-                name: state.employees.find(e => e.id === empId)?.name || 'Неизвестный',
-                totalCash: 0,
-                totalNonCash: 0,
-                totalOrganizations: 0,
-                recordsCount: 0
-              });
+              const employee = state.employees.find(e => e.id === empId);
+              if (employee) {
+                employeeMap.set(empId, {
+                  id: empId,
+                  name: employee.name,
+                  totalCash: 0,
+                  totalNonCash: 0,
+                  totalOrganizations: 0,
+                  recordsCount: 0
+                });
+              }
             }
           });
         });
