@@ -1,15 +1,16 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
+import Dockbar from './Dockbar';
 import { Toaster, toast } from 'sonner';
 import NotificationPanel from '@/components/NotificationPanel';
 import { useNotifications } from '@/lib/context/NotificationContext';
 
 const Layout: React.FC = () => {
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { addNotification } = useNotifications();
+  const navigate = useNavigate();
 
   // Перехват всех toast сообщений
   useEffect(() => {
@@ -50,26 +51,23 @@ const Layout: React.FC = () => {
     };
   }, [addNotification]);
 
-  const toggleMobileSidebar = () => {
-    setIsMobileSidebarOpen(prev => !prev);
+  const handleMenuClick = () => {
+    navigate('/settings');
   };
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Боковая панель */}
-      <Sidebar
-        isMobileOpen={isMobileSidebarOpen}
-        toggleMobileSidebar={toggleMobileSidebar}
-      />
+      <Sidebar />
 
       {/* Основной контент */}
-      <main className="flex-1 overflow-auto mobile-main-content">
+      <main className="flex-1 overflow-auto mobile-main-content pb-16 md:pb-0">
         {/* Шапка для мобильных устройств */}
         <div className="md:hidden sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/20 mobile-header">
           <div className="flex items-center justify-between p-3 sm:p-4">
             <div className="flex items-center">
               <button
-                onClick={toggleMobileSidebar}
+                onClick={handleMenuClick}
                 className="mobile-button p-2 mr-2 rounded-xl hover:bg-secondary touch-manipulation active:scale-95 transition-transform"
                 aria-label="Открыть меню"
               >
@@ -95,6 +93,9 @@ const Layout: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Навигационная панель для мобильных устройств */}
+      <Dockbar />
 
       {/* Тостер для уведомлений - скрытые уведомления */}
       <Toaster
