@@ -1195,3 +1195,17 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 2px;
   }
 }
+
+/* Стили для мобильного док-бара */
+.sidebar-link-mobile {
+  @apply flex flex-col items-center justify-center text-foreground/70 transition-all touch-manipulation p-2 rounded-lg;
+  min-width: 60px;
+}
+
+.sidebar-link-mobile.active {
+  @apply text-primary bg-primary/10;
+}
+
+.sidebar-link-mobile:not(.active):hover {
+  @apply text-foreground bg-secondary;
+}

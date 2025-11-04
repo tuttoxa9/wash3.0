@@ -84,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
   return (
     <>
-      {/* Мобильная подложка (фон) */}
+      {/* Затемнение фона при открытом мобильном меню (старый вариант) */}
       {isMobileOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
@@ -94,63 +94,37 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
       {/* Сайдбар */}
       <aside
-        className={`sidebar fixed top-0 left-0 z-50 w-[85vw] max-w-[320px] sm:w-80 md:w-64 h-screen bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-3 sm:p-4 border-r border-border/40 shadow-xl transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:z-0 ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`
+          sidebar
+          fixed bottom-0 left-0 z-50 w-full h-auto p-2 border-t border-border/40
+          bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))]
+          shadow-t-lg transition-transform duration-300 ease-in-out
+          md:static md:top-0 md:w-64 md:h-screen md:p-3 sm:md:p-4 md:border-r md:border-t-0 md:shadow-xl
+          ${isMobileOpen ? 'translate-x-0' : 'md:-translate-x-full'}
+        `}
       >
-        <div className="flex flex-col h-full">
+        {/* Десктопная версия */}
+        <div className="hidden md:flex flex-col h-full">
           {/* Шапка сайдбара */}
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">Detail Lab</h1>
-            <button
-              onClick={toggleMobileSidebar}
-              className="mobile-button p-2 rounded-lg hover:bg-secondary md:hidden touch-manipulation active:scale-95 transition-transform"
-              aria-label="Закрыть меню"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
           {/* Навигация */}
           <nav className="flex-1 space-y-2">
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                `sidebar-link ${isActive ? 'active' : ''}`
-              }
-              end
-              onClick={toggleMobileSidebar}
-            >
+            <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} end>
               <Home className="w-5 h-5" />
               <span>Главная</span>
             </NavLink>
-            <NavLink
-              to="/records"
-              className={({ isActive }) =>
-                `sidebar-link ${isActive ? 'active' : ''}`
-              }
-              onClick={toggleMobileSidebar}
-            >
+            <NavLink to="/records" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
               <Clipboard className="w-5 h-5" />
               <span>Записи</span>
             </NavLink>
-            <NavLink
-              to="/reports"
-              className={({ isActive }) =>
-                `sidebar-link ${isActive ? 'active' : ''}`
-              }
-              onClick={toggleMobileSidebar}
-            >
+            <NavLink to="/reports" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
               <BarChart className="w-5 h-5" />
               <span>Отчеты</span>
             </NavLink>
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                `sidebar-link ${isActive ? 'active' : ''}`
-              }
-              onClick={toggleMobileSidebar}
-            >
+            <NavLink to="/settings" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
               <Settings className="w-5 h-5" />
               <span>Настройки</span>
             </NavLink>
@@ -158,10 +132,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
           {/* Кнопка установки PWA */}
           <div className="mt-auto mb-4">
-            <button
-              onClick={handleInstallPWA}
-              className="w-full flex items-center gap-3 p-3 rounded-xl install-pwa-btn"
-            >
+            <button onClick={handleInstallPWA} className="w-full flex items-center gap-3 p-3 rounded-xl install-pwa-btn">
               <Download className="w-5 h-5 text-primary" />
               <span className="text-sm font-medium text-primary">Установить приложение</span>
             </button>
@@ -173,33 +144,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             <div className="flex gap-2">
               <button
                 onClick={() => handleThemeChange('light')}
-                className={`p-2 rounded-lg transition-colors ${
-                  state.theme === 'light'
-                    ? 'bg-primary text-white'
-                    : ''
-                }`}
+                className={`p-2 rounded-lg transition-colors ${state.theme === 'light' ? 'bg-primary text-white' : ''}`}
                 aria-label="Светлая тема"
               >
                 <Sun className="w-5 h-5" />
               </button>
               <button
                 onClick={() => handleThemeChange('dark')}
-                className={`p-2 rounded-lg transition-colors ${
-                  state.theme === 'dark'
-                    ? 'bg-primary text-white'
-                    : ''
-                }`}
+                className={`p-2 rounded-lg transition-colors ${state.theme === 'dark' ? 'bg-primary text-white' : ''}`}
                 aria-label="Темная тема"
               >
                 <Moon className="w-5 h-5" />
               </button>
               <button
                 onClick={() => handleThemeChange('black')}
-                className={`p-2 rounded-lg transition-colors ${
-                  state.theme === 'black'
-                    ? 'bg-primary text-white'
-                    : ''
-                }`}
+                className={`p-2 rounded-lg transition-colors ${state.theme === 'black' ? 'bg-primary text-white' : ''}`}
                 aria-label="Черная тема"
               >
                 <span className="flex items-center justify-center w-5 h-5 font-bold">B</span>
@@ -213,7 +172,84 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             <p className="mt-1">0.9a</p>
           </div>
         </div>
+
+        {/* Мобильная версия (Док-бар) */}
+        <nav className="flex justify-around items-center md:hidden">
+            <NavLink to="/" className={({ isActive }) => `sidebar-link-mobile ${isActive ? 'active' : ''}`} end>
+              <Home className="w-5 h-5" />
+              <span className="text-xs mt-1">Главная</span>
+            </NavLink>
+            <NavLink to="/records" className={({ isActive }) => `sidebar-link-mobile ${isActive ? 'active' : ''}`}>
+              <Clipboard className="w-5 h-5" />
+              <span className="text-xs mt-1">Записи</span>
+            </NavLink>
+            <NavLink to="/reports" className={({ isActive }) => `sidebar-link-mobile ${isActive ? 'active' : ''}`}>
+              <BarChart className="w-5 h-5" />
+              <span className="text-xs mt-1">Отчеты</span>
+            </NavLink>
+            <NavLink to="/settings" className={({ isActive }) => `sidebar-link-mobile ${isActive ? 'active' : ''}`}>
+              <Settings className="w-5 h-5" />
+              <span className="text-xs mt-1">Настройки</span>
+            </NavLink>
+            <button onClick={toggleMobileSidebar} className="sidebar-link-mobile">
+              <X className="w-5 h-5" />
+              <span className="text-xs mt-1">Ещё</span>
+            </button>
+        </nav>
       </aside>
+
+      {/* Модальное окно для мобильных */}
+      <div className={`fixed inset-0 z-50 md:hidden transition-opacity duration-300 ${isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={toggleMobileSidebar}></div>
+        <div className={`absolute bottom-0 left-0 w-full bg-[hsl(var(--sidebar-background))] rounded-t-2xl p-4 transition-transform duration-300 ease-in-out ${isMobileOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+          <button onClick={toggleMobileSidebar} className="absolute top-3 right-3 p-2 rounded-full hover:bg-secondary">
+            <X className="w-5 h-5" />
+          </button>
+          <h2 className="text-lg font-bold mb-4">Доп. меню</h2>
+
+          {/* Кнопка установки PWA */}
+          <div className="mb-4">
+            <button onClick={handleInstallPWA} className="w-full flex items-center gap-3 p-3 rounded-xl install-pwa-btn">
+              <Download className="w-5 h-5 text-primary" />
+              <span className="text-sm font-medium text-primary">Установить приложение</span>
+            </button>
+          </div>
+
+          {/* Переключатель темы */}
+          <div className="pt-4 border-t border-border/60">
+            <p className="text-sm text-muted-foreground mb-3">Тема оформления</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleThemeChange('light')}
+                className={`p-2 rounded-lg transition-colors ${state.theme === 'light' ? 'bg-primary text-white' : ''}`}
+                aria-label="Светлая тема"
+              >
+                <Sun className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => handleThemeChange('dark')}
+                className={`p-2 rounded-lg transition-colors ${state.theme === 'dark' ? 'bg-primary text-white' : ''}`}
+                aria-label="Темная тема"
+              >
+                <Moon className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => handleThemeChange('black')}
+                className={`p-2 rounded-lg transition-colors ${state.theme === 'black' ? 'bg-primary text-white' : ''}`}
+                aria-label="Черная тема"
+              >
+                <span className="flex items-center justify-center w-5 h-5 font-bold">B</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Футер */}
+          <div className="mt-6 text-xs text-muted-foreground text-center">
+            <p>© {new Date().getFullYear()} Detail Lab</p>
+            <p className="mt-1">0.9a</p>
+          </div>
+        </div>
+      </div>
     </>
   );
 };
