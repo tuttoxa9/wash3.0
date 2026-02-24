@@ -434,8 +434,31 @@ h1, h2, h3, h4, h5, h6 {
   [type="button"]:active,
   [type="submit"]:active,
   [type="reset"]:active {
-    background-image: linear-gradient(180deg, hsl(var(--card)/0.18), hsl(var(--card)/0.06));
-    box-shadow: inset 0 2px 0 hsla(var(--foreground), 0.16);
+    opacity: 0.85;
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px hsla(var(--foreground), 0.1);
+  }
+
+  /* Сегментированный переключатель (Segmented Control) */
+  .segmented-control {
+    @apply flex p-1 bg-muted/50 rounded-xl border border-border/40 backdrop-blur-sm;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .segmented-control button {
+    @apply flex-1 shrink-0 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 relative z-10;
+    min-width: fit-content;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    @apply text-muted-foreground hover:text-foreground;
+  }
+
+  .segmented-control button.active {
+    @apply bg-card text-foreground shadow-sm;
+    background-image: linear-gradient(180deg, hsl(var(--card)), hsl(var(--card)/0.98)) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1) !important;
+    border: 1px solid hsla(var(--foreground), 0.08) !important;
   }
 
   /* Варианты с цветами сохраняют стиль, но уважают текущий цвет */

@@ -454,54 +454,78 @@ const RecordsPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">Статус</label>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-              >
-                <option value="all">Все статусы</option>
-                <option value="scheduled">Запланированные</option>
-                <option value="completed">Выполненные</option>
-                <option value="cancelled">Отмененные</option>
-              </select>
+              <div className="segmented-control flex-wrap h-auto">
+                <button
+                  onClick={() => setFilterStatus('all')}
+                  className={filterStatus === 'all' ? 'active' : ''}
+                >
+                  Все
+                </button>
+                <button
+                  onClick={() => setFilterStatus('scheduled')}
+                  className={filterStatus === 'scheduled' ? 'active' : ''}
+                >
+                  План
+                </button>
+                <button
+                  onClick={() => setFilterStatus('completed')}
+                  className={filterStatus === 'completed' ? 'active' : ''}
+                >
+                  Ок
+                </button>
+                <button
+                  onClick={() => setFilterStatus('cancelled')}
+                  className={filterStatus === 'cancelled' ? 'active' : ''}
+                >
+                  Отмена
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-2">Период</label>
-              <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value as any)}
-                className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-              >
-                <option value="all">Все даты</option>
-                <option value="today">Сегодня</option>
-                <option value="tomorrow">Завтра</option>
-                <option value="week">Эта неделя</option>
-              </select>
+              <div className="segmented-control flex-wrap h-auto">
+                <button
+                  onClick={() => setDateFilter('all')}
+                  className={dateFilter === 'all' ? 'active' : ''}
+                >
+                  Все
+                </button>
+                <button
+                  onClick={() => setDateFilter('today')}
+                  className={dateFilter === 'today' ? 'active' : ''}
+                >
+                  Сегодня
+                </button>
+                <button
+                  onClick={() => setDateFilter('tomorrow')}
+                  className={dateFilter === 'tomorrow' ? 'active' : ''}
+                >
+                  Завтра
+                </button>
+                <button
+                  onClick={() => setDateFilter('week')}
+                  className={dateFilter === 'week' ? 'active' : ''}
+                >
+                  Неделя
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Переключатель режима просмотра */}
           <div className="card-with-shadow p-4">
             <label className="block text-sm font-medium mb-2">Режим просмотра</label>
-            <div className="flex border border-input rounded-lg overflow-hidden">
+            <div className="segmented-control">
               <button
                 onClick={() => setViewMode('list')}
-                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                  viewMode === 'list'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted'
-                }`}
+                className={viewMode === 'list' ? 'active' : ''}
               >
                 <List className="w-4 h-4 mx-auto" />
               </button>
               <button
                 onClick={() => setViewMode('calendar')}
-                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                  viewMode === 'calendar'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted'
-                }`}
+                className={viewMode === 'calendar' ? 'active' : ''}
               >
                 <Grid3X3 className="w-4 h-4 mx-auto" />
               </button>

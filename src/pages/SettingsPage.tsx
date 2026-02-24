@@ -131,46 +131,32 @@ const ThemeSettings: React.FC = () => {
         Выберите тему оформления приложения
       </p>
 
-      <div className="flex gap-2 sm:gap-3 mb-1">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+      <div className="segmented-control mb-1">
+        <button
           onClick={() => setTheme('light')}
-          className={`flex-1 p-2 sm:p-2 border rounded-lg flex flex-col items-center gap-1 sm:gap-2 transition-colors touch-manipulation ${
-            state.theme === 'light' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
-          }`}
+          className={state.theme === 'light' ? 'active' : ''}
         >
-          <Sun className={`w-4 h-4 sm:w-5 sm:h-5 ${state.theme === 'light' ? 'text-primary' : 'text-muted-foreground'}`} />
-          <span className="text-xs font-medium">Светлая</span>
-        </motion.button>
+          <Sun className="w-4 h-4 mx-auto mb-0.5" />
+          <span className="text-[10px] sm:text-xs">Светлая</span>
+        </button>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <button
           onClick={() => setTheme('dark')}
-          className={`flex-1 p-2 sm:p-2 border rounded-lg flex flex-col items-center gap-1 sm:gap-2 transition-colors touch-manipulation ${
-            state.theme === 'dark' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
-          }`}
+          className={state.theme === 'dark' ? 'active' : ''}
         >
-          <Moon className={`w-4 h-4 sm:w-5 sm:h-5 ${state.theme === 'dark' ? 'text-primary' : 'text-muted-foreground'}`} />
-          <span className="text-xs font-medium">Темная</span>
-        </motion.button>
+          <Moon className="w-4 h-4 mx-auto mb-0.5" />
+          <span className="text-[10px] sm:text-xs">Темная</span>
+        </button>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <button
           onClick={() => setTheme('black')}
-          className={`flex-1 p-2 sm:p-2 border rounded-lg flex flex-col items-center gap-1 sm:gap-2 transition-colors touch-manipulation ${
-            state.theme === 'black' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
-          }`}
+          className={state.theme === 'black' ? 'active' : ''}
         >
-          <div className={`w-4 h-4 sm:w-5 h-5 rounded-full flex items-center justify-center bg-black text-white ${
-            state.theme === 'black' ? 'ring-2 ring-primary' : ''
-          }`}>
-            <span className="text-xs font-bold">B</span>
+          <div className="w-4 h-4 rounded-full bg-foreground mx-auto mb-0.5 flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-background" />
           </div>
-          <span className="text-xs font-medium">Черная</span>
-        </motion.button>
+          <span className="text-[10px] sm:text-xs">Черная</span>
+        </button>
       </div>
     </motion.div>
   );
