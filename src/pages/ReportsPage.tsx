@@ -5,7 +5,7 @@ import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isA
 import { ru } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Calendar as CalendarIcon, X, Filter, Building, TrendingUp, FileDown } from 'lucide-react';
-import { carWashService, dailyRolesService } from '@/lib/services/supabaseService';
+import { carWashService, dailyRolesService, organizationService } from '@/lib/services/supabaseService';
 import type { CarWashRecord, Employee } from '@/lib/types';
 import { createSalaryCalculator } from '@/components/SalaryCalculator';
 import { useToast } from '@/lib/hooks/useToast';
@@ -110,44 +110,20 @@ const ReportsPage: React.FC = () => {
     }
   }, [periodType, selectedDate]);
 
-  // Load records for the selected date range
+  // Load records for the selected date range - Optimized with batch fetching
   useEffect(() => {
     const loadRecords = async () => {
       if (!startDate || !endDate) return;
 
       setLoading(true);
       try {
-        // Get all dates in the range
-        const dateRange: string[] = [];
-        const currentDate = new Date(startDate);
+        const startStr = format(startDate, 'yyyy-MM-dd');
+        const endStr = format(endDate, 'yyyy-MM-dd');
 
-        while (isBefore(currentDate, endDate) || isEqual(currentDate, endDate)) {
-          if (!isNaN(currentDate.getTime())) {
-            dateRange.push(format(currentDate, 'yyyy-MM-dd'));
-          }
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        // Fetch records for each date
-        const recordsPromises = dateRange.map(date =>
-          carWashService.getByDate(date)
-        );
-
-        // Fetch daily roles for each date
-        const rolesPromises = dateRange.map(date =>
-          dailyRolesService.getDailyRoles(date).then(roles => ({ date, roles: roles || {} }))
-        );
-
-        const [recordsResults, rolesResults] = await Promise.all([
-          Promise.all(recordsPromises),
-          Promise.all(rolesPromises)
+        const [allRecords, rolesMap] = await Promise.all([
+          carWashService.getByDateRange(startStr, endStr),
+          dailyRolesService.getDailyRolesByDateRange(startStr, endStr)
         ]);
-
-        const allRecords = recordsResults.flat();
-        const rolesMap: Record<string, Record<string, string>> = {};
-        rolesResults.forEach(({ date, roles }) => {
-          rolesMap[date] = roles;
-        });
 
         setRecords(allRecords);
         setDailyRoles(rolesMap);
@@ -487,41 +463,27 @@ const ReportsPage: React.FC = () => {
     setActiveDatePicker(null);
   };
 
-  // Функция для загрузки данных общего отчёта
+  // Функция для загрузки данных общего отчёта - Optimized with batch fetching
   const loadGeneralReport = async () => {
     setGeneralReportLoading(true);
     try {
-      // Получаем все даты в диапазоне
+      const startStr = format(generalStartDate, 'yyyy-MM-dd');
+      const endStr = format(generalEndDate, 'yyyy-MM-dd');
+
+      const [allRecords, rolesMap] = await Promise.all([
+        carWashService.getByDateRange(startStr, endStr),
+        dailyRolesService.getDailyRolesByDateRange(startStr, endStr)
+      ]);
+
+      // Получаем все даты в диапазоне для формирования графика
       const dateRange: string[] = [];
       const currentDate = new Date(generalStartDate);
-
       while (isBefore(currentDate, generalEndDate) || isEqual(currentDate, generalEndDate)) {
         if (!isNaN(currentDate.getTime())) {
           dateRange.push(format(currentDate, 'yyyy-MM-dd'));
         }
         currentDate.setDate(currentDate.getDate() + 1);
       }
-
-      // Получаем записи для каждой даты
-      const recordsPromises = dateRange.map(date =>
-        carWashService.getByDate(date)
-      );
-
-      // Получаем ежедневные роли для каждой даты
-      const rolesPromises = dateRange.map(date =>
-        dailyRolesService.getDailyRoles(date).then(roles => ({ date, roles: roles || {} }))
-      );
-
-      const [recordsResults, rolesResults] = await Promise.all([
-        Promise.all(recordsPromises),
-        Promise.all(rolesPromises)
-      ]);
-
-      const allRecords = recordsResults.flat();
-      const rolesMap: Record<string, Record<string, string>> = {};
-      rolesResults.forEach(({ date, roles }) => {
-        rolesMap[date] = roles;
-      });
 
       // Подсчитываем итоги и данные по дням
       let totalCash = 0;

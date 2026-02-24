@@ -238,15 +238,6 @@ const HomePage: React.FC = () => {
     try {
       setLoading(prev => ({ ...prev, savingShift: true }));
 
-      // Отладка: посмотрим что сохраняем
-      console.log('=== ОТЛАДКА СОХРАНЕНИЯ РОЛЕЙ ===');
-      console.log('selectedDate:', selectedDate);
-      console.log('employeeRoles перед сохранением:', employeeRoles);
-      Object.keys(employeeRoles).forEach(key => {
-        if (key.startsWith('min_')) {
-          console.log(`Флаг минималки ${key}: ${employeeRoles[key]}`);
-        }
-      });
 
       // Сохраняем ежедневные роли в базе данных
       const success = await dailyRolesService.saveDailyRoles(selectedDate, employeeRoles);
@@ -1449,8 +1440,6 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
       const addedRecord = await carWashService.add(newRecord);
 
       if (addedRecord) {
-        console.log('Запись успешно добавлена с ID:', addedRecord.id);
-
         // Добавляем запись в отчет
         const success = await dailyReportService.addRecord(selectedDate, addedRecord);
 
@@ -1598,12 +1587,26 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                 type="text"
                 id="service"
                 name="service"
+                list="services-list"
                 value={formData.service}
-                onChange={handleChange}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const service = state.services.find(s => s.name === val);
+                  if (service) {
+                    setFormData(prev => ({ ...prev, service: val, price: service.price }));
+                  } else {
+                    setFormData(prev => ({ ...prev, service: val }));
+                  }
+                }}
                 placeholder={formData.serviceType === 'wash' ? "Например: Комплекс" : "Например: Химчистка салона"}
                 className="w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                 required
               />
+              <datalist id="services-list">
+                {state.services.map(s => (
+                  <option key={s.id} value={s.name}>{s.price} BYN</option>
+                ))}
+              </datalist>
             </div>
 
             {/* Цена */}

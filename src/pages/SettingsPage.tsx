@@ -272,6 +272,10 @@ const OrganizationsSettings: React.FC = () => {
 
   // Удаление организации
   const handleDeleteOrganization = async (orgId: string, orgName: string) => {
+    if (!confirm(`Вы уверены, что хотите удалить организацию "${orgName}"?`)) {
+      return;
+    }
+
     setLoading(prev => ({ ...prev, deleteOrg: orgId }));
     try {
       const success = await organizationService.delete(orgId);
@@ -572,6 +576,10 @@ const SettingsContent: React.FC = () => {
 
   // Удаление сотрудника
   const handleDeleteEmployee = async (employeeId: string, employeeName: string) => {
+    if (!confirm(`Вы уверены, что хотите удалить сотрудника "${employeeName}"?`)) {
+      return;
+    }
+
     setLoading(prev => ({ ...prev, deleteEmployee: employeeId }));
     try {
       const success = await employeeService.delete(employeeId);
