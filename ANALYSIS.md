@@ -1,4 +1,4 @@
-# Анализ проекта BelAutoCenter
+# Анализ проекта Detail Lab
 
 ## Текущий стек технологий
 *   **Frontend:** React 18, Vite, TypeScript, Tailwind CSS.
