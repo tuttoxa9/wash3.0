@@ -4,8 +4,8 @@ import { useAppContext } from '@/lib/context/AppContext';
 import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isAfter, isBefore, isEqual } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Calendar as CalendarIcon, X, Filter, Building, TrendingUp, FileDown } from 'lucide-react';
-import { carWashService, dailyRolesService, organizationService } from '@/lib/services/supabaseService';
+import { Loader2, Calendar as CalendarIcon, X, Filter, Building, TrendingUp, FileDown, Pencil } from 'lucide-react';
+import { carWashService, dailyRolesService, organizationService, dailyReportService } from '@/lib/services/supabaseService';
 import type { CarWashRecord, Employee } from '@/lib/types';
 import { createSalaryCalculator } from '@/components/SalaryCalculator';
 import { useToast } from '@/lib/hooks/useToast';
@@ -28,6 +28,7 @@ interface EarningsReport {
   totalNonCash: number;
   totalOrganizations: number;
   recordsCount: number;
+  isManual?: boolean;
 }
 
 const ReportsPage: React.FC = () => {
@@ -43,6 +44,7 @@ const ReportsPage: React.FC = () => {
   const [earningsReport, setEarningsReport] = useState<EarningsReport[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [dailyRoles, setDailyRoles] = useState<Record<string, Record<string, string>>>({});
+  const [dailyReports, setDailyReports] = useState<Record<string, any>>({});
   const [minimumFlags, setMinimumFlags] = useState<Record<string, boolean>>({});
 
   // Состояние для общего отчёта
@@ -120,13 +122,21 @@ const ReportsPage: React.FC = () => {
         const startStr = format(startDate, 'yyyy-MM-dd');
         const endStr = format(endDate, 'yyyy-MM-dd');
 
-        const [allRecords, rolesMap] = await Promise.all([
+        const [allRecords, rolesMap, reportsList] = await Promise.all([
           carWashService.getByDateRange(startStr, endStr),
-          dailyRolesService.getDailyRolesByDateRange(startStr, endStr)
+          dailyRolesService.getDailyRolesByDateRange(startStr, endStr),
+          dailyReportService.getByDateRange(startStr, endStr)
         ]);
 
         setRecords(allRecords);
         setDailyRoles(rolesMap);
+
+        const reportsMap: Record<string, any> = {};
+        reportsList.forEach(report => {
+          const dateStr = typeof report.date === 'string' ? report.date : format(report.date, 'yyyy-MM-dd');
+          reportsMap[dateStr] = report;
+        });
+        setDailyReports(reportsMap);
 
         // Отладка: посмотрим что загрузилось
         console.log('=== ОТЛАДКА ЗАГРУЗКИ РОЛЕЙ ===');
@@ -304,6 +314,7 @@ const ReportsPage: React.FC = () => {
         results.forEach(r => { r.calculatedEarnings = 0; });
       } else if (methodToUse === 'minimumWithPercentage') {
         const totalEarningsByEmployee: Record<string, number> = {};
+        const isEmployeeManualMap: Record<string, boolean> = {};
         const aggregatedMinimumFlags: Record<string, boolean> = {};
 
         // Iterate through each date in the period
@@ -371,14 +382,22 @@ const ReportsPage: React.FC = () => {
           );
 
           const dailyResults = salaryCalculator.calculateSalaries();
+          const dayReport = dailyReports[dateStr];
+
           dailyResults.forEach(res => {
-            totalEarningsByEmployee[res.employeeId] = (totalEarningsByEmployee[res.employeeId] || 0) + res.calculatedSalary;
+            let salary = res.calculatedSalary;
+            if (dayReport?.manualSalaries && dayReport.manualSalaries[res.employeeId] !== undefined) {
+              salary = dayReport.manualSalaries[res.employeeId];
+              isEmployeeManualMap[res.employeeId] = true;
+            }
+            totalEarningsByEmployee[res.employeeId] = (totalEarningsByEmployee[res.employeeId] || 0) + salary;
           });
         });
 
         // Update results with summed calculated earnings
         results.forEach(r => {
           r.calculatedEarnings = totalEarningsByEmployee[r.employeeId] || 0;
+          r.isManual = isEmployeeManualMap[r.employeeId];
         });
 
         setMinimumFlags(aggregatedMinimumFlags);
@@ -395,7 +414,7 @@ const ReportsPage: React.FC = () => {
     const employeeReports = calculateEmployeeReports();
 
     setEarningsReport(employeeReports || []);
-  }, [records, selectedEmployeeId, state.employees, periodType, startDate, state.salaryCalculationDate, state.salaryCalculationMethod]);
+  }, [records, selectedEmployeeId, state.employees, periodType, startDate, state.salaryCalculationDate, state.salaryCalculationMethod, dailyReports]);
 
   // Handle employee selection
   const handleEmployeeSelect = (employeeId: string) => {
@@ -411,6 +430,60 @@ const ReportsPage: React.FC = () => {
   // Clear employee filter
   const clearEmployeeFilter = () => {
     setSelectedEmployeeId(null);
+  };
+
+  const handleManualSalaryEdit = async (employeeId: string, currentSalary: number) => {
+    if (periodType !== 'day') {
+      toast.error('Ручное изменение зарплаты доступно только при просмотре за один день');
+      return;
+    }
+
+    const dateStr = format(startDate, 'yyyy-MM-dd');
+    const employee = earningsReport.find(e => e.employeeId === employeeId);
+    const newSalaryStr = window.prompt(`Введите скорректированную зарплату для ${employee?.employeeName} (или 0 для сброса):`, currentSalary.toFixed(2));
+
+    if (newSalaryStr === null) return;
+
+    const newSalary = parseFloat(newSalaryStr.replace(',', '.'));
+    if (isNaN(newSalary)) {
+      toast.error('Некорректная сумма');
+      return;
+    }
+
+    try {
+      let report = dailyReports[dateStr];
+      if (!report) {
+        report = {
+          id: dateStr,
+          date: dateStr,
+          employeeIds: [],
+          records: [],
+          totalCash: 0,
+          totalNonCash: 0,
+          manualSalaries: {}
+        };
+      }
+
+      const manualSalaries = { ...(report.manualSalaries || {}) };
+      if (newSalary <= 0) {
+        delete manualSalaries[employeeId];
+      } else {
+        manualSalaries[employeeId] = newSalary;
+      }
+
+      const updatedReport = { ...report, manualSalaries };
+      const success = await dailyReportService.updateReport(updatedReport);
+
+      if (success) {
+        setDailyReports(prev => ({ ...prev, [dateStr]: updatedReport }));
+        toast.success('Зарплата обновлена');
+      } else {
+        toast.error('Ошибка при сохранении');
+      }
+    } catch (error) {
+      console.error('Error updating manual salary:', error);
+      toast.error('Ошибка при сохранении');
+    }
   };
 
   // Format date range for display
@@ -482,10 +555,17 @@ const ReportsPage: React.FC = () => {
       const startStr = format(generalStartDate, 'yyyy-MM-dd');
       const endStr = format(generalEndDate, 'yyyy-MM-dd');
 
-      const [allRecords, rolesMap] = await Promise.all([
+      const [allRecords, rolesMap, reportsList] = await Promise.all([
         carWashService.getByDateRange(startStr, endStr),
-        dailyRolesService.getDailyRolesByDateRange(startStr, endStr)
+        dailyRolesService.getDailyRolesByDateRange(startStr, endStr),
+        dailyReportService.getByDateRange(startStr, endStr)
       ]);
+
+      const reportsMap: Record<string, any> = {};
+      reportsList.forEach(report => {
+        const dateStr = typeof report.date === 'string' ? report.date : format(report.date, 'yyyy-MM-dd');
+        reportsMap[dateStr] = report;
+      });
 
       // Получаем все даты в диапазоне для формирования графика
       const dateRange: string[] = [];
@@ -611,7 +691,16 @@ const ReportsPage: React.FC = () => {
             minimumOverrideForDay
           );
 
-          totalSalaries += salaryCalculator.getTotalSalarySum();
+          const dailyResults = salaryCalculator.calculateSalaries();
+          const dayReport = reportsMap[dateStr];
+
+          dailyResults.forEach(res => {
+            let salary = res.calculatedSalary;
+            if (dayReport?.manualSalaries && dayReport.manualSalaries[res.employeeId] !== undefined) {
+              salary = dayReport.manualSalaries[res.employeeId];
+            }
+            totalSalaries += salary;
+          });
         });
 
         setGeneralMinimumFlags(aggregatedGeneralMinFlags);
@@ -1111,7 +1200,24 @@ const ReportsPage: React.FC = () => {
                       <div className="text-right text-xs md:text-sm px-1">{report.totalNonCash.toFixed(2)}</div>
                       <div className="text-right text-xs md:text-sm px-1">{report.totalOrganizations.toFixed(2)}</div>
                       <div className="text-right text-xs md:text-sm px-1">{totalRevenueEmp.toFixed(2)}</div>
-                      <div className="text-right font-medium text-xs md:text-sm px-1">{perEmployee.toFixed(2)}</div>
+                      <div className="text-right font-medium text-xs md:text-sm px-1 flex items-center justify-end gap-1">
+                        <span className={report.isManual ? "text-orange-500 font-bold" : ""}>
+                          {perEmployee.toFixed(2)}
+                          {report.isManual && "*"}
+                        </span>
+                        {periodType === 'day' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleManualSalaryEdit(report.employeeId, perEmployee);
+                            }}
+                            className="p-1 hover:bg-muted rounded transition-colors"
+                            title="Изменить зарплату вручную"
+                          >
+                            <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

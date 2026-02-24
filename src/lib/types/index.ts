@@ -52,6 +52,7 @@ export interface DailyReport {
   totalCash: number; // Сумма наличных платежей
   totalNonCash: number; // Сумма безналичных платежей
   dailyEmployeeRoles?: Record<string, EmployeeRole>; // Ежедневные роли сотрудников (employeeId -> role)
+  manualSalaries?: Record<string, number>; // Ручные изменения зарплат (employeeId -> amount)
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 
