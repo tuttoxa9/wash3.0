@@ -1,7 +1,8 @@
 import type React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download } from 'lucide-react';
+import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download, LogOut } from 'lucide-react';
 import { useAppContext } from '@/lib/context/AppContext';
+import { useAuth } from '@/lib/context/AuthContext';
 import type { ThemeMode } from '@/lib/types';
 
 interface SidebarProps {
@@ -11,6 +12,15 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) => {
   const { state, dispatch } = useAppContext();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const handleThemeChange = (newTheme: ThemeMode) => {
     dispatch({ type: 'SET_THEME', payload: newTheme });
@@ -167,32 +177,42 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             </button>
           </div>
 
-          {/* Переключатель темы */}
-          <div className="pt-4 border-t border-border/60">
-            <p className="text-sm text-muted-foreground mb-3 px-1">Тема оформления</p>
-            <div className="segmented-control">
-              <button
-                onClick={() => handleThemeChange('light')}
-                className={state.theme === 'light' ? 'active' : ''}
-                aria-label="Светлая тема"
-              >
-                <Sun className="w-4 h-4 mx-auto" />
-              </button>
-              <button
-                onClick={() => handleThemeChange('dark')}
-                className={state.theme === 'dark' ? 'active' : ''}
-                aria-label="Темная тема"
-              >
-                <Moon className="w-4 h-4 mx-auto" />
-              </button>
-              <button
-                onClick={() => handleThemeChange('black')}
-                className={state.theme === 'black' ? 'active' : ''}
-                aria-label="Черная тема"
-              >
-                <span className="flex items-center justify-center font-bold text-xs">B</span>
-              </button>
+          {/* Настройки интерфейса (Тема и Выход) */}
+          <div className="pt-4 border-t border-border/60 space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-3 px-1">Тема оформления</p>
+              <div className="segmented-control">
+                <button
+                  onClick={() => handleThemeChange('light')}
+                  className={state.theme === 'light' ? 'active' : ''}
+                  aria-label="Светлая тема"
+                >
+                  <Sun className="w-4 h-4 mx-auto" />
+                </button>
+                <button
+                  onClick={() => handleThemeChange('dark')}
+                  className={state.theme === 'dark' ? 'active' : ''}
+                  aria-label="Темная тема"
+                >
+                  <Moon className="w-4 h-4 mx-auto" />
+                </button>
+                <button
+                  onClick={() => handleThemeChange('black')}
+                  className={state.theme === 'black' ? 'active' : ''}
+                  aria-label="Черная тема"
+                >
+                  <span className="flex items-center justify-center font-bold text-xs">B</span>
+                </button>
+              </div>
             </div>
+
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-sm font-medium">Выйти</span>
+            </button>
           </div>
 
           {/* Футер сайдбара */}

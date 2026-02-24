@@ -4,29 +4,41 @@ import HomePage from '@/pages/HomePage';
 import RecordsPage from '@/pages/RecordsPage';
 import SettingsPage from '@/pages/SettingsPage';
 import ReportsPage from '@/pages/ReportsPage';
+import LoginPage from '@/pages/LoginPage';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppProvider } from '@/lib/context/AppContext';
 import { NotificationProvider } from '@/lib/context/NotificationContext';
+import { AuthProvider } from '@/lib/context/AuthContext';
 
 const router = createBrowserRouter([
   {
+    path: '/login',
+    element: <LoginPage />
+  },
+  {
     path: '/',
-    element: <Layout />,
+    element: <ProtectedRoute />,
     children: [
       {
-        index: true,
-        element: <HomePage />
-      },
-      {
-        path: 'records',
-        element: <RecordsPage />
-      },
-      {
-        path: 'reports',
-        element: <ReportsPage />
-      },
-      {
-        path: 'settings',
-        element: <SettingsPage />
+        element: <Layout />,
+        children: [
+          {
+            index: true,
+            element: <HomePage />
+          },
+          {
+            path: 'records',
+            element: <RecordsPage />
+          },
+          {
+            path: 'reports',
+            element: <ReportsPage />
+          },
+          {
+            path: 'settings',
+            element: <SettingsPage />
+          }
+        ]
       }
     ]
   }
@@ -34,11 +46,13 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <AppProvider>
-      <NotificationProvider>
-        <RouterProvider router={router} />
-      </NotificationProvider>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <NotificationProvider>
+          <RouterProvider router={router} />
+        </NotificationProvider>
+      </AppProvider>
+    </AuthProvider>
   );
 }
 
