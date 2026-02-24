@@ -1,11 +1,11 @@
 // Create Supabase client initialization
 import { createClient } from '@supabase/supabase-js';
 
-export const supabaseUrl = 'https://lfyyxdgedovaarxwnhfe.supabase.co';
-export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmeXl4ZGdlZG92YWFyeHduaGZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2ODAyMDksImV4cCI6MjA3MDI1NjIwOX0.ewJx_zdUWKrA6tAv_L0ntcfRTT4g4mej8RXIQp_wIpU';
+export const supabaseUrl = 'https://ysxwpedykxzjflehogga.supabase.co';
+export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeHdwZWR5a3h6amZsZWhvZ2dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5Mjg1MTIsImV4cCI6MjA4NzUwNDUxMn0.G0FwNtRe9QXfmFVKLbcY5Y1gdF2chnAJqgLV2MOiTTw';
 
 // Service role key for administrative operations (only use for server-side operations)
-export const supabaseServiceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmeXl4ZGdlZG92YWFyeHduaGZlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDY4MDIwOSwiZXhwIjoyMDcwMjU2MjA5fQ.gUR14Y26Srx7OnLAw1CVYc-vFQRNHHeG-w_RaSuxtWg';
+export const supabaseServiceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeHdwZWR5a3h6amZsZWhvZ2dhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTkyODUxMiwiZXhwIjoyMDg3NTA0NTEyfQ.ph2I8MhHmfRYayUzugh2-_S8qJje_f5shSEaoCKKu3E';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
