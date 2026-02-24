@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
 
   // Если пользователь уже авторизован, перенаправляем на главную
@@ -24,7 +23,7 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await login({ email, password });
       if (error) throw error;
       navigate('/');
     } catch (error: any) {
