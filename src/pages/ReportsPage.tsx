@@ -329,11 +329,23 @@ const ReportsPage: React.FC = () => {
           recordsForDay.forEach(rec => rec.employeeIds.forEach(id => participantIds.add(id)));
 
           participantIds.forEach(empId => {
-            // Role logic
-            let role: 'admin' | 'washer' = (dayRoles[empId] as 'admin' | 'washer') || 'washer';
-            if (!dayRoles[empId]) {
-               const emp = state.employees.find(e => e.id === empId);
-               if (emp?.role) role = emp.role;
+            // Role logic - CRITICAL FIX: DO NOT use current role for historical dates
+            let role: 'admin' | 'washer' = 'washer'; // default to washer for safety
+
+            if (dayRoles[empId]) {
+              // If we have explicit historical role data for this date, use it
+              role = dayRoles[empId] as 'admin' | 'washer';
+            } else {
+              // No explicit role for this date
+              // Only use current role if this is TODAY's date
+              const isToday = dateStr === format(new Date(), 'yyyy-MM-dd');
+
+              if (isToday) {
+                const emp = state.employees.find(e => e.id === empId);
+                if (emp?.role) role = emp.role;
+              }
+              // For historical dates without explicit role data, keep default 'washer'
+              // This prevents promoted employees from having their past shifts recalculated with higher percentages
             }
             employeeRolesForDay[empId] = role;
 
@@ -564,10 +576,23 @@ const ReportsPage: React.FC = () => {
           recordsForDay.forEach(rec => rec.employeeIds.forEach(id => participantIds.add(id)));
 
           participantIds.forEach(empId => {
-            let role: 'admin' | 'washer' = (dayRoles[empId] as 'admin' | 'washer') || 'washer';
-            if (!dayRoles[empId]) {
-               const emp = state.employees.find(e => e.id === empId);
-               if (emp?.role) role = emp.role;
+            // Role logic - CRITICAL FIX: DO NOT use current role for historical dates
+            let role: 'admin' | 'washer' = 'washer'; // default to washer for safety
+
+            if (dayRoles[empId]) {
+              // If we have explicit historical role data for this date, use it
+              role = dayRoles[empId] as 'admin' | 'washer';
+            } else {
+              // No explicit role for this date
+              // Only use current role if this is TODAY's date
+              const isToday = dateStr === format(new Date(), 'yyyy-MM-dd');
+
+              if (isToday) {
+                const emp = state.employees.find(e => e.id === empId);
+                if (emp?.role) role = emp.role;
+              }
+              // For historical dates without explicit role data, keep default 'washer'
+              // This prevents promoted employees from having their past shifts recalculated with higher percentages
             }
             employeeRolesForDay[empId] = role;
 
