@@ -840,11 +840,11 @@ const ReportsPage: React.FC = () => {
 
             <div className="space-y-4">
               {/* Period type selector */}
-              <div className="flex p-1 bg-muted rounded-xl gap-1 mb-4 w-fit">
+              <div className="flex p-1 bg-muted rounded-xl gap-1 mb-4 w-fit shadow-inner border border-border/20">
                 <button
                   onClick={() => setPeriodType('day')}
                   className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    periodType === 'day' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    periodType === 'day' ? 'bg-card text-primary shadow-md ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   День
@@ -852,7 +852,7 @@ const ReportsPage: React.FC = () => {
                 <button
                   onClick={() => setPeriodType('week')}
                   className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    periodType === 'week' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    periodType === 'week' ? 'bg-card text-primary shadow-md ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Неделя
@@ -860,7 +860,7 @@ const ReportsPage: React.FC = () => {
                 <button
                   onClick={() => setPeriodType('month')}
                   className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    periodType === 'month' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    periodType === 'month' ? 'bg-card text-primary shadow-md ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Месяц
@@ -868,7 +868,7 @@ const ReportsPage: React.FC = () => {
                 <button
                   onClick={() => setPeriodType('custom')}
                   className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    periodType === 'custom' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    periodType === 'custom' ? 'bg-card text-primary shadow-md ring-1 ring-black/5' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Произвольный период

@@ -918,7 +918,7 @@ const HomePage: React.FC = () => {
 
                               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
                                 {/* Переключатель учета минималки */}
-                                <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 p-1.5 sm:p-2 rounded-md sm:rounded-lg border border-border/40 bg-background/50">
+                                <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 p-1.5 sm:p-2 rounded-md sm:rounded-lg border border-border/40 bg-muted/30">
                                   <Switch
                                     label="Минималка"
                                     checked={(employeeRoles as any)[`min_${employeeId}`] !== false}
@@ -930,12 +930,12 @@ const HomePage: React.FC = () => {
                                   />
                                 </div>
 
-                                <div className="flex p-1 bg-muted/50 rounded-xl gap-1 border border-border/20">
+                                <div className="flex p-1 bg-muted rounded-xl gap-1 border border-border/20 shadow-inner">
                                   <button
                                     onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
                                     className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all duration-200 ${
                                       employeeRoles[employeeId] === 'washer'
-                                        ? 'bg-card text-blue-600 shadow-sm'
+                                        ? 'bg-card text-blue-600 shadow-md ring-1 ring-black/5'
                                         : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                   >
@@ -945,7 +945,7 @@ const HomePage: React.FC = () => {
                                     onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
                                     className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all duration-200 ${
                                       employeeRoles[employeeId] === 'admin'
-                                        ? 'bg-card text-green-600 shadow-sm'
+                                        ? 'bg-card text-green-600 shadow-md ring-1 ring-black/5'
                                         : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                   >
@@ -1540,13 +1540,13 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
               <label className="block text-sm font-medium mb-2">
                 Тип услуги
               </label>
-              <div className="flex p-1 bg-muted rounded-xl gap-1 mb-3">
+              <div className="flex p-1 bg-muted rounded-xl gap-1 mb-3 shadow-inner border border-border/20">
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, serviceType: 'wash' })}
                   className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
                     formData.serviceType === 'wash'
-                      ? 'bg-card text-blue-600 shadow-sm'
+                      ? 'bg-card text-blue-600 shadow-md ring-1 ring-black/5'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -1558,7 +1558,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                   onClick={() => setFormData({ ...formData, serviceType: 'dryclean' })}
                   className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
                     formData.serviceType === 'dryclean'
-                      ? 'bg-card text-purple-600 shadow-sm'
+                      ? 'bg-card text-purple-600 shadow-md ring-1 ring-black/5'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -1623,13 +1623,13 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
               <label className="block text-sm font-medium mb-2">
                 Оплата
               </label>
-              <div className="flex p-1 bg-muted rounded-xl gap-1 mb-3">
+              <div className="flex p-1 bg-muted rounded-xl gap-1 mb-3 shadow-inner border border-border/20">
                 <button
                   type="button"
                   onClick={() => handlePaymentTypeChange('cash')}
                   className={`flex-1 py-2 px-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                     formData.paymentMethod.type === 'cash'
-                      ? 'bg-card text-primary shadow-sm'
+                      ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -1640,7 +1640,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                   onClick={() => handlePaymentTypeChange('card')}
                   className={`flex-1 py-2 px-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                     formData.paymentMethod.type === 'card'
-                      ? 'bg-card text-primary shadow-sm'
+                      ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -1651,7 +1651,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                   onClick={() => handlePaymentTypeChange('organization')}
                   className={`flex-1 py-2 px-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                     formData.paymentMethod.type === 'organization'
-                      ? 'bg-card text-primary shadow-sm'
+                      ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -1706,24 +1706,12 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                       return 0;
                     })
                     .map(employee => (
-                    <div key={employee.id} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id={`employee-${employee.id}`}
-                        name="employeeIds"
-                        value={employee.id}
-                        checked={formData.employeeIds.includes(employee.id)}
-                        onChange={handleEmployeeChange}
-                        className="rounded border-input text-primary focus:ring-ring"
-                      />
-                      <label
-                        htmlFor={`employee-${employee.id}`}
-                        className={`flex-1 flex items-center gap-2 text-sm ${shiftEmployeeIds.includes(employee.id) ? 'font-medium' : ''}`}
-                      >
+                    <div key={employee.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className={`flex items-center gap-2 text-sm ${shiftEmployeeIds.includes(employee.id) ? 'font-semibold' : ''}`}>
                         <span>{employee.name}</span>
                         {shiftEmployeeIds.includes(employee.id) && (
                           <span
-                            className={`px-2 py-1 rounded text-xs text-white ${
+                            className={`px-2 py-0.5 rounded text-[10px] text-white font-bold uppercase tracking-wider ${
                               employeeRoles[employee.id] === 'admin'
                                 ? 'bg-green-500'
                                 : employeeRoles[employee.id] === 'washer'
@@ -1734,7 +1722,23 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                             {employeeRoles[employee.id] === 'admin' ? 'Админ' : employeeRoles[employee.id] === 'washer' ? 'Мойщик' : 'на смене'}
                           </span>
                         )}
-                      </label>
+                      </div>
+                      <Switch
+                        checked={formData.employeeIds.includes(employee.id)}
+                        onChange={(checked) => {
+                          if (checked) {
+                            setFormData({
+                              ...formData,
+                              employeeIds: [...formData.employeeIds, employee.id]
+                            });
+                          } else {
+                            setFormData({
+                              ...formData,
+                              employeeIds: formData.employeeIds.filter(id => id !== employee.id)
+                            });
+                          }
+                        }}
+                      />
                     </div>
                   ))
                 ) : (
@@ -2550,14 +2554,14 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                             />
                           </td>
                           <td className="py-4 px-4">
-                            <div className="flex gap-1">
+                            <div className="flex p-0.5 bg-muted rounded-lg gap-0.5 shadow-inner border border-border/20">
                               <button
                                 type="button"
                                 onClick={() => setEditFormData({...editFormData, serviceType: 'wash'})}
-                                className={`px-2 py-1 text-xs rounded ${
+                                className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${
                                   editFormData.serviceType === 'wash'
-                                    ? 'bg-blue-500 text-white'
-                                    : 'bg-secondary'
+                                    ? 'bg-card text-blue-600 shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
                                 }`}
                               >
                                 Мойка
@@ -2565,10 +2569,10 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                               <button
                                 type="button"
                                 onClick={() => setEditFormData({...editFormData, serviceType: 'dryclean'})}
-                                className={`px-2 py-1 text-xs rounded ${
+                                className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${
                                   editFormData.serviceType === 'dryclean'
-                                    ? 'bg-purple-500 text-white'
-                                    : 'bg-secondary'
+                                    ? 'bg-card text-purple-600 shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
                                 }`}
                               >
                                 Хим
@@ -2588,14 +2592,14 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                           </td>
                           <td className="py-4 px-4">
                             <div className="space-y-2">
-                              <div className="flex gap-1">
+                              <div className="flex p-0.5 bg-muted rounded-lg gap-0.5 shadow-inner border border-border/20">
                                 <button
                                   type="button"
                                   onClick={() => handleEditPaymentTypeChange('cash')}
-                                  className={`px-2 py-1 text-xs rounded ${
+                                  className={`px-1.5 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${
                                     editFormData.paymentMethod?.type === 'cash'
-                                      ? 'bg-primary text-white'
-                                      : 'bg-secondary'
+                                      ? 'bg-card text-primary shadow-sm'
+                                      : 'text-muted-foreground hover:text-foreground'
                                   }`}
                                 >
                                   Нал
@@ -2603,10 +2607,10 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleEditPaymentTypeChange('card')}
-                                  className={`px-2 py-1 text-xs rounded ${
+                                  className={`px-1.5 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${
                                     editFormData.paymentMethod?.type === 'card'
-                                      ? 'bg-primary text-white'
-                                      : 'bg-secondary'
+                                      ? 'bg-card text-primary shadow-sm'
+                                      : 'text-muted-foreground hover:text-foreground'
                                   }`}
                                 >
                                   Карта
@@ -2614,10 +2618,10 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleEditPaymentTypeChange('organization')}
-                                  className={`px-2 py-1 text-xs rounded ${
+                                  className={`px-1.5 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${
                                     editFormData.paymentMethod?.type === 'organization'
-                                      ? 'bg-primary text-white'
-                                      : 'bg-secondary'
+                                      ? 'bg-card text-primary shadow-sm'
+                                      : 'text-muted-foreground hover:text-foreground'
                                   }`}
                                 >
                                   Орг
@@ -2640,18 +2644,21 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                             </div>
                           </td>
                           <td className="py-4 px-4">
-                            <div className="space-y-1 max-h-20 overflow-y-auto">
+                            <div className="space-y-2 max-h-32 overflow-y-auto p-1">
                               {employees.map(emp => (
-                                <label key={emp.id} className="flex items-center gap-1 text-xs">
-                                  <input
-                                    type="checkbox"
-                                    value={emp.id}
+                                <div key={emp.id} className="flex items-center justify-between gap-2">
+                                  <span className="text-xs truncate font-medium">{emp.name}</span>
+                                  <Switch
                                     checked={editFormData.employeeIds?.includes(emp.id) || false}
-                                    onChange={handleEditEmployeeChange}
-                                    className="w-3 h-3"
+                                    onChange={(checked) => {
+                                      const currentIds = editFormData.employeeIds || [];
+                                      const newIds = checked
+                                        ? [...currentIds, emp.id]
+                                        : currentIds.filter(id => id !== emp.id);
+                                      setEditFormData({...editFormData, employeeIds: newIds});
+                                    }}
                                   />
-                                  <span className="truncate">{emp.name}</span>
-                                </label>
+                                </div>
                               ))}
                             </div>
                           </td>

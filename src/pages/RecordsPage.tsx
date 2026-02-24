@@ -484,12 +484,12 @@ const RecordsPage: React.FC = () => {
           {/* Переключатель режима просмотра */}
           <div className="card-with-shadow p-4">
             <label className="block text-sm font-medium mb-2 text-muted-foreground">Режим просмотра</label>
-            <div className="flex p-1 bg-muted rounded-xl gap-1">
+            <div className="flex p-1 bg-muted rounded-xl gap-1 shadow-inner border border-border/20">
               <button
                 onClick={() => setViewMode('list')}
                 className={`flex-1 py-2 rounded-lg transition-all duration-200 ${
                   viewMode === 'list'
-                    ? 'bg-card text-primary shadow-sm'
+                    ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -499,7 +499,7 @@ const RecordsPage: React.FC = () => {
                 onClick={() => setViewMode('calendar')}
                 className={`flex-1 py-2 rounded-lg transition-all duration-200 ${
                   viewMode === 'calendar'
-                    ? 'bg-card text-primary shadow-sm'
+                    ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >

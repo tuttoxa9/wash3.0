@@ -170,12 +170,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
           {/* Переключатель темы */}
           <div className="pt-4 border-t border-border/60">
             <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/70 mb-3 px-1">Тема оформления</p>
-            <div className="flex p-1 bg-muted/50 rounded-xl gap-1 border border-border/40">
+            <div className="flex p-1 bg-muted rounded-xl gap-1 border border-border/20 shadow-inner">
               <button
                 onClick={() => handleThemeChange('light')}
                 className={`flex-1 p-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                   state.theme === 'light'
-                    ? 'bg-card text-primary shadow-sm'
+                    ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label="Светлая тема"
@@ -186,7 +186,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
                 onClick={() => handleThemeChange('dark')}
                 className={`flex-1 p-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                   state.theme === 'dark'
-                    ? 'bg-card text-primary shadow-sm'
+                    ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label="Темная тема"
@@ -197,7 +197,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
                 onClick={() => handleThemeChange('black')}
                 className={`flex-1 p-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                   state.theme === 'black'
-                    ? 'bg-card text-primary shadow-sm'
+                    ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label="Черная тема"

@@ -131,12 +131,12 @@ const ThemeSettings: React.FC = () => {
         Выберите тему оформления приложения
       </p>
 
-      <div className="flex p-1 bg-muted rounded-xl gap-1 mb-1">
+      <div className="flex p-1 bg-muted rounded-xl gap-1 mb-1 shadow-inner border border-border/20">
         <button
           onClick={() => setTheme('light')}
           className={`flex-1 py-2 px-1 rounded-lg flex flex-col items-center gap-1 transition-all duration-200 ${
             state.theme === 'light'
-              ? 'bg-card text-primary shadow-sm'
+              ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -148,7 +148,7 @@ const ThemeSettings: React.FC = () => {
           onClick={() => setTheme('dark')}
           className={`flex-1 py-2 px-1 rounded-lg flex flex-col items-center gap-1 transition-all duration-200 ${
             state.theme === 'dark'
-              ? 'bg-card text-primary shadow-sm'
+              ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -160,7 +160,7 @@ const ThemeSettings: React.FC = () => {
           onClick={() => setTheme('black')}
           className={`flex-1 py-2 px-1 rounded-lg flex flex-col items-center gap-1 transition-all duration-200 ${
             state.theme === 'black'
-              ? 'bg-card text-primary shadow-sm'
+              ? 'bg-card text-primary shadow-md ring-1 ring-black/5'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
