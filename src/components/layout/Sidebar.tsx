@@ -169,40 +169,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
           {/* Переключатель темы */}
           <div className="pt-4 border-t border-border/60">
-            <p className="text-sm text-muted-foreground mb-3">Тема оформления</p>
-            <div className="flex gap-2">
+            <p className="text-sm text-muted-foreground mb-3 px-1">Тема оформления</p>
+            <div className="segmented-control">
               <button
                 onClick={() => handleThemeChange('light')}
-                className={`p-2 rounded-lg transition-colors ${
-                  state.theme === 'light'
-                    ? 'bg-primary text-white'
-                    : ''
-                }`}
+                className={state.theme === 'light' ? 'active' : ''}
                 aria-label="Светлая тема"
               >
-                <Sun className="w-5 h-5" />
+                <Sun className="w-4 h-4 mx-auto" />
               </button>
               <button
                 onClick={() => handleThemeChange('dark')}
-                className={`p-2 rounded-lg transition-colors ${
-                  state.theme === 'dark'
-                    ? 'bg-primary text-white'
-                    : ''
-                }`}
+                className={state.theme === 'dark' ? 'active' : ''}
                 aria-label="Темная тема"
               >
-                <Moon className="w-5 h-5" />
+                <Moon className="w-4 h-4 mx-auto" />
               </button>
               <button
                 onClick={() => handleThemeChange('black')}
-                className={`p-2 rounded-lg transition-colors ${
-                  state.theme === 'black'
-                    ? 'bg-primary text-white'
-                    : ''
-                }`}
+                className={state.theme === 'black' ? 'active' : ''}
                 aria-label="Черная тема"
               >
-                <span className="flex items-center justify-center w-5 h-5 font-bold">B</span>
+                <span className="flex items-center justify-center font-bold text-xs">B</span>
               </button>
             </div>
           </div>

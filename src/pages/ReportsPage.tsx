@@ -840,38 +840,30 @@ const ReportsPage: React.FC = () => {
 
             <div className="space-y-4">
               {/* Period type selector */}
-              <div className="flex flex-wrap gap-2 reports-buttons">
+              <div className="segmented-control mb-4">
                 <button
                   onClick={() => setPeriodType('day')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    periodType === 'day' ? 'bg-primary text-white' : 'bg-secondary/50 hover:bg-secondary'
-                  }`}
+                  className={periodType === 'day' ? 'active' : ''}
                 >
                   День
                 </button>
                 <button
                   onClick={() => setPeriodType('week')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    periodType === 'week' ? 'bg-primary text-white' : 'bg-secondary/50 hover:bg-secondary'
-                  }`}
+                  className={periodType === 'week' ? 'active' : ''}
                 >
                   Неделя
                 </button>
                 <button
                   onClick={() => setPeriodType('month')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    periodType === 'month' ? 'bg-primary text-white' : 'bg-secondary/50 hover:bg-secondary'
-                  }`}
+                  className={periodType === 'month' ? 'active' : ''}
                 >
                   Месяц
                 </button>
                 <button
                   onClick={() => setPeriodType('custom')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    periodType === 'custom' ? 'bg-primary text-white' : 'bg-secondary/50 hover:bg-secondary'
-                  }`}
+                  className={periodType === 'custom' ? 'active' : ''}
                 >
-                  Произвольный период
+                  Период
                 </button>
               </div>
 
@@ -1155,14 +1147,14 @@ const ReportsPage: React.FC = () => {
 
             <div className="space-y-4">
               {/* Быстрые периоды */}
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="segmented-control mb-4 overflow-x-auto">
                 <button
                   onClick={() => {
                     const today = new Date();
                     setGeneralStartDate(today);
                     setGeneralEndDate(today);
                   }}
-                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                  className="text-[10px] sm:text-xs"
                 >
                   Сегодня
                 </button>
@@ -1174,7 +1166,7 @@ const ReportsPage: React.FC = () => {
                     setGeneralStartDate(weekAgo);
                     setGeneralEndDate(today);
                   }}
-                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                  className="text-[10px] sm:text-xs"
                 >
                   7 дней
                 </button>
@@ -1186,7 +1178,7 @@ const ReportsPage: React.FC = () => {
                     setGeneralStartDate(monthAgo);
                     setGeneralEndDate(today);
                   }}
-                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                  className="text-[10px] sm:text-xs"
                 >
                   30 дней
                 </button>
@@ -1197,9 +1189,9 @@ const ReportsPage: React.FC = () => {
                     setGeneralStartDate(startOfMonth);
                     setGeneralEndDate(today);
                   }}
-                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                  className="text-[10px] sm:text-xs"
                 >
-                  Текущий месяц
+                  Месяц
                 </button>
                 <button
                   onClick={() => {
@@ -1209,9 +1201,9 @@ const ReportsPage: React.FC = () => {
                     setGeneralStartDate(lastMonthStart);
                     setGeneralEndDate(lastMonthEnd);
                   }}
-                  className="px-3 py-1.5 text-xs bg-secondary/50 hover:bg-secondary rounded-lg transition-colors"
+                  className="text-[10px] sm:text-xs"
                 >
-                  Прошлый месяц
+                  Прошлый
                 </button>
               </div>
 
