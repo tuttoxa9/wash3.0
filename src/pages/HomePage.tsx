@@ -6,6 +6,7 @@ import 'react-day-picker/dist/style.css';
 import { useAppContext } from '@/lib/context/AppContext';
 import { Loader2, FileDown, Save, Check, Edit, Calendar, Plus, CheckCircle, X, ArrowRight, Trash2, User, Eye, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
+import Switch from '@/components/ui/switch';
 import type { DailyReport, CarWashRecord, Employee, Appointment, EmployeeRole } from '@/lib/types';
 import { carWashService, dailyReportService, appointmentService, dailyRolesService } from '@/lib/services/supabaseService';
 import { createSalaryCalculator } from '@/components/SalaryCalculator';
@@ -918,28 +919,15 @@ const HomePage: React.FC = () => {
                               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
                                 {/* Переключатель учета минималки */}
                                 <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3 p-1.5 sm:p-2 rounded-md sm:rounded-lg border border-border/40 bg-background/50">
-                                  <span className="text-[10px] sm:text-xs font-medium text-foreground">Минималка</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setEmployeeRoles(prev => ({ ...prev })); // no-op to keep state sync
-                                      // флаг храним в dailyEmployeeRoles как специальное поле позже при сохранении смены
-                                      const key = `min_${employeeId}` as any;
-                                      // @ts-ignore - динамическое хранение в объекте ролей до расширения схемы
-                                      const current = (employeeRoles as any)[key] !== false;
+                                  <Switch
+                                    label="Минималка"
+                                    checked={(employeeRoles as any)[`min_${employeeId}`] !== false}
+                                    onChange={(checked) => {
                                       const newRoles: any = { ...employeeRoles };
-                                      newRoles[key] = !current; // true=включено, false=выключено
+                                      newRoles[`min_${employeeId}`] = checked;
                                       setEmployeeRoles(newRoles);
                                     }}
-                                    className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-all duration-200 shadow-lg border-2 ${
-                                      ((employeeRoles as any)[`min_${employeeId}`] !== false)
-                                        ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 border-yellow-400 shadow-yellow-200/50'
-                                        : 'bg-gradient-to-r from-slate-400 to-slate-500 dark:from-slate-600 dark:to-slate-700 border-slate-500 dark:border-slate-600 shadow-slate-200/50 dark:shadow-slate-800/50'
-                                    }`}
-                                    aria-label="Переключатель минималки"
-                                  >
-                                    <span className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform shadow-lg ${((employeeRoles as any)[`min_${employeeId}`] !== false) ? 'translate-x-4 sm:translate-x-5' : 'translate-x-1'}`} />
-                                  </button>
+                                  />
                                 </div>
 
                                 <div className="flex gap-1.5 sm:gap-2">
@@ -1552,28 +1540,30 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
               <label className="block text-sm font-medium mb-2">
                 Тип услуги
               </label>
-              <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="flex p-1 bg-muted rounded-xl gap-1 mb-3">
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, serviceType: 'wash' })}
-                  className={`px-3 py-2 border rounded-xl flex items-center justify-center text-sm font-medium transition-colors ${
+                  className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
                     formData.serviceType === 'wash'
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'border-input hover:bg-secondary/50'
+                      ? 'bg-card text-blue-600 shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  Мойка
+                  <div className={`w-2 h-2 rounded-full ${formData.serviceType === 'wash' ? 'bg-blue-600' : 'bg-transparent border border-muted-foreground'}`} />
+                  <span className="text-sm font-medium">Мойка</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, serviceType: 'dryclean' })}
-                  className={`px-3 py-2 border rounded-xl flex items-center justify-center text-sm font-medium transition-colors ${
+                  className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
                     formData.serviceType === 'dryclean'
-                      ? 'bg-purple-500 text-white border-purple-500'
-                      : 'border-input hover:bg-secondary/50'
+                      ? 'bg-card text-purple-600 shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  Химчистка
+                  <div className={`w-2 h-2 rounded-full ${formData.serviceType === 'dryclean' ? 'bg-purple-600' : 'bg-transparent border border-muted-foreground'}`} />
+                  <span className="text-sm font-medium">Химчистка</span>
                 </button>
               </div>
             </div>
@@ -1633,39 +1623,39 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
               <label className="block text-sm font-medium mb-2">
                 Оплата
               </label>
-              <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="flex p-1 bg-muted rounded-xl gap-1 mb-3">
                 <button
                   type="button"
                   onClick={() => handlePaymentTypeChange('cash')}
-                  className={`px-3 py-2 border rounded-xl flex items-center justify-center text-sm font-medium transition-colors ${
+                  className={`flex-1 py-2 px-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                     formData.paymentMethod.type === 'cash'
-                      ? 'bg-primary text-white border-primary'
-                      : 'border-input hover:bg-secondary/50'
+                      ? 'bg-card text-primary shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  Наличные
+                  <span className="text-[11px] sm:text-xs font-semibold">Наличные</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handlePaymentTypeChange('card')}
-                  className={`px-3 py-2 border rounded-xl flex items-center justify-center text-sm font-medium transition-colors ${
+                  className={`flex-1 py-2 px-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                     formData.paymentMethod.type === 'card'
-                      ? 'bg-primary text-white border-primary'
-                      : 'border-input hover:bg-secondary/50'
+                      ? 'bg-card text-primary shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  Карта
+                  <span className="text-[11px] sm:text-xs font-semibold">Карта</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handlePaymentTypeChange('organization')}
-                  className={`px-3 py-2 border rounded-xl flex items-center justify-center text-sm font-medium transition-colors ${
+                  className={`flex-1 py-2 px-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                     formData.paymentMethod.type === 'organization'
-                      ? 'bg-primary text-white border-primary'
-                      : 'border-input hover:bg-secondary/50'
+                      ? 'bg-card text-primary shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  Организация
+                  <span className="text-[11px] sm:text-xs font-semibold">Организация</span>
                 </button>
               </div>
 
@@ -2463,43 +2453,43 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
           </div>
 
           {/* Фильтры по методу оплаты */}
-          <div className="mb-3 sm:mb-4 flex flex-wrap gap-1.5 sm:gap-2">
+          <div className="flex p-1 bg-muted rounded-xl gap-1 mb-4 w-fit">
             <button
               onClick={() => onPaymentFilterChange('all')}
-              className={`px-2 sm:px-3 py-1 rounded-md sm:rounded-lg text-xs sm:text-sm transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                 paymentFilter === 'all'
-                  ? 'bg-primary text-white'
-                  : 'bg-secondary/50 hover:bg-secondary'
+                  ? 'bg-card text-primary shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Все
             </button>
             <button
               onClick={() => onPaymentFilterChange('cash')}
-              className={`px-2 sm:px-3 py-1 rounded-md sm:rounded-lg text-xs sm:text-sm transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                 paymentFilter === 'cash'
-                  ? 'bg-primary text-white'
-                  : 'bg-secondary/50 hover:bg-secondary'
+                  ? 'bg-card text-primary shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Наличные
             </button>
             <button
               onClick={() => onPaymentFilterChange('card')}
-              className={`px-2 sm:px-3 py-1 rounded-md sm:rounded-lg text-xs sm:text-sm transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                 paymentFilter === 'card'
-                  ? 'bg-primary text-white'
-                  : 'bg-secondary/50 hover:bg-secondary'
+                  ? 'bg-card text-primary shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Карта
             </button>
             <button
               onClick={() => onPaymentFilterChange('organization')}
-              className={`px-2 sm:px-3 py-1 rounded-md sm:rounded-lg text-xs sm:text-sm transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                 paymentFilter === 'organization'
-                  ? 'bg-primary text-white'
-                  : 'bg-secondary/50 hover:bg-secondary'
+                  ? 'bg-card text-primary shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Безнал

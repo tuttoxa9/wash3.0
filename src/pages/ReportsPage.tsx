@@ -840,35 +840,35 @@ const ReportsPage: React.FC = () => {
 
             <div className="space-y-4">
               {/* Period type selector */}
-              <div className="flex flex-wrap gap-2 reports-buttons">
+              <div className="flex p-1 bg-muted rounded-xl gap-1 mb-4 w-fit">
                 <button
                   onClick={() => setPeriodType('day')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    periodType === 'day' ? 'bg-primary text-white' : 'bg-secondary/50 hover:bg-secondary'
+                  className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    periodType === 'day' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   День
                 </button>
                 <button
                   onClick={() => setPeriodType('week')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    periodType === 'week' ? 'bg-primary text-white' : 'bg-secondary/50 hover:bg-secondary'
+                  className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    periodType === 'week' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Неделя
                 </button>
                 <button
                   onClick={() => setPeriodType('month')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    periodType === 'month' ? 'bg-primary text-white' : 'bg-secondary/50 hover:bg-secondary'
+                  className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    periodType === 'month' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Месяц
                 </button>
                 <button
                   onClick={() => setPeriodType('custom')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    periodType === 'custom' ? 'bg-primary text-white' : 'bg-secondary/50 hover:bg-secondary'
+                  className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    periodType === 'custom' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Произвольный период

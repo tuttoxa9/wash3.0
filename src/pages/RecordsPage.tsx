@@ -483,24 +483,24 @@ const RecordsPage: React.FC = () => {
 
           {/* Переключатель режима просмотра */}
           <div className="card-with-shadow p-4">
-            <label className="block text-sm font-medium mb-2">Режим просмотра</label>
-            <div className="flex border border-input rounded-lg overflow-hidden">
+            <label className="block text-sm font-medium mb-2 text-muted-foreground">Режим просмотра</label>
+            <div className="flex p-1 bg-muted rounded-xl gap-1">
               <button
                 onClick={() => setViewMode('list')}
-                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex-1 py-2 rounded-lg transition-all duration-200 ${
                   viewMode === 'list'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted'
+                    ? 'bg-card text-primary shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <List className="w-4 h-4 mx-auto" />
               </button>
               <button
                 onClick={() => setViewMode('calendar')}
-                className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex-1 py-2 rounded-lg transition-all duration-200 ${
                   viewMode === 'calendar'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted'
+                    ? 'bg-card text-primary shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Grid3X3 className="w-4 h-4 mx-auto" />

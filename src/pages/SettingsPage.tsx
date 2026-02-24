@@ -131,46 +131,46 @@ const ThemeSettings: React.FC = () => {
         Выберите тему оформления приложения
       </p>
 
-      <div className="flex gap-2 sm:gap-3 mb-1">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+      <div className="flex p-1 bg-muted rounded-xl gap-1 mb-1">
+        <button
           onClick={() => setTheme('light')}
-          className={`flex-1 p-2 sm:p-2 border rounded-lg flex flex-col items-center gap-1 sm:gap-2 transition-colors touch-manipulation ${
-            state.theme === 'light' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
+          className={`flex-1 py-2 px-1 rounded-lg flex flex-col items-center gap-1 transition-all duration-200 ${
+            state.theme === 'light'
+              ? 'bg-card text-primary shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <Sun className={`w-4 h-4 sm:w-5 sm:h-5 ${state.theme === 'light' ? 'text-primary' : 'text-muted-foreground'}`} />
-          <span className="text-xs font-medium">Светлая</span>
-        </motion.button>
+          <Sun className="w-4 h-4" />
+          <span className="text-[10px] sm:text-xs font-medium">Светлая</span>
+        </button>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <button
           onClick={() => setTheme('dark')}
-          className={`flex-1 p-2 sm:p-2 border rounded-lg flex flex-col items-center gap-1 sm:gap-2 transition-colors touch-manipulation ${
-            state.theme === 'dark' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
+          className={`flex-1 py-2 px-1 rounded-lg flex flex-col items-center gap-1 transition-all duration-200 ${
+            state.theme === 'dark'
+              ? 'bg-card text-primary shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <Moon className={`w-4 h-4 sm:w-5 sm:h-5 ${state.theme === 'dark' ? 'text-primary' : 'text-muted-foreground'}`} />
-          <span className="text-xs font-medium">Темная</span>
-        </motion.button>
+          <Moon className="w-4 h-4" />
+          <span className="text-[10px] sm:text-xs font-medium">Темная</span>
+        </button>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <button
           onClick={() => setTheme('black')}
-          className={`flex-1 p-2 sm:p-2 border rounded-lg flex flex-col items-center gap-1 sm:gap-2 transition-colors touch-manipulation ${
-            state.theme === 'black' ? 'border-primary bg-primary/10' : 'border-border hover:border-input'
+          className={`flex-1 py-2 px-1 rounded-lg flex flex-col items-center gap-1 transition-all duration-200 ${
+            state.theme === 'black'
+              ? 'bg-card text-primary shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <div className={`w-4 h-4 sm:w-5 h-5 rounded-full flex items-center justify-center bg-black text-white ${
-            state.theme === 'black' ? 'ring-2 ring-primary' : ''
+          <div className={`w-4 h-4 rounded-full flex items-center justify-center bg-black text-white border border-border ${
+            state.theme === 'black' ? 'border-primary' : ''
           }`}>
-            <span className="text-xs font-bold">B</span>
+            <span className="text-[10px] font-bold">B</span>
           </div>
-          <span className="text-xs font-medium">Черная</span>
-        </motion.button>
+          <span className="text-[10px] sm:text-xs font-medium">Черная</span>
+        </button>
       </div>
     </motion.div>
   );
@@ -1015,35 +1015,36 @@ const SalaryCalculationSettings: React.FC = () => {
       )}
 
       <div className="flex flex-col gap-3 mb-2">
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          onClick={() => handleSalaryMethodChange('minimumWithPercentage')}
-          className={`p-3 border rounded-lg flex items-start transition-colors ${
+        <div
+          onClick={() => !loading && handleSalaryMethodChange('minimumWithPercentage')}
+          className={`p-4 border-2 rounded-xl flex items-start transition-all duration-300 cursor-pointer ${
             state.salaryCalculationMethod === 'minimumWithPercentage'
-              ? 'border-primary bg-primary/5'
-              : 'border-border hover:bg-secondary/10'
+              ? 'border-primary bg-primary/5 shadow-md shadow-primary/5'
+              : 'border-border hover:border-border/80 hover:bg-muted/50'
           }`}
-          disabled={loading}
         >
-          <div className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center ${
+          <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 mr-4 flex items-center justify-center transition-colors ${
             state.salaryCalculationMethod === 'minimumWithPercentage'
-              ? 'border-primary' : 'border-input'
+              ? 'border-primary bg-primary' : 'border-input bg-card'
           }`}>
             {state.salaryCalculationMethod === 'minimumWithPercentage' && (
-              <div className="w-3 h-3 rounded-full bg-primary"></div>
+              <Check className="w-4 h-4 text-white" />
             )}
           </div>
           <div className="flex-1">
-            <p className="font-medium text-sm">Минимальная оплата + процент</p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className={`font-semibold text-sm transition-colors ${
+              state.salaryCalculationMethod === 'minimumWithPercentage' ? 'text-primary' : 'text-foreground'
+            }`}>
+              Минимальная оплата + процент
+            </p>
+            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
               Мойщик: % от выручки мойки и химчистки (раздельно) или минимальная оплата. Админ: % от кассы + % от лично выполненных услуг (мойка и химчистка раздельно) или минимальная оплата.
             </p>
           </div>
           {loading && (
-            <Loader2 className="w-4 h-4 animate-spin ml-2 text-primary" />
+            <Loader2 className="w-5 h-5 animate-spin ml-2 text-primary shrink-0" />
           )}
-        </motion.button>
+        </div>
 
         {state.salaryCalculationMethod === 'minimumWithPercentage' && (
           <motion.div

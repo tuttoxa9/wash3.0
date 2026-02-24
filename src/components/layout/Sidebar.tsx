@@ -169,40 +169,40 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
           {/* Переключатель темы */}
           <div className="pt-4 border-t border-border/60">
-            <p className="text-sm text-muted-foreground mb-3">Тема оформления</p>
-            <div className="flex gap-2">
+            <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/70 mb-3 px-1">Тема оформления</p>
+            <div className="flex p-1 bg-muted/50 rounded-xl gap-1 border border-border/40">
               <button
                 onClick={() => handleThemeChange('light')}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`flex-1 p-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                   state.theme === 'light'
-                    ? 'bg-primary text-white'
-                    : ''
+                    ? 'bg-card text-primary shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label="Светлая тема"
               >
-                <Sun className="w-5 h-5" />
+                <Sun className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleThemeChange('dark')}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`flex-1 p-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                   state.theme === 'dark'
-                    ? 'bg-primary text-white'
-                    : ''
+                    ? 'bg-card text-primary shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label="Темная тема"
               >
-                <Moon className="w-5 h-5" />
+                <Moon className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleThemeChange('black')}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`flex-1 p-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                   state.theme === 'black'
-                    ? 'bg-primary text-white'
-                    : ''
+                    ? 'bg-card text-primary shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label="Черная тема"
               >
-                <span className="flex items-center justify-center w-5 h-5 font-bold">B</span>
+                <span className="flex items-center justify-center w-4 h-4 font-bold text-[10px]">B</span>
               </button>
             </div>
           </div>
