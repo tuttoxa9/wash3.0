@@ -108,6 +108,27 @@ export const carWashService = {
       employeeIds: Array.isArray(r.participant_ids) ? r.participant_ids : [],
     }));
   },
+  async getByDateRange(startDate: string, endDate: string): Promise<CarWashRecord[]> {
+    const { data, error } = await supabase
+      .from('car_wash_records')
+      .select('*')
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date')
+      .order('time');
+    if (error) { logSupabaseError('carWash.getByDateRange', error); return []; }
+    return (data || []).map((r: any) => ({
+      id: String(r.id),
+      date: r.date,
+      time: r.time,
+      carInfo: r.car_info,
+      service: r.service,
+      serviceType: r.service_type || 'wash',
+      price: r.price,
+      paymentMethod: r.payment_method,
+      employeeIds: Array.isArray(r.participant_ids) ? r.participant_ids : [],
+    }));
+  },
   async getByOrganization(organizationId: string): Promise<CarWashRecord[]> {
     const { data, error } = await supabase
       .from('car_wash_records')
@@ -215,6 +236,17 @@ export const appointmentService = {
     if (error) { logSupabaseError('appointments.getByDate', error); return []; }
     return (data || []).map((r: any) => ({ id: String(r.id), date: r.date, time: r.time, carInfo: r.car_info, service: r.service, clientName: r.client_name, clientPhone: r.client_phone, status: r.status, createdAt: r.created_at }));
   },
+  async getByDateRange(startDate: string, endDate: string): Promise<Appointment[]> {
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date')
+      .order('time');
+    if (error) { logSupabaseError('appointments.getByDateRange', error); return []; }
+    return (data || []).map((r: any) => ({ id: String(r.id), date: r.date, time: r.time, carInfo: r.car_info, service: r.service, clientName: r.client_name, clientPhone: r.client_phone, status: r.status, createdAt: r.created_at }));
+  },
   async add(appointment: Omit<Appointment, 'id'>): Promise<Appointment | null> {
     const payload = {
       date: appointment.date,
@@ -296,6 +328,20 @@ export const dailyRolesService = {
     const { data, error } = await supabase.from('daily_roles').select('employee_roles').eq('id', date).single();
     if (error) { if ((error as any).code === 'PGRST116') return null; logSupabaseError('dailyRoles.getDailyRoles', error); return null; }
     return (data as any)?.employee_roles ?? null;
+  },
+  async getDailyRolesByDateRange(startDate: string, endDate: string): Promise<Record<string, Record<string, string>>> {
+    const { data, error } = await supabase
+      .from('daily_roles')
+      .select('date, employee_roles')
+      .gte('date', startDate)
+      .lte('date', endDate);
+    if (error) { logSupabaseError('dailyRoles.getDailyRolesByDateRange', error); return {}; }
+
+    const result: Record<string, Record<string, string>> = {};
+    (data || []).forEach((r: any) => {
+      result[r.date] = r.employee_roles;
+    });
+    return result;
   },
   async updateEmployeeRole(date: string, employeeId: string, role: string): Promise<boolean> {
     const current = (await this.getDailyRoles(date)) || {};

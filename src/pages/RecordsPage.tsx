@@ -77,15 +77,6 @@ const RecordsPage: React.FC = () => {
 
   const { state, dispatch } = useAppContext();
 
-  // Отслеживание состояния модальных окон
-  useEffect(() => {
-    console.log('Состояние модальных окон:', {
-      showAddModal,
-      showEditModal,
-      showDetailsModal,
-      selectedAppointment: selectedAppointment?.id || null
-    });
-  }, [showAddModal, showEditModal, showDetailsModal, selectedAppointment]);
 
   // Загрузка записей
   useEffect(() => {
@@ -174,7 +165,6 @@ const RecordsPage: React.FC = () => {
   };
 
   const handleEditAppointment = (appointment: Appointment, event: React.MouseEvent) => {
-    console.log('handleEditAppointment вызван для записи:', appointment.id);
     setClickPosition({ x: event.clientX, y: event.clientY });
     setSelectedAppointment(appointment);
     setFormData({
@@ -187,7 +177,6 @@ const RecordsPage: React.FC = () => {
       status: appointment.status
     });
     setShowEditModal(true);
-    console.log('showEditModal установлен в true');
   };
 
   const handleViewDetails = (appointment: Appointment, event: React.MouseEvent) => {
@@ -266,15 +255,12 @@ const RecordsPage: React.FC = () => {
     setLoading(prev => ({ ...prev, deleting: true }));
 
     try {
-      console.log('Начинаем удаление записи с ID:', id);
       const success = await appointmentService.delete(id);
       if (success) {
         dispatch({ type: 'REMOVE_APPOINTMENT', payload: id });
         toast.success('Запись успешно удалена');
         handleCloseModal();
-        console.log('Запись успешно удалена из состояния');
       } else {
-        console.error('Не удалось удалить запись из Firebase');
         toast.error('Не удалось удалить запись');
       }
     } catch (error) {
@@ -488,7 +474,7 @@ const RecordsPage: React.FC = () => {
                 className="w-full px-3 py-2 border border-input rounded-lg bg-background"
               >
                 <option value="all">Все даты</option>
-
+                <option value="today">Сегодня</option>
                 <option value="tomorrow">Завтра</option>
                 <option value="week">Эта неделя</option>
               </select>
