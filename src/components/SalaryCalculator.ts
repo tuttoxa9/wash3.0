@@ -124,7 +124,7 @@ export class SalaryCalculator {
     const totalPercentageEarnings = baseCashBonus + washBonus + drycleanBonus;
 
     // 5. Итоговая сумма (не меньше минималки)
-    const respectMinimum = this.minimumOverride[employeeId] === true; // минималка только если явно включена
+    const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
     const finalAmount = respectMinimum
       ? Math.max(totalPercentageEarnings, this.settings.minimumPaymentAdmin)
       : totalPercentageEarnings;
@@ -163,7 +163,7 @@ export class SalaryCalculator {
     const percentageEarnings = washEarnings + drycleanEarnings;
 
     // 4. Итоговая сумма (не меньше минималки)
-    const respectMinimum = this.minimumOverride[employeeId] === true; // минималка только если явно включена
+    const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
     const finalAmount = respectMinimum
       ? Math.max(percentageEarnings, this.settings.minimumPaymentWasher)
       : percentageEarnings;

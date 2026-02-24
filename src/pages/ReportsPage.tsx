@@ -176,59 +176,6 @@ const ReportsPage: React.FC = () => {
     loadRecords();
   }, [startDate, endDate]);
 
-  // Функция для расчета зарплаты - теперь всегда используем минималку + %
-  const getSalaryAmount = (totalRevenue: number, employeeCount = 1, employeeRole: 'admin' | 'washer' | null = null, date?: string) => {
-    // Всегда используем выбранный метод (минималка + %)
-    const methodToUse = state.salaryCalculationMethod;
-
-    // Если метод не выбран, возвращаем 0
-    if (methodToUse === 'none') {
-      return {
-        totalAmount: 0,
-        perEmployee: 0
-      };
-    }
-
-    // Минимальная оплата + процент с учетом ролей
-    if (employeeRole) {
-      if (employeeRole === 'washer') {
-        // Базовый расчёт для мойщика
-        const basePercentage = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-        const salary = Math.max(basePercentage, state.minimumPaymentSettings.minimumPaymentWasher);
-        return {
-          totalAmount: salary * employeeCount,
-          perEmployee: salary
-        };
-      } else if (employeeRole === 'admin') {
-        // Специальный расчёт для админа с учетом настроек
-        let adminEarnings = 0;
-
-        // Процент от всей выручки (наличные + безнал + организации) - всегда получает
-        const cashBonus = totalRevenue * (state.minimumPaymentSettings.adminCashPercentage / 100);
-
-        // Процент от вымытых машин - только если участвовал в мойке
-        // Здесь нужен employee ID, но его нет в параметрах функции
-        // Эта логика будет обрабатываться в вызывающем коде
-        const carWashBonus = 0; // Будет рассчитано отдельно для каждого админа
-
-        adminEarnings = cashBonus + carWashBonus;
-        const salary = Math.max(adminEarnings, state.minimumPaymentSettings.minimumPaymentAdmin);
-
-        return {
-          totalAmount: salary * employeeCount,
-          perEmployee: salary
-        };
-      }
-    }
-
-    // Fallback если роль не определена - используем как мойщик
-    const earnings = totalRevenue * (state.minimumPaymentSettings.percentageWasher / 100);
-    const salary = Math.max(earnings, state.minimumPaymentSettings.minimumPaymentWasher);
-    return {
-      totalAmount: salary * employeeCount,
-      perEmployee: salary
-    };
-  };
 
   // Calculate earnings when records or selected employee changes
   useEffect(() => {
@@ -374,129 +321,79 @@ const ReportsPage: React.FC = () => {
         });
       }
 
-      // Calculate salary for each employee with daily roles
-      const reportDate = startDate.toISOString().split('T')[0];
-      // Всегда используем выбранный метод (минималка + %)
+      // Calculate salary for each employee with daily roles - Refactored to calculate day-by-day
       const methodToUse = state.salaryCalculationMethod;
 
-      // Если метод не выбран, устанавливаем зарплату в 0 для всех
       if (methodToUse === 'none') {
-        results.forEach(r => {
-          r.calculatedEarnings = 0;
-        });
+        results.forEach(r => { r.calculatedEarnings = 0; });
       } else if (methodToUse === 'minimumWithPercentage') {
-        // Используем новый компонент расчёта зарплаты
-        const employeeRolesForCalc: Record<string, 'admin' | 'washer'> = {};
+        const totalEarningsByEmployee: Record<string, number> = {};
+        const aggregatedMinimumFlags: Record<string, boolean> = {};
 
-        // Определяем роли для всех сотрудников
-        results.forEach(r => {
-          let employeeRole: 'admin' | 'washer' = 'washer';
+        // Iterate through each date in the period
+        const datesInPeriod = Object.keys(dailyRoles).sort();
 
-          // Проверяем роль в dailyRoles для каждой даты в периоде
-          let roleFound = false;
-
-          // Проверяем все даты в диапазоне
-          Object.keys(dailyRoles).forEach(date => {
-            if (dailyRoles[date] && dailyRoles[date][r.employeeId]) {
-              employeeRole = dailyRoles[date][r.employeeId] as 'admin' | 'washer';
-              roleFound = true;
-            }
+        datesInPeriod.forEach(dateStr => {
+          const recordsForDay = filteredRecords.filter(rec => {
+            const recDate = typeof rec.date === 'string' ? rec.date : format(rec.date, 'yyyy-MM-dd');
+            return recDate === dateStr;
           });
 
-          // Если роль не найдена в dailyRoles, проверяем глобальное состояние сотрудников
-          if (!roleFound) {
-            const employee = state.employees.find(emp => emp.id === r.employeeId);
-            if (employee && employee.role) {
-              employeeRole = employee.role;
-            }
-          }
+          const dayRoles = dailyRoles[dateStr] || {};
 
-          employeeRolesForCalc[r.employeeId] = employeeRole;
-        });
+          // Determine roles for this specific day
+          const employeeRolesForDay: Record<string, 'admin' | 'washer'> = {};
+          const minimumOverrideForDay: Record<string, boolean> = {};
 
-        // Собираем карту флагов минималки для отчёта
-        // Для дневного отчёта берём флаги конкретного дня, для диапазона - проверяем все дни
-        const minimumOverride: Record<string, boolean> = {};
-        const reportDateStr = startDate.toISOString().split('T')[0];
-
-        // Собираем всех сотрудников из записей
-        const allEmployeeIdsFromRecords = new Set<string>();
-        filteredRecords.forEach(record => {
-          record.employeeIds.forEach(id => allEmployeeIdsFromRecords.add(id));
-        });
-
-        console.log('=== ОТЛАДКА МИНИМАЛКИ ===');
-        console.log('periodType:', periodType);
-        console.log('reportDateStr:', reportDateStr);
-        console.log('allEmployeeIdsFromRecords:', Array.from(allEmployeeIdsFromRecords));
-        console.log('dailyRoles:', dailyRoles);
-
-        if (periodType === 'day') {
-          // Для дневного отчёта используем роли конкретного дня
-          const dayRoles = dailyRoles[reportDateStr] || {};
-          console.log('dayRoles для даты', reportDateStr, ':', dayRoles);
-
-          // Инициализируем всех сотрудников из записей со значением по умолчанию (минималка отключена)
-          allEmployeeIdsFromRecords.forEach(empId => {
-            minimumOverride[empId] = false; // по умолчанию минималка отключена, включается только явно
-          });
-
-          // Затем обновляем для тех, у кого есть явная настройка в ролях
+          // Initialize participants for this day (from roles or records)
+          const participantIds = new Set<string>();
           Object.keys(dayRoles).forEach(key => {
-            if (key.startsWith('min_')) {
-              const empId = key.substring(4); // убираем префикс 'min_'
-              const val = dayRoles[key];
-              console.log(`Флаг минималки для сотрудника ${empId}: ${val}`);
-              minimumOverride[empId] = val === true; // true = включена, false или undefined = отключена
+            if (!key.startsWith('min_')) participantIds.add(key);
+          });
+          recordsForDay.forEach(rec => rec.employeeIds.forEach(id => participantIds.add(id)));
+
+          participantIds.forEach(empId => {
+            // Role logic
+            let role: 'admin' | 'washer' = (dayRoles[empId] as 'admin' | 'washer') || 'washer';
+            if (!dayRoles[empId]) {
+               const emp = state.employees.find(e => e.id === empId);
+               if (emp?.role) role = emp.role;
+            }
+            employeeRolesForDay[empId] = role;
+
+            // Minimum flag logic for this day
+            const minKey = `min_${empId}`;
+            const minVal = dayRoles[minKey];
+            // If explicit flag exists, use it. Otherwise, it's true by default.
+            minimumOverrideForDay[empId] = minVal !== false;
+
+            // For UI display in reports, we aggregate: if enabled on ANY day, show as enabled for the period
+            if (minimumOverrideForDay[empId]) {
+              aggregatedMinimumFlags[empId] = true;
             }
           });
-        } else {
-          // Для диапазона: если хотя бы в одном дне минималка отключена, то отключена для всего периода
-          const allEmployeeIds = new Set<string>();
-          Object.keys(dailyRoles).forEach(date => {
-            Object.keys(dailyRoles[date] || {}).forEach(key => {
-              if (!key.startsWith('min_')) {
-                allEmployeeIds.add(key);
-              }
-            });
+
+          // Calculate for this single day
+          const salaryCalculator = createSalaryCalculator(
+            state.minimumPaymentSettings,
+            recordsForDay,
+            employeeRolesForDay,
+            state.employees,
+            minimumOverrideForDay
+          );
+
+          const dailyResults = salaryCalculator.calculateSalaries();
+          dailyResults.forEach(res => {
+            totalEarningsByEmployee[res.employeeId] = (totalEarningsByEmployee[res.employeeId] || 0) + res.calculatedSalary;
           });
-
-          // Добавляем сотрудников из записей
-          allEmployeeIdsFromRecords.forEach(id => allEmployeeIds.add(id));
-
-          allEmployeeIds.forEach(empId => {
-            let respect = false; // по умолчанию отключена
-            Object.keys(dailyRoles).forEach(date => {
-              const val = (dailyRoles[date] as any)?.[`min_${empId}`];
-              if (val === true) respect = true; // включается если хоть в одном дне включена
-            });
-            minimumOverride[empId] = respect;
-          });
-        }
-
-        console.log('minimumOverride результат:', minimumOverride);
-
-        // Сохраняем флаги минималки в состояние для отображения
-        setMinimumFlags(minimumOverride);
-
-        // Создаём калькулятор зарплаты и получаем результаты
-        const salaryCalculator = createSalaryCalculator(
-          state.minimumPaymentSettings,
-          filteredRecords,
-          employeeRolesForCalc,
-          state.employees,
-          minimumOverride
-        );
-
-        const salaryResults = salaryCalculator.calculateSalaries();
-
-        // Обновляем результаты с рассчитанными зарплатами
-        results.forEach(r => {
-          const salaryResult = salaryResults.find(sr => sr.employeeId === r.employeeId);
-          if (salaryResult) {
-            r.calculatedEarnings = salaryResult.calculatedSalary;
-          }
         });
+
+        // Update results with summed calculated earnings
+        results.forEach(r => {
+          r.calculatedEarnings = totalEarningsByEmployee[r.employeeId] || 0;
+        });
+
+        setMinimumFlags(aggregatedMinimumFlags);
       }
 
       // Sort by calculated earnings descending
@@ -683,93 +580,54 @@ const ReportsPage: React.FC = () => {
       const maxDay = dailyData.reduce((max, day) => day.total > max.amount ? { date: day.date, amount: day.total } : max, { date: '', amount: 0 });
       const minDay = dailyData.reduce((min, day) => day.total < min.amount || min.amount === 0 ? { date: day.date, amount: day.total } : min, { date: '', amount: Number.MAX_VALUE });
 
-      // Подсчитываем общую зарплату
+      // Подсчитываем общую зарплату - Refactored to calculate day-by-day
       let totalSalaries = 0;
       if (state.salaryCalculationMethod === 'minimumWithPercentage') {
-        // Группируем сотрудников по всему периоду
-        const employeeIdsSet = new Set<string>();
+        const aggregatedGeneralMinFlags: Record<string, boolean> = {};
 
-        // Добавляем сотрудников из записей
-        allRecords.forEach(record => {
-          record.employeeIds.forEach(id => employeeIdsSet.add(id));
-        });
-
-        // Добавляем сотрудников из ролей
-        Object.values(rolesMap).forEach(roles => {
-          Object.keys(roles).forEach(empId => {
-            employeeIdsSet.add(empId);
+        dateRange.forEach(dateStr => {
+          const recordsForDay = allRecords.filter(rec => {
+            const recDate = typeof rec.date === 'string' ? rec.date : format(rec.date, 'yyyy-MM-dd');
+            return recDate === dateStr;
           });
-        });
 
-        // Определяем роли сотрудников
-        const employeeRolesForCalc: Record<string, 'admin' | 'washer'> = {};
-        employeeIdsSet.forEach(empId => {
-          let employeeRole: 'admin' | 'washer' = 'washer';
+          const dayRoles = rolesMap[dateStr] || {};
+          const employeeRolesForDay: Record<string, 'admin' | 'washer'> = {};
+          const minimumOverrideForDay: Record<string, boolean> = {};
 
-          // Проверяем роли в dailyRoles
-          Object.values(rolesMap).forEach(roles => {
-            if (roles[empId]) {
-              employeeRole = roles[empId] as 'admin' | 'washer';
+          const participantIds = new Set<string>();
+          Object.keys(dayRoles).forEach(key => {
+            if (!key.startsWith('min_')) participantIds.add(key);
+          });
+          recordsForDay.forEach(rec => rec.employeeIds.forEach(id => participantIds.add(id)));
+
+          participantIds.forEach(empId => {
+            let role: 'admin' | 'washer' = (dayRoles[empId] as 'admin' | 'washer') || 'washer';
+            if (!dayRoles[empId]) {
+               const emp = state.employees.find(e => e.id === empId);
+               if (emp?.role) role = emp.role;
             }
+            employeeRolesForDay[empId] = role;
+
+            const minKey = `min_${empId}`;
+            const minVal = dayRoles[minKey];
+            minimumOverrideForDay[empId] = minVal !== false; // true by default
+
+            if (minimumOverrideForDay[empId]) aggregatedGeneralMinFlags[empId] = true;
           });
 
-          // Если роль не найдена, проверяем глобальное состояние
-          if (employeeRole === 'washer') {
-            const employee = state.employees.find(emp => emp.id === empId);
-            if (employee && employee.role) {
-              employeeRole = employee.role;
-            }
-          }
+          const salaryCalculator = createSalaryCalculator(
+            state.minimumPaymentSettings,
+            recordsForDay,
+            employeeRolesForDay,
+            state.employees,
+            minimumOverrideForDay
+          );
 
-          employeeRolesForCalc[empId] = employeeRole;
+          totalSalaries += salaryCalculator.getTotalSalarySum();
         });
 
-        // Карта флагов минималки за период общего отчёта
-        // Если хотя бы в одном дне минималка отключена, то отключена для всего периода
-        const minimumOverride: Record<string, boolean> = {};
-        const allEmployeeIds = new Set<string>();
-
-        // Добавляем сотрудников из ролей
-        Object.keys(rolesMap).forEach(date => {
-          Object.keys(rolesMap[date] || {}).forEach(key => {
-            if (!key.startsWith('min_')) {
-              allEmployeeIds.add(key);
-            }
-          });
-        });
-
-        // Добавляем сотрудников из записей
-        allRecords.forEach(record => {
-          record.employeeIds.forEach(id => allEmployeeIds.add(id));
-        });
-
-        allEmployeeIds.forEach(empId => {
-          let respect = false; // по умолчанию минималка отключена
-          Object.keys(rolesMap).forEach(date => {
-            const val = (rolesMap[date] as any)?.[`min_${empId}`];
-            if (val === true) respect = true; // если хоть в одном дне включена
-          });
-          minimumOverride[empId] = respect;
-        });
-
-        console.log('=== ОТЛАДКА МИНИМАЛКИ ОБЩЕГО ОТЧЁТА ===');
-        console.log('rolesMap:', rolesMap);
-        console.log('allEmployeeIds:', Array.from(allEmployeeIds));
-        console.log('minimumOverride общего отчёта:', minimumOverride);
-
-        // Сохраняем флаги минималки для общего отчёта
-        setGeneralMinimumFlags(minimumOverride);
-
-        // Создаём калькулятор зарплаты
-        const salaryCalculator = createSalaryCalculator(
-          state.minimumPaymentSettings,
-          allRecords,
-          employeeRolesForCalc,
-          state.employees,
-          minimumOverride
-        );
-
-        totalSalaries = salaryCalculator.getTotalSalarySum();
+        setGeneralMinimumFlags(aggregatedGeneralMinFlags);
       }
 
       setGeneralReportData({

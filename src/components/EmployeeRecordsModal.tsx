@@ -1265,19 +1265,22 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     const methodToUse = state.salaryCalculationMethod;
 
     if (methodToUse === 'minimumWithPercentage') {
+      const share = record.price / record.employeeIds.length;
+      const isDryClean = record.serviceType === 'dryclean';
+
       if (employeeRole === 'washer') {
-        // Мойщик получает процент от стоимости услуги
-        const washerShare = record.price / record.employeeIds.length;
-        const washerEarnings = washerShare * (state.minimumPaymentSettings.percentageWasher / 100);
-        return washerEarnings;
+        const percentage = isDryClean
+          ? state.minimumPaymentSettings.percentageWasherDryclean
+          : state.minimumPaymentSettings.percentageWasher;
+        return share * (percentage / 100);
       } else if (employeeRole === 'admin') {
-        // Админ получает процент только если он участвовал в мойке этого авто
         if (record.employeeIds.includes(employeeId)) {
-          const adminShare = record.price / record.employeeIds.length;
-          const adminEarnings = adminShare * (state.minimumPaymentSettings.adminCarWashPercentage / 100);
-          return adminEarnings;
+          const percentage = isDryClean
+            ? state.minimumPaymentSettings.adminDrycleanPercentage
+            : state.minimumPaymentSettings.adminCarWashPercentage;
+          return share * (percentage / 100);
         }
-        return 0; // Админ не участвовал в мойке этого авто
+        return 0;
       }
     }
 
