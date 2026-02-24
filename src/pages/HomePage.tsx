@@ -930,23 +930,23 @@ const HomePage: React.FC = () => {
                                   />
                                 </div>
 
-                                <div className="flex gap-1.5 sm:gap-2">
+                                <div className="flex p-1 bg-muted/50 rounded-xl gap-1 border border-border/20">
                                   <button
                                     onClick={() => handleEmployeeRoleChange(employeeId, 'washer')}
-                                    className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
+                                    className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all duration-200 ${
                                       employeeRoles[employeeId] === 'washer'
-                                        ? 'bg-gradient-to-r from-green-700 to-green-800 text-white border-green-600 shadow-green-300 dark:shadow-green-900/50'
-                                        : 'bg-gradient-to-r from-slate-700 to-slate-800 text-white border-slate-600 hover:from-slate-600 hover:to-slate-700 hover:border-slate-500'
+                                        ? 'bg-card text-blue-600 shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                   >
                                     Мойщик
                                   </button>
                                   <button
                                     onClick={() => handleEmployeeRoleChange(employeeId, 'admin')}
-                                    className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 border-2 shadow-md ${
+                                    className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all duration-200 ${
                                       employeeRoles[employeeId] === 'admin'
-                                        ? 'bg-gradient-to-r from-green-700 to-green-800 text-white border-green-600 shadow-green-300 dark:shadow-green-900/50'
-                                        : 'bg-gradient-to-r from-slate-700 to-slate-800 text-white border-slate-600 hover:from-slate-600 hover:to-slate-700 hover:border-slate-500'
+                                        ? 'bg-card text-green-600 shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                   >
                                     Админ
