@@ -1,7 +1,7 @@
-import { createContext, useReducer, useContext, type ReactNode, useEffect } from 'react';
+import { createContext, useReducer, useContext, type ReactNode, useEffect, useCallback } from 'react';
 import type { AppState, AppAction, DailyReport, ThemeMode, Organization, Appointment, SalaryCalculationMethod, MinimumPaymentSettings } from '../types';
 import { format } from 'date-fns';
-import { employeeService, organizationService, serviceService, appointmentService, settingsService } from '@/lib/services/supabaseService';
+import { employeeService, organizationService, serviceService, appointmentService, settingsService, carWashService, dailyReportService } from '@/lib/services/supabaseService';
 
 // Начальное состояние приложения
 const initialState: AppState = {
@@ -29,9 +29,11 @@ const initialState: AppState = {
 const AppContext = createContext<{
   state: AppState;
   dispatch: React.Dispatch<AppAction>;
+  fetchDataForPeriod: (startDate: string, endDate: string) => Promise<void>;
 }>({
   state: initialState,
-  dispatch: () => null
+  dispatch: () => null,
+  fetchDataForPeriod: async () => {}
 });
 
 // Редьюсер для управления состоянием
@@ -191,29 +193,80 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [state, dispatch] = useReducer(appReducer, initialStateWithSaved);
 
-  // Загрузка данных при монтировании приложения
+  // Функция для загрузки данных за определенный период
+  const fetchDataForPeriod = useCallback(async (startDate: string, endDate: string) => {
+    try {
+      console.log(`Загрузка данных за период: ${startDate} - ${endDate}`);
+
+      // Загружаем записи на мойку за период
+      const appointments = await appointmentService.getAll(startDate, endDate);
+      dispatch({ type: 'SET_APPOINTMENTS', payload: appointments });
+      console.log(`Записи на мойку загружены за период: ${appointments.length}`);
+
+      // Загружаем отчеты за период
+      const dailyReports = await dailyReportService.getByDateRange(startDate, endDate);
+
+      // Преобразуем массив отчетов в объект с ключами-датами
+      const reportsMap: Record<string, DailyReport> = {};
+      dailyReports.forEach(report => {
+        reportsMap[report.date] = report;
+      });
+
+      // Обновляем состояние - добавляем новые отчеты к существующим
+      for (const [date, report] of Object.entries(reportsMap)) {
+        dispatch({ type: 'SET_DAILY_REPORT', payload: { date, report } });
+      }
+
+      console.log(`Отчеты загружены за период: ${dailyReports.length}`);
+    } catch (error) {
+      console.error('Ошибка при загрузке данных за период:', error);
+    }
+  }, []);
+
+  // Загрузка данных при монтировании приложения (только за текущий месяц)
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        // Загружаем сотрудников
+        // Вычисляем первый и последний день текущего месяца
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        const startDate = format(firstDayOfMonth, 'yyyy-MM-dd');
+        const endDate = format(lastDayOfMonth, 'yyyy-MM-dd');
+
+        console.log(`Загрузка данных за текущий месяц: ${startDate} - ${endDate}`);
+
+        // Загружаем сотрудников (загружаем все, т.к. это справочник)
         const employees = await employeeService.getAll();
         dispatch({ type: 'SET_EMPLOYEES', payload: employees });
         console.log('Сотрудники загружены при запуске приложения:', employees.length);
 
-        // Загружаем организации
+        // Загружаем организации (загружаем все, т.к. это справочник)
         const organizations = await organizationService.getAll();
         dispatch({ type: 'SET_ORGANIZATIONS', payload: organizations });
         console.log('Организации загружены при запуске приложения:', organizations.length);
 
-        // Загружаем услуги
+        // Загружаем услуги (загружаем все, т.к. это справочник)
         const services = await serviceService.getAll();
         dispatch({ type: 'SET_SERVICES', payload: services });
         console.log('Услуги загружены при запуске приложения:', services.length);
 
-        // Загружаем записи на мойку
-        const appointments = await appointmentService.getAll();
+        // Загружаем записи на мойку только за текущий месяц
+        const appointments = await appointmentService.getAll(startDate, endDate);
         dispatch({ type: 'SET_APPOINTMENTS', payload: appointments });
-        console.log('Записи на мойку загружены при запуске приложения:', appointments.length);
+        console.log('Записи на мойку загружены за текущий месяц:', appointments.length);
+
+        // Загружаем отчеты только за текущий месяц
+        const dailyReports = await dailyReportService.getByDateRange(startDate, endDate);
+        const reportsMap: Record<string, DailyReport> = {};
+        dailyReports.forEach(report => {
+          reportsMap[report.date] = report;
+        });
+        for (const [date, report] of Object.entries(reportsMap)) {
+          dispatch({ type: 'SET_DAILY_REPORT', payload: { date, report } });
+        }
+        console.log('Отчеты загружены за текущий месяц:', dailyReports.length);
 
         // Загружаем метод расчета зарплаты из базы данных
         const salarySettings = await settingsService.getSalaryCalculationMethod();
@@ -251,7 +304,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [state.theme]);
 
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={{ state, dispatch, fetchDataForPeriod }}>
       {children}
     </AppContext.Provider>
   );

@@ -186,6 +186,24 @@ export const dailyReportService = {
       dailyEmployeeRoles: data.daily_employee_roles || undefined,
     };
   },
+  async getByDateRange(startDate: string, endDate: string): Promise<DailyReport[]> {
+    const { data, error } = await supabase
+      .from('daily_reports')
+      .select('*')
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date');
+    if (error) { logSupabaseError('dailyReports.getByDateRange', error); return []; }
+    return (data || []).map((r: any) => ({
+      id: r.id,
+      date: r.date,
+      employeeIds: r.employee_ids || [],
+      records: r.records || [],
+      totalCash: r.total_cash || 0,
+      totalNonCash: r.total_non_cash || 0,
+      dailyEmployeeRoles: r.daily_employee_roles || undefined,
+    }));
+  },
   async updateReport(report: DailyReport): Promise<boolean> {
     const payload = {
       id: report.id,
@@ -226,8 +244,19 @@ export const dailyReportService = {
 
 // appointments
 export const appointmentService = {
-  async getAll(): Promise<Appointment[]> {
-    const { data, error } = await supabase.from('appointments').select('*').order('date').order('time');
+  async getAll(startDate?: string, endDate?: string): Promise<Appointment[]> {
+    let query = supabase.from('appointments').select('*');
+
+    if (startDate) {
+      query = query.gte('date', startDate);
+    }
+    if (endDate) {
+      query = query.lte('date', endDate);
+    }
+
+    query = query.order('date').order('time');
+
+    const { data, error } = await query;
     if (error) { logSupabaseError('appointments.getAll', error); return []; }
     return (data || []).map((r: any) => ({ id: String(r.id), date: r.date, time: r.time, carInfo: r.car_info, service: r.service, clientName: r.client_name, clientPhone: r.client_phone, status: r.status, createdAt: r.created_at }));
   },
