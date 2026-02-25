@@ -1,13 +1,44 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, TextRun, AlignmentType, BorderStyle, PageOrientation } from 'docx';
-import type { CarWashRecord, DailyReport, Employee } from '@/lib/types';
+import type { CarWashRecord, DailyReport, Employee, EmployeeRole } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { SalaryCalculator } from '@/components/SalaryCalculator';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+/**
+ * Определяет роль сотрудника на конкретную дату.
+ * КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Для исторических дат НЕЛЬЗЯ использовать текущую роль из профиля.
+ * Это предотвращает пересчет прошлых смен по повышенным процентам для повышенных сотрудников.
+ */
+export function determineEmployeeRole(
+  empId: string,
+  dateStr: string,
+  dayRoles: Record<string, any>,
+  employees: Employee[]
+): EmployeeRole {
+  // По умолчанию 'washer' для безопасности
+  let role: EmployeeRole = 'washer';
+
+  if (dayRoles[empId]) {
+    // Если есть явные исторические данные о роли на эту дату, используем их
+    role = dayRoles[empId] as EmployeeRole;
+  } else {
+    // Нет явной роли для этой даты
+    // Используем текущую роль только если это СЕГОДНЯШНЯЯ дата
+    const isToday = dateStr === format(new Date(), 'yyyy-MM-dd');
+
+    if (isToday) {
+      const emp = employees.find(e => e.id === empId);
+      if (emp?.role) role = emp.role;
+    }
+    // Для исторических дат без явных данных о роли оставляем 'washer' по умолчанию
+  }
+  return role;
 }
 
 // Функция для генерации docx файла с отчетом за период (неделя или месяц)
