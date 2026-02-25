@@ -744,7 +744,12 @@ const HomePage: React.FC = () => {
 
                   // Расчет заработной платы сотрудника
                   let dailySalary = 0;
-                  if (state.salaryCalculationMethod === 'minimumWithPercentage' && currentReport?.records) {
+                  let isManualSalary = false;
+
+                  if (currentReport?.manualSalaries?.[employee.id] !== undefined) {
+                    dailySalary = currentReport.manualSalaries[employee.id];
+                    isManualSalary = true;
+                  } else if (state.salaryCalculationMethod === 'minimumWithPercentage' && currentReport?.records) {
                     // Построим карту флагов минималки из employeeRoles с ключами min_<id>
                     const minimumOverride = shiftEmployees.reduce<Record<string, boolean>>((acc, id) => {
                       const key = `min_${id}` as any;
@@ -768,7 +773,7 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className={`relative group rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 cursor-pointer transition-all duration-300 border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 w-full ${loading.dailyReport ? 'loading' : ''}`}
+                      className={`relative group rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 cursor-pointer transition-all duration-300 border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 w-full ${loading.dailyReport ? 'loading' : ''} ${isManualSalary ? 'ring-1 ring-orange-400/30' : ''}`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
                       {/* Декоративный градиент */}
@@ -836,7 +841,9 @@ const HomePage: React.FC = () => {
                                 }
                               })()}
                             </div>
-                            <div className="font-bold text-xs sm:text-sm text-primary">{dailySalary.toFixed(0)} BYN</div>
+                            <div className={`font-bold text-xs sm:text-sm ${isManualSalary ? 'text-orange-500 font-extrabold' : 'text-primary'}`}>
+                              {dailySalary.toFixed(0)} BYN {isManualSalary && '*'}
+                            </div>
                           </div>
                         </div>
 
@@ -1114,8 +1121,16 @@ const HomePage: React.FC = () => {
                         minimumOverride
                       );
 
-                      const salaryResults = salaryCalculator.calculateSalaries();
-                      const totalSalarySum = salaryCalculator.getTotalSalarySum();
+                      const calculatedResults = salaryCalculator.calculateSalaries();
+                      const salaryResults = calculatedResults.map(res => {
+                        const manualAmount = currentReport.manualSalaries?.[res.employeeId];
+                        return {
+                          ...res,
+                          calculatedSalary: manualAmount !== undefined ? manualAmount : res.calculatedSalary,
+                          isManual: manualAmount !== undefined
+                        };
+                      });
+                      const totalSalarySum = salaryResults.reduce((sum, res) => sum + res.calculatedSalary, 0);
 
                       return (
                         <>
@@ -1164,7 +1179,8 @@ const HomePage: React.FC = () => {
 
                                     return (
                                       <div key={result.employeeId} className="flex justify-between text-sm">
-                                        <span>{result.employeeName} ({result.role === 'admin' ? 'Админ' : 'Мойщик'}) ({(() => {
+                                        <span className={result.isManual ? "text-orange-500 font-medium" : ""}>
+                                          {result.employeeName} ({result.role === 'admin' ? 'Админ' : 'Мойщик'}) ({(() => {
                                           const now = new Date();
                                           const currentHour = now.getHours();
                                           const currentMinute = now.getMinutes();
@@ -1184,8 +1200,12 @@ const HomePage: React.FC = () => {
                                           }
 
                                           return `${hourlyRate.toFixed(2)} BYN/час за ${workedHours.toFixed(1)}ч`;
-                                        })()})</span>
-                                        <span className="font-medium">{result.calculatedSalary.toFixed(2)} BYN</span>
+                                        })()})
+                                        {result.isManual && " *"}
+                                        </span>
+                                        <span className={`font-medium ${result.isManual ? "text-orange-600" : ""}`}>
+                                          {result.calculatedSalary.toFixed(2)} BYN
+                                        </span>
                                       </div>
                                     );
                                   })}
