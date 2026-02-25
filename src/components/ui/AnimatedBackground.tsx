@@ -14,7 +14,7 @@ const AnimatedBackground = () => {
         }}
         transition={{
           duration: 20,
-          repeat: Infinity,
+          repeat: Number.POSITIVE_INFINITY,
           ease: "easeInOut",
         }}
       />
@@ -29,7 +29,7 @@ const AnimatedBackground = () => {
         }}
         transition={{
           duration: 25,
-          repeat: Infinity,
+          repeat: Number.POSITIVE_INFINITY,
           ease: "easeInOut",
           delay: 2,
         }}
@@ -45,7 +45,7 @@ const AnimatedBackground = () => {
         }}
         transition={{
           duration: 30,
-          repeat: Infinity,
+          repeat: Number.POSITIVE_INFINITY,
           ease: "easeInOut",
           delay: 4,
         }}
@@ -61,7 +61,7 @@ const AnimatedBackground = () => {
         }}
         transition={{
           duration: 18,
-          repeat: Infinity,
+          repeat: Number.POSITIVE_INFINITY,
           ease: "easeInOut",
           delay: 1,
         }}

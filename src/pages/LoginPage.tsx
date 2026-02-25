@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import AnimatedBackground from "@/components/ui/AnimatedBackground";
+import GlowingLogo from "@/components/ui/GlowingLogo";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ const LoginPage = () => {
       const { error } = await login({ email, password });
       if (error) throw error;
       navigate("/");
-    } catch (error: any) {
+    } catch {
       setError("Неверный email или пароль");
     } finally {
       setLoading(false);
@@ -42,9 +43,9 @@ const LoginPage = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-light text-white tracking-wide drop-shadow-lg">
-            Detail Lab
-          </h1>
+          <div className="inline-block transform hover:scale-105 transition-transform duration-500">
+             <GlowingLogo className="text-4xl" />
+          </div>
         </div>
 
         {/* Login Form */}

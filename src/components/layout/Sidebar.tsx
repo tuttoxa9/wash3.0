@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download, LogOut } from 'lucide-react';
 import { useAppContext } from '@/lib/context/AppContext';
 import { useAuth } from '@/lib/context/AuthContext';
+import GlowingLogo from '@/components/ui/GlowingLogo';
 import type { ThemeMode } from '@/lib/types';
 
 interface SidebarProps {
@@ -111,7 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
         <div className="flex flex-col h-full">
           {/* Шапка сайдбара */}
           <div className="flex items-center justify-between mb-6 sm:mb-8">
-            <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">Detail Lab</h1>
+            <GlowingLogo />
             <button
               onClick={toggleMobileSidebar}
               className="mobile-button p-2 rounded-lg hover:bg-secondary md:hidden touch-manipulation active:scale-95 transition-transform"

@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import { Toaster, toast } from 'sonner';
 import NotificationPanel from '@/components/NotificationPanel';
 import { useNotifications } from '@/lib/context/NotificationContext';
+import GlowingLogo from '@/components/ui/GlowingLogo';
 
 const Layout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -75,7 +76,7 @@ const Layout: React.FC = () => {
               >
                 <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
-              <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">Detail Lab</h1>
+              <GlowingLogo />
             </div>
             <NotificationPanel />
           </div>
