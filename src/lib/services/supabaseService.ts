@@ -405,6 +405,9 @@ export const dailyRolesService = {
 export const databaseService = {
   async testConnection(): Promise<boolean> {
     try {
+      if (!supabaseAdmin) {
+        throw new Error('Административный клиент Supabase не инициализирован. Проверьте SUPABASE_SERVICE_ROLE_KEY.');
+      }
       const { error } = await supabaseAdmin.from('employees').select('id').limit(1);
       if (error) throw error;
       return true;
@@ -415,6 +418,9 @@ export const databaseService = {
   },
   async clearAllData(): Promise<boolean> {
     try {
+      if (!supabaseAdmin) {
+        throw new Error('Административный клиент Supabase не инициализирован. Проверьте SUPABASE_SERVICE_ROLE_KEY.');
+      }
       // Use admin client to clear all data (bypasses RLS)
       const tables = [
         'appointments',
