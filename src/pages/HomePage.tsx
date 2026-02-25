@@ -2064,7 +2064,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                       ...formData,
                       paymentMethod: { ...formData.paymentMethod, comment: e.target.value }
                     })}
-                    placeholder="Имя клиента, телефон или номер бокса"
+                    placeholder="Имя клиента, телефон"
                     className="w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                     required={formData.paymentMethod.type === 'debt'}
                   />
