@@ -1164,17 +1164,6 @@ const ReportsPage: React.FC = () => {
                 {earningsReport.map(report => {
                   const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations + report.totalDebt;
 
-                  // Рассчитываем зарплату сотрудника с учетом роли
-                  const reportDate = startDate.toISOString().split('T')[0];
-                  let employeeRole: 'admin' | 'washer' = 'washer';
-
-                  if (dailyRoles[reportDate]) {
-                    employeeRole = dailyRoles[reportDate][report.employeeId] as 'admin' | 'washer' || 'washer';
-                  }
-
-                  // Всегда используем выбранный метод (минималка + %)
-                  const methodToUse = state.salaryCalculationMethod;
-
                   // Используем уже рассчитанное значение calculatedEarnings из useEffect
                   let perEmployee = report.calculatedEarnings;
 
