@@ -79,7 +79,9 @@ const HomePage: React.FC = () => {
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'cash' | 'card' | 'organization' | 'debt'>('all');
 
   // Состояние для долгов
-  const [activeDebts, setActiveDebts] = useState<Array<{ reportId: string, record: CarWashRecord }>>([]);
+  const [activeDebts, setActiveDebts] = useState<
+    Array<{ reportId: string; record: CarWashRecord; roles?: Record<string, EmployeeRole> }>
+  >([]);
   const [loadingDebts, setLoadingDebts] = useState(false);
 
   // Состояния для закрытия долга
@@ -184,12 +186,16 @@ const HomePage: React.FC = () => {
     setLoadingDebts(true);
     try {
       const reports = await dailyReportService.getActiveDebts();
-      const debts: Array<{ reportId: string, record: CarWashRecord }> = [];
+      const debts: Array<{
+        reportId: string;
+        record: CarWashRecord;
+        roles?: Record<string, EmployeeRole>;
+      }> = [];
 
-      reports.forEach(report => {
-        report.records.forEach(record => {
+      reports.forEach((report) => {
+        report.records.forEach((record) => {
           if (record.paymentMethod.type === 'debt') {
-            debts.push({ reportId: report.id, record });
+            debts.push({ reportId: report.id, record, roles: report.dailyEmployeeRoles });
           }
         });
       });
@@ -703,6 +709,7 @@ const HomePage: React.FC = () => {
           onSubmit={handleCloseDebt}
           clickPosition={clickPosition}
           record={activeDebts.find((d) => d.record.id === debtToClose.recordId)?.record}
+          roles={activeDebts.find((d) => d.record.id === debtToClose.recordId)?.roles}
         />
       )}
 
@@ -1486,13 +1493,46 @@ interface CloseDebtModalProps {
   onSubmit: (paymentMethod: PaymentMethod) => Promise<void>;
   clickPosition?: { x: number; y: number } | null;
   record?: CarWashRecord;
+  roles?: Record<string, EmployeeRole>;
 }
 
-const CloseDebtModal: React.FC<CloseDebtModalProps> = ({ onClose, onSubmit, clickPosition, record }) => {
+const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
+  onClose,
+  onSubmit,
+  clickPosition,
+  record,
+  roles,
+}) => {
   const { state } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [paymentType, setPaymentType] = useState<'cash' | 'card' | 'organization'>('cash');
   const [organizationId, setOrganizationId] = useState('');
+
+  // Функция для расчета заработка сотрудника за эту конкретную запись
+  const calculateEmployeeEarnings = (employeeId: string) => {
+    if (!record) return 0;
+
+    // Роль сотрудника в тот день (из параметров или по умолчанию washer)
+    const role = roles?.[employeeId] || 'washer';
+    const numParticipants = record.employeeIds.length;
+
+    // Доля выручки на одного участника
+    const share = record.price / numParticipants;
+
+    if (role === 'admin') {
+      const percentage =
+        record.serviceType === 'dryclean'
+          ? state.minimumPaymentSettings.adminDrycleanPercentage
+          : state.minimumPaymentSettings.adminCarWashPercentage;
+      return share * (percentage / 100);
+    }
+
+    const percentage =
+      record.serviceType === 'dryclean'
+        ? state.minimumPaymentSettings.percentageWasherDryclean
+        : state.minimumPaymentSettings.percentageWasher;
+    return share * (percentage / 100);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1520,12 +1560,41 @@ const CloseDebtModal: React.FC<CloseDebtModalProps> = ({ onClose, onSubmit, clic
   return (
     <Modal isOpen={true} onClose={onClose} clickPosition={clickPosition} className="max-w-md">
       <div className="p-6">
-        <h3 className="text-xl font-bold mb-2 text-foreground">Закрыть долг</h3>
+        <h3 className="text-xl font-bold mb-3 text-foreground">Закрыть долг</h3>
         {record && (
-          <div className="mb-4 p-3 rounded-lg bg-muted/30 border border-border/40">
-            <div className="text-sm font-medium">{record.carInfo}</div>
-            <div className="text-xs text-muted-foreground">
-              {record.service} • {record.price.toFixed(0)} BYN
+          <div className="mb-5 space-y-3">
+            <div className="p-3 rounded-xl bg-muted/30 border border-border/40">
+              <div className="flex justify-between items-start mb-1">
+                <div className="text-sm font-bold text-foreground">{record.carInfo}</div>
+                <div className="text-[10px] font-medium text-muted-foreground bg-background px-1.5 py-0.5 rounded border border-border/40">
+                  {format(parseISO(record.date), 'dd.MM.yyyy')} {record.time}
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground mb-2">
+                {record.service} • <span className="font-bold text-foreground">{record.price.toFixed(2)} BYN</span>
+              </div>
+
+              <div className="pt-2 border-t border-border/40">
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Работавшие сотрудники:</div>
+                <div className="space-y-1">
+                  {record.employeeIds.map((id) => {
+                    const employee = state.employees.find((e) => e.id === id);
+                    const earnings = calculateEmployeeEarnings(id);
+                    const role = roles?.[id] || 'washer';
+                    return (
+                      <div key={id} className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-foreground">{employee?.name || 'Неизвестный'}</span>
+                          <span className={`text-[9px] px-1 rounded ${role === 'admin' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {role === 'admin' ? 'Админ' : 'Мойщик'}
+                          </span>
+                        </div>
+                        <div className="font-medium text-primary">+{earnings.toFixed(2)} BYN</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         )}
