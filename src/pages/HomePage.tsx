@@ -1076,47 +1076,6 @@ const HomePage: React.FC = () => {
             )}
           </div>
 
-          {/* Активные долги */}
-          {activeDebts.length > 0 && (
-            <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-500/10 via-card to-card border border-red-500/20 shadow-xl mb-4">
-              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <div className="w-1 sm:w-1.5 h-5 sm:h-6 bg-gradient-to-b from-red-500 to-red-600 rounded-full" />
-                <h3 className="text-lg sm:text-xl font-bold text-red-600 dark:text-red-400">Активные долги</h3>
-                <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-bold border border-red-200">
-                  {activeDebts.length}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {activeDebts.map(({ reportId, record }) => (
-                  <div key={record.id} className="p-3 rounded-lg border border-border/40 bg-background/50 flex justify-between items-center gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">{format(parseISO(reportId), 'dd.MM')}</span>
-                        <span className="text-xs font-bold text-card-foreground truncate">{record.carInfo}</span>
-                      </div>
-                      <div className="text-[10px] text-muted-foreground truncate">
-                        {record.service} • {record.price.toFixed(0)} BYN
-                      </div>
-                      {record.paymentMethod.comment && (
-                        <div className="text-[10px] text-red-500 font-medium truncate italic">
-                          "{record.paymentMethod.comment}"
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleCloseDebt(reportId, record.id)}
-                      className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors text-xs font-bold shadow-sm"
-                    >
-                      <CheckSquare className="w-3.5 h-3.5" />
-                      Закрыть
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Итоги */}
           {currentReport && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 relative">
@@ -1416,6 +1375,48 @@ const HomePage: React.FC = () => {
         {/* Виджет "Записи на мойку" */}
         <AppointmentsWidget onStartAppointment={handleAppointmentConversion} canCreateRecords={shiftStarted} />
       </div>
+
+      {/* Активные долги */}
+      {activeDebts.length > 0 && (
+        <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-500/10 via-card to-card border border-red-500/20 shadow-xl mt-4 sm:mt-6">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <div className="w-1 sm:w-1.5 h-5 sm:h-6 bg-gradient-to-b from-red-500 to-red-600 rounded-full" />
+            <h3 className="text-lg sm:text-xl font-bold text-red-600 dark:text-red-400">Активные долги</h3>
+            <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-bold border border-red-200">
+              {activeDebts.length}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {activeDebts.map(({ reportId, record }) => (
+              <div
+                key={record.id}
+                className="p-3 rounded-lg border border-border/40 bg-background/50 flex justify-between items-center gap-3"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">{format(parseISO(reportId), 'dd.MM')}</span>
+                    <span className="text-xs font-bold text-card-foreground truncate">{record.carInfo}</span>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground truncate">
+                    {record.service} • {record.price.toFixed(0)} BYN
+                  </div>
+                  {record.paymentMethod.comment && (
+                    <div className="text-[10px] text-red-500 font-medium truncate italic">"{record.paymentMethod.comment}"</div>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleCloseDebt(reportId, record.id)}
+                  className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors text-xs font-bold shadow-sm"
+                >
+                  <CheckSquare className="w-3.5 h-3.5" />
+                  Закрыть
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
