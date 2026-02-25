@@ -19,7 +19,7 @@ const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
     setIsLoading(true);
 
     setTimeout(() => {
-      if (password === 'adminlab') {
+      if (password === import.meta.env.VITE_SETTINGS_PASSWORD) {
         setError('');
         onSuccess();
       } else {
