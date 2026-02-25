@@ -82,6 +82,10 @@ const HomePage: React.FC = () => {
   const [activeDebts, setActiveDebts] = useState<Array<{ reportId: string, record: CarWashRecord }>>([]);
   const [loadingDebts, setLoadingDebts] = useState(false);
 
+  // Состояния для закрытия долга
+  const [isCloseDebtModalOpen, setIsCloseDebtModalOpen] = useState(false);
+  const [debtToClose, setDebtToClose] = useState<{ reportId: string; recordId: string } | null>(null);
+
   // Проверяем, является ли выбранная дата текущей
   const isCurrentDate = isToday(new Date(selectedDate));
 
@@ -198,9 +202,18 @@ const HomePage: React.FC = () => {
     }
   };
 
+  // Инициировать закрытие долга (открыть модалку)
+  const initiateCloseDebt = (reportId: string, recordId: string, event: React.MouseEvent) => {
+    setClickPosition({ x: event.clientX, y: event.clientY });
+    setDebtToClose({ reportId, recordId });
+    setIsCloseDebtModalOpen(true);
+  };
+
   // Закрытие долга
-  const handleCloseDebt = async (reportId: string, recordId: string) => {
-    const paymentType = window.confirm('Долг оплачен наличными? (ОК - Наличные, Отмена - Карта)') ? 'cash' : 'card';
+  const handleCloseDebt = async (paymentMethod: PaymentMethod) => {
+    if (!debtToClose) return;
+
+    const { reportId, recordId } = debtToClose;
 
     try {
       // Получаем оригинальный отчет
@@ -211,11 +224,11 @@ const HomePage: React.FC = () => {
       }
 
       // Обновляем запись
-      const updatedRecords = report.records.map(rec => {
+      const updatedRecords = report.records.map((rec) => {
         if (rec.id === recordId) {
           return {
             ...rec,
-            paymentMethod: { ...rec.paymentMethod, type: paymentType as 'cash' | 'card' }
+            paymentMethod,
           };
         }
         return rec;
@@ -228,7 +241,11 @@ const HomePage: React.FC = () => {
       );
 
       const totalNonCash = updatedRecords.reduce(
-        (sum, rec) => sum + (rec.paymentMethod.type === 'card' || rec.paymentMethod.type === 'organization' ? rec.price : 0),
+        (sum, rec) =>
+          sum +
+          (rec.paymentMethod.type === 'card' || rec.paymentMethod.type === 'organization'
+            ? rec.price
+            : 0),
         0
       );
 
@@ -236,11 +253,11 @@ const HomePage: React.FC = () => {
         ...report,
         records: updatedRecords,
         totalCash,
-        totalNonCash
+        totalNonCash,
       };
 
       // Обновляем запись в таблице car_wash_records
-      const recordToUpdate = updatedRecords.find(r => r.id === recordId);
+      const recordToUpdate = updatedRecords.find((r) => r.id === recordId);
       if (recordToUpdate) {
         await carWashService.update(recordToUpdate);
       }
@@ -251,8 +268,13 @@ const HomePage: React.FC = () => {
         loadActiveDebts();
         // Если закрываем долг за текущую выбранную дату, обновляем состояние
         if (reportId === selectedDate) {
-          dispatch({ type: 'SET_DAILY_REPORT', payload: { date: reportId, report: updatedReport } });
+          dispatch({
+            type: 'SET_DAILY_REPORT',
+            payload: { date: reportId, report: updatedReport },
+          });
         }
+        setIsCloseDebtModalOpen(false);
+        setDebtToClose(null);
       } else {
         toast.error('Не удалось закрыть долг');
       }
@@ -671,6 +693,19 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {/* Модальное окно закрытия долга */}
+      {isCloseDebtModalOpen && debtToClose && (
+        <CloseDebtModal
+          onClose={() => {
+            setIsCloseDebtModalOpen(false);
+            setDebtToClose(null);
+          }}
+          onSubmit={handleCloseDebt}
+          clickPosition={clickPosition}
+          record={activeDebts.find((d) => d.record.id === debtToClose.recordId)?.record}
+        />
+      )}
+
       {/* Pre-shift banner: visible only if shift not started */}
       {!shiftStarted && (
         <div className="relative overflow-hidden rounded-lg sm:rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm">
@@ -1119,14 +1154,29 @@ const HomePage: React.FC = () => {
                         : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md'
                     } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
-                      if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
+                      if (!shiftStarted) {
+                        toast.info('Сначала выберите работников и начните смену');
+                        return;
+                      }
                       setPaymentFilter('card');
                       openDailyReportModal();
                     }}
-                    title={shiftStarted ? 'Нажмите для просмотра ведомости по картам' : 'Сначала выберите работников и начните смену'}
+                    title={
+                      shiftStarted
+                        ? 'Нажмите для просмотра ведомости по картам'
+                        : 'Сначала выберите работников и начните смену'
+                    }
                   >
                     <span className="font-medium text-sm sm:text-base flex-shrink-0">Карта</span>
-                    <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">{currentReport.totalNonCash.toFixed(2)} BYN</span>
+                    <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">
+                      {(
+                        currentReport.records?.reduce(
+                          (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
+                          0
+                        ) || 0
+                      ).toFixed(2)}{' '}
+                      BYN
+                    </span>
                   </div>
                   <div
                     className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
@@ -1372,52 +1422,184 @@ const HomePage: React.FC = () => {
           )}
         </div>
 
-        {/* Виджет "Записи на мойку" */}
-        <AppointmentsWidget onStartAppointment={handleAppointmentConversion} canCreateRecords={shiftStarted} />
-      </div>
+        {/* Правая колонка с виджетами */}
+        <div className="space-y-3 md:space-y-4">
+          {/* Виджет "Записи на мойку" */}
+          <AppointmentsWidget onStartAppointment={handleAppointmentConversion} canCreateRecords={shiftStarted} />
 
-      {/* Активные долги */}
-      {activeDebts.length > 0 && (
-        <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-500/10 via-card to-card border border-red-500/20 shadow-xl mt-4 sm:mt-6">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <div className="w-1 sm:w-1.5 h-5 sm:h-6 bg-gradient-to-b from-red-500 to-red-600 rounded-full" />
-            <h3 className="text-lg sm:text-xl font-bold text-red-600 dark:text-red-400">Активные долги</h3>
-            <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-bold border border-red-200">
-              {activeDebts.length}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {activeDebts.map(({ reportId, record }) => (
-              <div
-                key={record.id}
-                className="p-3 rounded-lg border border-border/40 bg-background/50 flex justify-between items-center gap-3"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">{format(parseISO(reportId), 'dd.MM')}</span>
-                    <span className="text-xs font-bold text-card-foreground truncate">{record.carInfo}</span>
-                  </div>
-                  <div className="text-[10px] text-muted-foreground truncate">
-                    {record.service} • {record.price.toFixed(0)} BYN
-                  </div>
-                  {record.paymentMethod.comment && (
-                    <div className="text-[10px] text-red-500 font-medium truncate italic">"{record.paymentMethod.comment}"</div>
-                  )}
+          {/* Активные долги */}
+          {activeDebts.length > 0 && (
+            <div className="rounded-xl sm:rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl overflow-hidden max-h-[400px] flex flex-col">
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/40 bg-gradient-to-r from-red-500/10 to-red-500/5">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-0.5 sm:w-1 h-4 sm:h-5 bg-gradient-to-b from-red-500 to-red-600 rounded-full" />
+                  <h3 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
+                    Активные долги
+                    <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold">
+                      {activeDebts.length}
+                    </span>
+                  </h3>
                 </div>
-                <button
-                  onClick={() => handleCloseDebt(reportId, record.id)}
-                  className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors text-xs font-bold shadow-sm"
-                >
-                  <CheckSquare className="w-3.5 h-3.5" />
-                  Закрыть
-                </button>
               </div>
-            ))}
-          </div>
+
+              <div className="overflow-y-auto flex-1">
+                {activeDebts.map(({ reportId, record }) => (
+                  <div key={record.id} className="py-2 px-3 border-b border-border/50 last:border-b-0 hover:bg-red-500/5 transition-colors">
+                    <div className="flex justify-between items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 text-[10px] sm:text-xs">
+                          <span className="font-bold text-red-600/80">{format(parseISO(reportId), 'dd.MM')}</span>
+                          <span className="font-medium truncate">{record.carInfo}</span>
+                        </div>
+                        <div className="text-[9px] sm:text-[10px] text-muted-foreground truncate">
+                          {record.service} • <span className="font-bold text-foreground">{record.price.toFixed(0)} BYN</span>
+                        </div>
+                        {record.paymentMethod.comment && (
+                          <div className="text-[9px] text-red-500 font-medium truncate italic leading-tight mt-0.5">
+                            "{record.paymentMethod.comment}"
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={(e) => initiateCloseDebt(reportId, record.id, e)}
+                        className="p-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors shadow-sm shrink-0"
+                        title="Закрыть долг"
+                      >
+                        <CheckSquare className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
+  );
+};
+
+// Интерфейс модального окна для закрытия долга
+interface CloseDebtModalProps {
+  onClose: () => void;
+  onSubmit: (paymentMethod: PaymentMethod) => Promise<void>;
+  clickPosition?: { x: number; y: number } | null;
+  record?: CarWashRecord;
+}
+
+const CloseDebtModal: React.FC<CloseDebtModalProps> = ({ onClose, onSubmit, clickPosition, record }) => {
+  const { state } = useAppContext();
+  const [loading, setLoading] = useState(false);
+  const [paymentType, setPaymentType] = useState<'cash' | 'card' | 'organization'>('cash');
+  const [organizationId, setOrganizationId] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const paymentMethod: PaymentMethod = {
+      type: paymentType,
+      organizationId: paymentType === 'organization' ? organizationId : undefined,
+      organizationName:
+        paymentType === 'organization'
+          ? state.organizations.find((o) => o.id === organizationId)?.name
+          : undefined,
+    };
+
+    if (paymentType === 'organization' && !organizationId) {
+      toast.error('Выберите организацию');
+      setLoading(false);
+      return;
+    }
+
+    await onSubmit(paymentMethod);
+    setLoading(false);
+  };
+
+  return (
+    <Modal isOpen={true} onClose={onClose} clickPosition={clickPosition} className="max-w-md">
+      <div className="p-6">
+        <h3 className="text-xl font-bold mb-2 text-foreground">Закрыть долг</h3>
+        {record && (
+          <div className="mb-4 p-3 rounded-lg bg-muted/30 border border-border/40">
+            <div className="text-sm font-medium">{record.carInfo}</div>
+            <div className="text-xs text-muted-foreground">
+              {record.service} • {record.price.toFixed(0)} BYN
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-foreground">Способ оплаты</label>
+            <div className="segmented-control">
+              <button
+                type="button"
+                onClick={() => setPaymentType('cash')}
+                className={paymentType === 'cash' ? 'active' : ''}
+              >
+                Наличные
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentType('card')}
+                className={paymentType === 'card' ? 'active' : ''}
+              >
+                Карта
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentType('organization')}
+                className={paymentType === 'organization' ? 'active' : ''}
+              >
+                Безнал
+              </button>
+            </div>
+          </div>
+
+          {paymentType === 'organization' && (
+            <div>
+              <label htmlFor="orgSelect" className="block text-sm font-medium mb-1 text-foreground">
+                Организация
+              </label>
+              <select
+                id="orgSelect"
+                value={organizationId}
+                onChange={(e) => setOrganizationId(e.target.value)}
+                className="w-full px-3 py-2 border border-input rounded-xl bg-background"
+                required
+              >
+                <option value="">Выберите организацию</option>
+                {state.organizations.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl border border-input hover:bg-muted transition-colors text-foreground"
+              disabled={loading}
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-md active:scale-95 disabled:opacity-50 font-bold"
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Подтвердить'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </Modal>
   );
 };
 
@@ -2483,7 +2665,11 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
           );
 
           const totalNonCash = updatedReport.records.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
+            (sum, rec) =>
+              sum +
+              (rec.paymentMethod.type === 'card' || rec.paymentMethod.type === 'organization'
+                ? rec.price
+                : 0),
             0
           );
 
@@ -2534,7 +2720,11 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
           );
 
           const totalNonCash = updatedRecords.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
+            (sum, rec) =>
+              sum +
+              (rec.paymentMethod.type === 'card' || rec.paymentMethod.type === 'organization'
+                ? rec.price
+                : 0),
             0
           );
 
@@ -3086,8 +3276,18 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   onClick={() => onPaymentFilterChange(paymentFilter === 'card' ? 'all' : 'card')}
                   title="Нажмите для фильтрации по картам"
                 >
-                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">Карта</div>
-                  <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words">{currentReport.totalNonCash.toFixed(2)} BYN</div>
+                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">
+                    Карта
+                  </div>
+                  <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words">
+                    {(
+                      currentReport.records?.reduce(
+                        (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
+                        0
+                      ) || 0
+                    ).toFixed(2)}{' '}
+                    BYN
+                  </div>
                 </div>
                 <div
                   className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors ${

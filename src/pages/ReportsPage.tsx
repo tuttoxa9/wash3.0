@@ -1873,9 +1873,15 @@ const ReportsPage: React.FC = () => {
                           <Tooltip
                             formatter={(value: number, name: string) => [
                               `${value.toFixed(2)} BYN`,
-                              name === 'total' ? 'Общая выручка' :
-                              name === 'cash' ? 'Наличные' :
-                              name === 'card' ? 'Карта' : 'Безнал'
+                              name === 'total'
+                                ? 'Общая выручка'
+                                : name === 'cash'
+                                  ? 'Наличные'
+                                  : name === 'card'
+                                    ? 'Карта'
+                                    : name === 'debt'
+                                      ? 'Долги'
+                                      : 'Безнал',
                             ]}
                             labelFormatter={(label) => `Дата: ${label}`}
                             contentStyle={{
