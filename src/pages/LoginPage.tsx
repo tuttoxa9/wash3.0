@@ -1,34 +1,34 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import ColorBends from '@/components/ColorBends';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import AnimatedBackground from "@/components/ui/AnimatedBackground";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
   // Если пользователь уже авторизован, перенаправляем на главную
   useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate("/");
     }
   }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const { error } = await login({ email, password });
       if (error) throw error;
-      navigate('/');
+      navigate("/");
     } catch (error: any) {
-      setError('Неверный email или пароль');
+      setError("Неверный email или пароль");
     } finally {
       setLoading(false);
     }
@@ -37,25 +37,14 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       {/* Анимированный фон */}
-      <div className="absolute inset-0 z-0">
-        <ColorBends
-          colors={['#4158D0', '#C850C0', '#FFCC70', '#FF6B6B', '#4ECDC4']}
-          speed={0.3}
-          scale={1.2}
-          frequency={0.8}
-          warpStrength={0.7}
-          mouseInfluence={0.5}
-          parallax={0.3}
-          noise={0.05}
-          autoRotate={5}
-          transparent={false}
-        />
-      </div>
+      <AnimatedBackground />
 
       <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-light text-white tracking-wide drop-shadow-lg">Detail Lab</h1>
+          <h1 className="text-3xl font-light text-white tracking-wide drop-shadow-lg">
+            Detail Lab
+          </h1>
         </div>
 
         {/* Login Form */}
@@ -94,7 +83,7 @@ const LoginPage = () => {
               disabled={loading}
               className="w-full py-3 bg-white text-black font-medium rounded-xl hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
-              {loading ? 'Вход...' : 'Войти'}
+              {loading ? "Вход..." : "Войти"}
             </button>
           </form>
         </div>
