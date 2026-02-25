@@ -116,6 +116,7 @@ export type AppAction =
   | { type: 'SET_SERVICES'; payload: Service[] }
   | { type: 'ADD_SERVICE'; payload: Service }
   | { type: 'SET_DAILY_REPORT'; payload: { date: string; report: DailyReport } }
+  | { type: 'SET_DAILY_REPORTS'; payload: Record<string, DailyReport> }
   | { type: 'ADD_CAR_WASH_RECORD'; payload: { date: string; record: CarWashRecord } }
   | { type: 'SET_CURRENT_DATE'; payload: string }
   | { type: 'SET_THEME'; payload: ThemeMode }

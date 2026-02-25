@@ -69,6 +69,14 @@ function appReducer(state: AppState, action: AppAction): AppState {
           [action.payload.date]: action.payload.report
         }
       };
+    case 'SET_DAILY_REPORTS':
+      return {
+        ...state,
+        dailyReports: {
+          ...state.dailyReports,
+          ...action.payload
+        }
+      };
     case 'ADD_CAR_WASH_RECORD': {
       const { date, record } = action.payload;
       const currentReport = state.dailyReports[date] || {
@@ -213,10 +221,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         reportsMap[report.date] = report;
       });
 
-      // Обновляем состояние - добавляем новые отчеты к существующим
-      for (const [date, report] of Object.entries(reportsMap)) {
-        dispatch({ type: 'SET_DAILY_REPORT', payload: { date, report } });
-      }
+      // Обновляем состояние - добавляем новые отчеты к существующим в одном действии
+      dispatch({ type: 'SET_DAILY_REPORTS', payload: reportsMap });
 
       console.log(`Отчеты загружены за период: ${dailyReports.length}`);
     } catch (error) {
@@ -264,9 +270,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         dailyReports.forEach(report => {
           reportsMap[report.date] = report;
         });
-        for (const [date, report] of Object.entries(reportsMap)) {
-          dispatch({ type: 'SET_DAILY_REPORT', payload: { date, report } });
-        }
+        dispatch({ type: 'SET_DAILY_REPORTS', payload: reportsMap });
         console.log('Отчеты загружены за текущий месяц:', dailyReports.length);
 
         // Загружаем метод расчета зарплаты из базы данных
