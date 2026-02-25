@@ -55,6 +55,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
         }
         return 'Организация';
       }
+      case 'debt': return 'Долг';
       default: return method;
     }
   };
@@ -79,6 +80,12 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
           : state.theme === 'black'
           ? 'text-purple-400 bg-purple-500/5 border-purple-500/30'
           : 'text-purple-600 bg-purple-50 border-purple-200';
+      case 'debt':
+        return state.theme === 'dark'
+          ? 'text-red-300 bg-red-500/10 border-red-500/20'
+          : state.theme === 'black'
+          ? 'text-red-400 bg-red-500/5 border-red-500/30'
+          : 'text-red-600 bg-red-50 border-red-200';
       default:
         return state.theme === 'dark'
           ? 'text-gray-300 bg-gray-500/10 border-gray-500/20'
@@ -530,10 +537,13 @@ const MobileDayDetailsModal: React.FC<{
                             ? 'text-green-600 bg-green-50 border-green-200'
                             : record.paymentMethod.type === 'card'
                             ? 'text-blue-600 bg-blue-50 border-blue-200'
-                            : 'text-purple-600 bg-purple-50 border-purple-200'
+                            : record.paymentMethod.type === 'organization'
+                            ? 'text-purple-600 bg-purple-50 border-purple-200'
+                            : 'text-red-600 bg-red-50 border-red-200'
                         }`}>
                           {record.paymentMethod.type === 'cash' ? 'Наличные' :
                            record.paymentMethod.type === 'card' ? 'Карта' :
+                           record.paymentMethod.type === 'debt' ? 'Долг' :
                            record.paymentMethod.organizationName ||
                            (record.paymentMethod.organizationId ?
                              state.organizations.find(org => org.id === record.paymentMethod.organizationId)?.name || 'Организация'
@@ -713,10 +723,13 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
                                 ? 'text-green-600 bg-green-50 border-green-200'
                                 : record.paymentMethod.type === 'card'
                                 ? 'text-blue-600 bg-blue-50 border-blue-200'
-                                : 'text-purple-600 bg-purple-50 border-purple-200'
+                                : record.paymentMethod.type === 'organization'
+                                ? 'text-purple-600 bg-purple-50 border-purple-200'
+                                : 'text-red-600 bg-red-50 border-red-200'
                             }`}>
                               {record.paymentMethod.type === 'cash' ? 'Наличные' :
                                record.paymentMethod.type === 'card' ? 'Карта' :
+                               record.paymentMethod.type === 'debt' ? 'Долг' :
                                record.paymentMethod.organizationName ||
                                (record.paymentMethod.organizationId ?
                                  state.organizations.find(org => org.id === record.paymentMethod.organizationId)?.name || 'Организация'
@@ -773,6 +786,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
     switch (method) {
       case 'cash': return 'Наличные';
       case 'card': return 'Карта';
+      case 'debt': return 'Долг';
       case 'organization': {
         if (organizationId) {
           const organization = state.organizations.find(org => org.id === organizationId);
@@ -1163,6 +1177,8 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
         return 'Наличные';
       case 'card':
         return 'Карта';
+      case 'debt':
+        return 'Долг';
       case 'organization':
         if (organizationId) {
           const organization = state.organizations.find(org => org.id === organizationId);
@@ -1183,6 +1199,8 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
           return 'text-blue-300 bg-blue-500/10 border-blue-500/20';
         case 'organization':
           return 'text-purple-300 bg-purple-500/10 border-purple-500/20';
+        case 'debt':
+          return 'text-red-300 bg-red-500/10 border-red-500/20';
         default:
           return 'text-gray-300 bg-gray-500/10 border-gray-500/20';
       }
@@ -1193,7 +1211,9 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
         case 'card':
           return 'text-blue-400 bg-blue-500/5 border-blue-500/30';
         case 'organization':
-          return 'text-purple-400 bg-purple-500/5 border-purple-500/30';
+          return 'text-purple-400 bg-purple-500/5 border-purple-400/30';
+        case 'debt':
+          return 'text-red-400 bg-red-500/5 border-red-500/30';
         default:
           return 'text-gray-400 bg-gray-500/5 border-gray-500/30';
       }
@@ -1205,6 +1225,8 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
           return 'text-blue-600 bg-blue-50 border-blue-200';
         case 'organization':
           return 'text-purple-600 bg-purple-50 border-purple-200';
+        case 'debt':
+          return 'text-red-600 bg-red-50 border-red-200';
         default:
           return 'text-gray-600 bg-gray-50 border-gray-200';
       }

@@ -4,7 +4,7 @@ import { format, parseISO, isToday, isTomorrow, ru } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { useAppContext } from '@/lib/context/AppContext';
-import { Loader2, FileDown, Save, Check, Edit, Calendar, Plus, CheckCircle, X, ArrowRight, Trash2, User, Eye, Receipt } from 'lucide-react';
+import { Loader2, FileDown, Save, Check, Edit, Calendar, Plus, CheckCircle, X, ArrowRight, Trash2, User, Eye, Receipt, AlertCircle, CheckSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DailyReport, CarWashRecord, Employee, Appointment, EmployeeRole } from '@/lib/types';
 import { carWashService, dailyReportService, appointmentService, dailyRolesService } from '@/lib/services/supabaseService';
@@ -76,7 +76,11 @@ const HomePage: React.FC = () => {
   const [editFormData, setEditFormData] = useState<Partial<CarWashRecord> | null>(null);
 
   // Добавляем состояние для фильтрации по методу оплаты
-  const [paymentFilter, setPaymentFilter] = useState<'all' | 'cash' | 'card' | 'organization'>('all');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'cash' | 'card' | 'organization' | 'debt'>('all');
+
+  // Состояние для долгов
+  const [activeDebts, setActiveDebts] = useState<Array<{ reportId: string, record: CarWashRecord }>>([]);
+  const [loadingDebts, setLoadingDebts] = useState(false);
 
   // Проверяем, является ли выбранная дата текущей
   const isCurrentDate = isToday(new Date(selectedDate));
@@ -170,6 +174,93 @@ const HomePage: React.FC = () => {
 
   // Format date for display
   const formattedDate = format(new Date(selectedDate), 'dd.MM.yyyy');
+
+  // Загрузка активных долгов
+  const loadActiveDebts = async () => {
+    setLoadingDebts(true);
+    try {
+      const reports = await dailyReportService.getActiveDebts();
+      const debts: Array<{ reportId: string, record: CarWashRecord }> = [];
+
+      reports.forEach(report => {
+        report.records.forEach(record => {
+          if (record.paymentMethod.type === 'debt') {
+            debts.push({ reportId: report.id, record });
+          }
+        });
+      });
+
+      setActiveDebts(debts);
+    } catch (error) {
+      console.error('Error loading debts:', error);
+    } finally {
+      setLoadingDebts(false);
+    }
+  };
+
+  // Закрытие долга
+  const handleCloseDebt = async (reportId: string, recordId: string) => {
+    const paymentType = window.confirm('Долг оплачен наличными? (ОК - Наличные, Отмена - Карта)') ? 'cash' : 'card';
+
+    try {
+      // Получаем оригинальный отчет
+      const report = await dailyReportService.getByDate(reportId);
+      if (!report) {
+        toast.error('Отчет не найден');
+        return;
+      }
+
+      // Обновляем запись
+      const updatedRecords = report.records.map(rec => {
+        if (rec.id === recordId) {
+          return {
+            ...rec,
+            paymentMethod: { ...rec.paymentMethod, type: paymentType as 'cash' | 'card' }
+          };
+        }
+        return rec;
+      });
+
+      // Пересчитываем итоги
+      const totalCash = updatedRecords.reduce(
+        (sum, rec) => sum + (rec.paymentMethod.type === 'cash' ? rec.price : 0),
+        0
+      );
+
+      const totalNonCash = updatedRecords.reduce(
+        (sum, rec) => sum + (rec.paymentMethod.type === 'card' || rec.paymentMethod.type === 'organization' ? rec.price : 0),
+        0
+      );
+
+      const updatedReport = {
+        ...report,
+        records: updatedRecords,
+        totalCash,
+        totalNonCash
+      };
+
+      // Обновляем запись в таблице car_wash_records
+      const recordToUpdate = updatedRecords.find(r => r.id === recordId);
+      if (recordToUpdate) {
+        await carWashService.update(recordToUpdate);
+      }
+
+      const success = await dailyReportService.updateReport(updatedReport);
+      if (success) {
+        toast.success('Долг закрыт');
+        loadActiveDebts();
+        // Если закрываем долг за текущую выбранную дату, обновляем состояние
+        if (reportId === selectedDate) {
+          dispatch({ type: 'SET_DAILY_REPORT', payload: { date: reportId, report: updatedReport } });
+        }
+      } else {
+        toast.error('Не удалось закрыть долг');
+      }
+    } catch (error) {
+      console.error('Error closing debt:', error);
+      toast.error('Произошла ошибка при закрытии долга');
+    }
+  };
 
   // Функция для экспорта отчета в Word
   const exportToWord = async () => {
@@ -421,7 +512,7 @@ const HomePage: React.FC = () => {
           );
 
           const totalNonCash = updatedReport.records.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
+            (sum, rec) => sum + (rec.paymentMethod.type === 'card' || rec.paymentMethod.type === 'organization' ? rec.price : 0),
             0
           );
 
@@ -475,7 +566,7 @@ const HomePage: React.FC = () => {
           );
 
           const totalNonCash = updatedRecords.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
+            (sum, rec) => sum + (rec.paymentMethod.type === 'card' || rec.paymentMethod.type === 'organization' ? rec.price : 0),
             0
           );
 
@@ -556,6 +647,7 @@ const HomePage: React.FC = () => {
     };
 
     loadData();
+    loadActiveDebts();
     // При изменении выбранной даты сбрасываем состояние смены
     setIsShiftLocked(false);
     setIsEditingShift(false);
@@ -984,6 +1076,47 @@ const HomePage: React.FC = () => {
             )}
           </div>
 
+          {/* Активные долги */}
+          {activeDebts.length > 0 && (
+            <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-500/10 via-card to-card border border-red-500/20 shadow-xl mb-4">
+              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <div className="w-1 sm:w-1.5 h-5 sm:h-6 bg-gradient-to-b from-red-500 to-red-600 rounded-full" />
+                <h3 className="text-lg sm:text-xl font-bold text-red-600 dark:text-red-400">Активные долги</h3>
+                <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-bold border border-red-200">
+                  {activeDebts.length}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {activeDebts.map(({ reportId, record }) => (
+                  <div key={record.id} className="p-3 rounded-lg border border-border/40 bg-background/50 flex justify-between items-center gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">{format(parseISO(reportId), 'dd.MM')}</span>
+                        <span className="text-xs font-bold text-card-foreground truncate">{record.carInfo}</span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground truncate">
+                        {record.service} • {record.price.toFixed(0)} BYN
+                      </div>
+                      {record.paymentMethod.comment && (
+                        <div className="text-[10px] text-red-500 font-medium truncate italic">
+                          "{record.paymentMethod.comment}"
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleCloseDebt(reportId, record.id)}
+                      className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors text-xs font-bold shadow-sm"
+                    >
+                      <CheckSquare className="w-3.5 h-3.5" />
+                      Закрыть
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Итоги */}
           {currentReport && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 relative">
@@ -1340,13 +1473,14 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
   };
 
   // Обработка изменения способа оплаты
-  const handlePaymentTypeChange = (type: 'cash' | 'card' | 'organization') => {
+  const handlePaymentTypeChange = (type: 'cash' | 'card' | 'organization' | 'debt') => {
     setFormData({
       ...formData,
       paymentMethod: {
         type,
         organizationId: type === 'organization' ? formData.paymentMethod.organizationId : undefined,
-        organizationName: type === 'organization' ? formData.paymentMethod.organizationName : undefined
+        organizationName: type === 'organization' ? formData.paymentMethod.organizationName : undefined,
+        comment: type === 'debt' ? formData.paymentMethod.comment : undefined
       }
     });
   };
@@ -1411,10 +1545,15 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
       // Подготовка данных записи
       let paymentMethod = { ...formData.paymentMethod };
 
-      // Убедимся, что для типов 'cash' и 'card' не передаются ненужные поля organizationId и organizationName
+      // Убедимся, что передаются только нужные поля для каждого типа оплаты
       if (paymentMethod.type === 'cash' || paymentMethod.type === 'card') {
         paymentMethod = {
           type: paymentMethod.type,
+        };
+      } else if (paymentMethod.type === 'debt') {
+        paymentMethod = {
+          type: 'debt',
+          comment: paymentMethod.comment
         };
       }
 
@@ -1650,7 +1789,35 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
                 >
                   Безнал
                 </button>
+                <button
+                  type="button"
+                  onClick={() => handlePaymentTypeChange('debt')}
+                  className={formData.paymentMethod.type === 'debt' ? 'active' : ''}
+                >
+                  Долг
+                </button>
               </div>
+
+              {/* Комментарий для долга */}
+              {formData.paymentMethod.type === 'debt' && (
+                <div className="mt-2">
+                  <label htmlFor="comment" className="block text-sm font-medium mb-1">
+                    Кто должен / Комментарий
+                  </label>
+                  <input
+                    type="text"
+                    id="comment"
+                    value={formData.paymentMethod.comment || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      paymentMethod: { ...formData.paymentMethod, comment: e.target.value }
+                    })}
+                    placeholder="Имя клиента, телефон или номер бокса"
+                    className="w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
+                    required={formData.paymentMethod.type === 'debt'}
+                  />
+                </div>
+              )}
 
               {/* Выбор организации */}
               {formData.paymentMethod.type === 'organization' && (
@@ -2165,8 +2332,8 @@ interface DailyReportModalProps {
   selectedDate: string;
   onExport: () => void;
   isExporting: boolean;
-  paymentFilter: 'all' | 'cash' | 'card' | 'organization';
-  onPaymentFilterChange: (filter: 'all' | 'cash' | 'card' | 'organization') => void;
+  paymentFilter: 'all' | 'cash' | 'card' | 'organization' | 'debt';
+  onPaymentFilterChange: (filter: 'all' | 'cash' | 'card' | 'organization' | 'debt') => void;
 }
 
 const DailyReportModal: React.FC<DailyReportModalProps> = ({
@@ -2228,7 +2395,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
   };
 
   // Обработчик изменения способа оплаты при редактировании
-  const handleEditPaymentTypeChange = (type: 'cash' | 'card' | 'organization') => {
+  const handleEditPaymentTypeChange = (type: 'cash' | 'card' | 'organization' | 'debt') => {
     setEditFormData(prev => {
       if (!prev) return prev;
 
@@ -2237,7 +2404,8 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
         paymentMethod: {
           type,
           organizationId: type === 'organization' ? prev.paymentMethod?.organizationId : undefined,
-          organizationName: type === 'organization' ? prev.paymentMethod?.organizationName : undefined
+          organizationName: type === 'organization' ? prev.paymentMethod?.organizationName : undefined,
+          comment: type === 'debt' ? prev.paymentMethod?.comment : undefined
         }
       };
     });
@@ -2471,6 +2639,12 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             >
               Безнал
             </button>
+            <button
+              onClick={() => onPaymentFilterChange('debt')}
+              className={paymentFilter === 'debt' ? 'active' : ''}
+            >
+              Долги
+            </button>
           </div>
 
           {/* Десктопная версия таблицы */}
@@ -2599,7 +2773,30 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                                 >
                                   Орг
                                 </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditPaymentTypeChange('debt')}
+                                  className={`px-2 py-1 text-xs rounded ${
+                                    editFormData.paymentMethod?.type === 'debt'
+                                      ? 'bg-primary text-white'
+                                      : 'bg-secondary'
+                                  }`}
+                                >
+                                  Долг
+                                </button>
                               </div>
+                              {editFormData.paymentMethod?.type === 'debt' && (
+                                <input
+                                  type="text"
+                                  value={editFormData.paymentMethod?.comment || ''}
+                                  onChange={(e) => setEditFormData({
+                                    ...editFormData,
+                                    paymentMethod: { ...editFormData.paymentMethod, comment: e.target.value } as any
+                                  })}
+                                  placeholder="Комментарий"
+                                  className="w-full px-2 py-1 border border-input rounded text-xs"
+                                />
+                              )}
                               {editFormData.paymentMethod?.type === 'organization' && (
                                 <select
                                   value={editFormData.paymentMethod?.organizationId || ''}
@@ -2672,7 +2869,11 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                         </td>
                         <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right font-semibold text-card-foreground text-xs sm:text-sm">{record.price.toFixed(2)} BYN</td>
                         <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-card-foreground text-xs sm:text-sm">
-                          {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
+                          {record.paymentMethod.type === 'debt' ? (
+                            <span className="text-red-500 font-bold">Долг {record.paymentMethod.comment ? `(${record.paymentMethod.comment})` : ''}</span>
+                          ) : (
+                            getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)
+                          )}
                         </td>
                         <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-[10px] sm:text-xs text-muted-foreground">
                           {record.employeeIds
@@ -2822,7 +3023,11 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                       </div>
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-muted-foreground truncate flex-1 min-w-0 pr-2">
-                          {getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)}
+                          {record.paymentMethod.type === 'debt' ? (
+                            <span className="text-red-500 font-bold uppercase tracking-tighter">Долг {record.paymentMethod.comment ? `(${record.paymentMethod.comment})` : ''}</span>
+                          ) : (
+                            getPaymentMethodDisplay(record.paymentMethod.type, record.paymentMethod.organizationId)
+                          )}
                         </span>
                         <div className="flex gap-1 shrink-0">
                           <button
@@ -2902,6 +3107,25 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                     })()} BYN
                   </div>
                 </div>
+                  <div
+                    className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors ${
+                      paymentFilter === 'debt'
+                        ? 'bg-primary/10 border border-primary'
+                        : 'bg-muted/30 hover:bg-muted/50'
+                    }`}
+                    onClick={() => onPaymentFilterChange(paymentFilter === 'debt' ? 'all' : 'debt')}
+                    title="Нажмите для фильтрации по долгам"
+                  >
+                    <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">Долги</div>
+                    <div className="text-xs sm:text-sm md:text-base font-bold text-red-500 leading-tight break-words">
+                      {(() => {
+                        const debtSum = currentReport.records?.reduce((sum, record) => {
+                          return sum + (record.paymentMethod.type === 'debt' ? record.price : 0);
+                        }, 0) || 0;
+                        return debtSum.toFixed(2);
+                      })()} BYN
+                    </div>
+                  </div>
                 <div
                   className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors col-span-2 lg:col-span-1 ${
                     paymentFilter === 'all'

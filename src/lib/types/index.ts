@@ -24,9 +24,10 @@ export interface Service {
 
 // Тип для способа оплаты
 export interface PaymentMethod {
-  type: 'cash' | 'card' | 'organization';
+  type: 'cash' | 'card' | 'organization' | 'debt';
   organizationId?: string; // ID организации (если type === 'organization')
   organizationName?: string; // Имя организации (для удобства отображения)
+  comment?: string; // Комментарий (например, кто должен денег)
 }
 
 // Тип для записи о помывке автомобиля

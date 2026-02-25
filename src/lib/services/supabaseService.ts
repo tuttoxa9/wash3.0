@@ -222,6 +222,26 @@ export const dailyReportService = {
     if (error) { logSupabaseError('dailyReports.updateReport', error); return false; }
     return true;
   },
+  async getActiveDebts(): Promise<DailyReport[]> {
+    // Получаем отчеты, в которых есть записи с типом оплаты 'debt'
+    // Используем синтаксис Supabase для поиска в JSONB массиве
+    const { data, error } = await supabase
+      .from('daily_reports')
+      .select('*')
+      .contains('records', '[{"paymentMethod": {"type": "debt"}}]');
+
+    if (error) { logSupabaseError('dailyReports.getActiveDebts', error); return []; }
+    return (data || []).map((r: any) => ({
+      id: r.id,
+      date: r.date,
+      employeeIds: r.employee_ids || [],
+      records: r.records || [],
+      totalCash: r.total_cash || 0,
+      totalNonCash: r.total_non_cash || 0,
+      dailyEmployeeRoles: r.daily_employee_roles || undefined,
+      manualSalaries: r.manual_salaries || {},
+    }));
+  },
   async addRecord(date: string, record: CarWashRecord): Promise<boolean> {
     // Fetch current report
     const current = (await this.getByDate(date)) || {
@@ -235,7 +255,7 @@ export const dailyReportService = {
 
     const records = [...current.records, record];
     const totalCash = records.reduce((s, r) => s + (r.paymentMethod.type === 'cash' ? r.price : 0), 0);
-    const totalNonCash = records.reduce((s, r) => s + (r.paymentMethod.type === 'card' ? r.price : 0), 0);
+    const totalNonCash = records.reduce((s, r) => s + (r.paymentMethod.type === 'card' || r.paymentMethod.type === 'organization' ? r.price : 0), 0);
     const employeeIds = Array.from(new Set([
       ...current.employeeIds,
       ...(Array.isArray(record.employeeIds) ? record.employeeIds : ((record as any).washerId ? [(record as any).washerId] : []))

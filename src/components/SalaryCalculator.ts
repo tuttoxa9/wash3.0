@@ -250,7 +250,11 @@ export class SalaryCalculator {
       .filter(r => r.paymentMethod.type === 'organization')
       .reduce((sum, r) => sum + r.price, 0);
 
-    return { cash, card, organization, total: cash + card + organization };
+    const debt = this.records
+      .filter(r => r.paymentMethod.type === 'debt')
+      .reduce((sum, r) => sum + r.price, 0);
+
+    return { cash, card, organization, debt, total: cash + card + organization + debt };
   }
 }
 
