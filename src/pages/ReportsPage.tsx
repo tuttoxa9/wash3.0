@@ -207,6 +207,7 @@ const ReportsPage: React.FC = () => {
         totalCash: number;
         totalNonCash: number;
         totalOrganizations: number;
+        totalDebt: number;
         recordsCount: number;
       }>();
 
@@ -235,6 +236,7 @@ const ReportsPage: React.FC = () => {
               totalCash: 0,
               totalNonCash: 0,
               totalOrganizations: 0,
+              totalDebt: 0,
               recordsCount: 0
             });
           }
@@ -252,6 +254,7 @@ const ReportsPage: React.FC = () => {
                   totalCash: 0,
                   totalNonCash: 0,
                   totalOrganizations: 0,
+                  totalDebt: 0,
                   recordsCount: 0
                 });
               }
