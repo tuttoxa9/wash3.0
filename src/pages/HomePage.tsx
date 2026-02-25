@@ -1878,6 +1878,13 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({ onClose, selectedDate
             toast.success('Запись о мойке успешно добавлена');
           }
 
+          // Если создан долг, обновляем список долгов после небольшой задержки
+          if (paymentMethod.type === 'debt') {
+            setTimeout(() => {
+              loadActiveDebts();
+            }, 500);
+          }
+
           // Закрываем модальное окно
           onClose();
         } else {
