@@ -332,11 +332,18 @@ const ReportsPage: React.FC = () => {
         // Iterate through each date in the period
         const datesInPeriod = Object.keys(dailyRoles).sort();
 
+        // Pre-group records by date to avoid O(N*M) filtering
+        const recordsByDate: Record<string, CarWashRecord[]> = {};
+        filteredRecords.forEach(rec => {
+          const recDate = typeof rec.date === 'string' ? rec.date : format(rec.date, 'yyyy-MM-dd');
+          if (!recordsByDate[recDate]) {
+            recordsByDate[recDate] = [];
+          }
+          recordsByDate[recDate].push(rec);
+        });
+
         datesInPeriod.forEach(dateStr => {
-          const recordsForDay = filteredRecords.filter(rec => {
-            const recDate = typeof rec.date === 'string' ? rec.date : format(rec.date, 'yyyy-MM-dd');
-            return recDate === dateStr;
-          });
+          const recordsForDay = recordsByDate[dateStr] || [];
 
           const dayRoles = dailyRoles[dateStr] || {};
 
@@ -639,11 +646,18 @@ const ReportsPage: React.FC = () => {
       if (state.salaryCalculationMethod === 'minimumWithPercentage') {
         const aggregatedGeneralMinFlags: Record<string, boolean> = {};
 
+        // Pre-group records by date to avoid O(N*M) filtering
+        const recordsByDate: Record<string, CarWashRecord[]> = {};
+        allRecords.forEach(rec => {
+          const recDate = typeof rec.date === 'string' ? rec.date : format(rec.date, 'yyyy-MM-dd');
+          if (!recordsByDate[recDate]) {
+            recordsByDate[recDate] = [];
+          }
+          recordsByDate[recDate].push(rec);
+        });
+
         dateRange.forEach(dateStr => {
-          const recordsForDay = allRecords.filter(rec => {
-            const recDate = typeof rec.date === 'string' ? rec.date : format(rec.date, 'yyyy-MM-dd');
-            return recDate === dateStr;
-          });
+          const recordsForDay = recordsByDate[dateStr] || [];
 
           const dayRoles = rolesMap[dateStr] || {};
           const employeeRolesForDay: Record<string, 'admin' | 'washer'> = {};
