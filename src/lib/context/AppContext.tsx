@@ -84,13 +84,14 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const updatedRecords = [...currentReport.records, record];
 
       // Рассчитываем новые итоги с учетом изменений в PaymentMethod
+      // Долги (debt) не учитываются в текущей выручке
       const totalCash = updatedRecords.reduce(
         (sum, rec) => sum + (rec.paymentMethod.type === 'cash' ? rec.price : 0),
         0
       );
 
       const totalNonCash = updatedRecords.reduce(
-        (sum, rec) => sum + (rec.paymentMethod.type === 'card' ? rec.price : 0),
+        (sum, rec) => sum + (rec.paymentMethod.type === 'card' || rec.paymentMethod.type === 'organization' ? rec.price : 0),
         0
       );
 

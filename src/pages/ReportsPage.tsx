@@ -27,6 +27,7 @@ interface EarningsReport {
   totalCash: number;
   totalNonCash: number;
   totalOrganizations: number;
+  totalDebt: number;
   recordsCount: number;
   isManual?: boolean;
 }
@@ -56,10 +57,11 @@ const ReportsPage: React.FC = () => {
     totalCash: number;
     totalCard: number;
     totalOrganizations: number;
+    totalDebt: number;
     totalRevenue: number;
     totalSalaries: number;
     organizationBreakdown: { name: string; amount: number }[];
-    dailyData: { date: string; cash: number; card: number; organizations: number; total: number; recordsCount: number }[];
+    dailyData: { date: string; cash: number; card: number; organizations: number; debt: number; total: number; recordsCount: number }[];
     averageDaily: number;
     maxDay: { date: string; amount: number };
     minDay: { date: string; amount: number };
@@ -218,6 +220,7 @@ const ReportsPage: React.FC = () => {
             totalCash: 0,
             totalNonCash: 0,
             totalOrganizations: 0,
+        totalDebt: 0,
             recordsCount: 0
           });
         }
@@ -278,6 +281,8 @@ const ReportsPage: React.FC = () => {
               empData.totalNonCash += valuePerEmployee;
             } else if (record.paymentMethod.type === 'organization') {
               empData.totalOrganizations += valuePerEmployee;
+            } else if (record.paymentMethod.type === 'debt') {
+              empData.totalDebt += valuePerEmployee;
             }
             empData.recordsCount++;
           }
@@ -288,21 +293,24 @@ const ReportsPage: React.FC = () => {
       let totalCashAll = 0;
       let totalNonCashAll = 0;
       let totalOrganizationsAll = 0;
+      let totalDebtAll = 0;
 
       for (const [_, employee] of employeeMap.entries()) {
-        const totalEarnings = employee.totalCash + employee.totalNonCash + employee.totalOrganizations;
+        const totalVolume = employee.totalCash + employee.totalNonCash + employee.totalOrganizations + employee.totalDebt;
         totalCashAll += employee.totalCash;
         totalNonCashAll += employee.totalNonCash;
         totalOrganizationsAll += employee.totalOrganizations;
+        totalDebtAll += employee.totalDebt;
 
         results.push({
           employeeId: employee.id,
           employeeName: employee.name,
-          totalServiceValue: totalEarnings,
+          totalServiceValue: totalVolume,
           calculatedEarnings: 0, // will calculate below
           totalCash: employee.totalCash,
           totalNonCash: employee.totalNonCash,
           totalOrganizations: employee.totalOrganizations,
+          totalDebt: employee.totalDebt,
           recordsCount: employee.recordsCount,
         });
       }
@@ -406,7 +414,7 @@ const ReportsPage: React.FC = () => {
       // Sort by calculated earnings descending
       results.sort((a, b) => b.calculatedEarnings - a.calculatedEarnings);
 
-      setTotalRevenue(totalCashAll + totalNonCashAll + totalOrganizationsAll);
+      setTotalRevenue(totalCashAll + totalNonCashAll + totalOrganizationsAll + totalDebtAll);
 
       return results;
     };
@@ -581,18 +589,19 @@ const ReportsPage: React.FC = () => {
       let totalCash = 0;
       let totalCard = 0;
       let totalOrganizations = 0;
+      let totalDebt = 0;
       const organizationBreakdown: Record<string, number> = {};
-      const dailyBreakdown: Record<string, { cash: number; card: number; organizations: number; recordsCount: number }> = {};
+      const dailyBreakdown: Record<string, { cash: number; card: number; organizations: number; debt: number; recordsCount: number }> = {};
 
       // Инициализируем данные для каждого дня
       dateRange.forEach(date => {
-        dailyBreakdown[date] = { cash: 0, card: 0, organizations: 0, recordsCount: 0 };
+        dailyBreakdown[date] = { cash: 0, card: 0, organizations: 0, debt: 0, recordsCount: 0 };
       });
 
       allRecords.forEach(record => {
         const recordDate = record.date;
         if (!dailyBreakdown[recordDate]) {
-          dailyBreakdown[recordDate] = { cash: 0, card: 0, organizations: 0, recordsCount: 0 };
+          dailyBreakdown[recordDate] = { cash: 0, card: 0, organizations: 0, debt: 0, recordsCount: 0 };
         }
 
         dailyBreakdown[recordDate].recordsCount++;
@@ -610,20 +619,24 @@ const ReportsPage: React.FC = () => {
                           state.organizations.find(org => org.id === record.paymentMethod.organizationId)?.name ||
                           'Неизвестная организация';
           organizationBreakdown[orgName] = (organizationBreakdown[orgName] || 0) + record.price;
+        } else if (record.paymentMethod.type === 'debt') {
+          totalDebt += record.price;
+          dailyBreakdown[recordDate].debt += record.price;
         }
       });
 
-      const totalRevenue = totalCash + totalCard + totalOrganizations;
+      const totalRevenue = totalCash + totalCard + totalOrganizations + totalDebt;
 
       // Подготавливаем данные для графика
       const dailyData = dateRange.map(date => {
-        const dayData = dailyBreakdown[date] || { cash: 0, card: 0, organizations: 0, recordsCount: 0 };
-        const total = dayData.cash + dayData.card + dayData.organizations;
+        const dayData = dailyBreakdown[date] || { cash: 0, card: 0, organizations: 0, debt: 0, recordsCount: 0 };
+        const total = dayData.cash + dayData.card + dayData.organizations + dayData.debt;
         return {
           date: format(parseISO(date), 'dd.MM'),
           cash: dayData.cash,
           card: dayData.card,
           organizations: dayData.organizations,
+          debt: dayData.debt,
           total,
           recordsCount: dayData.recordsCount
         };
@@ -710,6 +723,7 @@ const ReportsPage: React.FC = () => {
         totalCash,
         totalCard,
         totalOrganizations,
+        totalDebt,
         totalRevenue,
         totalSalaries,
         organizationBreakdown: Object.entries(organizationBreakdown).map(([name, amount]) => ({ name, amount })),
@@ -757,6 +771,16 @@ const ReportsPage: React.FC = () => {
             }),
             new TableCell({
               children: [new Paragraph({ text: generalReportData.totalCash.toFixed(2), alignment: AlignmentType.RIGHT })]
+            }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              children: [new Paragraph({ text: "Долги" })]
+            }),
+            new TableCell({
+              children: [new Paragraph({ text: generalReportData.totalDebt.toFixed(2), alignment: AlignmentType.RIGHT })]
             }),
           ]
         }),
@@ -1143,17 +1167,18 @@ const ReportsPage: React.FC = () => {
             </div>
 
             <div className="border rounded-md overflow-hidden">
-              <div className="grid grid-cols-6 gap-1 sm:gap-2 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
                 <div className="font-medium text-xs md:text-sm px-1">Сотрудник</div>
                 <div className="font-medium text-xs md:text-sm text-right px-1">Нал</div>
                 <div className="font-medium text-xs md:text-sm text-right px-1">Карт</div>
                 <div className="font-medium text-xs md:text-sm text-right px-1">Безнал</div>
+                <div className="font-medium text-xs md:text-sm text-right px-1">Долг</div>
                 <div className="font-medium text-xs md:text-sm text-right px-1">Всего</div>
                 <div className="font-medium text-xs md:text-sm text-right px-1">ЗП</div>
               </div>
               <div className="divide-y">
                 {earningsReport.map(report => {
-                  const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations;
+                  const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations + report.totalDebt;
 
                   // Рассчитываем зарплату сотрудника с учетом роли
                   const reportDate = startDate.toISOString().split('T')[0];
@@ -1192,13 +1217,14 @@ const ReportsPage: React.FC = () => {
                   return (
                     <div
                       key={report.employeeId}
-                      className="grid grid-cols-6 gap-1 sm:gap-2 px-2 md:px-4 py-1.5 md:py-2 hover:bg-muted/30 cursor-pointer transition-colors"
+                      className="grid grid-cols-7 gap-1 sm:gap-2 px-2 md:px-4 py-1.5 md:py-2 hover:bg-muted/30 cursor-pointer transition-colors"
                       onClick={handleEmployeeClick}
                     >
                       <div className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate px-1" title={report.employeeName}>{report.employeeName}</div>
                       <div className="text-right text-xs md:text-sm px-1">{report.totalCash.toFixed(2)}</div>
                       <div className="text-right text-xs md:text-sm px-1">{report.totalNonCash.toFixed(2)}</div>
                       <div className="text-right text-xs md:text-sm px-1">{report.totalOrganizations.toFixed(2)}</div>
+                      <div className="text-right text-xs md:text-sm px-1 text-red-500">{report.totalDebt.toFixed(2)}</div>
                       <div className="text-right text-xs md:text-sm px-1">{totalRevenueEmp.toFixed(2)}</div>
                       <div className="text-right font-medium text-xs md:text-sm px-1 flex items-center justify-end gap-1">
                         <span className={report.isManual ? "text-orange-500 font-bold" : ""}>
@@ -1445,6 +1471,16 @@ const ReportsPage: React.FC = () => {
                       </div>
                       <div className="text-xs text-purple-700 dark:text-purple-300">
                         {((generalReportData.totalOrganizations / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
+                      <div className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">Долги</div>
+                      <div className="text-lg font-bold text-red-900 dark:text-red-100">
+                        {generalReportData.totalDebt.toFixed(0)} BYN
+                      </div>
+                      <div className="text-xs text-red-700 dark:text-red-300">
+                        {((generalReportData.totalDebt / generalReportData.totalRevenue) * 100).toFixed(1)}%
                       </div>
                     </div>
 
@@ -1885,6 +1921,15 @@ const ReportsPage: React.FC = () => {
                             dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
                             activeDot={{ r: 6 }}
                           />
+                          <Line
+                            type="monotone"
+                            dataKey="debt"
+                            stroke="#f43f5e"
+                            strokeWidth={2}
+                            name="Долги"
+                            dot={{ fill: '#f43f5e', strokeWidth: 2, r: 4 }}
+                            activeDot={{ r: 6 }}
+                          />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -1998,6 +2043,18 @@ const ReportsPage: React.FC = () => {
                               </div>
                             </div>
                           </div>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                              <span className="font-medium">Долги</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-bold">{generalReportData.totalDebt.toFixed(0)} BYN</div>
+                              <div className="text-sm text-muted-foreground">
+                                {((generalReportData.totalDebt / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
                           <div className="flex justify-between items-center p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 rounded-full bg-green-500"></div>
@@ -2040,6 +2097,12 @@ const ReportsPage: React.FC = () => {
                             <span>Безналичные платежи:</span>
                             <span className="font-medium text-blue-600">
                               {(((generalReportData.totalCard + generalReportData.totalOrganizations) / generalReportData.totalRevenue) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Доля долгов:</span>
+                            <span className="font-medium text-red-600">
+                              {((generalReportData.totalDebt / generalReportData.totalRevenue) * 100).toFixed(1)}%
                             </span>
                           </div>
                           <div className="flex justify-between text-sm">
