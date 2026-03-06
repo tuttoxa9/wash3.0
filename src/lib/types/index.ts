@@ -44,6 +44,13 @@ export interface CarWashRecord {
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 
+// Тип для заметки к смене
+export interface ShiftNote {
+  id: string;
+  text: string;
+  createdAt: string; // ISO string
+}
+
 // Тип для ежедневной ведомости
 export interface DailyReport {
   id: string;
@@ -54,6 +61,7 @@ export interface DailyReport {
   totalNonCash: number; // Сумма безналичных платежей
   dailyEmployeeRoles?: Record<string, EmployeeRole>; // Ежедневные роли сотрудников (employeeId -> role)
   manualSalaries?: Record<string, number>; // Ручные изменения зарплат (employeeId -> amount)
+  notes?: ShiftNote[]; // Заметки к смене
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 
@@ -85,6 +93,7 @@ export interface MinimumPaymentSettings {
   adminCashPercentage: number; // Процент админа от кассы
   adminCarWashPercentage: number; // Процент админа от вымытых машин (мойка)
   adminDrycleanPercentage: number; // Процент админа от вымытых машин (химчистка)
+  organizationsInTotal?: string[]; // ID организаций, которые отображаются отдельно в Итого
 }
 
 // Тип для настроек темы

@@ -1,9 +1,11 @@
-import type React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download, LogOut } from 'lucide-react';
+import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download, LogOut, StickyNote, Plus, Trash, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/lib/context/AppContext';
 import { useAuth } from '@/lib/context/AuthContext';
-import type { ThemeMode } from '@/lib/types';
+import type { ThemeMode, ShiftNote } from '@/lib/types';
+import { dailyReportService } from '@/lib/services/supabaseService';
+import { toast } from 'sonner';
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -24,6 +26,83 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
   const handleThemeChange = (newTheme: ThemeMode) => {
     dispatch({ type: 'SET_THEME', payload: newTheme });
+  };
+
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [newNoteText, setNewNoteText] = useState('');
+  const [isSavingNote, setIsSavingNote] = useState(false);
+
+  const currentReport = state.dailyReports[state.currentDate];
+  const notes = currentReport?.notes || [];
+
+  const handleAddNote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newNoteText.trim() || !currentReport) return;
+
+    setIsSavingNote(true);
+    try {
+      const newNote: ShiftNote = {
+        id: crypto.randomUUID(),
+        text: newNoteText.trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      const updatedNotes = [...notes, newNote];
+      const success = await dailyReportService.updateReport({
+        ...currentReport,
+        notes: updatedNotes
+      });
+
+      if (success) {
+        dispatch({
+          type: 'SET_DAILY_REPORT',
+          payload: {
+            date: state.currentDate,
+            report: { ...currentReport, notes: updatedNotes }
+          }
+        });
+        setNewNoteText('');
+        toast.success('Заметка добавлена');
+      } else {
+        toast.error('Не удалось сохранить заметку');
+      }
+    } catch (error) {
+      console.error('Error adding note:', error);
+      toast.error('Произошла ошибка');
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!currentReport) return;
+
+    setIsSavingNote(true);
+    try {
+      const updatedNotes = notes.filter(n => n.id !== noteId);
+      const success = await dailyReportService.updateReport({
+        ...currentReport,
+        notes: updatedNotes
+      });
+
+      if (success) {
+        dispatch({
+          type: 'SET_DAILY_REPORT',
+          payload: {
+            date: state.currentDate,
+            report: { ...currentReport, notes: updatedNotes }
+          }
+        });
+        toast.success('Заметка удалена');
+      } else {
+        toast.error('Не удалось удалить заметку');
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast.error('Произошла ошибка');
+    } finally {
+      setIsSavingNote(false);
+    }
   };
 
   const handleInstallPWA = async () => {
@@ -166,6 +245,53 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             </NavLink>
           </nav>
 
+          {/* Виджет заметок */}
+          <div className="mt-4 mb-4">
+            <div
+              className="bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => {
+                if (!currentReport) {
+                  toast.info('Сначала выберите сотрудников и начните смену');
+                  return;
+                }
+                setIsNotesModalOpen(true);
+              }}
+            >
+              <div className="flex items-center justify-between px-3 py-2 bg-muted/30 border-b border-border/40">
+                <div className="flex items-center gap-2">
+                  <StickyNote className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-semibold">Заметки смены</span>
+                </div>
+                {notes.length > 0 && (
+                  <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold">
+                    {notes.length}
+                  </span>
+                )}
+              </div>
+
+              <div className="p-3 text-xs">
+                {!currentReport ? (
+                  <p className="text-muted-foreground italic text-center text-[11px]">Смена не начата</p>
+                ) : notes.length === 0 ? (
+                  <p className="text-muted-foreground italic text-center text-[11px]">Нет заметок. Нажмите, чтобы добавить.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {notes.slice(0, 3).map(note => (
+                      <li key={note.id} className="text-foreground line-clamp-2 leading-tight bg-muted/20 p-1.5 rounded-md border border-border/30">
+                        {note.text}
+                      </li>
+                    ))}
+                    {notes.length > 3 && (
+                      <li className="text-center text-primary text-[10px] font-medium pt-1">
+                        + ещё {notes.length - 3}
+                      </li>
+                    )}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Кнопка установки PWA */}
           <div className="mt-auto mb-4">
             <button
@@ -222,6 +348,85 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
           </div>
         </div>
       </aside>
+
+      {/* Модальное окно заметок */}
+      {isNotesModalOpen && currentReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-card w-full max-w-md rounded-2xl shadow-2xl border border-border/50 flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-4 border-b border-border/40">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <StickyNote className="w-5 h-5 text-primary" />
+                Заметки за {state.currentDate}
+              </h2>
+              <button
+                onClick={() => setIsNotesModalOpen(false)}
+                className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {notes.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <StickyNote className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                  <p>Нет заметок</p>
+                  <p className="text-sm">Добавьте первую заметку ниже</p>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {notes.map(note => (
+                    <li key={note.id} className="group flex flex-col gap-2 p-3 bg-muted/30 rounded-xl border border-border/40 hover:border-border/80 transition-colors">
+                      <div className="flex justify-between items-start gap-2">
+                        <p className="text-sm whitespace-pre-wrap flex-1">{note.text}</p>
+                        <button
+                          onClick={() => handleDeleteNote(note.id)}
+                          disabled={isSavingNote}
+                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                          title="Удалить заметку"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-border/40 bg-muted/10">
+              <form onSubmit={handleAddNote} className="flex gap-2">
+                <textarea
+                  value={newNoteText}
+                  onChange={(e) => setNewNoteText(e.target.value)}
+                  placeholder="Новая заметка..."
+                  className="flex-1 min-h-[44px] max-h-32 p-3 rounded-xl border border-input bg-background resize-y text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  rows={1}
+                  disabled={isSavingNote}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (newNoteText.trim()) {
+                        handleAddNote(e as unknown as React.FormEvent);
+                      }
+                    }
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={!newNoteText.trim() || isSavingNote}
+                  className="h-11 px-4 bg-primary text-primary-foreground rounded-xl font-medium shadow-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center min-w-[44px]"
+                >
+                  {isSavingNote ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
