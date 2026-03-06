@@ -1200,13 +1200,48 @@ const HomePage: React.FC = () => {
                   >
                     <span className="font-medium text-sm sm:text-base flex-shrink-0">Безналичные</span>
                     <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">{(() => {
-                      // Подсчитываем сумму за организации
+                      // Подсчитываем сумму за организации, исключая те, что в organizationsInTotal
+                      const orgsInTotal = state.organizationsInTotal || [];
                       const orgSum = currentReport.records?.reduce((sum, record) => {
-                        return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                        const isOrg = record.paymentMethod.type === 'organization';
+                        const isSeparated = record.paymentMethod.organizationId && orgsInTotal.includes(record.paymentMethod.organizationId);
+                        return sum + (isOrg && !isSeparated ? record.price : 0);
                       }, 0) || 0;
                       return orgSum.toFixed(2);
                     })()} BYN</span>
                   </div>
+
+                  {/* Дополнительные блоки для выделенных организаций */}
+                  {(state.organizationsInTotal || []).map(orgId => {
+                    const org = state.organizations.find(o => o.id === orgId);
+                    if (!org) return null;
+
+                    const sumForOrg = currentReport?.records?.reduce((sum, record) => {
+                      return sum + (
+                        record.paymentMethod.type === 'organization' &&
+                        record.paymentMethod.organizationId === orgId
+                          ? record.price : 0
+                      );
+                    }, 0) || 0;
+
+                    return (
+                      <div
+                        key={`total-org-${orgId}`}
+                        className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        onClick={() => {
+                          if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
+                          setPaymentFilter('organization');
+                          openDailyReportModal();
+                        }}
+                        title={shiftStarted ? `Нажмите для просмотра ведомости (входит в безнал)` : 'Сначала выберите работников и начните смену'}
+                      >
+                        <span className="font-medium text-sm sm:text-base flex-shrink-0 truncate max-w-[60%]">{org.name}</span>
+                        <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words text-indigo-500 dark:text-indigo-400">
+                          {sumForOrg.toFixed(2)} BYN
+                        </span>
+                      </div>
+                    );
+                  })}
                   <div
                     className={`border-t border-border/40 mt-4 sm:mt-6 pt-4 sm:pt-6 flex justify-between items-center cursor-pointer transition-all duration-200 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border shadow-md bg-gradient-to-r from-accent/10 via-primary/5 to-accent/10 hover:from-accent/20 hover:via-primary/10 hover:to-accent/20 hover:shadow-lg ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {

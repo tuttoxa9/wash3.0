@@ -185,6 +185,7 @@ export const dailyReportService = {
       totalNonCash: data.total_non_cash || 0,
       dailyEmployeeRoles: data.daily_employee_roles || undefined,
       manualSalaries: data.manual_salaries || {},
+      notes: data.notes || [],
     };
   },
   async getByDateRange(startDate: string, endDate: string): Promise<DailyReport[]> {
@@ -204,6 +205,7 @@ export const dailyReportService = {
       totalNonCash: r.total_non_cash || 0,
       dailyEmployeeRoles: r.daily_employee_roles || undefined,
       manualSalaries: r.manual_salaries || {},
+      notes: r.notes || [],
     }));
   },
   async updateReport(report: DailyReport): Promise<boolean> {
@@ -216,6 +218,7 @@ export const dailyReportService = {
       total_non_cash: report.totalNonCash,
       daily_employee_roles: report.dailyEmployeeRoles ?? null,
       manual_salaries: report.manualSalaries ?? {},
+      notes: report.notes ?? [],
       updated_at: new Date().toISOString(),
     };
     const { error } = await supabase.from('daily_reports').upsert(payload, { onConflict: 'id' });
@@ -365,6 +368,16 @@ export const settingsService = {
   async getMinimumPaymentSettings(): Promise<any | null> {
     const { data, error } = await supabase.from('settings').select('data').eq('key', 'minimumPayment').single();
     if (error) { if ((error as any).code === 'PGRST116') return null; logSupabaseError('settings.getMinimumPaymentSettings', error); return null; }
+    return (data as any)?.data ?? null;
+  },
+  async saveOrganizationsInTotal(orgs: string[]): Promise<boolean> {
+    const { error } = await supabase.from('settings').upsert({ key: 'organizationsInTotal', data: orgs }, { onConflict: 'key' });
+    if (error) { logSupabaseError('settings.saveOrganizationsInTotal', error); return false; }
+    return true;
+  },
+  async getOrganizationsInTotal(): Promise<string[] | null> {
+    const { data, error } = await supabase.from('settings').select('data').eq('key', 'organizationsInTotal').single();
+    if (error) { if ((error as any).code === 'PGRST116') return null; logSupabaseError('settings.getOrganizationsInTotal', error); return null; }
     return (data as any)?.data ?? null;
   }
 };
