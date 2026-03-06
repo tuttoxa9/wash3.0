@@ -144,7 +144,7 @@ const ReportsPage: React.FC = () => {
         // Отладка: посмотрим что загрузилось
         console.log('=== ОТЛАДКА ЗАГРУЗКИ РОЛЕЙ ===');
         console.log('rolesMap:', rolesMap);
-        dateRange.forEach(date => {
+        Object.keys(rolesMap).forEach(date => {
           const roles = rolesMap[date];
           if (roles) {
             Object.keys(roles).forEach(key => {
