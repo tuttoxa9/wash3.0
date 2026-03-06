@@ -144,7 +144,7 @@ const ReportsPage: React.FC = () => {
         // Отладка: посмотрим что загрузилось
         console.log('=== ОТЛАДКА ЗАГРУЗКИ РОЛЕЙ ===');
         console.log('rolesMap:', rolesMap);
-        dateRange.forEach(date => {
+        Object.keys(rolesMap).forEach(date => {
           const roles = rolesMap[date];
           if (roles) {
             Object.keys(roles).forEach(key => {
@@ -1150,18 +1150,19 @@ const ReportsPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="border rounded-md overflow-hidden">
-              <div className="grid grid-cols-7 gap-1 sm:gap-2 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
-                <div className="font-medium text-xs md:text-sm px-1">Сотрудник</div>
-                <div className="font-medium text-xs md:text-sm text-right px-1">Нал</div>
-                <div className="font-medium text-xs md:text-sm text-right px-1">Карт</div>
-                <div className="font-medium text-xs md:text-sm text-right px-1">Безнал</div>
-                <div className="font-medium text-xs md:text-sm text-right px-1">Долг</div>
-                <div className="font-medium text-xs md:text-sm text-right px-1">Всего</div>
-                <div className="font-medium text-xs md:text-sm text-right px-1">ЗП</div>
-              </div>
-              <div className="divide-y">
-                {earningsReport.map(report => {
+            <div className="border rounded-md overflow-x-auto">
+              <div className="min-w-[500px]">
+                <div className="grid grid-cols-7 gap-1 sm:gap-2 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
+                  <div className="font-medium text-xs md:text-sm px-1">Сотрудник</div>
+                  <div className="font-medium text-xs md:text-sm text-right px-1">Нал</div>
+                  <div className="font-medium text-xs md:text-sm text-right px-1">Карт</div>
+                  <div className="font-medium text-xs md:text-sm text-right px-1">Безнал</div>
+                  <div className="font-medium text-xs md:text-sm text-right px-1">Долг</div>
+                  <div className="font-medium text-xs md:text-sm text-right px-1">Всего</div>
+                  <div className="font-medium text-xs md:text-sm text-right px-1">ЗП</div>
+                </div>
+                <div className="divide-y">
+                  {earningsReport.map(report => {
                   const totalRevenueEmp = report.totalCash + report.totalNonCash + report.totalOrganizations + report.totalDebt;
 
                   // Рассчитываем зарплату сотрудника с учетом роли
@@ -1237,6 +1238,7 @@ const ReportsPage: React.FC = () => {
                   </div>
                 )}
               </div>
+            </div>
             </div>
 
             {/* Итоговая сумма - заменим таблицу на строку с итоговыми цифрами */}
@@ -2218,13 +2220,13 @@ const ReportsPage: React.FC = () => {
                       <div>
                         <h5 className="font-medium mb-3">Все организации</h5>
                         <div className="bg-card border border-border rounded-lg overflow-hidden">
-                          <div className="max-h-96 overflow-y-auto">
-                            <table className="w-full">
+                          <div className="max-h-96 overflow-y-auto overflow-x-auto">
+                            <table className="w-full min-w-[400px]">
                               <thead className="bg-muted/50 sticky top-0">
                                 <tr>
-                                  <th className="py-3 px-4 text-left text-sm font-medium">Организация</th>
-                                  <th className="py-3 px-4 text-right text-sm font-medium">Сумма</th>
-                                  <th className="py-3 px-4 text-right text-sm font-medium">%</th>
+                                  <th className="py-3 px-4 text-left text-sm font-medium whitespace-nowrap">Организация</th>
+                                  <th className="py-3 px-4 text-right text-sm font-medium whitespace-nowrap">Сумма</th>
+                                  <th className="py-3 px-4 text-right text-sm font-medium whitespace-nowrap">%</th>
                                 </tr>
                               </thead>
                               <tbody>
