@@ -159,18 +159,28 @@ const RecordsPage: React.FC = () => {
   );
 
   // Статистика
-  const stats = {
-    total: filteredAppointments.length,
-    scheduled: filteredAppointments.filter((a) => a.status === "scheduled")
-      .length,
-    completed: filteredAppointments.filter((a) => a.status === "completed")
-      .length,
-    cancelled: filteredAppointments.filter((a) => a.status === "cancelled")
-      .length,
-    today: filteredAppointments.filter((a) => isToday(parseISO(a.date))).length,
-    tomorrow: filteredAppointments.filter((a) => isTomorrow(parseISO(a.date)))
-      .length,
-  };
+  const stats = filteredAppointments.reduce(
+    (acc, a) => {
+      acc.total++;
+      if (a.status === "scheduled") acc.scheduled++;
+      else if (a.status === "completed") acc.completed++;
+      else if (a.status === "cancelled") acc.cancelled++;
+
+      const date = parseISO(a.date);
+      if (isToday(date)) acc.today++;
+      else if (isTomorrow(date)) acc.tomorrow++;
+
+      return acc;
+    },
+    {
+      total: 0,
+      scheduled: 0,
+      completed: 0,
+      cancelled: 0,
+      today: 0,
+      tomorrow: 0,
+    },
+  );
 
   // Обработчики
   const handleAddAppointment = (event: React.MouseEvent) => {
