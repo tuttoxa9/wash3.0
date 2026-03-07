@@ -704,13 +704,13 @@ const SettingsContent: React.FC = () => {
             Управление сотрудниками, организациями и параметрами системы
           </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-            <div className="space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-3 sm:space-y-4">
               <ThemeSettings />
               <SalaryCalculationSettings />
 
               <motion.div
-                className="p-3 border border-border rounded-lg bg-card"
+                className="p-3 sm:p-4 border border-border rounded-lg bg-card"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
                 transition={{ duration: 0.2 }}
               >
@@ -779,9 +779,9 @@ const SettingsContent: React.FC = () => {
               </motion.div>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-3 sm:space-y-4">
               <motion.div
-                className="p-3 border border-border rounded-lg bg-card"
+                className="p-3 sm:p-4 border border-border rounded-lg bg-card"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
                 transition={{ duration: 0.2 }}
               >
@@ -896,7 +896,7 @@ const SettingsContent: React.FC = () => {
               <OrganizationsSettings />
 
               <motion.div
-                className="p-3 border border-destructive/30 rounded-lg bg-destructive/5"
+                className="p-3 sm:p-4 border border-destructive/30 rounded-lg bg-destructive/5"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
                 transition={{ duration: 0.2 }}
               >
@@ -984,7 +984,7 @@ const SettingsContent: React.FC = () => {
           </div>
 
           {/* Организации в Итого (теперь внутри SettingsContent, за паролем) */}
-          <div className="mt-6 border-t border-border pt-6">
+          <div className="mt-4 sm:mt-5 border-t border-border pt-4 sm:pt-5">
             <OrganizationsInTotalSettings />
           </div>
         </motion.div>
@@ -1094,7 +1094,8 @@ const SalaryCalculationSettings: React.FC = () => {
 
   return (
     <motion.div
-      className="p-3 border border-border rounded-lg bg-card"
+      className="p-3 sm:p-4 border border-border rounded-lg bg-card"
+      className="p-3 sm:p-4 border border-border rounded-lg bg-card"
       whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
       transition={{ duration: 0.2 }}
     >
@@ -1158,10 +1159,10 @@ const SalaryCalculationSettings: React.FC = () => {
             </h4>
 
             <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
-                    Минимальная оплата мойщика за день
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                    Мин. оплата мойщика
                   </label>
                   <input
                     type="number"
@@ -1180,8 +1181,8 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
-                    Процент мойщика - мойка (%)
+                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                    % мойщика - мойка
                   </label>
                   <input
                     type="number"
@@ -1201,8 +1202,8 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
-                    Процент мойщика - химчистка (%)
+                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                    % мойщика - химчистка
                   </label>
                   <input
                     type="number"
@@ -1223,10 +1224,10 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
-                    Минимальная оплата админа за день
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                    Мин. оплата админа
                   </label>
                   <input
                     type="number"
@@ -1247,10 +1248,10 @@ const SalaryCalculationSettings: React.FC = () => {
                 <div></div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
-                    % админа от кассы (%)
+                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                    % адм от кассы
                   </label>
                   <input
                     type="number"
@@ -1270,8 +1271,8 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
-                    % админа от мойки (%)
+                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                    % адм от мойки
                   </label>
                   <input
                     type="number"
@@ -1291,8 +1292,8 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
-                    % админа от химчистки (%)
+                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                    % адм от химчистки
                   </label>
                   <input
                     type="number"
@@ -1396,7 +1397,7 @@ const OrganizationsInTotalSettings = () => {
 
   return (
     <motion.div
-      className="p-4 sm:p-5 border border-border/60 rounded-xl bg-card/80 mt-2 shadow-sm"
+      className="p-3 sm:p-5 border border-border/60 rounded-xl bg-card/80 mt-2 shadow-sm"
       whileHover={{
         boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
         borderColor: "hsl(var(--primary)/0.2)",
@@ -1407,17 +1408,17 @@ const OrganizationsInTotalSettings = () => {
         <Building className="w-4 h-4 text-primary" />
         <h3 className="text-base font-semibold">Организации в Итого</h3>
       </div>
-      <p className="text-sm text-muted-foreground mb-5">
+      <p className="text-xs sm:text-sm text-muted-foreground mb-4">
         Выберите организации, суммы которых будут вычитаться из общего безнала и
-        отображаться отдельным пунктом в блоке «Итого» на главной странице.
+        отображаться отдельным пунктом в блоке «Итого».
       </p>
 
       {state.organizations.length === 0 ? (
-        <div className="text-xs text-muted-foreground p-4 border rounded-xl bg-muted/20 text-center">
+        <div className="text-xs text-muted-foreground p-3 sm:p-4 border rounded-xl bg-muted/20 text-center">
           Нет добавленных организаций
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
           {state.organizations.map((org) => {
             const isSelected = (state.organizationsInTotal || []).includes(
               org.id,
@@ -1429,7 +1430,7 @@ const OrganizationsInTotalSettings = () => {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => toggleOrganization(org.id)}
                 disabled={loading}
-                className={`relative overflow-hidden p-4 rounded-xl flex items-center justify-between transition-all duration-300 text-left border ${
+                className={`relative overflow-hidden p-2.5 sm:p-4 rounded-xl flex items-center justify-between transition-all duration-300 text-left border ${
                   isSelected
                     ? "border-primary/50 shadow-md bg-gradient-to-br from-primary/5 to-primary/10"
                     : "border-border/60 hover:border-primary/30 hover:shadow-sm bg-gradient-to-br from-background to-muted/20"
@@ -1441,13 +1442,13 @@ const OrganizationsInTotalSettings = () => {
                 />
 
                 <span
-                  className={`text-sm font-medium truncate pr-3 transition-colors duration-300 ${isSelected ? "text-primary" : "text-foreground"}`}
+                  className={`text-xs sm:text-sm font-medium truncate pr-2 sm:pr-3 transition-colors duration-300 ${isSelected ? "text-primary" : "text-foreground"}`}
                 >
                   {org.name}
                 </span>
 
                 <div
-                  className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center transition-all duration-300 ${
+                  className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border flex-shrink-0 flex items-center justify-center transition-all duration-300 ${
                     isSelected
                       ? "bg-primary border-primary text-primary-foreground shadow-sm"
                       : "border-input text-transparent bg-background/50"
