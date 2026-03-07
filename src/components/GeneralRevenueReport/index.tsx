@@ -1453,15 +1453,15 @@ const GeneralRevenueReport: React.FC = () => {
                   variants={fadeInUp}
                   className="lg:col-span-2 bg-card border border-border rounded-3xl p-2 sm:p-4 shadow-sm overflow-hidden"
                 >
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
+                  <div className="overflow-x-auto custom-scrollbar">
+                    <table className="w-full text-sm text-left min-w-[350px]">
                       <thead className="text-xs text-muted-foreground uppercase bg-muted/30">
                         <tr>
-                          <th className="px-6 py-4 rounded-tl-xl">
+                          <th className="px-4 py-3 sm:px-6 sm:py-4 rounded-tl-xl whitespace-nowrap">
                             Организация
                           </th>
-                          <th className="px-6 py-4 text-right">Сумма (BYN)</th>
-                          <th className="px-6 py-4 text-right rounded-tr-xl">
+                          <th className="px-4 py-3 sm:px-6 sm:py-4 text-right whitespace-nowrap">Сумма (BYN)</th>
+                          <th className="px-4 py-3 sm:px-6 sm:py-4 text-right rounded-tr-xl whitespace-nowrap">
                             Доля
                           </th>
                         </tr>
@@ -1475,18 +1475,18 @@ const GeneralRevenueReport: React.FC = () => {
                               key={idx}
                               className="border-b border-border/50 last:border-0 hover:bg-muted/10 transition-colors"
                             >
-                              <td className="px-6 py-4 font-medium flex items-center gap-3">
+                              <td className="px-4 py-3 sm:px-6 sm:py-4 font-medium flex items-center gap-2 sm:gap-3 truncate max-w-[140px] sm:max-w-none" title={org.name}>
                                 <div
-                                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${idx === 0 ? "bg-yellow-500" : idx === 1 ? "bg-slate-400" : idx === 2 ? "bg-amber-600" : "bg-primary/50"}`}
+                                  className={`shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold text-white ${idx === 0 ? "bg-yellow-500" : idx === 1 ? "bg-slate-400" : idx === 2 ? "bg-amber-600" : "bg-primary/50"}`}
                                 >
                                   {idx + 1}
                                 </div>
-                                {org.name}
+                                <span className="truncate">{org.name}</span>
                               </td>
-                              <td className="px-6 py-4 text-right font-semibold">
+                              <td className="px-4 py-3 sm:px-6 sm:py-4 text-right font-semibold whitespace-nowrap">
                                 {org.amount.toFixed(0)}
                               </td>
-                              <td className="px-6 py-4 text-right text-muted-foreground">
+                              <td className="px-4 py-3 sm:px-6 sm:py-4 text-right text-muted-foreground whitespace-nowrap">
                                 {(
                                   (org.amount /
                                     generalReportData.totalOrganizations) *

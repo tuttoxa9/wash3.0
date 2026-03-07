@@ -153,16 +153,16 @@ const ThemeSettings: React.FC = () => {
 
   return (
     <motion.div
-      className="p-3 border border-border rounded-lg bg-card"
+      className="p-3 sm:p-4 border border-border rounded-xl bg-card"
       whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
       transition={{ duration: 0.2 }}
     >
-      <h3 className="text-sm font-medium mb-2">Внешний вид</h3>
-      <p className="text-xs text-muted-foreground mb-3">
+      <h3 className="text-sm sm:text-base font-medium mb-1">Внешний вид</h3>
+      <p className="text-xs text-muted-foreground mb-4">
         Выберите тему оформления приложения
       </p>
 
-      <div className="segmented-control mb-1">
+      <div className="segmented-control">
         <button
           onClick={() => setTheme("light")}
           className={state.theme === "light" ? "active" : ""}
@@ -316,12 +316,12 @@ const OrganizationsSettings: React.FC = () => {
 
   return (
     <motion.div
-      className="p-3 border border-border rounded-lg bg-card"
+      className="p-3 sm:p-4 border border-border rounded-xl bg-card"
       whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
       transition={{ duration: 0.2 }}
     >
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-sm font-medium flex items-center">
+      <div className="flex justify-between items-center mb-1">
+        <h3 className="text-sm sm:text-base font-medium flex items-center">
           <Building className="w-4 h-4 mr-1.5 text-primary" />
           Организации-партнеры
         </h3>
@@ -346,12 +346,12 @@ const OrganizationsSettings: React.FC = () => {
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground mb-3">
+      <p className="text-xs text-muted-foreground mb-4">
         Управление списком организаций, которые используются для оплаты услуг
       </p>
 
       {/* Форма добавления новой организации */}
-      <form onSubmit={handleAddOrganization} className="mb-3">
+      <form onSubmit={handleAddOrganization} className="mb-4">
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <input
@@ -692,17 +692,16 @@ const SettingsContent: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="card-with-shadow max-w-4xl mx-auto"
+          className="max-w-4xl mx-auto space-y-3 sm:space-y-5"
         >
-          <div className="flex items-center mb-4">
-            <h2 className="text-xl font-bold gradient-heading flex-1">
+          <div className="px-1 sm:px-0">
+            <h2 className="text-xl sm:text-2xl font-bold gradient-heading">
               Настройки системы
             </h2>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+              Управление сотрудниками, организациями и параметрами
+            </p>
           </div>
-
-          <p className="text-muted-foreground text-sm mb-5">
-            Управление сотрудниками, организациями и параметрами системы
-          </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-3 sm:space-y-4">
@@ -710,11 +709,11 @@ const SettingsContent: React.FC = () => {
               <SalaryCalculationSettings />
 
               <motion.div
-                className="p-3 sm:p-4 border border-border rounded-lg bg-card"
+                className="p-3 sm:p-4 border border-border rounded-xl bg-card"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
                 transition={{ duration: 0.2 }}
               >
-                <h3 className="text-sm font-medium mb-2">
+                <h3 className="text-sm sm:text-base font-medium mb-4">
                   Состояние базы данных
                 </h3>
                 <div className="flex items-center">
@@ -781,12 +780,12 @@ const SettingsContent: React.FC = () => {
 
             <div className="space-y-3 sm:space-y-4">
               <motion.div
-                className="p-3 sm:p-4 border border-border rounded-lg bg-card"
+                className="p-3 sm:p-4 border border-border rounded-xl bg-card"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-sm font-medium">Сотрудники</h3>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm sm:text-base font-medium">Сотрудники</h3>
 
                   {loading.fetchEmployees ? (
                     <div className="flex flex-col items-center justify-center py-8">
@@ -896,13 +895,13 @@ const SettingsContent: React.FC = () => {
               <OrganizationsSettings />
 
               <motion.div
-                className="p-3 sm:p-4 border border-destructive/30 rounded-lg bg-destructive/5"
+                className="p-3 sm:p-4 border border-destructive/30 rounded-xl bg-destructive/5"
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
                 transition={{ duration: 0.2 }}
               >
-                <h3 className="text-sm font-medium mb-2 text-destructive flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-medium mb-2 text-destructive flex items-center gap-2">
                   <Trash className="w-4 h-4" />
-                  Управление данными Supabase
+                  Управление данными
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
                   Удаление всех данных из базы данных Supabase.
@@ -1094,13 +1093,12 @@ const SalaryCalculationSettings: React.FC = () => {
 
   return (
     <motion.div
-      className="p-3 sm:p-4 border border-border rounded-lg bg-card"
-      className="p-3 sm:p-4 border border-border rounded-lg bg-card"
+      className="p-3 sm:p-4 border border-border rounded-xl bg-card"
       whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
       transition={{ duration: 0.2 }}
     >
-      <h3 className="text-sm font-medium mb-2">Расчет заработной платы</h3>
-      <p className="text-xs text-muted-foreground mb-3">
+      <h3 className="text-sm sm:text-base font-medium mb-1">Расчет заработной платы</h3>
+      <p className="text-xs text-muted-foreground mb-4">
         Выберите метод расчета заработной платы. Изменение будет применено ко
         всем дням начиная с сегодняшнего.
       </p>
