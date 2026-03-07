@@ -989,7 +989,7 @@ const ReportsPage: React.FC = () => {
                     return (
                       <tr
                         key={report.employeeId}
-                        className="hover:bg-muted/30 cursor-pointer transition-colors"
+                        className="hover:bg-muted/30 transition-colors cursor-pointer"
                         onClick={handleEmployeeClick}
                       >
                         <td className="px-2 md:px-4 py-2 text-left text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate max-w-[120px]" title={report.employeeName}>
