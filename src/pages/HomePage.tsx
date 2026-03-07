@@ -601,12 +601,11 @@ const HomePage: React.FC = () => {
           ...prev,
           employeeIds: [...currentEmployeeIds, value],
         };
-      } else {
-        return {
-          ...prev,
-          employeeIds: currentEmployeeIds.filter((id) => id !== value),
-        };
       }
+      return {
+        ...prev,
+        employeeIds: currentEmployeeIds.filter((id) => id !== value),
+      };
     });
   };
 
@@ -626,7 +625,7 @@ const HomePage: React.FC = () => {
       if (updatedRecord) {
         // Обновляем запись в отчете
         const updatedReport = { ...currentReport };
-        if (updatedReport && updatedReport.records) {
+        if (updatedReport?.records) {
           updatedReport.records = updatedReport.records.map((rec) =>
             rec.id === editingRecordId ? record : rec,
           );
@@ -688,7 +687,7 @@ const HomePage: React.FC = () => {
       if (success) {
         // Обновляем отчет
         const updatedReport = { ...currentReport };
-        if (updatedReport && updatedReport.records) {
+        if (updatedReport?.records) {
           const updatedRecords = updatedReport.records.filter(
             (rec) => rec.id !== recordId,
           );
@@ -898,7 +897,7 @@ const HomePage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="w-1.5 sm:w-2 h-6 sm:h-8 bg-gradient-to-b from-primary to-accent rounded-full" />
+
                 <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                   Главная страница
                 </h2>
@@ -985,13 +984,13 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* Основная секция с квадратиками работников и виджетами */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-3 lg:gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-3 lg:gap-4">
         <div className="space-y-3 md:space-y-4">
           {/* Квадратики работников */}
-          <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
+          <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-card border border-border/40 shadow-sm">
             <div className="flex items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="w-1 sm:w-1.5 h-5 sm:h-6 bg-gradient-to-b from-accent to-primary rounded-full" />
+                <User className="w-5 h-5 text-primary" />
                 <h3 className="text-lg sm:text-xl font-bold">Сотрудники</h3>
               </div>
 
@@ -1026,7 +1025,7 @@ const HomePage: React.FC = () => {
                 </p>
               </div>
             ) : workingEmployees.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 {workingEmployees.map((employee) => {
                   const stats = getEmployeeStats(employee.id);
                   const role = employeeRoles[employee.id] || "washer";
@@ -1073,116 +1072,107 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className={`relative group rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 cursor-pointer transition-all duration-300 border border-border/40 shadow-md hover:shadow-lg bg-gradient-to-br from-card to-card/90 w-full ${loading.dailyReport ? "loading" : ""} ${isManualSalary ? "ring-1 ring-orange-400/30" : ""}`}
+                      className={`relative group rounded-xl p-4 cursor-pointer transition-all duration-200 border bg-card hover:bg-accent/5 w-full flex flex-col gap-3 ${
+                        loading.dailyReport ? "loading" : ""
+                      } ${
+                        isManualSalary
+                          ? "border-orange-400/50 shadow-sm"
+                          : "border-border/40 shadow-sm hover:border-primary/30 hover:shadow-md"
+                      }`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
-                      {/* Декоративный градиент */}
-                      <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                      <div className="relative w-full">
-                        {/* Заголовок с плюсиком и именем */}
-                        <div className="flex items-center justify-between mb-2 sm:mb-3 w-full">
-                          <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-                            <button
-                              onClick={(e) => {
-                                if (!shiftStarted) {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  toast.info(
-                                    "Сначала выберите работников и начните смену",
-                                  );
-                                  return;
-                                }
-                                openAddRecordModalForEmployee(employee.id, e);
-                              }}
-                              disabled={!shiftStarted}
-                              className="shrink-0 p-1 sm:p-1.5 rounded-md sm:rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 transition-all duration-200 disabled:opacity-50 text-primary shadow-sm hover:shadow-md"
-                              title={
-                                shiftStarted
-                                  ? "Добавить запись для этого сотрудника"
-                                  : "Сначала выберите работников и начните смену"
-                              }
-                            >
-                              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                            </button>
-                            <h4 className="font-semibold text-xs sm:text-sm text-card-foreground truncate flex-1">
-                              {employee.name}
-                            </h4>
-                          </div>
+                      {/* Верхняя часть: Имя, Роль, Кнопка + */}
+                      <div className="flex items-start justify-between gap-2 w-full">
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <h4 className="font-semibold text-sm sm:text-base text-card-foreground truncate" title={employee.name}>
+                            {employee.name}
+                          </h4>
                           <span
-                            className={`shrink-0 px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium shadow-sm border ${
+                            className={`mt-1 w-fit px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-medium border ${
                               role === "admin"
-                                ? "bg-gradient-to-r from-green-500 to-green-600 text-white border-green-400/30"
-                                : "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400/30"
+                                ? "bg-green-500/10 text-green-600 border-green-500/20 dark:text-green-400 dark:border-green-500/30"
+                                : "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400 dark:border-blue-500/30"
                             }`}
                           >
                             {role === "admin" ? "Админ" : "Мойщик"}
                           </span>
                         </div>
+                        <button
+                          onClick={(e) => {
+                            if (!shiftStarted) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toast.info(
+                                "Сначала выберите работников и начните смену",
+                              );
+                              return;
+                            }
+                            openAddRecordModalForEmployee(employee.id, e);
+                          }}
+                          disabled={!shiftStarted}
+                          className="shrink-0 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors disabled:opacity-50 text-primary"
+                          title={
+                            shiftStarted
+                              ? "Добавить запись для этого сотрудника"
+                              : "Сначала выберите работников и начните смену"
+                          }
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
 
-                        {/* Статистика в компактном формате */}
-                        <div className="space-y-1.5 sm:space-y-2 w-full">
-                          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-xs w-full">
-                            <div className="text-center p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-gradient-to-r from-muted/20 to-muted/10 border border-border/20 w-full">
-                              <div className="text-muted-foreground font-medium text-[10px] sm:text-xs">
-                                Машин
-                              </div>
-                              <div className="font-bold text-card-foreground text-xs sm:text-sm">
-                                {stats.carCount}
-                              </div>
-                            </div>
-                            <div className="text-center p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-gradient-to-r from-muted/20 to-muted/10 border border-border/20 w-full">
-                              <div className="text-muted-foreground font-medium text-[10px] sm:text-xs">
-                                Сумма
-                              </div>
-                              <div className="font-bold text-card-foreground text-xs sm:text-sm">
-                                {stats.totalEarnings.toFixed(0)} BYN
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="text-center p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-primary/20 w-full">
-                            <div className="text-[10px] sm:text-xs text-muted-foreground font-medium">
-                              {(() => {
-                                const now = new Date();
-                                const currentHour = now.getHours();
-                                const currentMinute = now.getMinutes();
-                                const currentTimeInMinutes =
-                                  currentHour * 60 + currentMinute;
-                                const workStartMinutes = 9 * 60;
-                                const workEndMinutes = 21 * 60;
-
-                                if (currentTimeInMinutes < workStartMinutes) {
-                                  return "ЗП за день";
-                                } else if (
-                                  currentTimeInMinutes >= workEndMinutes
-                                ) {
-                                  return "ЗП за день";
-                                } else {
-                                  const workedMinutes =
-                                    currentTimeInMinutes - workStartMinutes;
-                                  const workedHours = workedMinutes / 60;
-                                  return `ЗП за ${workedHours.toFixed(1)}ч`;
-                                }
-                              })()}
-                            </div>
-                            <div
-                              className={`font-bold text-xs sm:text-sm ${isManualSalary ? "text-orange-500 font-extrabold" : "text-primary"}`}
-                            >
-                              {dailySalary.toFixed(0)} BYN{" "}
-                              {isManualSalary && "*"}
-                            </div>
-                          </div>
+                      {/* Статистика: Машины и Сумма */}
+                      <div className="flex items-center gap-4 mt-1">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                            Машин
+                          </span>
+                          <span className="font-semibold text-sm sm:text-base text-card-foreground">
+                            {stats.carCount}
+                          </span>
                         </div>
-
-                        {/* Кнопка для деталей */}
-                        <div className="mt-2 sm:mt-3 pt-1.5 sm:pt-2 border-t border-border/30 w-full">
-                          <div className="flex items-center justify-center gap-1 text-[10px] sm:text-xs text-muted-foreground hover:text-primary transition-colors">
-                            <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                            <span className="hidden sm:inline">Подробнее</span>
-                            <span className="sm:hidden">Детали</span>
-                          </div>
+                        <div className="w-px h-8 bg-border/40" />
+                        <div className="flex flex-col">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                            Сумма
+                          </span>
+                          <span className="font-semibold text-sm sm:text-base text-card-foreground">
+                            {stats.totalEarnings.toFixed(0)} BYN
+                          </span>
                         </div>
+                      </div>
+
+                      {/* Зарплата */}
+                      <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                          {(() => {
+                            const now = new Date();
+                            const currentHour = now.getHours();
+                            const currentMinute = now.getMinutes();
+                            const currentTimeInMinutes =
+                              currentHour * 60 + currentMinute;
+                            const workStartMinutes = 9 * 60;
+                            const workEndMinutes = 21 * 60;
+
+                            if (currentTimeInMinutes < workStartMinutes) {
+                              return "ЗП за день";
+                            } else if (currentTimeInMinutes >= workEndMinutes) {
+                              return "ЗП за день";
+                            } else {
+                              const workedMinutes =
+                                currentTimeInMinutes - workStartMinutes;
+                              const workedHours = workedMinutes / 60;
+                              return `ЗП за ${workedHours.toFixed(1)}ч`;
+                            }
+                          })()}
+                        </span>
+                        <span
+                          className={`font-bold text-sm sm:text-base ${
+                            isManualSalary ? "text-orange-500" : "text-primary"
+                          }`}
+                        >
+                          {dailySalary.toFixed(0)} BYN {isManualSalary && "*"}
+                        </span>
                       </div>
                     </div>
                   );
@@ -1366,28 +1356,27 @@ const HomePage: React.FC = () => {
                 <div className="absolute inset-0 z-10 rounded-xl sm:rounded-2xl pointer-events-none">
                   <div className="absolute inset-0 bg-card/60 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-border/40" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-muted/80 text-muted-foreground text-xs sm:text-sm font-medium border border-border/40"></span>
+                    <span className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-muted/80 text-muted-foreground text-xs sm:text-sm font-medium border border-border/40" />
                   </div>
                 </div>
               )}
               {/* Сводка по оплатам */}
-              <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
-                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="w-1 sm:w-1.5 h-5 sm:h-6 bg-gradient-to-b from-green-500 to-green-600 rounded-full" />
-                  <h3 className="text-base sm:text-lg font-bold">Итого:</h3>
+              <div className="p-4 rounded-xl border border-border/40 shadow-sm bg-card flex flex-col h-full">
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-lg font-bold">Итого</h3>
                 </div>
-                <div className="space-y-2 sm:space-y-3">
+
+                <div className="grid grid-cols-2 gap-3 mb-4 flex-1">
+                  {/* Наличные */}
                   <div
-                    className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
+                    className={`flex flex-col justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
                       paymentFilter === "cash"
-                        ? "bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg"
-                        : "bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md"
+                        ? "bg-primary/10 border-primary/30"
+                        : "bg-muted/30 border-border/40 hover:bg-muted/50"
                     } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
                     onClick={() => {
                       if (!shiftStarted) {
-                        toast.info(
-                          "Сначала выберите работников и начните смену",
-                        );
+                        toast.info("Сначала выберите работников и начните смену");
                         return;
                       }
                       setPaymentFilter("cash");
@@ -1399,24 +1388,24 @@ const HomePage: React.FC = () => {
                         : "Сначала выберите работников и начните смену"
                     }
                   >
-                    <span className="font-medium text-sm sm:text-base flex-shrink-0">
+                    <span className="text-xs text-muted-foreground font-medium mb-1">
                       Наличные
                     </span>
-                    <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">
+                    <span className="font-bold text-sm sm:text-base text-card-foreground">
                       {currentReport.totalCash.toFixed(2)} BYN
                     </span>
                   </div>
+
+                  {/* Карта */}
                   <div
-                    className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
+                    className={`flex flex-col justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
                       paymentFilter === "card"
-                        ? "bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg"
-                        : "bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md"
+                        ? "bg-primary/10 border-primary/30"
+                        : "bg-muted/30 border-border/40 hover:bg-muted/50"
                     } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
                     onClick={() => {
                       if (!shiftStarted) {
-                        toast.info(
-                          "Сначала выберите работников и начните смену",
-                        );
+                        toast.info("Сначала выберите работников и начните смену");
                         return;
                       }
                       setPaymentFilter("card");
@@ -1428,10 +1417,10 @@ const HomePage: React.FC = () => {
                         : "Сначала выберите работников и начните смену"
                     }
                   >
-                    <span className="font-medium text-sm sm:text-base flex-shrink-0">
+                    <span className="text-xs text-muted-foreground font-medium mb-1">
                       Карта
                     </span>
-                    <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">
+                    <span className="font-bold text-sm sm:text-base text-card-foreground">
                       {(
                         currentReport.records?.reduce(
                           (sum, rec) =>
@@ -1443,17 +1432,17 @@ const HomePage: React.FC = () => {
                       BYN
                     </span>
                   </div>
+
+                  {/* Безналичные */}
                   <div
-                    className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
+                    className={`flex flex-col justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
                       paymentFilter === "organization"
-                        ? "bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg"
-                        : "bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md"
+                        ? "bg-primary/10 border-primary/30"
+                        : "bg-muted/30 border-border/40 hover:bg-muted/50"
                     } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
                     onClick={() => {
                       if (!shiftStarted) {
-                        toast.info(
-                          "Сначала выберите работников и начните смену",
-                        );
+                        toast.info("Сначала выберите работников и начните смену");
                         return;
                       }
                       setPaymentFilter("organization");
@@ -1465,12 +1454,11 @@ const HomePage: React.FC = () => {
                         : "Сначала выберите работников и начните смену"
                     }
                   >
-                    <span className="font-medium text-sm sm:text-base flex-shrink-0">
+                    <span className="text-xs text-muted-foreground font-medium mb-1">
                       Безналичные
                     </span>
-                    <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">
+                    <span className="font-bold text-sm sm:text-base text-card-foreground">
                       {(() => {
-                        // Подсчитываем сумму за организации, исключая те, что в organizationsInTotal
                         const orgsInTotal = state.organizationsInTotal || [];
                         const orgSum =
                           currentReport.records?.reduce((sum, record) => {
@@ -1481,22 +1469,19 @@ const HomePage: React.FC = () => {
                               orgsInTotal.includes(
                                 record.paymentMethod.organizationId,
                               );
-                            return (
-                              sum + (isOrg && !isSeparated ? record.price : 0)
-                            );
+                            return sum + (isOrg && !isSeparated ? record.price : 0);
                           }, 0) || 0;
                         return orgSum.toFixed(2);
                       })()} BYN
                     </span>
                   </div>
 
-                  {/* Дополнительные блоки для выделенных организаций */}
-                  {(state.organizationsInTotal || []).map((orgId) => {
+                  {/* Организации (разделённые) */}
+                  {state.organizationsInTotal?.map((orgId) => {
                     const org = state.organizations.find((o) => o.id === orgId);
                     if (!org) return null;
-
                     const sumForOrg =
-                      currentReport?.records?.reduce((sum, record) => {
+                      currentReport.records?.reduce((sum, record) => {
                         return (
                           sum +
                           (record.paymentMethod.type === "organization" &&
@@ -1509,12 +1494,14 @@ const HomePage: React.FC = () => {
                     return (
                       <div
                         key={`total-org-${orgId}`}
-                        className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
+                        className={`flex flex-col justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
+                          paymentFilter === "organization"
+                            ? "bg-primary/10 border-primary/30"
+                            : "bg-muted/30 border-border/40 hover:bg-muted/50"
+                        } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
                         onClick={() => {
                           if (!shiftStarted) {
-                            toast.info(
-                              "Сначала выберите работников и начните смену",
-                            );
+                            toast.info("Сначала выберите работников и начните смену");
                             return;
                           }
                           setPaymentFilter("organization");
@@ -1522,93 +1509,91 @@ const HomePage: React.FC = () => {
                         }}
                         title={
                           shiftStarted
-                            ? `Нажмите для просмотра ведомости (входит в безнал)`
+                            ? "Нажмите для просмотра ведомости (входит в безнал)"
                             : "Сначала выберите работников и начните смену"
                         }
                       >
-                        <span className="font-medium text-sm sm:text-base flex-shrink-0 truncate max-w-[60%]">
+                        <span className="text-xs text-muted-foreground font-medium mb-1 truncate">
                           {org.name}
                         </span>
-                        <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words text-indigo-500 dark:text-indigo-400">
+                        <span className="font-bold text-sm sm:text-base text-indigo-500 dark:text-indigo-400">
                           {sumForOrg.toFixed(2)} BYN
                         </span>
                       </div>
                     );
                   })}
-                  <div
-                    className={`border-t border-border/40 mt-4 sm:mt-6 pt-4 sm:pt-6 flex justify-between items-center cursor-pointer transition-all duration-200 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border shadow-md bg-gradient-to-r from-accent/10 via-primary/5 to-accent/10 hover:from-accent/20 hover:via-primary/10 hover:to-accent/20 hover:shadow-lg ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
-                    onClick={() => {
-                      if (!shiftStarted) {
-                        toast.info(
-                          "Сначала выберите работников и начните смену",
-                        );
-                        return;
-                      }
-                      setPaymentFilter("all");
-                      openDailyReportModal();
-                    }}
-                    title={
-                      shiftStarted
-                        ? "Нажмите для просмотра полной ведомости"
-                        : "Сначала выберите работников и начните смену"
+                </div>
+
+                {/* Всего */}
+                <div
+                  className={`mt-auto pt-4 border-t border-border/40 flex justify-between items-center cursor-pointer transition-all duration-200 p-3 rounded-lg border bg-primary/5 hover:bg-primary/10 border-primary/20 ${
+                    !shiftStarted ? "opacity-60 cursor-not-allowed" : ""
+                  }`}
+                  onClick={() => {
+                    if (!shiftStarted) {
+                      toast.info("Сначала выберите работников и начните смену");
+                      return;
                     }
-                  >
-                    <span className="font-semibold text-sm sm:text-base md:text-lg flex-shrink-0">
-                      Всего:
-                    </span>
-                    <span className="font-bold text-base sm:text-lg md:text-xl text-primary text-right ml-2 break-words">
-                      {(() => {
-                        // Считаем общую сумму всех записей напрямую
-                        const totalRevenue =
-                          currentReport.records?.reduce((sum, record) => {
-                            return sum + record.price;
-                          }, 0) || 0;
-                        return totalRevenue.toFixed(2);
-                      })()} BYN
-                    </span>
-                  </div>
+                    setPaymentFilter("all");
+                    openDailyReportModal();
+                  }}
+                  title={
+                    shiftStarted
+                      ? "Нажмите для просмотра полной ведомости"
+                      : "Сначала выберите работников и начните смену"
+                  }
+                >
+                  <span className="font-bold text-base sm:text-lg">
+                    Всего
+                  </span>
+                  <span className="font-bold text-lg sm:text-xl text-primary text-right">
+                    {(() => {
+                      const totalRevenue =
+                        currentReport.records?.reduce((sum, record) => {
+                          return sum + record.price;
+                        }, 0) || 0;
+                      return totalRevenue.toFixed(2);
+                    })()} BYN
+                  </span>
                 </div>
               </div>
 
               {/* Заработок сотрудников */}
-              <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl">
-                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="w-1 sm:w-1.5 h-5 sm:h-6 bg-gradient-to-b from-amber-500 to-amber-600 rounded-full" />
-                  <h3 className="text-base sm:text-lg font-bold flex items-center">
+              <div className="p-4 rounded-xl border border-border/40 shadow-sm bg-card flex flex-col h-full">
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-lg font-bold flex items-center">
                     Заработок
                     <span className="inline-flex items-center relative group ml-2 sm:ml-4">
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary text-primary text-[10px] sm:text-xs cursor-help font-bold">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] sm:text-xs cursor-help font-bold">
                         i
                       </div>
                       <div className="absolute bottom-full left-0 mb-3 w-48 sm:w-64 p-2 sm:p-3 bg-popover text-popover-foreground rounded-lg sm:rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-border/40 z-50">
                         <p className="text-xs sm:text-sm font-medium">
                           Расчет ЗП: минимальная оплата + процент с учетом ролей
                         </p>
-                        <div className="absolute top-full left-6 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-popover"></div>
+                        <div className="absolute top-full left-6 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-popover" />
                       </div>
                     </span>
                   </h3>
                 </div>
-                <div className="space-y-2">
+
+                <div className="flex-1 flex flex-col space-y-4">
                   {(() => {
-                    // Всегда используем минимальную оплату + процент
                     const methodToUse = state.salaryCalculationMethod;
 
-                    // Используем новый компонент расчета зарплаты
                     if (
                       methodToUse === "minimumWithPercentage" &&
                       currentReport?.records
                     ) {
-                      // Построим карту флагов минималки из employeeRoles с ключами min_<id>
                       const minimumOverride = shiftEmployees.reduce<
                         Record<string, boolean>
                       >((acc, id) => {
                         const key = `min_${id}` as any;
-                        // @ts-ignore
                         const val = (employeeRoles as any)[key];
-                        acc[id] = val !== false; // по умолчанию true
+                        acc[id] = val !== false;
                         return acc;
                       }, {});
+
                       const salaryCalculator = createSalaryCalculator(
                         state.minimumPaymentSettings,
                         currentReport.records,
@@ -1631,6 +1616,7 @@ const HomePage: React.FC = () => {
                           isManual: manualAmount !== undefined,
                         };
                       });
+
                       const totalSalarySum = salaryResults.reduce(
                         (sum, res) => sum + res.calculatedSalary,
                         0,
@@ -1638,78 +1624,68 @@ const HomePage: React.FC = () => {
 
                       return (
                         <>
-                          <div className="flex justify-between">
-                            <span>Общая сумма - </span>
-                            <span className="font-medium">
-                              {totalSalarySum.toFixed(2)} BYN
-                            </span>
-                          </div>
                           {salaryResults.length > 0 && (
-                            <div className="border-t border-border mt-4 pt-4">
-                              <div>
-                                <p className="text-sm text-muted-foreground mb-2">
-                                  Индивидуальные зарплаты:
-                                </p>
-                                <div className="space-y-1">
-                                  {salaryResults.map((result) => {
-                                    // Расчет почасовой оплаты с учетом текущего времени
-                                    const calculateHourlyRate = () => {
-                                      const now = new Date();
-                                      const currentHour = now.getHours();
-                                      const currentMinute = now.getMinutes();
-                                      const currentTimeInMinutes =
-                                        currentHour * 60 + currentMinute;
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-muted-foreground mb-3 pb-2 border-b border-border/40">
+                                Индивидуальные зарплаты
+                              </p>
+                              <div className="space-y-3">
+                                {salaryResults.map((result) => {
+                                  const calculateHourlyRate = () => {
+                                    const now = new Date();
+                                    const currentHour = now.getHours();
+                                    const currentMinute = now.getMinutes();
+                                    const currentTimeInMinutes =
+                                      currentHour * 60 + currentMinute;
+                                    const workStartMinutes = 9 * 60;
+                                    const workEndMinutes = 21 * 60;
 
-                                      // Рабочее время: 09:00 - 21:00
-                                      const workStartMinutes = 9 * 60; // 09:00 в минутах
-                                      const workEndMinutes = 21 * 60; // 21:00 в минутах
+                                    if (
+                                      currentTimeInMinutes <
+                                        workStartMinutes ||
+                                      currentTimeInMinutes >= workEndMinutes
+                                    ) {
+                                      return result.calculatedSalary / 12;
+                                    }
 
-                                      // Если сейчас не рабочее время, показываем полную дневную ставку
-                                      if (
-                                        currentTimeInMinutes <
-                                          workStartMinutes ||
-                                        currentTimeInMinutes >= workEndMinutes
-                                      ) {
-                                        return result.calculatedSalary / 12; // Полный день 12 часов
-                                      }
+                                    const workedMinutes = Math.max(
+                                      0,
+                                      currentTimeInMinutes - workStartMinutes,
+                                    );
+                                    const workedHours = workedMinutes / 60;
 
-                                      // Рассчитываем отработанное время в часах
-                                      const workedMinutes = Math.max(
-                                        0,
-                                        currentTimeInMinutes - workStartMinutes,
-                                      );
-                                      const workedHours = workedMinutes / 60;
-
-                                      // Если отработано менее часа, показываем почасовую ставку
-                                      if (workedHours < 1) {
-                                        return result.calculatedSalary / 12;
-                                      }
-
-                                      // Возвращаем заработок на данный момент, разделенный на отработанные часы
-                                      return (
-                                        result.calculatedSalary / workedHours
-                                      );
-                                    };
-
-                                    const hourlyRate = calculateHourlyRate();
+                                    if (workedHours < 1) {
+                                      return result.calculatedSalary / 12;
+                                    }
 
                                     return (
-                                      <div
-                                        key={result.employeeId}
-                                        className="flex justify-between text-sm"
-                                      >
+                                      result.calculatedSalary / workedHours
+                                    );
+                                  };
+
+                                  const hourlyRate = calculateHourlyRate();
+
+                                  return (
+                                    <div
+                                      key={result.employeeId}
+                                      className="flex justify-between items-center text-sm"
+                                    >
+                                      <div className="flex flex-col min-w-0 pr-2">
                                         <span
-                                          className={
+                                          className={`font-medium truncate ${
                                             result.isManual
-                                              ? "text-orange-500 font-medium"
-                                              : ""
-                                          }
+                                              ? "text-orange-500"
+                                              : "text-card-foreground"
+                                          }`}
                                         >
-                                          {result.employeeName} (
-                                          {result.role === "admin"
-                                            ? "Админ"
-                                            : "Мойщик"}
-                                          ) ({(() => {
+                                          {result.employeeName}
+                                          <span className="text-xs text-muted-foreground font-normal ml-1">
+                                            ({result.role === "admin" ? "Админ" : "Мойщик"})
+                                          </span>
+                                          {result.isManual && " *"}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {(() => {
                                             const now = new Date();
                                             const currentHour = now.getHours();
                                             const currentMinute =
@@ -1741,39 +1717,48 @@ const HomePage: React.FC = () => {
                                             }
 
                                             return `${hourlyRate.toFixed(2)} BYN/час за ${workedHours.toFixed(1)}ч`;
-                                          })()}){result.isManual && " *"}
-                                        </span>
-                                        <span
-                                          className={`font-medium ${result.isManual ? "text-orange-600" : ""}`}
-                                        >
-                                          {result.calculatedSalary.toFixed(2)}{" "}
-                                          BYN
+                                          })()}
                                         </span>
                                       </div>
-                                    );
-                                  })}
-                                </div>
+                                      <span
+                                        className={`font-bold shrink-0 text-base ${
+                                          result.isManual ? "text-orange-500" : "text-primary"
+                                        }`}
+                                      >
+                                        {result.calculatedSalary.toFixed(2)}{" "}
+                                        BYN
+                                      </span>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
+
+                          <div className="mt-auto pt-4 border-t border-border/40 flex justify-between items-center bg-accent/5 p-3 rounded-lg border border-border/40">
+                            <span className="font-bold text-base sm:text-lg">
+                              Общая сумма
+                            </span>
+                            <span className="font-bold text-lg sm:text-xl text-primary">
+                              {totalSalarySum.toFixed(2)} BYN
+                            </span>
+                          </div>
                         </>
                       );
                     }
 
-                    // Fallback если нет записей или метод не выбран
                     if (methodToUse === "none") {
                       return (
-                        <div className="flex justify-between">
-                          <span>Выберите метод расчета в настройках</span>
+                        <div className="flex justify-between p-3 bg-muted/20 rounded-lg">
+                          <span className="text-sm text-muted-foreground">Выберите метод расчета в настройках</span>
                           <span className="font-medium">0.00 BYN</span>
                         </div>
                       );
                     }
 
-                    // Fallback - показываем что нет данных для расчета
                     return (
-                      <div className="flex justify-between">
-                        <span>Нет данных для расчета</span>
+                      <div className="flex justify-between p-3 bg-muted/20 rounded-lg">
+                        <span className="text-sm text-muted-foreground">Нет данных для расчета</span>
                         <span className="font-medium">0.00 BYN</span>
                       </div>
                     );
@@ -1835,10 +1820,10 @@ const HomePage: React.FC = () => {
 
           {/* Активные долги */}
           {activeDebts.length > 0 && (
-            <div className="rounded-xl sm:rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl overflow-hidden max-h-[400px] flex flex-col">
+            <div className="rounded-xl sm:rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden max-h-[400px] flex flex-col">
               <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/40 bg-gradient-to-r from-red-500/10 to-red-500/5">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-0.5 sm:w-1 h-4 sm:h-5 bg-gradient-to-b from-red-500 to-red-600 rounded-full" />
+
                   <h3 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
                     Активные долги
                     <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] font-bold">
@@ -2915,10 +2900,10 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({
   );
 
   return (
-    <div className="rounded-xl sm:rounded-2xl bg-gradient-to-br from-card via-card/95 to-card/90 border border-border/40 shadow-xl overflow-hidden max-h-[calc(100vh-300px)] sm:max-h-[calc(100vh-350px)]">
+    <div className="rounded-xl sm:rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden max-h-[calc(100vh-300px)] sm:max-h-[calc(100vh-350px)]">
       <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/40 bg-gradient-to-r from-muted/20 to-muted/10">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-0.5 sm:w-1 h-4 sm:h-5 bg-gradient-to-b from-accent to-primary rounded-full" />
+
           <h3 className="text-xs sm:text-sm font-semibold flex items-center gap-2 sm:gap-3">
             <span className="hidden sm:inline">Записи на мойку</span>
             <span className="sm:hidden">Записи</span>
