@@ -40,6 +40,7 @@ import {
   Trash2,
   User,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -816,114 +817,197 @@ const HomePage: React.FC = () => {
 
   // --- RENDERING SPLIT ---
   // If the shift hasn't started, we render the Morning Lobby (Pre-shift state)
+
   if (!shiftStarted) {
     return (
-      <div className="min-h-[85dvh] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 animate-in fade-in zoom-in-95 duration-500">
+      <div className="min-h-[85dvh] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 animate-in fade-in duration-500 bg-background/50">
 
-        {/* Hero Section */}
-        <div className="text-center mb-10 md:mb-16">
-          <div className="inline-flex items-center justify-center p-4 rounded-full bg-primary/10 text-primary mb-6 shadow-sm ring-1 ring-primary/20">
-            <Calendar className="w-8 h-8 md:w-10 md:h-10" />
+        {/* Header Section */}
+        <div className="text-center mb-10 w-full max-w-2xl">
+          <div className="inline-flex items-center justify-center p-3 rounded-xl bg-primary/10 text-primary mb-5 border border-primary/20 shadow-sm">
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8" />
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-3">
-            Доброе утро!
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-4">
+            Открытие смены
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto leading-relaxed">
-            Сегодня <span className="font-medium text-foreground">{format(parseISO(selectedDate), "d MMMM yyyy", { locale: ru })}</span>. Давайте соберем команду и откроем смену.
-          </p>
+
+          {/* Interactive Date Selector */}
+          <div className="flex justify-center items-center gap-2 text-muted-foreground text-sm sm:text-base">
+            <span>Дата смены:</span>
+            <div className="relative">
+              <button
+                onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-semibold text-foreground bg-card border border-border/50 hover:bg-accent/50 hover:border-border transition-colors shadow-sm"
+              >
+                {format(parseISO(selectedDate), "d MMMM yyyy", { locale: ru })}
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </button>
+
+              {/* Calendar Dropdown */}
+              {isCalendarOpen && (
+                <div
+                  ref={calendarRef}
+                  className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-card rounded-xl shadow-xl border border-border z-50 p-2 animate-in slide-in-from-top-2 duration-200"
+                >
+                  <DayPicker
+                    mode="single"
+                    selected={parseISO(selectedDate)}
+                    onSelect={(date) => {
+                      if (date) {
+                        const newDateStr = format(date, "yyyy-MM-dd");
+                        if (newDateStr !== selectedDate) {
+                          setSelectedDate(newDateStr);
+                          dispatch({ type: "SET_CURRENT_DATE", payload: newDateStr });
+                        }
+                        setIsCalendarOpen(false);
+                      }
+                    }}
+                    locale={ru}
+                    modifiers={{
+                      today: new Date(),
+                    }}
+                    modifiersStyles={{
+                      today: { fontWeight: "bold", color: "var(--primary)" },
+                    }}
+                    className="p-3 bg-card rounded-xl border-none"
+                    classNames={{
+                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                      month: "space-y-4",
+                      caption: "flex justify-center pt-1 relative items-center",
+                      caption_label: "text-sm font-medium text-foreground",
+                      nav: "space-x-1 flex items-center",
+                      nav_button:
+                        "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 flex items-center justify-center rounded-md hover:bg-muted transition-colors",
+                      nav_button_previous: "absolute left-1",
+                      nav_button_next: "absolute right-1",
+                      table: "w-full border-collapse space-y-1",
+                      head_row: "flex",
+                      head_cell:
+                        "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem] capitalize",
+                      row: "flex w-full mt-2",
+                      cell: "text-center text-sm relative p-0 hover:bg-muted rounded-md focus-within:relative focus-within:z-20",
+                      day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center rounded-md transition-colors",
+                      day_selected:
+                        "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-bold shadow-md",
+                      day_today: "text-primary font-bold bg-primary/10",
+                      day_outside: "text-muted-foreground opacity-50",
+                      day_disabled: "text-muted-foreground opacity-50",
+                      day_hidden: "invisible",
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Builder Card */}
-        <div className="w-full max-w-3xl bg-card/60 backdrop-blur-xl border border-border/50 rounded-[2rem] p-6 sm:p-8 md:p-10 shadow-2xl shadow-black/5 dark:shadow-black/20 relative overflow-hidden">
-          {/* Subtle gradient decorations inside the card */}
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
-
-          <div className="relative z-10">
-            <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3">
-              <User className="w-6 h-6 text-primary" />
-              Кто сегодня работает?
+        {/* Unified Employee & Role Selector */}
+        <div className="w-full max-w-2xl bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+          <div className="p-4 sm:p-6 border-b border-border/40 bg-muted/10 flex items-center justify-between">
+            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <User className="w-5 h-5 text-muted-foreground" />
+              Сотрудники на смене
             </h2>
+            <span className="text-sm font-medium text-muted-foreground">
+              Выбрано: {shiftEmployees.length}
+            </span>
+          </div>
 
-            {/* Employee Chips */}
-            <div className="flex flex-wrap gap-3 mb-8">
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
               {state.employees.length === 0 ? (
-                <p className="text-muted-foreground w-full text-center py-4">Нет доступных сотрудников в базе.</p>
+                <p className="text-muted-foreground text-sm col-span-full text-center py-6 bg-muted/30 rounded-xl border border-dashed border-border/50">
+                  Сотрудники не найдены. Добавьте их в настройках.
+                </p>
               ) : (
                 state.employees.map((employee) => {
                   const isSelected = shiftEmployees.includes(employee.id);
+                  const role = employeeRoles[employee.id] || "washer";
+
                   return (
-                    <button
+                    <div
                       key={employee.id}
-                      onClick={() => handleEmployeeSelection(employee.id)}
-                      className={`group relative px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 flex items-center gap-3 ${
+                      className={`relative flex flex-col p-3 rounded-xl border transition-all duration-200 ${
                         isSelected
-                          ? "bg-primary text-primary-foreground shadow-md scale-105"
-                          : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40"
+                          ? "bg-primary/5 border-primary/30 shadow-sm"
+                          : "bg-background border-border hover:border-border/80 hover:bg-accent/5"
                       }`}
                     >
-                      {/* Avatar placeholder */}
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${isSelected ? 'bg-primary-foreground/20 text-white' : 'bg-muted-foreground/20'}`}>
-                        {employee.name.charAt(0).toUpperCase()}
+                      {/* Selection Toggle */}
+                      <label className="flex items-center gap-3 cursor-pointer select-none">
+                        <div className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                          isSelected ? "bg-primary border-primary text-white" : "border-input bg-background"
+                        }`}>
+                          {isSelected && <Check className="w-3.5 h-3.5" />}
+                        </div>
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={isSelected}
+                          onChange={() => handleEmployeeSelection(employee.id)}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium truncate transition-colors ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>
+                            {employee.name}
+                          </p>
+                        </div>
+                      </label>
+
+                      {/* Integrated Role Switcher (Reveals smoothly) */}
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSelected ? "max-h-12 opacity-100 mt-3" : "max-h-0 opacity-0 mt-0"}`}>
+                         <div className="flex items-center bg-background rounded-lg border border-border/40 p-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEmployeeRoles({ ...employeeRoles, [employee.id]: "washer" });
+                              }}
+                              className={`flex-1 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                                role === "washer" ? "bg-muted text-foreground shadow-sm" : "text-muted-foreground hover:bg-muted/50"
+                              }`}
+                            >
+                              Мойщик
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEmployeeRoles({ ...employeeRoles, [employee.id]: "admin" });
+                              }}
+                              className={`flex-1 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                                role === "admin" ? "bg-muted text-foreground shadow-sm" : "text-muted-foreground hover:bg-muted/50"
+                              }`}
+                            >
+                              Админ
+                            </button>
+                         </div>
                       </div>
-                      {employee.name}
-                    </button>
+                    </div>
                   );
                 })
               )}
             </div>
 
-            {/* Roles selector (only shows if people are selected and method requires it) */}
-            {shiftEmployees.length > 0 && state.salaryCalculationMethod === "minimumWithPercentage" && (
-              <div className="mb-8 animate-in slide-in-from-top-4 fade-in duration-300">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Назначьте роли:</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {shiftEmployees.map(empId => {
-                    const emp = state.employees.find(e => e.id === empId);
-                    if (!emp) return null;
-                    return (
-                      <div key={`role-${empId}`} className="flex items-center justify-between p-3 rounded-xl bg-background/50 border border-border/30">
-                        <span className="font-medium text-sm">{emp.name}</span>
-                        <select
-                          className="bg-muted/50 border-none rounded-lg text-sm px-3 py-1.5 focus:ring-1 focus:ring-primary cursor-pointer"
-                          value={employeeRoles[empId] || "washer"}
-                          onChange={(e) => {
-                            setEmployeeRoles({
-                              ...employeeRoles,
-                              [empId]: e.target.value as EmployeeRole,
-                            });
-                          }}
-                        >
-                          <option value="washer">Мойщик</option>
-                          <option value="admin">Админ</option>
-                        </select>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             {/* Start Action */}
-            <div className="flex flex-col items-center pt-4 border-t border-border/30 mt-4">
+            <div className="pt-4 border-t border-border/40 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">
+                {shiftEmployees.length === 0 ? "Выберите хотя бы одного" : "Все готово к началу работы"}
+              </span>
               <button
                 onClick={startShift}
                 disabled={shiftEmployees.length === 0}
-                className="w-full sm:w-auto min-w-[240px] flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-bold text-lg transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1 disabled:opacity-50 disabled:pointer-events-none disabled:transform-none disabled:shadow-none"
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-medium text-sm transition-all hover:bg-primary/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                🚀 Открыть смену
+                Начать смену
+                <ArrowRight className="w-4 h-4" />
               </button>
-              {shiftEmployees.length === 0 && (
-                <p className="text-xs text-muted-foreground mt-4">Выберите хотя бы одного сотрудника для старта</p>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Small Appointments Glance (Optional) */}
+        {/* Small Appointments Glance */}
         {state.appointments.filter(a => a.date === selectedDate).length > 0 && (
-          <div className="mt-8 text-sm font-medium text-muted-foreground bg-card/40 px-6 py-3 rounded-full border border-border/30 flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            На сегодня предстоит {state.appointments.filter(a => a.date === selectedDate).length} записей
+          <div className="mt-6 text-sm text-muted-foreground flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            Запланировано {state.appointments.filter(a => a.date === selectedDate).length} записей
           </div>
         )}
       </div>
