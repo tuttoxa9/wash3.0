@@ -162,6 +162,159 @@ const ThemeSettings: React.FC = () => {
   );
 };
 
+// Компонент для выбора организаций в "Итого"
+const OrganizationsInTotalSettings: React.FC = () => {
+  const { state, dispatch } = useAppContext();
+  const [selectedOrgId, setSelectedOrgId] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const orgsInTotal = state.minimumPaymentSettings.organizationsInTotal || [];
+
+  const handleAddOrgToTotal = async () => {
+    if (!selectedOrgId) return;
+    if (orgsInTotal.includes(selectedOrgId)) {
+      toast.info('Организация уже добавлена');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const newSettings = {
+        ...state.minimumPaymentSettings,
+        organizationsInTotal: [...orgsInTotal, selectedOrgId]
+      };
+      const success = await settingsService.saveMinimumPaymentSettings(newSettings);
+
+      if (success) {
+        dispatch({ type: 'SET_MINIMUM_PAYMENT_SETTINGS', payload: newSettings });
+        toast.success('Организация добавлена в Итого');
+        setSelectedOrgId('');
+      } else {
+        toast.error('Ошибка при сохранении настроек');
+      }
+    } catch (error) {
+      console.error('Ошибка при добавлении организации в Итого:', error);
+      toast.error('Произошла ошибка');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveOrgFromTotal = async (orgId: string) => {
+    setLoading(true);
+    try {
+      const newSettings = {
+        ...state.minimumPaymentSettings,
+        organizationsInTotal: orgsInTotal.filter(id => id !== orgId)
+      };
+      const success = await settingsService.saveMinimumPaymentSettings(newSettings);
+
+      if (success) {
+        dispatch({ type: 'SET_MINIMUM_PAYMENT_SETTINGS', payload: newSettings });
+        toast.success('Организация удалена из Итого');
+      } else {
+        toast.error('Ошибка при удалении организации');
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении организации из Итого:', error);
+      toast.error('Произошла ошибка');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const availableOrgs = state.organizations.filter(org => !orgsInTotal.includes(org.id));
+
+  return (
+    <motion.div
+      className="p-3 border border-border rounded-lg bg-card mt-4"
+      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-sm font-medium flex items-center">
+          <Building className="w-4 h-4 mr-1.5 text-primary" />
+          Организации в Итого
+        </h3>
+      </div>
+
+      <p className="text-xs text-muted-foreground mb-3">
+        Выберите организации, которые будут отображаться отдельной строкой в блоке "Итого" на Главной. Они будут вычитаться из общей суммы "Безнал".
+      </p>
+
+      {/* Форма добавления */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="flex-1">
+          <select
+            value={selectedOrgId}
+            onChange={(e) => setSelectedOrgId(e.target.value)}
+            className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-sm bg-background"
+            disabled={loading || availableOrgs.length === 0}
+          >
+            <option value="">Выберите организацию</option>
+            {availableOrgs.map(org => (
+              <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+          </select>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleAddOrgToTotal}
+          className="flex items-center gap-1 px-2 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-70 text-xs"
+          disabled={loading || !selectedOrgId}
+        >
+          {loading ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Plus className="w-3 h-3" />
+          )}
+          <span>Добавить</span>
+        </motion.button>
+      </div>
+
+      {/* Список добавленных организаций */}
+      <div className="border border-border rounded-md overflow-hidden bg-card/50">
+        <div className="bg-muted/30 px-2 py-1.5 border-b border-border">
+          <h4 className="text-xs font-medium">Выбранные организации</h4>
+        </div>
+
+        <ul className="divide-y divide-border max-h-[150px] overflow-y-auto">
+          {orgsInTotal.length > 0 ? (
+            orgsInTotal.map(orgId => {
+              const org = state.organizations.find(o => o.id === orgId);
+              return (
+                <motion.li
+                  key={orgId}
+                  className="px-2 py-2 flex items-center justify-between text-sm group"
+                  whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
+                >
+                  <span className="text-xs">{org ? org.name : `Неизвестная организация (${orgId})`}</span>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <motion.button
+                      onClick={() => handleRemoveOrgFromTotal(orgId)}
+                      className="text-destructive"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      disabled={loading}
+                    >
+                      <Trash className="w-3 h-3" />
+                    </motion.button>
+                  </div>
+                </motion.li>
+              );
+            })
+          ) : (
+            <li className="px-2 py-2 text-center text-muted-foreground text-xs">
+              Нет добавленных организаций
+            </li>
+          )}
+        </ul>
+      </div>
+    </motion.div>
+  );
+};
+
 // Компонент для управления организациями-партнерами
 const OrganizationsSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
@@ -813,6 +966,7 @@ const SettingsContent: React.FC = () => {
               </motion.div>
 
               <OrganizationsSettings />
+              <OrganizationsInTotalSettings />
 
               <motion.div
                 className="p-3 border border-destructive/30 rounded-lg bg-destructive/5"

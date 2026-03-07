@@ -1200,13 +1200,57 @@ const HomePage: React.FC = () => {
                   >
                     <span className="font-medium text-sm sm:text-base flex-shrink-0">Безналичные</span>
                     <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words">{(() => {
-                      // Подсчитываем сумму за организации
+                      // Подсчитываем сумму за организации (вычитая те, что в настройках)
+                      const orgsInTotal = state.minimumPaymentSettings?.organizationsInTotal || [];
                       const orgSum = currentReport.records?.reduce((sum, record) => {
-                        return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                        if (record.paymentMethod.type === 'organization' && !orgsInTotal.includes(record.paymentMethod.organizationId || '')) {
+                          return sum + record.price;
+                        }
+                        return sum;
                       }, 0) || 0;
                       return orgSum.toFixed(2);
                     })()} BYN</span>
                   </div>
+
+                  {/* Дополнительные организации из настроек */}
+                  {(() => {
+                    const orgsInTotal = state.minimumPaymentSettings?.organizationsInTotal || [];
+                    if (orgsInTotal.length === 0) return null;
+
+                    return orgsInTotal.map(orgId => {
+                      const org = state.organizations.find(o => o.id === orgId);
+                      const orgName = org ? org.name : 'Неизвестная организация';
+                      const orgSpecificSum = currentReport.records?.reduce((sum, record) => {
+                        if (record.paymentMethod.type === 'organization' && record.paymentMethod.organizationId === orgId) {
+                          return sum + record.price;
+                        }
+                        return sum;
+                      }, 0) || 0;
+
+                      // Если сумма 0, возможно стоит скрыть, но по ТЗ лучше показывать всегда, раз она вынесена в настройки
+
+                      return (
+                        <div
+                          key={orgId}
+                          className={`flex justify-between items-center p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border shadow-sm ${
+                            paymentFilter === 'organization' // Можно сделать отдельный фильтр, но оставим как безнал
+                              ? 'bg-gradient-to-r from-primary to-primary/90 text-white border-primary/30 shadow-lg'
+                              : 'bg-gradient-to-r from-background/80 to-background/60 hover:from-secondary/30 hover:to-secondary/20 border-border/40 hover:shadow-md'
+                          } ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          onClick={() => {
+                            if (!shiftStarted) { toast.info('Сначала выберите работников и начните смену'); return; }
+                            setPaymentFilter('organization'); // при клике все равно открываем безнал, где видно все организации
+                            openDailyReportModal();
+                          }}
+                          title={shiftStarted ? `Нажмите для просмотра ведомости по безналу (${orgName})` : 'Сначала выберите работников и начните смену'}
+                        >
+                          <span className="font-medium text-sm sm:text-base flex-shrink-0 text-blue-500/80 dark:text-blue-400/80">{orgName}</span>
+                          <span className="font-bold text-sm sm:text-base md:text-lg text-right ml-2 break-words text-blue-600 dark:text-blue-400">{orgSpecificSum.toFixed(2)} BYN</span>
+                        </div>
+                      );
+                    });
+                  })()}
+
                   <div
                     className={`border-t border-border/40 mt-4 sm:mt-6 pt-4 sm:pt-6 flex justify-between items-center cursor-pointer transition-all duration-200 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border shadow-md bg-gradient-to-r from-accent/10 via-primary/5 to-accent/10 hover:from-accent/20 hover:via-primary/10 hover:to-accent/20 hover:shadow-lg ${!shiftStarted ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onClick={() => {
@@ -3377,13 +3421,53 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">Безнал</div>
                   <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words">
                     {(() => {
+                      // В маленьких плашках вычитаем те, что в настройках
+                      const orgsInTotal = state.minimumPaymentSettings?.organizationsInTotal || [];
                       const orgSum = currentReport.records?.reduce((sum, record) => {
-                        return sum + (record.paymentMethod.type === 'organization' ? record.price : 0);
+                        if (record.paymentMethod.type === 'organization' && !orgsInTotal.includes(record.paymentMethod.organizationId || '')) {
+                          return sum + record.price;
+                        }
+                        return sum;
                       }, 0) || 0;
                       return orgSum.toFixed(2);
                     })()} BYN
                   </div>
                 </div>
+
+                {/* Дополнительные плашки для организаций в Итого */}
+                {(() => {
+                  const orgsInTotal = state.minimumPaymentSettings?.organizationsInTotal || [];
+                  if (orgsInTotal.length === 0) return null;
+
+                  return orgsInTotal.map(orgId => {
+                    const org = state.organizations.find(o => o.id === orgId);
+                    const orgName = org ? org.name : 'Организация';
+                    const orgSpecificSum = currentReport.records?.reduce((sum, record) => {
+                      if (record.paymentMethod.type === 'organization' && record.paymentMethod.organizationId === orgId) {
+                        return sum + record.price;
+                      }
+                      return sum;
+                    }, 0) || 0;
+
+                    return (
+                      <div
+                        key={orgId}
+                        className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors ${
+                          paymentFilter === 'organization'
+                            ? 'bg-primary/10 border border-primary'
+                            : 'bg-muted/30 hover:bg-muted/50'
+                        }`}
+                        onClick={() => onPaymentFilterChange(paymentFilter === 'organization' ? 'all' : 'organization')}
+                        title={`Нажмите для фильтрации по безналу (${orgName})`}
+                      >
+                        <div className="text-[10px] sm:text-xs font-medium text-blue-500/80 mb-1 whitespace-nowrap truncate max-w-[60px] sm:max-w-none mx-auto">{orgName}</div>
+                        <div className="text-xs sm:text-sm md:text-base font-bold text-blue-600 dark:text-blue-400 leading-tight break-words">
+                          {orgSpecificSum.toFixed(2)} BYN
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
                   <div
                     className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors ${
                       paymentFilter === 'debt'

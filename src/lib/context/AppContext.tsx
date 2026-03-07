@@ -21,7 +21,8 @@ const initialState: AppState = {
     minimumPaymentAdmin: 0,
     adminCashPercentage: 3,
     adminCarWashPercentage: 2,
-    adminDrycleanPercentage: 3
+    adminDrycleanPercentage: 3,
+    organizationsInTotal: []
   }
 };
 
