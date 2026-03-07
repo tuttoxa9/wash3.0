@@ -67,19 +67,21 @@ const Layout: React.FC = () => {
         {/* Шапка для мобильных устройств */}
         <div className="md:hidden sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/20 mobile-header">
           <div className="flex items-center justify-between p-3 sm:p-4">
-            <div className="flex items-center">
-              <button
-                onClick={toggleMobileSidebar}
-                className="mobile-button p-2 mr-2 rounded-xl hover:bg-secondary touch-manipulation active:scale-95 transition-transform"
-                aria-label="Открыть меню"
-              >
-                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
-              <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">
-                Detail Lab
-              </h1>
+            <div className="w-10">
+              <NotificationPanel />
             </div>
-            <NotificationPanel />
+
+            <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate absolute left-1/2 -translate-x-1/2">
+              Detail Lab
+            </h1>
+
+            <button
+              onClick={toggleMobileSidebar}
+              className="mobile-button p-2 rounded-xl hover:bg-secondary touch-manipulation active:scale-95 transition-transform w-10 h-10 flex items-center justify-center"
+              aria-label="Открыть меню"
+            >
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
           </div>
         </div>
 

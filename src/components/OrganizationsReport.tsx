@@ -496,46 +496,46 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
               <p>Загрузка данных...</p>
             </div>
           ) : records.length > 0 ? (
-            <div className="overflow-x-auto mobile-table">
-              <table className="w-full min-w-[600px]">
+            <div className="overflow-x-auto custom-scrollbar mobile-table">
+              <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">
+                  <tr className="bg-muted/50 border-b">
+                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
                       Дата
                     </th>
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">
+                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
                       Время
                     </th>
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">
+                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
                       Авто
                     </th>
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">
+                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
                       Услуга
                     </th>
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-right text-xs sm:text-sm font-medium">
+                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
                       Стоимость
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y">
                   {records.map((record) => (
                     <tr
                       key={record.id}
-                      className="border-b border-border hover:bg-muted/30"
+                      className="hover:bg-muted/30 transition-colors"
                     >
-                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">
+                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm">
                         {formatDate(record.date)}
                       </td>
-                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">
+                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm">
                         {record.time}
                       </td>
-                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">
+                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm max-w-[120px] truncate" title={record.carInfo}>
                         {record.carInfo}
                       </td>
-                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">
+                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm max-w-[150px] truncate" title={record.service}>
                         {record.service}
                       </td>
-                      <td className="py-3 px-4 text-right font-medium">
+                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm text-right font-medium">
                         {record.price.toFixed(2)}
                       </td>
                     </tr>
@@ -552,9 +552,9 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
               </table>
 
               {/* Сумма итого */}
-              <div className="flex justify-between border-t border-dashed border-border pt-4 mt-4">
-                <span className="font-medium">Итого:</span>
-                <span className="font-bold">{totalAmount.toFixed(2)} BYN</span>
+              <div className="flex justify-between items-center bg-muted/10 p-3 mt-2 rounded-lg border border-border/50">
+                <span className="font-medium text-sm md:text-base">Итого:</span>
+                <span className="font-bold text-lg">{totalAmount.toFixed(2)} BYN</span>
               </div>
 
               {/* Информация о создании */}

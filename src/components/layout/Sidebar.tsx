@@ -269,61 +269,30 @@ const Sidebar: React.FC<SidebarProps> = ({
               <span>Настройки</span>
             </NavLink>
 
-            {/* Заметки смены (встроены в навигацию) */}
-            <div className="pt-2 pb-2">
-              <div
-                className="relative overflow-hidden bg-primary/5 border border-primary/10 hover:border-primary/20 hover:bg-primary/10 rounded-2xl p-3 cursor-pointer transition-all duration-300 group shadow-sm"
-                onClick={() => {
-                  if (!currentReport) {
-                    toast.error("Выберите дату со сменой");
-                    return;
-                  }
-                  setIsNotesModalOpen(true);
-                }}
-              >
-                <div className="flex items-center justify-between mb-2 relative z-10">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-primary/10 rounded-lg">
-                      <StickyNote className="w-4 h-4 text-primary" />
-                    </div>
-                    <span className="text-[14px] font-medium text-foreground">
-                      Заметки
-                    </span>
-                  </div>
-                  {notes.length > 0 ? (
-                    <div className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium shadow-sm">
-                      {notes.length}
-                    </div>
-                  ) : (
-                    <Plus className="w-4 h-4 text-primary/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  )}
-                </div>
-
-                <div className="space-y-1 relative z-10">
-                  {notes.length === 0 ? (
-                    <p className="text-[12px] text-muted-foreground/60 italic pl-1">
-                      Оставить заметку...
-                    </p>
-                  ) : (
-                    <div className="space-y-1.5 pl-1">
-                      {notes.slice(0, 2).map((note) => (
-                        <p
-                          key={note.id}
-                          className="text-[12px] text-muted-foreground leading-tight line-clamp-1 truncate relative before:content-[''] before:absolute before:left-[-8px] before:top-[6px] before:w-[4px] before:h-[4px] before:bg-primary/40 before:rounded-full pl-2"
-                        >
-                          {note.text}
-                        </p>
-                      ))}
-                      {notes.length > 2 && (
-                        <p className="text-[10px] text-primary/70 font-medium pt-0.5 pl-2">
-                          + еще {notes.length - 2}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
+            {/* Заметки смены */}
+            <button
+              onClick={() => {
+                if (!currentReport) {
+                  toast.error("Выберите дату со сменой");
+                  return;
+                }
+                setIsNotesModalOpen(true);
+                toggleMobileSidebar();
+              }}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-secondary/80 transition-colors text-[hsl(var(--sidebar-foreground))] text-sm group"
+            >
+              <div className="flex items-center gap-3">
+                <StickyNote className="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" />
+                <span className="font-medium">Заметки</span>
               </div>
-            </div>
+              {notes.length > 0 ? (
+                <div className="flex items-center justify-center min-w-[20px] h-[20px] px-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full">
+                  {notes.length}
+                </div>
+              ) : (
+                <Plus className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
+              )}
+            </button>
           </nav>
 
           {/* Настройки интерфейса (Тема и Выход) */}
