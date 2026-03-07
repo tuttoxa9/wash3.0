@@ -265,9 +265,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           </nav>
 
           {/* Заметки смены */}
-          <div className="mt-auto mb-4">
+          <div className="mt-auto mb-3">
             <div
-              className="relative overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:border-primary/40 rounded-2xl p-3 cursor-pointer transition-all duration-300 group shadow-sm hover:shadow-md"
+              className="relative overflow-hidden bg-primary/5 border border-primary/10 hover:border-primary/30 hover:bg-primary/10 rounded-xl p-2.5 cursor-pointer transition-all duration-200 group"
               onClick={() => {
                 if (!currentReport) {
                   toast.error("Выберите дату со сменой");
@@ -276,42 +276,38 @@ const Sidebar: React.FC<SidebarProps> = ({
                 setIsNotesModalOpen(true);
               }}
             >
-              <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
-
-              <div className="flex items-center justify-between mb-2.5 relative z-10">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-background/80 backdrop-blur-sm rounded-lg shadow-sm border border-border/40 text-primary group-hover:text-primary transition-colors">
-                    <StickyNote className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-sm font-bold tracking-tight text-foreground/90">
+              <div className="flex items-center justify-between mb-1.5 relative z-10">
+                <div className="flex items-center gap-1.5">
+                  <StickyNote className="w-3.5 h-3.5 text-primary/70" />
+                  <span className="text-[13px] font-medium text-foreground/80">
                     Заметки
                   </span>
                 </div>
                 {notes.length > 0 && (
-                  <div className="text-[10px] bg-background/80 backdrop-blur-sm border border-border/40 text-foreground px-2 py-0.5 rounded-full font-bold shadow-sm">
+                  <div className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-semibold">
                     {notes.length}
                   </div>
                 )}
               </div>
 
-              <div className="space-y-1.5 relative z-10">
+              <div className="space-y-1 relative z-10 pl-1">
                 {notes.length === 0 ? (
-                  <p className="text-[11px] text-muted-foreground/80 font-medium">
-                    Оставить заметку о смене...
+                  <p className="text-[10px] text-muted-foreground/60 italic">
+                    Нажмите, чтобы добавить...
                   </p>
                 ) : (
                   <>
                     {notes.slice(0, 2).map((note) => (
-                      <div key={note.id} className="flex items-start gap-1.5">
-                        <div className="w-1 h-1 rounded-full bg-primary/50 mt-1.5 shrink-0" />
-                        <p className="text-[11px] text-foreground/80 leading-snug line-clamp-1 truncate font-medium">
-                          {note.text}
-                        </p>
-                      </div>
+                      <p
+                        key={note.id}
+                        className="text-[11px] text-foreground/70 leading-tight line-clamp-1 truncate relative before:content-[''] before:absolute before:left-[-6px] before:top-[6px] before:w-[3px] before:h-[3px] before:bg-primary/40 before:rounded-full pl-1"
+                      >
+                        {note.text}
+                      </p>
                     ))}
                     {notes.length > 2 && (
-                      <p className="text-[10px] text-primary/70 font-bold pt-0.5 pl-2.5">
-                        +{notes.length - 2} ещё
+                      <p className="text-[9px] text-primary/60 font-medium pt-0.5 pl-1">
+                        +{notes.length - 2}
                       </p>
                     )}
                   </>
@@ -389,38 +385,35 @@ const Sidebar: React.FC<SidebarProps> = ({
           isOpen={isNotesModalOpen}
           onClose={() => setIsNotesModalOpen(false)}
         >
-          <div className="p-5 sm:p-6 flex flex-col h-[85vh] sm:h-[80vh] max-h-[700px] bg-background/50">
-            <div className="flex items-center justify-between mb-6 shrink-0 relative">
-              <h3 className="text-xl font-bold flex items-center gap-2.5">
-                <div className="p-2 bg-primary/10 rounded-xl text-primary">
-                  <StickyNote className="w-5 h-5" />
+          <div className="p-4 flex flex-col h-[75vh] max-h-[600px] bg-background/50">
+            <div className="flex items-center justify-between mb-4 shrink-0 relative">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <div className="p-1.5 bg-primary/10 rounded-lg text-primary">
+                  <StickyNote className="w-4 h-4" />
                 </div>
                 Заметки смены
               </h3>
             </div>
 
-            <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-2 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-3 pr-2 custom-scrollbar">
               {notes.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm space-y-3 pb-10">
-                  <div className="p-4 bg-muted/50 rounded-full">
-                    <StickyNote className="w-8 h-8 opacity-40 text-primary" />
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm space-y-2 pb-6">
+                  <div className="p-3 bg-muted/50 rounded-full">
+                    <StickyNote className="w-6 h-6 opacity-40 text-primary" />
                   </div>
-                  <p className="font-medium">Здесь пока нет заметок</p>
-                  <p className="text-xs opacity-70">
-                    Напишите что-нибудь важное для этой смены
-                  </p>
+                  <p className="font-medium text-xs">Здесь пока нет заметок</p>
                 </div>
               ) : (
                 notes.map((note) => (
                   <div
                     key={note.id}
-                    className="bg-card border border-border/40 rounded-2xl p-4 group relative shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300"
+                    className="bg-card border border-border/40 rounded-xl p-3 group relative shadow-sm hover:shadow-md transition-all duration-300"
                   >
-                    <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap pr-8">
+                    <p className="text-[13px] text-foreground/90 leading-relaxed whitespace-pre-wrap pr-6">
                       {note.text}
                     </p>
-                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-border/30">
-                      <span className="text-[11px] font-medium text-muted-foreground/70 bg-muted/30 px-2 py-0.5 rounded-md">
+                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-border/20">
+                      <span className="text-[10px] font-medium text-muted-foreground/60">
                         {new Date(note.createdAt).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -428,13 +421,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                       </span>
                       <button
                         onClick={() => handleDeleteNote(note.id)}
-                        className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100 flex items-center gap-1.5"
+                        className="text-destructive/50 hover:text-destructive p-1 rounded-md transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100 flex items-center"
                         title="Удалить заметку"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        <span className="text-[10px] font-bold hidden sm:inline-block">
-                          УДАЛИТЬ
-                        </span>
                       </button>
                     </div>
                   </div>
@@ -442,8 +432,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               )}
             </div>
 
-            <div className="mt-5 pt-4 shrink-0 relative">
-              <div className="flex items-end gap-2 bg-muted/30 p-2 rounded-2xl border border-border/50 focus-within:border-primary/40 focus-within:bg-background transition-colors shadow-inner">
+            <div className="mt-4 pt-3 shrink-0 relative">
+              <div className="flex items-end gap-1.5 bg-muted/20 p-1.5 rounded-xl border border-border/60 focus-within:border-primary/40 focus-within:bg-background transition-colors">
                 <textarea
                   value={newNoteText}
                   onChange={(e) => setNewNoteText(e.target.value)}
@@ -454,20 +444,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                     }
                   }}
                   placeholder="Новая заметка..."
-                  className="w-full bg-transparent border-none px-3 py-2 text-sm focus:outline-none resize-none min-h-[44px] max-h-[120px] placeholder:text-muted-foreground/60 custom-scrollbar leading-relaxed"
+                  className="w-full bg-transparent border-none px-2.5 py-1.5 text-[13px] focus:outline-none resize-none min-h-[36px] max-h-[100px] placeholder:text-muted-foreground/50 custom-scrollbar leading-relaxed"
                   rows={1}
                 />
                 <button
                   onClick={handleAddNote}
                   disabled={!newNoteText.trim()}
-                  className="h-11 w-11 shrink-0 flex items-center justify-center bg-primary text-primary-foreground rounded-xl disabled:opacity-40 hover:bg-primary/90 transition-all active:scale-95 shadow-sm disabled:shadow-none"
+                  className="h-9 w-9 shrink-0 flex items-center justify-center bg-primary/90 text-primary-foreground rounded-lg disabled:opacity-40 hover:bg-primary transition-all active:scale-95 shadow-sm"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-[10px] text-muted-foreground/50 text-center mt-2">
-                Нажмите Enter для отправки, Shift+Enter для переноса строки
-              </p>
             </div>
           </div>
         </Modal>
