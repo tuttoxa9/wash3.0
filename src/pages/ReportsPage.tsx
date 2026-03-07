@@ -914,25 +914,25 @@ const ReportsPage: React.FC = () => {
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr className="bg-muted/50 border-b">
-                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
+                    <th className="font-medium text-left text-xs md:text-sm px-2 md:px-4 py-2">
                       Сотрудник
                     </th>
-                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       Нал
                     </th>
-                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       Карт
                     </th>
-                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       Безнал
                     </th>
-                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       Долг
                     </th>
-                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       Всего
                     </th>
-                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       ЗП
                     </th>
                   </tr>
@@ -992,7 +992,7 @@ const ReportsPage: React.FC = () => {
                         className="hover:bg-muted/30 cursor-pointer transition-colors"
                         onClick={handleEmployeeClick}
                       >
-                        <td className="px-2 md:px-4 py-2 text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate max-w-[120px]" title={report.employeeName}>
+                        <td className="px-2 md:px-4 py-2 text-left text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate max-w-[120px]" title={report.employeeName}>
                           {report.employeeName}
                         </td>
                         <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">

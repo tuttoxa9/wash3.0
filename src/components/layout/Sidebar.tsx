@@ -269,7 +269,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <span>Настройки</span>
             </NavLink>
 
-            {/* Заметки смены */}
+            {/* Заметки смены - Mobile View (Button only) */}
             <button
               onClick={() => {
                 if (!currentReport) {
@@ -279,7 +279,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 setIsNotesModalOpen(true);
                 toggleMobileSidebar();
               }}
-              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-secondary/80 transition-colors text-[hsl(var(--sidebar-foreground))] text-sm group"
+              className="md:hidden w-full flex items-center justify-between p-3 rounded-xl hover:bg-secondary/80 transition-colors text-[hsl(var(--sidebar-foreground))] text-sm group"
             >
               <div className="flex items-center gap-3">
                 <StickyNote className="w-5 h-5 opacity-80 group-hover:opacity-100 transition-opacity" />
@@ -293,6 +293,49 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <Plus className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
               )}
             </button>
+
+            {/* Заметки смены - Desktop View (Preview block) */}
+            <div className="hidden md:block mt-6 px-1">
+              <div className="flex items-center justify-between mb-2 px-2">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                  <StickyNote className="w-3.5 h-3.5" />
+                  Заметки смены
+                </h3>
+                <button
+                  onClick={() => setIsNotesModalOpen(true)}
+                  className="p-1 hover:bg-secondary rounded-md transition-colors"
+                  title="Добавить заметку"
+                >
+                  <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+              </div>
+              <div
+                className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar pr-1 cursor-pointer"
+                onClick={() => {
+                  if (!currentReport) {
+                    toast.error("Выберите дату со сменой");
+                    return;
+                  }
+                  setIsNotesModalOpen(true);
+                }}
+              >
+                {notes.length === 0 ? (
+                  <div className="text-xs text-muted-foreground text-center py-4 bg-muted/10 rounded-lg border border-border/40 border-dashed">
+                    Нет заметок за смену
+                  </div>
+                ) : (
+                  notes.map((note) => (
+                    <div
+                      key={note.id}
+                      className="text-xs bg-muted/20 border border-border/40 p-2.5 rounded-lg hover:bg-muted/40 transition-colors line-clamp-2"
+                      title={note.text}
+                    >
+                      {note.text}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </nav>
 
           {/* Настройки интерфейса (Тема и Выход) */}

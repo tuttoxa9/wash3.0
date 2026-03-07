@@ -500,19 +500,19 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr className="bg-muted/50 border-b">
-                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
+                    <th className="font-medium text-left text-xs md:text-sm px-2 md:px-4 py-2">
                       Дата
                     </th>
-                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
+                    <th className="font-medium text-left text-xs md:text-sm px-2 md:px-4 py-2">
                       Время
                     </th>
-                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
+                    <th className="font-medium text-left text-xs md:text-sm px-2 md:px-4 py-2">
                       Авто
                     </th>
-                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
+                    <th className="font-medium text-left text-xs md:text-sm px-2 md:px-4 py-2">
                       Услуга
                     </th>
-                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       Стоимость
                     </th>
                   </tr>
@@ -523,25 +523,25 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
                       key={record.id}
                       className="hover:bg-muted/30 transition-colors"
                     >
-                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm">
+                      <td className="px-2 md:px-4 py-2 text-left text-xs md:text-sm">
                         {formatDate(record.date)}
                       </td>
-                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm">
+                      <td className="px-2 md:px-4 py-2 text-left text-xs md:text-sm">
                         {record.time}
                       </td>
-                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm max-w-[120px] truncate" title={record.carInfo}>
+                      <td className="px-2 md:px-4 py-2 text-left text-xs md:text-sm max-w-[120px] truncate" title={record.carInfo}>
                         {record.carInfo}
                       </td>
-                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm max-w-[150px] truncate" title={record.service}>
+                      <td className="px-2 md:px-4 py-2 text-left text-xs md:text-sm max-w-[150px] truncate" title={record.service}>
                         {record.service}
                       </td>
-                      <td className="px-2 md:px-4 py-2 text-xs md:text-sm text-right font-medium">
+                      <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm font-medium">
                         {record.price.toFixed(2)}
                       </td>
                     </tr>
                   ))}
                   <tr className="bg-secondary/20 font-medium">
-                    <td className="py-3 px-4" colSpan={4}>
+                    <td className="py-3 px-4 text-left" colSpan={4}>
                       Итого:
                     </td>
                     <td className="py-3 px-4 text-right">
