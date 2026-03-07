@@ -833,64 +833,6 @@ const HomePage: React.FC = () => {
         />
       )}
 
-      {/* Pre-shift banner: visible only if shift not started */}
-      {!shiftStarted && (
-        <div className="relative overflow-hidden rounded-lg sm:rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5" />
-          <div className="relative p-3 sm:p-6 md:p-8">
-            <div className="flex items-start gap-2 sm:gap-4">
-              <div className="shrink-0 rounded-lg sm:rounded-xl p-2 sm:p-3 bg-primary/10 text-primary">
-                <Calendar className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-2">
-                  <span className="text-card-foreground font-semibold text-sm sm:text-lg leading-tight">
-                    <span className="hidden sm:inline">
-                      Чтобы начать работу, выберите работников и начните смену
-                    </span>
-                    <span className="sm:hidden">
-                      Выберите работников и начните смену
-                    </span>
-                  </span>
-                  <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground border border-border/30 w-fit">
-                    Режим ожидания
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 leading-relaxed">
-                  <span className="hidden sm:inline">
-                    Следуйте простым шагам: 1) Выберите сотрудников на смену. 2)
-                    Назначьте роли. 3) Нажмите «Начать смену».
-                  </span>
-                  <span className="sm:hidden">
-                    1) Выберите сотрудников 2) Назначьте роли 3) Начните смену
-                  </span>
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <button
-                    onClick={scrollToShift}
-                    className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-primary text-white hover:bg-primary/90 transition-all duration-200 font-medium text-sm shadow-md hover:shadow-lg"
-                  >
-                    <span className="hidden sm:inline">
-                      Перейти к выбору работников
-                    </span>
-                    <span className="sm:hidden">К выбору работников</span>
-                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </button>
-                  <span className="text-xs text-muted-foreground bg-muted/40 px-2 sm:px-3 py-1 rounded-md sm:rounded-lg w-fit">
-                    <span className="hidden sm:inline">
-                      После начала смены функции станут доступны
-                    </span>
-                    <span className="sm:hidden">
-                      После смены функции доступны
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Заголовок */}
       <div className="flex flex-col gap-2 md:gap-4">
         <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl bg-gradient-to-r from-card via-card/80 to-card border border-border/40 shadow-lg">
@@ -995,7 +937,7 @@ const HomePage: React.FC = () => {
               </div>
 
               {/* Кнопка изменить состав смены */}
-              {isShiftLocked && (
+              {shiftStarted && isShiftLocked && (
                 <button
                   onClick={() => setIsEditingShift(!isEditingShift)}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border/40 bg-gradient-to-r from-background to-background/90 hover:from-secondary/30 hover:to-secondary/20 transition-all duration-200 text-sm font-medium shadow-sm"
@@ -1179,10 +1121,13 @@ const HomePage: React.FC = () => {
                 })}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>Нет работающих сотрудников на выбранную дату.</p>
-                <p className="text-sm mt-1">
-                  Выберите сотрудников для смены ниже.
+              <div className="text-center py-8 md:py-12 flex flex-col items-center justify-center text-muted-foreground">
+                <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                  <User className="w-8 h-8 text-muted-foreground/50" />
+                </div>
+                <h3 className="text-lg font-medium text-foreground mb-1">Смена еще не начата</h3>
+                <p className="text-sm max-w-sm">
+                  Выберите сотрудников ниже и нажмите «Начать смену», чтобы получить доступ к функциям записи.
                 </p>
               </div>
             )}
@@ -1190,18 +1135,19 @@ const HomePage: React.FC = () => {
             {/* Интерфейс выбора сотрудников для смены */}
             {(!isShiftLocked || isEditingShift) && (
               <div
+                id="employees-section"
                 ref={shiftSectionRef}
-                className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-muted/20 to-muted/10 border border-border/40 shadow-md transition-all duration-300 ${
+                className={`mt-4 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-card border border-border/40 shadow-sm transition-all duration-300 ${
                   isShiftSectionHighlighted
-                    ? "ring-2 ring-primary/30 shadow-lg bg-gradient-to-br from-primary/5 via-muted/20 to-primary/5"
+                    ? "ring-2 ring-primary/30 shadow-lg"
                     : ""
                 }`}
               >
-                <div className="mb-3 sm:mb-4">
-                  <h4 className="text-base sm:text-lg font-semibold mb-2">
+                <div className="mb-4">
+                  <h4 className="text-base sm:text-lg font-semibold">
                     {isShiftLocked && isEditingShift
                       ? "Редактировать состав смены"
-                      : "Выберите сотрудников на смену"}
+                      : "Состав смены"}
                   </h4>
                 </div>
 
@@ -1350,16 +1296,8 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* Итоги */}
-          {currentReport && (
+          {currentReport && shiftStarted && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 relative">
-              {!shiftStarted && (
-                <div className="absolute inset-0 z-10 rounded-xl sm:rounded-2xl pointer-events-none">
-                  <div className="absolute inset-0 bg-card/60 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-border/40" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-muted/80 text-muted-foreground text-xs sm:text-sm font-medium border border-border/40" />
-                  </div>
-                </div>
-              )}
               {/* Сводка по оплатам */}
               <div className="p-4 rounded-xl border border-border/40 shadow-sm bg-card flex flex-col h-full">
                 <div className="flex items-center gap-2 mb-4">
