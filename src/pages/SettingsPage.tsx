@@ -1,17 +1,44 @@
-import type React from 'react';
-import { useState, useEffect } from 'react';
-import { Plus, Save, Loader2, AlertTriangle, Trash, Lock, Check, Cloud, RefreshCw, X, Sun, Moon, Edit, Building } from 'lucide-react';
-import { toast } from 'sonner';
-import { format, parseISO } from 'date-fns';
-import { useAppContext } from '@/lib/context/AppContext';
-import { employeeService, serviceService, organizationService, settingsService, databaseService } from '@/lib/services/supabaseService';
-import type { Employee, ThemeMode, Organization, SalaryCalculationMethod, MinimumPaymentSettings } from '@/lib/types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useAppContext } from "@/lib/context/AppContext";
+import {
+  databaseService,
+  employeeService,
+  organizationService,
+  serviceService,
+  settingsService,
+} from "@/lib/services/supabaseService";
+import type {
+  Employee,
+  MinimumPaymentSettings,
+  Organization,
+  SalaryCalculationMethod,
+  ThemeMode,
+} from "@/lib/types";
+import { format, parseISO } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertTriangle,
+  Building,
+  Check,
+  Cloud,
+  Edit,
+  Loader2,
+  Lock,
+  Moon,
+  Plus,
+  RefreshCw,
+  Save,
+  Sun,
+  Trash,
+  X,
+} from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 // Компонент для ввода пароля
 const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -20,10 +47,10 @@ const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
 
     setTimeout(() => {
       if (password === import.meta.env.VITE_SETTINGS_PASSWORD) {
-        setError('');
+        setError("");
         onSuccess();
       } else {
-        setError('Неверный пароль. Попробуйте еще раз.');
+        setError("Неверный пароль. Попробуйте еще раз.");
       }
       setIsLoading(false);
     }, 500); // Небольшая задержка для симуляции проверки
@@ -40,8 +67,12 @@ const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
         <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Lock className="w-7 h-7 text-primary" />
         </div>
-        <h2 className="text-xl font-bold gradient-heading">Доступ к настройкам</h2>
-        <p className="text-muted-foreground mt-1 text-sm">Введите пароль для доступа к панели настроек</p>
+        <h2 className="text-xl font-bold gradient-heading">
+          Доступ к настройкам
+        </h2>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Введите пароль для доступа к панели настроек
+        </p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -54,9 +85,7 @@ const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
             className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             autoFocus
           />
-          {error && (
-            <p className="mt-2 text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
         </div>
         <button
           type="submit"
@@ -116,8 +145,10 @@ const ThemeSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
 
   const setTheme = (theme: ThemeMode) => {
-    dispatch({ type: 'SET_THEME', payload: theme });
-    toast.success(`Тема изменена на ${theme === 'light' ? 'светлую' : theme === 'dark' ? 'темную' : 'черную'}`);
+    dispatch({ type: "SET_THEME", payload: theme });
+    toast.success(
+      `Тема изменена на ${theme === "light" ? "светлую" : theme === "dark" ? "темную" : "черную"}`,
+    );
   };
 
   return (
@@ -133,24 +164,24 @@ const ThemeSettings: React.FC = () => {
 
       <div className="segmented-control mb-1">
         <button
-          onClick={() => setTheme('light')}
-          className={state.theme === 'light' ? 'active' : ''}
+          onClick={() => setTheme("light")}
+          className={state.theme === "light" ? "active" : ""}
         >
           <Sun className="w-4 h-4 mx-auto mb-0.5" />
           <span className="text-[10px] sm:text-xs">Светлая</span>
         </button>
 
         <button
-          onClick={() => setTheme('dark')}
-          className={state.theme === 'dark' ? 'active' : ''}
+          onClick={() => setTheme("dark")}
+          className={state.theme === "dark" ? "active" : ""}
         >
           <Moon className="w-4 h-4 mx-auto mb-0.5" />
           <span className="text-[10px] sm:text-xs">Темная</span>
         </button>
 
         <button
-          onClick={() => setTheme('black')}
-          className={state.theme === 'black' ? 'active' : ''}
+          onClick={() => setTheme("black")}
+          className={state.theme === "black" ? "active" : ""}
         >
           <div className="w-4 h-4 rounded-full bg-foreground mx-auto mb-0.5 flex items-center justify-center">
             <div className="w-2 h-2 rounded-full bg-background" />
@@ -165,26 +196,27 @@ const ThemeSettings: React.FC = () => {
 // Компонент для управления организациями-партнерами
 const OrganizationsSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
-  const [newOrganizationName, setNewOrganizationName] = useState('');
-  const [editingOrganization, setEditingOrganization] = useState<Organization | null>(null);
+  const [newOrganizationName, setNewOrganizationName] = useState("");
+  const [editingOrganization, setEditingOrganization] =
+    useState<Organization | null>(null);
   const [loading, setLoading] = useState({
     addOrg: false,
     deleteOrg: null as string | null,
     updateOrg: null as string | null,
-    fetchOrgs: false
+    fetchOrgs: false,
   });
 
   // Обновление списка организаций
   const fetchOrganizations = async () => {
-    setLoading(prev => ({ ...prev, fetchOrgs: true }));
+    setLoading((prev) => ({ ...prev, fetchOrgs: true }));
     try {
       const orgs = await organizationService.getAll();
-      dispatch({ type: 'SET_ORGANIZATIONS', payload: orgs });
+      dispatch({ type: "SET_ORGANIZATIONS", payload: orgs });
     } catch (error) {
-      console.error('Ошибка при загрузке списка организаций:', error);
-      toast.error('Не удалось загрузить список организаций');
+      console.error("Ошибка при загрузке списка организаций:", error);
+      toast.error("Не удалось загрузить список организаций");
     } finally {
-      setLoading(prev => ({ ...prev, fetchOrgs: false }));
+      setLoading((prev) => ({ ...prev, fetchOrgs: false }));
     }
   };
 
@@ -192,29 +224,29 @@ const OrganizationsSettings: React.FC = () => {
   const handleAddOrganization = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newOrganizationName.trim()) {
-      toast.error('Введите название организации');
+      toast.error("Введите название организации");
       return;
     }
 
-    setLoading(prev => ({ ...prev, addOrg: true }));
+    setLoading((prev) => ({ ...prev, addOrg: true }));
     try {
-      const organization: Omit<Organization, 'id'> = {
-        name: newOrganizationName.trim()
+      const organization: Omit<Organization, "id"> = {
+        name: newOrganizationName.trim(),
       };
 
       const addedOrg = await organizationService.add(organization);
       if (addedOrg) {
-        dispatch({ type: 'ADD_ORGANIZATION', payload: addedOrg });
+        dispatch({ type: "ADD_ORGANIZATION", payload: addedOrg });
         toast.success(`Организация "${addedOrg.name}" добавлена`);
-        setNewOrganizationName('');
+        setNewOrganizationName("");
       } else {
-        throw new Error('Не удалось добавить организацию');
+        throw new Error("Не удалось добавить организацию");
       }
     } catch (error) {
-      console.error('Ошибка при добавлении организации:', error);
-      toast.error('Произошла ошибка при добавлении организации');
+      console.error("Ошибка при добавлении организации:", error);
+      toast.error("Произошла ошибка при добавлении организации");
     } finally {
-      setLoading(prev => ({ ...prev, addOrg: false }));
+      setLoading((prev) => ({ ...prev, addOrg: false }));
     }
   };
 
@@ -234,25 +266,25 @@ const OrganizationsSettings: React.FC = () => {
     if (!editingOrganization) return;
 
     if (!editingOrganization.name.trim()) {
-      toast.error('Введите название организации');
+      toast.error("Введите название организации");
       return;
     }
 
-    setLoading(prev => ({ ...prev, updateOrg: editingOrganization.id }));
+    setLoading((prev) => ({ ...prev, updateOrg: editingOrganization.id }));
     try {
       const success = await organizationService.update(editingOrganization);
       if (success) {
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: editingOrganization });
+        dispatch({ type: "UPDATE_ORGANIZATION", payload: editingOrganization });
         toast.success(`Организация "${editingOrganization.name}" обновлена`);
         setEditingOrganization(null);
       } else {
-        throw new Error('Не удалось обновить организацию');
+        throw new Error("Не удалось обновить организацию");
       }
     } catch (error) {
-      console.error('Ошибка при обновлении организации:', error);
-      toast.error('Произошла ошибка при обновлении организации');
+      console.error("Ошибка при обновлении организации:", error);
+      toast.error("Произошла ошибка при обновлении организации");
     } finally {
-      setLoading(prev => ({ ...prev, updateOrg: null }));
+      setLoading((prev) => ({ ...prev, updateOrg: null }));
     }
   };
 
@@ -262,23 +294,23 @@ const OrganizationsSettings: React.FC = () => {
       return;
     }
 
-    setLoading(prev => ({ ...prev, deleteOrg: orgId }));
+    setLoading((prev) => ({ ...prev, deleteOrg: orgId }));
     try {
       const success = await organizationService.delete(orgId);
       if (success) {
-        dispatch({ type: 'REMOVE_ORGANIZATION', payload: orgId });
+        dispatch({ type: "REMOVE_ORGANIZATION", payload: orgId });
         toast.success(`Организация "${orgName}" удалена`);
         if (editingOrganization?.id === orgId) {
           setEditingOrganization(null);
         }
       } else {
-        throw new Error('Не удалось удалить организацию');
+        throw new Error("Не удалось удалить организацию");
       }
     } catch (error) {
-      console.error('Ошибка при удалении организации:', error);
-      toast.error('Произошла ошибка при удалении организации');
+      console.error("Ошибка при удалении организации:", error);
+      toast.error("Произошла ошибка при удалении организации");
     } finally {
-      setLoading(prev => ({ ...prev, deleteOrg: null }));
+      setLoading((prev) => ({ ...prev, deleteOrg: null }));
     }
   };
 
@@ -297,7 +329,9 @@ const OrganizationsSettings: React.FC = () => {
         {loading.fetchOrgs ? (
           <div className="flex flex-col items-center justify-center py-6">
             <Loader2 className="w-5 h-5 animate-spin text-primary mb-2" />
-            <span className="text-xs text-muted-foreground">Загрузка организаций...</span>
+            <span className="text-xs text-muted-foreground">
+              Загрузка организаций...
+            </span>
           </div>
         ) : (
           <motion.button
@@ -323,7 +357,7 @@ const OrganizationsSettings: React.FC = () => {
             <input
               type="text"
               value={newOrganizationName}
-              onChange={e => setNewOrganizationName(e.target.value)}
+              onChange={(e) => setNewOrganizationName(e.target.value)}
               placeholder="Название организации"
               className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-sm"
               disabled={loading.addOrg}
@@ -354,7 +388,7 @@ const OrganizationsSettings: React.FC = () => {
 
         <ul className="divide-y divide-border max-h-[220px] overflow-y-auto">
           {state.organizations.length > 0 ? (
-            state.organizations.map(org => (
+            state.organizations.map((org) => (
               <motion.li
                 key={org.id}
                 className="px-2 py-2 flex items-center justify-between text-sm group"
@@ -368,10 +402,12 @@ const OrganizationsSettings: React.FC = () => {
                     <input
                       type="text"
                       value={editingOrganization.name}
-                      onChange={e => setEditingOrganization({
-                        ...editingOrganization,
-                        name: e.target.value
-                      })}
+                      onChange={(e) =>
+                        setEditingOrganization({
+                          ...editingOrganization,
+                          name: e.target.value,
+                        })
+                      }
                       className="flex-1 px-3 py-1.5 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-xs"
                       autoFocus
                     />
@@ -415,11 +451,15 @@ const OrganizationsSettings: React.FC = () => {
                         <Edit className="w-3.5 h-3.5" />
                       </motion.button>
                       <motion.button
-                        onClick={() => handleDeleteOrganization(org.id, org.name)}
+                        onClick={() =>
+                          handleDeleteOrganization(org.id, org.name)
+                        }
                         className="text-destructive"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        disabled={loading.deleteOrg === org.id || !!editingOrganization}
+                        disabled={
+                          loading.deleteOrg === org.id || !!editingOrganization
+                        }
                       >
                         {loading.deleteOrg === org.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -434,7 +474,9 @@ const OrganizationsSettings: React.FC = () => {
             ))
           ) : (
             <li className="px-2 py-2 text-center text-muted-foreground text-xs">
-              {loading.fetchOrgs ? 'Загрузка организаций...' : 'Нет добавленных организаций'}
+              {loading.fetchOrgs
+                ? "Загрузка организаций..."
+                : "Нет добавленных организаций"}
             </li>
           )}
         </ul>
@@ -443,22 +485,23 @@ const OrganizationsSettings: React.FC = () => {
   );
 };
 
-
-
 const SettingsContent: React.FC = () => {
   const { state, dispatch } = useAppContext();
-  const [newEmployee, setNewEmployee] = useState('');
+  const [newEmployee, setNewEmployee] = useState("");
   const [loading, setLoading] = useState({
     employee: false,
     clearDatabase: false,
     connection: false,
     fetchEmployees: false,
-    deleteEmployee: null as string | null
+    deleteEmployee: null as string | null,
   });
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<{status: 'none' | 'checking' | 'success' | 'error', time?: number}>({
-    status: 'none'
+  const [connectionStatus, setConnectionStatus] = useState<{
+    status: "none" | "checking" | "success" | "error";
+    time?: number;
+  }>({
+    status: "none",
   });
 
   // Загрузка сотрудников при монтировании компонента
@@ -470,28 +513,28 @@ const SettingsContent: React.FC = () => {
 
   // Функция для загрузки сотрудников из Supabase
   const fetchEmployees = async () => {
-    setLoading(prev => ({ ...prev, fetchEmployees: true }));
+    setLoading((prev) => ({ ...prev, fetchEmployees: true }));
     try {
       const employees = await employeeService.getAll();
-      dispatch({ type: 'SET_EMPLOYEES', payload: employees });
+      dispatch({ type: "SET_EMPLOYEES", payload: employees });
     } catch (error) {
-      console.error('Ошибка при загрузке сотрудников:', error);
-      toast.error('Не удалось загрузить список сотрудников');
+      console.error("Ошибка при загрузке сотрудников:", error);
+      toast.error("Не удалось загрузить список сотрудников");
     } finally {
-      setLoading(prev => ({ ...prev, fetchEmployees: false }));
+      setLoading((prev) => ({ ...prev, fetchEmployees: false }));
     }
   };
 
   // Функция для проверки соединения с Supabase
   const checkFirebaseConnection = async () => {
-    setConnectionStatus({ status: 'checking' });
-    setLoading(prev => ({ ...prev, connection: true }));
+    setConnectionStatus({ status: "checking" });
+    setLoading((prev) => ({ ...prev, connection: true }));
 
     const startTime = performance.now();
 
     try {
-      toast.info('Проверка соединения с базой данных...');
-      console.log('Начинаем проверку соединения с Supabase...');
+      toast.info("Проверка соединения с базой данных...");
+      console.log("Начинаем проверку соединения с Supabase...");
 
       const connected = await databaseService.testConnection();
 
@@ -499,27 +542,29 @@ const SettingsContent: React.FC = () => {
       const responseTime = Math.round(endTime - startTime);
 
       if (connected) {
-        toast.success('Соединение с базой данных установлено успешно!');
-        console.log(`Соединение (Supabase) успешно, время отклика: ${responseTime}ms`);
+        toast.success("Соединение с базой данных установлено успешно!");
+        console.log(
+          `Соединение (Supabase) успешно, время отклика: ${responseTime}ms`,
+        );
 
         setTimeout(() => {
           setConnectionStatus({
-            status: 'success',
-            time: responseTime
+            status: "success",
+            time: responseTime,
           });
-          setLoading(prev => ({ ...prev, connection: false }));
+          setLoading((prev) => ({ ...prev, connection: false }));
         }, 500);
       } else {
-        throw new Error('Не удалось подключиться к базе данных');
+        throw new Error("Не удалось подключиться к базе данных");
       }
     } catch (error: any) {
-      console.error('Ошибка при проверке соединения с Supabase:', error);
+      console.error("Ошибка при проверке соединения с Supabase:", error);
 
-      let errorMessage = 'Не удалось подключиться к базе данных.';
+      const errorMessage = "Не удалось подключиться к базе данных.";
       toast.error(errorMessage);
 
-      setConnectionStatus({ status: 'error' });
-      setLoading(prev => ({ ...prev, connection: false }));
+      setConnectionStatus({ status: "error" });
+      setLoading((prev) => ({ ...prev, connection: false }));
     }
   };
 
@@ -527,86 +572,91 @@ const SettingsContent: React.FC = () => {
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmployee.trim()) {
-      toast.error('Введите имя сотрудника');
+      toast.error("Введите имя сотрудника");
       return;
     }
 
-    setLoading(prev => ({ ...prev, employee: true }));
+    setLoading((prev) => ({ ...prev, employee: true }));
     try {
       toast.info(`Добавление сотрудника "${newEmployee.trim()}"...`);
-      console.log('Начинаем добавление нового сотрудника:', newEmployee.trim());
+      console.log("Начинаем добавление нового сотрудника:", newEmployee.trim());
 
-      const employee: Omit<Employee, 'id'> = {
-        name: newEmployee.trim()
+      const employee: Omit<Employee, "id"> = {
+        name: newEmployee.trim(),
       };
 
       const addedEmployee = await employeeService.add(employee);
       if (addedEmployee) {
-        dispatch({ type: 'ADD_EMPLOYEE', payload: addedEmployee });
+        dispatch({ type: "ADD_EMPLOYEE", payload: addedEmployee });
         toast.success(`Сотрудник ${addedEmployee.name} успешно добавлен!`);
-        setNewEmployee('');
+        setNewEmployee("");
       } else {
-        throw new Error('Не удалось добавить сотрудника');
+        throw new Error("Не удалось добавить сотрудника");
       }
     } catch (error: any) {
-      console.error('Ошибка при добавлении сотрудника:', error);
+      console.error("Ошибка при добавлении сотрудника:", error);
 
-      let errorMessage = 'Не удалось добавить сотрудника. ';
-      errorMessage += `${error.message || 'Неизвестная ошибка.'}`;
+      let errorMessage = "Не удалось добавить сотрудника. ";
+      errorMessage += `${error.message || "Неизвестная ошибка."}`;
 
       toast.error(errorMessage);
     } finally {
-      setLoading(prev => ({ ...prev, employee: false }));
+      setLoading((prev) => ({ ...prev, employee: false }));
     }
   };
 
   // Удаление сотрудника
-  const handleDeleteEmployee = async (employeeId: string, employeeName: string) => {
-    if (!confirm(`Вы уверены, что хотите удалить сотрудника "${employeeName}"?`)) {
+  const handleDeleteEmployee = async (
+    employeeId: string,
+    employeeName: string,
+  ) => {
+    if (
+      !confirm(`Вы уверены, что хотите удалить сотрудника "${employeeName}"?`)
+    ) {
       return;
     }
 
-    setLoading(prev => ({ ...prev, deleteEmployee: employeeId }));
+    setLoading((prev) => ({ ...prev, deleteEmployee: employeeId }));
     try {
       const success = await employeeService.delete(employeeId);
       if (success) {
-        dispatch({ type: 'REMOVE_EMPLOYEE', payload: employeeId });
+        dispatch({ type: "REMOVE_EMPLOYEE", payload: employeeId });
         toast.success(`Сотрудник ${employeeName} удален`);
       } else {
-        throw new Error('Не удалось удалить сотрудника');
+        throw new Error("Не удалось удалить сотрудника");
       }
     } catch (error) {
-      console.error('Ошибка при удалении сотрудника:', error);
-      toast.error('Произошла ошибка при удалении сотрудника');
+      console.error("Ошибка при удалении сотрудника:", error);
+      toast.error("Произошла ошибка при удалении сотрудника");
     } finally {
-      setLoading(prev => ({ ...prev, deleteEmployee: null }));
+      setLoading((prev) => ({ ...prev, deleteEmployee: null }));
     }
   };
 
   // Очистка всей базы данных Supabase
   const handleClearDatabase = async () => {
-    setLoading(prev => ({ ...prev, clearDatabase: true }));
+    setLoading((prev) => ({ ...prev, clearDatabase: true }));
     try {
       const success = await databaseService.clearAllData();
 
       if (success) {
         // Очищаем состояние приложения
-        dispatch({ type: 'SET_EMPLOYEES', payload: [] });
-        dispatch({ type: 'SET_ORGANIZATIONS', payload: [] });
-        dispatch({ type: 'SET_SERVICES', payload: [] });
-        dispatch({ type: 'SET_APPOINTMENTS', payload: [] });
+        dispatch({ type: "SET_EMPLOYEES", payload: [] });
+        dispatch({ type: "SET_ORGANIZATIONS", payload: [] });
+        dispatch({ type: "SET_SERVICES", payload: [] });
+        dispatch({ type: "SET_APPOINTMENTS", payload: [] });
 
         // Сбрасываем настройки к значениям по умолчанию
         dispatch({
-          type: 'SET_SALARY_CALCULATION_METHOD',
+          type: "SET_SALARY_CALCULATION_METHOD",
           payload: {
-            method: 'minimumWithPercentage',
-            date: format(new Date(), 'yyyy-MM-dd')
-          }
+            method: "minimumWithPercentage",
+            date: format(new Date(), "yyyy-MM-dd"),
+          },
         });
 
         dispatch({
-          type: 'SET_MINIMUM_PAYMENT_SETTINGS',
+          type: "SET_MINIMUM_PAYMENT_SETTINGS",
           payload: {
             minimumPaymentWasher: 0,
             percentageWasher: 10,
@@ -614,20 +664,20 @@ const SettingsContent: React.FC = () => {
             minimumPaymentAdmin: 0,
             adminCashPercentage: 3,
             adminCarWashPercentage: 2,
-            adminDrycleanPercentage: 3
-          }
+            adminDrycleanPercentage: 3,
+          },
         });
 
-        toast.success('Все данные из Supabase успешно удалены');
+        toast.success("Все данные из Supabase успешно удалены");
         setShowConfirmation(false);
       } else {
-        throw new Error('Не удалось удалить данные из Supabase');
+        throw new Error("Не удалось удалить данные из Supabase");
       }
     } catch (error) {
-      console.error('Ошибка при очистке базы данных Supabase:', error);
-      toast.error('Произошла ошибка при очистке базы данных');
+      console.error("Ошибка при очистке базы данных Supabase:", error);
+      toast.error("Произошла ошибка при очистке базы данных");
     } finally {
-      setLoading(prev => ({ ...prev, clearDatabase: false }));
+      setLoading((prev) => ({ ...prev, clearDatabase: false }));
     }
   };
 
@@ -645,7 +695,9 @@ const SettingsContent: React.FC = () => {
           className="card-with-shadow max-w-4xl mx-auto"
         >
           <div className="flex items-center mb-4">
-            <h2 className="text-xl font-bold gradient-heading flex-1">Настройки системы</h2>
+            <h2 className="text-xl font-bold gradient-heading flex-1">
+              Настройки системы
+            </h2>
           </div>
 
           <p className="text-muted-foreground text-sm mb-5">
@@ -662,20 +714,28 @@ const SettingsContent: React.FC = () => {
                 whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
                 transition={{ duration: 0.2 }}
               >
-                <h3 className="text-sm font-medium mb-2">Состояние базы данных</h3>
+                <h3 className="text-sm font-medium mb-2">
+                  Состояние базы данных
+                </h3>
                 <div className="flex items-center">
                   <div className="flex items-center flex-1">
-                    <div className={`w-8 h-8 mr-2 rounded-full flex items-center justify-center
-                      ${connectionStatus.status === 'none' ? 'bg-muted' :
-                        connectionStatus.status === 'checking' ? 'bg-primary/20' :
-                        connectionStatus.status === 'success' ? 'bg-green-100' :
-                        'bg-destructive/20'}`}
+                    <div
+                      className={`w-8 h-8 mr-2 rounded-full flex items-center justify-center
+                      ${
+                        connectionStatus.status === "none"
+                          ? "bg-muted"
+                          : connectionStatus.status === "checking"
+                            ? "bg-primary/20"
+                            : connectionStatus.status === "success"
+                              ? "bg-green-100"
+                              : "bg-destructive/20"
+                      }`}
                     >
-                      {connectionStatus.status === 'checking' ? (
+                      {connectionStatus.status === "checking" ? (
                         <AnimatedCloud />
-                      ) : connectionStatus.status === 'success' ? (
+                      ) : connectionStatus.status === "success" ? (
                         <Check className="w-4 h-4 text-green-600" />
-                      ) : connectionStatus.status === 'error' ? (
+                      ) : connectionStatus.status === "error" ? (
                         <AlertTriangle className="w-4 h-4 text-destructive" />
                       ) : (
                         <Cloud className="w-4 h-4 text-muted-foreground/70" />
@@ -683,14 +743,20 @@ const SettingsContent: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium">
-                        {connectionStatus.status === 'none' ? 'Не проверено' :
-                          connectionStatus.status === 'checking' ? 'Проверка...' :
-                          connectionStatus.status === 'success' ? 'Подключено' :
-                          'Ошибка соединения'}
+                        {connectionStatus.status === "none"
+                          ? "Не проверено"
+                          : connectionStatus.status === "checking"
+                            ? "Проверка..."
+                            : connectionStatus.status === "success"
+                              ? "Подключено"
+                              : "Ошибка соединения"}
                       </p>
-                      {connectionStatus.status === 'success' && connectionStatus.time && (
-                        <p className="text-xs text-muted-foreground">Отклик: {connectionStatus.time} мс</p>
-                      )}
+                      {connectionStatus.status === "success" &&
+                        connectionStatus.time && (
+                          <p className="text-xs text-muted-foreground">
+                            Отклик: {connectionStatus.time} мс
+                          </p>
+                        )}
                     </div>
                   </div>
                   <motion.button
@@ -725,11 +791,22 @@ const SettingsContent: React.FC = () => {
                   {loading.fetchEmployees ? (
                     <div className="flex flex-col items-center justify-center py-8">
                       <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
-                      <span className="text-xs text-muted-foreground">Загрузка сотрудников...</span>
+                      <span className="text-xs text-muted-foreground">
+                        Загрузка сотрудников...
+                      </span>
                       <div className="flex gap-1 mt-2">
-                        <div className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                        <div
+                          className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse"
+                          style={{ animationDelay: "0ms" }}
+                        ></div>
+                        <div
+                          className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse"
+                          style={{ animationDelay: "150ms" }}
+                        ></div>
+                        <div
+                          className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse"
+                          style={{ animationDelay: "300ms" }}
+                        ></div>
                       </div>
                     </div>
                   ) : (
@@ -751,7 +828,7 @@ const SettingsContent: React.FC = () => {
                       <input
                         type="text"
                         value={newEmployee}
-                        onChange={e => setNewEmployee(e.target.value)}
+                        onChange={(e) => setNewEmployee(e.target.value)}
                         placeholder="Имя сотрудника"
                         className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-sm"
                         disabled={loading.employee}
@@ -780,7 +857,7 @@ const SettingsContent: React.FC = () => {
                   </div>
                   <ul className="divide-y divide-border max-h-[220px] overflow-y-auto">
                     {state.employees.length > 0 ? (
-                      state.employees.map(employee => (
+                      state.employees.map((employee) => (
                         <motion.li
                           key={employee.id}
                           className="px-2 py-2 flex items-center justify-between text-sm group"
@@ -791,7 +868,9 @@ const SettingsContent: React.FC = () => {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => handleDeleteEmployee(employee.id, employee.name)}
+                            onClick={() =>
+                              handleDeleteEmployee(employee.id, employee.name)
+                            }
                             className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                             disabled={loading.deleteEmployee === employee.id}
                           >
@@ -805,7 +884,9 @@ const SettingsContent: React.FC = () => {
                       ))
                     ) : (
                       <li className="px-2 py-2 text-center text-muted-foreground text-xs">
-                        {loading.fetchEmployees ? 'Загрузка сотрудников...' : 'Нет добавленных сотрудников'}
+                        {loading.fetchEmployees
+                          ? "Загрузка сотрудников..."
+                          : "Нет добавленных сотрудников"}
                       </li>
                     )}
                   </ul>
@@ -825,24 +906,33 @@ const SettingsContent: React.FC = () => {
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
                   Удаление всех данных из базы данных Supabase.
-                  <span className="font-bold text-destructive"> Это действие необратимо!</span>
+                  <span className="font-bold text-destructive">
+                    {" "}
+                    Это действие необратимо!
+                  </span>
                 </p>
 
                 <AnimatePresence>
                   {showConfirmation ? (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
+                      animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       className="bg-destructive/10 border border-destructive rounded-lg p-3 mb-3"
                     >
                       <div className="flex items-start gap-2">
                         <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
                         <div>
-                          <h4 className="font-medium text-destructive mb-1 text-sm">Подтверждение удаления</h4>
+                          <h4 className="font-medium text-destructive mb-1 text-sm">
+                            Подтверждение удаления
+                          </h4>
                           <p className="mb-3 text-xs">
-                            Вы действительно хотите удалить <span className="font-bold">ВСЕ данные из Supabase</span>?
-                            Будут удалены: сотрудники, организации, услуги, записи о мойках и все настройки.
+                            Вы действительно хотите удалить{" "}
+                            <span className="font-bold">
+                              ВСЕ данные из Supabase
+                            </span>
+                            ? Будут удалены: сотрудники, организации, услуги,
+                            записи о мойках и все настройки.
                           </p>
                           <div className="flex gap-2">
                             <motion.button
@@ -892,6 +982,11 @@ const SettingsContent: React.FC = () => {
               </motion.div>
             </div>
           </div>
+
+          {/* Организации в Итого (теперь внутри SettingsContent, за паролем) */}
+          <div className="mt-6 border-t border-border pt-6">
+            <OrganizationsInTotalSettings />
+          </div>
         </motion.div>
       </AnimatePresence>
     </div>
@@ -903,7 +998,8 @@ const SalaryCalculationSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [savingError, setSavingError] = useState<string | null>(null);
-  const [minimumSettings, setMinimumSettings] = useState<MinimumPaymentSettings>(state.minimumPaymentSettings);
+  const [minimumSettings, setMinimumSettings] =
+    useState<MinimumPaymentSettings>(state.minimumPaymentSettings);
 
   useEffect(() => {
     const loadSalaryCalculationMethod = async () => {
@@ -912,16 +1008,18 @@ const SalaryCalculationSettings: React.FC = () => {
 
         if (result) {
           dispatch({
-            type: 'SET_SALARY_CALCULATION_METHOD',
+            type: "SET_SALARY_CALCULATION_METHOD",
             payload: {
               method: result.method as SalaryCalculationMethod,
-              date: result.date
-            }
+              date: result.date,
+            },
           });
-          console.log(`Загружен метод расчета зарплаты из базы данных: ${result.method}, дата: ${result.date}`);
+          console.log(
+            `Загружен метод расчета зарплаты из базы данных: ${result.method}, дата: ${result.date}`,
+          );
         }
       } catch (error) {
-        console.error('Ошибка при загрузке метода расчета зарплаты:', error);
+        console.error("Ошибка при загрузке метода расчета зарплаты:", error);
       }
     };
 
@@ -933,29 +1031,36 @@ const SalaryCalculationSettings: React.FC = () => {
     setSavingError(null);
 
     try {
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const today = format(new Date(), "yyyy-MM-dd");
 
-      const success = await settingsService.saveSalaryCalculationMethod(method, today);
+      const success = await settingsService.saveSalaryCalculationMethod(
+        method,
+        today,
+      );
 
       if (success) {
         dispatch({
-          type: 'SET_SALARY_CALCULATION_METHOD',
+          type: "SET_SALARY_CALCULATION_METHOD",
           payload: {
             method,
-            date: today
-          }
+            date: today,
+          },
         });
 
-        const methodDescription = 'Минимальная оплата + процент';
+        const methodDescription = "Минимальная оплата + процент";
 
-        toast.success(`Метод расчета зарплаты изменен на: ${methodDescription}`);
+        toast.success(
+          `Метод расчета зарплаты изменен на: ${methodDescription}`,
+        );
       } else {
-        throw new Error('Не удалось сохранить метод расчета зарплаты в базе данных');
+        throw new Error(
+          "Не удалось сохранить метод расчета зарплаты в базе данных",
+        );
       }
     } catch (error) {
-      console.error('Ошибка при изменении метода расчета зарплаты:', error);
-      toast.error('Ошибка при изменении метода расчета зарплаты');
-      setSavingError('Не удалось сохранить настройки. Попробуйте еще раз.');
+      console.error("Ошибка при изменении метода расчета зарплаты:", error);
+      toast.error("Ошибка при изменении метода расчета зарплаты");
+      setSavingError("Не удалось сохранить настройки. Попробуйте еще раз.");
     } finally {
       setLoading(false);
     }
@@ -964,20 +1069,24 @@ const SalaryCalculationSettings: React.FC = () => {
   const handleSaveMinimumSettings = async () => {
     setLoading(true);
     try {
-      const success = await settingsService.saveMinimumPaymentSettings(minimumSettings);
+      const success =
+        await settingsService.saveMinimumPaymentSettings(minimumSettings);
 
       if (success) {
         dispatch({
-          type: 'SET_MINIMUM_PAYMENT_SETTINGS',
-          payload: minimumSettings
+          type: "SET_MINIMUM_PAYMENT_SETTINGS",
+          payload: minimumSettings,
         });
-        toast.success('Настройки минимальной оплаты сохранены');
+        toast.success("Настройки минимальной оплаты сохранены");
       } else {
-        throw new Error('Не удалось сохранить настройки в базе данных');
+        throw new Error("Не удалось сохранить настройки в базе данных");
       }
     } catch (error) {
-      console.error('Ошибка при сохранении настроек минимальной оплаты:', error);
-      toast.error('Ошибка при сохранении настроек минимальной оплаты');
+      console.error(
+        "Ошибка при сохранении настроек минимальной оплаты:",
+        error,
+      );
+      toast.error("Ошибка при сохранении настроек минимальной оплаты");
     } finally {
       setLoading(false);
     }
@@ -991,7 +1100,8 @@ const SalaryCalculationSettings: React.FC = () => {
     >
       <h3 className="text-sm font-medium mb-2">Расчет заработной платы</h3>
       <p className="text-xs text-muted-foreground mb-3">
-        Выберите метод расчета заработной платы. Изменение будет применено ко всем дням начиная с сегодняшнего.
+        Выберите метод расчета заработной платы. Изменение будет применено ко
+        всем дням начиная с сегодняшнего.
       </p>
 
       {savingError && (
@@ -1004,26 +1114,31 @@ const SalaryCalculationSettings: React.FC = () => {
         <motion.button
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
-          onClick={() => handleSalaryMethodChange('minimumWithPercentage')}
+          onClick={() => handleSalaryMethodChange("minimumWithPercentage")}
           className={`p-3 border rounded-lg flex items-start transition-colors ${
-            state.salaryCalculationMethod === 'minimumWithPercentage'
-              ? 'border-primary bg-primary/5'
-              : 'border-border hover:bg-secondary/10'
+            state.salaryCalculationMethod === "minimumWithPercentage"
+              ? "border-primary bg-primary/5"
+              : "border-border hover:bg-secondary/10"
           }`}
           disabled={loading}
         >
-          <div className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center ${
-            state.salaryCalculationMethod === 'minimumWithPercentage'
-              ? 'border-primary' : 'border-input'
-          }`}>
-            {state.salaryCalculationMethod === 'minimumWithPercentage' && (
+          <div
+            className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center ${
+              state.salaryCalculationMethod === "minimumWithPercentage"
+                ? "border-primary"
+                : "border-input"
+            }`}
+          >
+            {state.salaryCalculationMethod === "minimumWithPercentage" && (
               <div className="w-3 h-3 rounded-full bg-primary"></div>
             )}
           </div>
           <div className="flex-1">
             <p className="font-medium text-sm">Минимальная оплата + процент</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Мойщик: % от выручки мойки и химчистки (раздельно) или минимальная оплата. Админ: % от кассы + % от лично выполненных услуг (мойка и химчистка раздельно) или минимальная оплата.
+              Мойщик: % от выручки мойки и химчистки (раздельно) или минимальная
+              оплата. Админ: % от кассы + % от лично выполненных услуг (мойка и
+              химчистка раздельно) или минимальная оплата.
             </p>
           </div>
           {loading && (
@@ -1031,14 +1146,16 @@ const SalaryCalculationSettings: React.FC = () => {
           )}
         </motion.button>
 
-        {state.salaryCalculationMethod === 'minimumWithPercentage' && (
+        {state.salaryCalculationMethod === "minimumWithPercentage" && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="pl-8 pr-3 py-3 border-l-2 border-primary/30 bg-primary/5 rounded-r-lg"
           >
-            <h4 className="text-sm font-medium mb-3">Настройки минимальной оплаты</h4>
+            <h4 className="text-sm font-medium mb-3">
+              Настройки минимальной оплаты
+            </h4>
 
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1049,10 +1166,13 @@ const SalaryCalculationSettings: React.FC = () => {
                   <input
                     type="number"
                     value={minimumSettings.minimumPaymentWasher}
-                    onChange={(e) => setMinimumSettings({
-                      ...minimumSettings,
-                      minimumPaymentWasher: Number.parseFloat(e.target.value) || 0
-                    })}
+                    onChange={(e) =>
+                      setMinimumSettings({
+                        ...minimumSettings,
+                        minimumPaymentWasher:
+                          Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="0"
                     step="0.01"
@@ -1066,10 +1186,13 @@ const SalaryCalculationSettings: React.FC = () => {
                   <input
                     type="number"
                     value={minimumSettings.percentageWasher}
-                    onChange={(e) => setMinimumSettings({
-                      ...minimumSettings,
-                      percentageWasher: Number.parseFloat(e.target.value) || 0
-                    })}
+                    onChange={(e) =>
+                      setMinimumSettings({
+                        ...minimumSettings,
+                        percentageWasher:
+                          Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="10"
                     step="0.1"
@@ -1084,10 +1207,13 @@ const SalaryCalculationSettings: React.FC = () => {
                   <input
                     type="number"
                     value={minimumSettings.percentageWasherDryclean}
-                    onChange={(e) => setMinimumSettings({
-                      ...minimumSettings,
-                      percentageWasherDryclean: Number.parseFloat(e.target.value) || 0
-                    })}
+                    onChange={(e) =>
+                      setMinimumSettings({
+                        ...minimumSettings,
+                        percentageWasherDryclean:
+                          Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="15"
                     step="0.1"
@@ -1105,10 +1231,13 @@ const SalaryCalculationSettings: React.FC = () => {
                   <input
                     type="number"
                     value={minimumSettings.minimumPaymentAdmin}
-                    onChange={(e) => setMinimumSettings({
-                      ...minimumSettings,
-                      minimumPaymentAdmin: Number.parseFloat(e.target.value) || 0
-                    })}
+                    onChange={(e) =>
+                      setMinimumSettings({
+                        ...minimumSettings,
+                        minimumPaymentAdmin:
+                          Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="0"
                     step="0.01"
@@ -1126,10 +1255,13 @@ const SalaryCalculationSettings: React.FC = () => {
                   <input
                     type="number"
                     value={minimumSettings.adminCashPercentage}
-                    onChange={(e) => setMinimumSettings({
-                      ...minimumSettings,
-                      adminCashPercentage: Number.parseFloat(e.target.value) || 0
-                    })}
+                    onChange={(e) =>
+                      setMinimumSettings({
+                        ...minimumSettings,
+                        adminCashPercentage:
+                          Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="3"
                     step="0.1"
@@ -1144,10 +1276,13 @@ const SalaryCalculationSettings: React.FC = () => {
                   <input
                     type="number"
                     value={minimumSettings.adminCarWashPercentage}
-                    onChange={(e) => setMinimumSettings({
-                      ...minimumSettings,
-                      adminCarWashPercentage: Number.parseFloat(e.target.value) || 0
-                    })}
+                    onChange={(e) =>
+                      setMinimumSettings({
+                        ...minimumSettings,
+                        adminCarWashPercentage:
+                          Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="2"
                     step="0.1"
@@ -1162,10 +1297,13 @@ const SalaryCalculationSettings: React.FC = () => {
                   <input
                     type="number"
                     value={minimumSettings.adminDrycleanPercentage}
-                    onChange={(e) => setMinimumSettings({
-                      ...minimumSettings,
-                      adminDrycleanPercentage: Number.parseFloat(e.target.value) || 0
-                    })}
+                    onChange={(e) =>
+                      setMinimumSettings({
+                        ...minimumSettings,
+                        adminDrycleanPercentage:
+                          Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="3"
                     step="0.1"
@@ -1188,7 +1326,7 @@ const SalaryCalculationSettings: React.FC = () => {
                     Сохранение...
                   </>
                 ) : (
-                  'Сохранить настройки'
+                  "Сохранить настройки"
                 )}
               </motion.button>
             </div>
@@ -1198,18 +1336,20 @@ const SalaryCalculationSettings: React.FC = () => {
 
       <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border">
         <p>
-          <span className="font-medium">Текущий метод:</span> {
-            state.salaryCalculationMethod === 'none'
-              ? 'Не выбран'
-              : 'Минимальная оплата + процент'
-          }
+          <span className="font-medium">Текущий метод:</span>{" "}
+          {state.salaryCalculationMethod === "none"
+            ? "Не выбран"
+            : "Минимальная оплата + процент"}
         </p>
         <p className="mt-1">
           <span className="font-medium">Дата изменения:</span> {(() => {
             try {
-              return format(parseISO(state.salaryCalculationDate), 'dd.MM.yyyy');
+              return format(
+                parseISO(state.salaryCalculationDate),
+                "dd.MM.yyyy",
+              );
             } catch (error) {
-              return 'Неверная дата';
+              return "Неверная дата";
             }
           })()}
         </p>
@@ -1228,10 +1368,10 @@ const OrganizationsInTotalSettings = () => {
     try {
       const current = state.organizationsInTotal || [];
       const isSelected = current.includes(orgId);
-      let newOrgs;
+      let newOrgs: string[];
 
       if (isSelected) {
-        newOrgs = current.filter(id => id !== orgId);
+        newOrgs = current.filter((id) => id !== orgId);
       } else {
         newOrgs = [...current, orgId];
       }
@@ -1239,16 +1379,16 @@ const OrganizationsInTotalSettings = () => {
       const success = await settingsService.saveOrganizationsInTotal(newOrgs);
       if (success) {
         dispatch({
-          type: 'SET_ORGANIZATIONS_IN_TOTAL',
-          payload: newOrgs
+          type: "SET_ORGANIZATIONS_IN_TOTAL",
+          payload: newOrgs,
         });
         toast.success('Настройки "Организации в Итого" сохранены');
       } else {
-        throw new Error('Ошибка сохранения');
+        throw new Error("Ошибка сохранения");
       }
     } catch (error) {
       console.error(error);
-      toast.error('Не удалось сохранить настройки');
+      toast.error("Не удалось сохранить настройки");
     } finally {
       setLoading(false);
     }
@@ -1256,41 +1396,66 @@ const OrganizationsInTotalSettings = () => {
 
   return (
     <motion.div
-      className="p-3 border border-border rounded-lg bg-card mt-4"
-      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-      transition={{ duration: 0.2 }}
+      className="p-4 sm:p-5 border border-border/60 rounded-xl bg-card/80 mt-2 shadow-sm"
+      whileHover={{
+        boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
+        borderColor: "hsl(var(--primary)/0.2)",
+      }}
+      transition={{ duration: 0.3 }}
     >
-      <h3 className="text-sm font-medium mb-2">Организации в Итого</h3>
-      <p className="text-xs text-muted-foreground mb-3">
-        Выберите организации, суммы которых будут вычитаться из общего безнала и отображаться отдельным пунктом в блоке «Итого» на главной странице.
+      <div className="flex items-center gap-2 mb-2">
+        <Building className="w-4 h-4 text-primary" />
+        <h3 className="text-base font-semibold">Организации в Итого</h3>
+      </div>
+      <p className="text-sm text-muted-foreground mb-5">
+        Выберите организации, суммы которых будут вычитаться из общего безнала и
+        отображаться отдельным пунктом в блоке «Итого» на главной странице.
       </p>
 
       {state.organizations.length === 0 ? (
-        <div className="text-xs text-muted-foreground p-3 border rounded-lg bg-muted/20 text-center">
+        <div className="text-xs text-muted-foreground p-4 border rounded-xl bg-muted/20 text-center">
           Нет добавленных организаций
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {state.organizations.map((org) => {
-            const isSelected = (state.organizationsInTotal || []).includes(org.id);
+            const isSelected = (state.organizationsInTotal || []).includes(
+              org.id,
+            );
             return (
               <motion.button
                 key={org.id}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => toggleOrganization(org.id)}
                 disabled={loading}
-                className={`p-3 border rounded-lg flex items-center justify-between transition-colors text-left ${
+                className={`relative overflow-hidden p-4 rounded-xl flex items-center justify-between transition-all duration-300 text-left border ${
                   isSelected
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:bg-secondary/10'
+                    ? "border-primary/50 shadow-md bg-gradient-to-br from-primary/5 to-primary/10"
+                    : "border-border/60 hover:border-primary/30 hover:shadow-sm bg-gradient-to-br from-background to-muted/20"
                 }`}
               >
-                <span className="text-sm font-medium truncate pr-2">{org.name}</span>
-                <div className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
-                  isSelected ? 'bg-primary border-primary' : 'border-input'
-                }`}>
-                  {isSelected && <Check className="w-3 h-3 text-white" />}
+                {/* Индикатор выбора сбоку (как в ролях) */}
+                <div
+                  className={`absolute left-0 top-0 bottom-0 w-1 transition-colors duration-300 ${isSelected ? "bg-primary" : "bg-transparent"}`}
+                />
+
+                <span
+                  className={`text-sm font-medium truncate pr-3 transition-colors duration-300 ${isSelected ? "text-primary" : "text-foreground"}`}
+                >
+                  {org.name}
+                </span>
+
+                <div
+                  className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center transition-all duration-300 ${
+                    isSelected
+                      ? "bg-primary border-primary text-primary-foreground shadow-sm"
+                      : "border-input text-transparent bg-background/50"
+                  }`}
+                >
+                  <Check
+                    className={`w-3 h-3 transition-opacity duration-300 ${isSelected ? "opacity-100" : "opacity-0"}`}
+                  />
                 </div>
               </motion.button>
             );
@@ -1305,7 +1470,6 @@ export default function SettingsPage() {
   return (
     <div className="p-3 sm:p-4 space-y-3">
       <SettingsContent />
-      <OrganizationsInTotalSettings />
     </div>
   );
-};
+}

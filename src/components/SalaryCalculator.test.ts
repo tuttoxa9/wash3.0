@@ -1,6 +1,10 @@
-import { expect, describe, it } from "bun:test";
+import { describe, expect, it } from "bun:test";
+import type {
+  CarWashRecord,
+  EmployeeRole,
+  MinimumPaymentSettings,
+} from "@/lib/types";
 import { SalaryCalculator } from "./SalaryCalculator";
-import type { CarWashRecord, MinimumPaymentSettings, EmployeeRole } from "@/lib/types";
 
 describe("SalaryCalculator", () => {
   const mockSettings: MinimumPaymentSettings = {
@@ -40,7 +44,12 @@ describe("SalaryCalculator", () => {
       },
     ];
 
-    const calculator = new SalaryCalculator(mockSettings, records, mockRoles, mockEmployees);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      mockRoles,
+      mockEmployees,
+    );
     const results = calculator.calculateSalaries();
     const w1Result = results.find((r) => r.employeeId === "w1");
 
@@ -66,7 +75,12 @@ describe("SalaryCalculator", () => {
       },
     ];
 
-    const calculator = new SalaryCalculator(mockSettings, records, mockRoles, mockEmployees);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      mockRoles,
+      mockEmployees,
+    );
     const results = calculator.calculateSalaries();
     const w1Result = results.find((r) => r.employeeId === "w1");
 
@@ -89,7 +103,12 @@ describe("SalaryCalculator", () => {
       },
     ];
 
-    const calculator = new SalaryCalculator(mockSettings, records, mockRoles, mockEmployees);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      mockRoles,
+      mockEmployees,
+    );
     const results = calculator.calculateSalaries();
     const w1Result = results.find((r) => r.employeeId === "w1");
     const w2Result = results.find((r) => r.employeeId === "w2");
@@ -116,7 +135,12 @@ describe("SalaryCalculator", () => {
       },
     ];
 
-    const calculator = new SalaryCalculator(mockSettings, records, mockRoles, mockEmployees);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      mockRoles,
+      mockEmployees,
+    );
     const results = calculator.calculateSalaries();
     const a1Result = results.find((r) => r.employeeId === "a1");
 
@@ -146,7 +170,12 @@ describe("SalaryCalculator", () => {
     const extraRoles = { ...mockRoles, a2: "admin" as EmployeeRole };
     const extraEmployees = [...mockEmployees, { id: "a2", name: "Admin 2" }];
 
-    const calculator = new SalaryCalculator(mockSettings, records, extraRoles, extraEmployees);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      extraRoles,
+      extraEmployees,
+    );
     const results = calculator.calculateSalaries();
     const a1Result = results.find((r) => r.employeeId === "a1");
     const a2Result = results.find((r) => r.employeeId === "a2");
@@ -175,7 +204,12 @@ describe("SalaryCalculator", () => {
       },
     ];
 
-    const calculator = new SalaryCalculator(mockSettings, records, mockRoles, mockEmployees);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      mockRoles,
+      mockEmployees,
+    );
     const results = calculator.calculateSalaries();
     const a1Result = results.find((r) => r.employeeId === "a1");
 
@@ -189,7 +223,7 @@ describe("SalaryCalculator", () => {
   });
 
   it("should handle dryclean percentage separately", () => {
-     const records: CarWashRecord[] = [
+    const records: CarWashRecord[] = [
       {
         id: "1",
         date: "2023-10-01",
@@ -203,7 +237,12 @@ describe("SalaryCalculator", () => {
       },
     ];
 
-    const calculator = new SalaryCalculator(mockSettings, records, mockRoles, mockEmployees);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      mockRoles,
+      mockEmployees,
+    );
     const results = calculator.calculateSalaries();
     const w1Result = results.find((r) => r.employeeId === "w1");
 
@@ -230,7 +269,13 @@ describe("SalaryCalculator", () => {
     // Override minimum for w1
     const override = { w1: false };
 
-    const calculator = new SalaryCalculator(mockSettings, records, mockRoles, mockEmployees, override);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      mockRoles,
+      mockEmployees,
+      override,
+    );
     const results = calculator.calculateSalaries();
     const w1Result = results.find((r) => r.employeeId === "w1");
 
@@ -240,7 +285,12 @@ describe("SalaryCalculator", () => {
   });
 
   it("should handle empty records", () => {
-    const calculator = new SalaryCalculator(mockSettings, [], mockRoles, mockEmployees);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      [],
+      mockRoles,
+      mockEmployees,
+    );
     const results = calculator.calculateSalaries();
 
     const w1Result = results.find((r) => r.employeeId === "w1");
@@ -251,7 +301,7 @@ describe("SalaryCalculator", () => {
   });
 
   it("should default unknown employee role to washer", () => {
-     const records: CarWashRecord[] = [
+    const records: CarWashRecord[] = [
       {
         id: "1",
         date: "2023-10-01",
@@ -264,10 +314,18 @@ describe("SalaryCalculator", () => {
         employeeIds: ["unknown"],
       },
     ];
-    const employeesWithUnknown = [...mockEmployees, { id: "unknown", name: "Unknown" }];
+    const employeesWithUnknown = [
+      ...mockEmployees,
+      { id: "unknown", name: "Unknown" },
+    ];
     // unknown not in mockRoles
 
-    const calculator = new SalaryCalculator(mockSettings, records, mockRoles, employeesWithUnknown);
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      mockRoles,
+      employeesWithUnknown,
+    );
     const results = calculator.calculateSalaries();
     const unknownResult = results.find((r) => r.employeeId === "unknown");
 

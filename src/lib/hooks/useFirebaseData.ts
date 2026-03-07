@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useAppContext } from '../context/AppContext';
-import { employeeService, serviceService, dailyReportService } from '../services/supabaseService';
-import { format } from 'date-fns';
+import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { useAppContext } from "../context/AppContext";
+import {
+  dailyReportService,
+  employeeService,
+  serviceService,
+} from "../services/supabaseService";
 
 // Хук для загрузки данных из Firebase
 export function useFirebaseData() {
@@ -9,7 +13,7 @@ export function useFirebaseData() {
   const [loading, setLoading] = useState({
     employees: true,
     services: true,
-    dailyReport: true
+    dailyReport: true,
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -18,12 +22,12 @@ export function useFirebaseData() {
     const loadEmployees = async () => {
       try {
         const employees = await employeeService.getAll();
-        dispatch({ type: 'SET_EMPLOYEES', payload: employees });
+        dispatch({ type: "SET_EMPLOYEES", payload: employees });
       } catch (err) {
-        console.error('Ошибка при загрузке сотрудников:', err);
-        setError('Не удалось загрузить список сотрудников');
+        console.error("Ошибка при загрузке сотрудников:", err);
+        setError("Не удалось загрузить список сотрудников");
       } finally {
-        setLoading(prev => ({ ...prev, employees: false }));
+        setLoading((prev) => ({ ...prev, employees: false }));
       }
     };
 
@@ -35,12 +39,12 @@ export function useFirebaseData() {
     const loadServices = async () => {
       try {
         const services = await serviceService.getAll();
-        dispatch({ type: 'SET_SERVICES', payload: services });
+        dispatch({ type: "SET_SERVICES", payload: services });
       } catch (err) {
-        console.error('Ошибка при загрузке услуг:', err);
-        setError('Не удалось загрузить список услуг');
+        console.error("Ошибка при загрузке услуг:", err);
+        setError("Не удалось загрузить список услуг");
       } finally {
-        setLoading(prev => ({ ...prev, services: false }));
+        setLoading((prev) => ({ ...prev, services: false }));
       }
     };
 
@@ -53,20 +57,20 @@ export function useFirebaseData() {
       if (!state.currentDate) return;
 
       try {
-        setLoading(prev => ({ ...prev, dailyReport: true }));
+        setLoading((prev) => ({ ...prev, dailyReport: true }));
         const report = await dailyReportService.getByDate(state.currentDate);
 
         if (report) {
           dispatch({
-            type: 'SET_DAILY_REPORT',
-            payload: { date: state.currentDate, report }
+            type: "SET_DAILY_REPORT",
+            payload: { date: state.currentDate, report },
           });
         }
       } catch (err) {
-        console.error('Ошибка при загрузке отчета:', err);
-        setError('Не удалось загрузить отчет за текущий день');
+        console.error("Ошибка при загрузке отчета:", err);
+        setError("Не удалось загрузить отчет за текущий день");
       } finally {
-        setLoading(prev => ({ ...prev, dailyReport: false }));
+        setLoading((prev) => ({ ...prev, dailyReport: false }));
       }
     };
 
@@ -75,14 +79,14 @@ export function useFirebaseData() {
 
   // Изменение текущей даты
   const changeDate = (date: Date) => {
-    const formattedDate = format(date, 'yyyy-MM-dd');
-    dispatch({ type: 'SET_CURRENT_DATE', payload: formattedDate });
+    const formattedDate = format(date, "yyyy-MM-dd");
+    dispatch({ type: "SET_CURRENT_DATE", payload: formattedDate });
   };
 
   return {
     loading,
     error,
     changeDate,
-    isLoading: Object.values(loading).some(Boolean)
+    isLoading: Object.values(loading).some(Boolean),
   };
 }

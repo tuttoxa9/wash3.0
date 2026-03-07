@@ -10,32 +10,35 @@ if (!rootElement) {
 createRoot(rootElement).render(<App />);
 
 // Регистрация Service Worker для PWA
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        updateViaCache: 'none' // Не кешируем сам service worker
+      const registration = await navigator.serviceWorker.register("/sw.js", {
+        updateViaCache: "none", // Не кешируем сам service worker
       });
 
-      console.log('[Main] SW registered: ', registration);
+      console.log("[Main] SW registered: ", registration);
 
       // Обработка обновлений service worker
-      registration.addEventListener('updatefound', () => {
+      registration.addEventListener("updatefound", () => {
         const newWorker = registration.installing;
         if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[Main] New SW available, updating...');
+          newWorker.addEventListener("statechange", () => {
+            if (
+              newWorker.state === "installed" &&
+              navigator.serviceWorker.controller
+            ) {
+              console.log("[Main] New SW available, updating...");
               // Принудительно активируем новый SW
-              newWorker.postMessage({ type: 'SKIP_WAITING' });
+              newWorker.postMessage({ type: "SKIP_WAITING" });
             }
           });
         }
       });
 
       // Обработка когда новый SW взял контроль
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('[Main] SW controller changed, reloading...');
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        console.log("[Main] SW controller changed, reloading...");
         window.location.reload();
       });
 
@@ -43,9 +46,8 @@ if ('serviceWorker' in navigator) {
       setInterval(() => {
         registration.update();
       }, 60000);
-
     } catch (registrationError) {
-      console.error('[Main] SW registration failed: ', registrationError);
+      console.error("[Main] SW registration failed: ", registrationError);
     }
   });
 }
@@ -53,8 +55,8 @@ if ('serviceWorker' in navigator) {
 // Обработка события установки PWA
 let deferredPrompt: any;
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  console.log('[Main] PWA install prompt intercepted');
+window.addEventListener("beforeinstallprompt", (e) => {
+  console.log("[Main] PWA install prompt intercepted");
   // Предотвращаем автоматический показ промпта
   e.preventDefault();
   // Сохраняем событие для последующего использования
@@ -63,8 +65,8 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // Обработка успешной установки PWA
-window.addEventListener('appinstalled', () => {
-  console.log('[Main] PWA installed successfully');
+window.addEventListener("appinstalled", () => {
+  console.log("[Main] PWA installed successfully");
   deferredPrompt = null;
   (window as any).deferredPrompt = null;
 });

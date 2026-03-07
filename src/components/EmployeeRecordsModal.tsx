@@ -1,15 +1,15 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { format, parseISO } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import type { CarWashRecord, Employee } from '@/lib/types';
-import { useAppContext } from '@/lib/context/AppContext';
+import { useAppContext } from "@/lib/context/AppContext";
+import type { CarWashRecord, Employee } from "@/lib/types";
+import { format, parseISO } from "date-fns";
+import { ru } from "date-fns/locale";
+import React, { useState, useMemo, useEffect } from "react";
 
+import AnalyticsModal from "./EmployeeRecords/AnalyticsModal";
+import DailyBreakdownModal from "./EmployeeRecords/DailyBreakdownModal";
+import MobileDayDetailsModal from "./EmployeeRecords/MobileDayDetailsModal";
 // Import sub-components
-import MobileDaysListModal from './EmployeeRecords/MobileDaysListModal';
-import MobileDayDetailsModal from './EmployeeRecords/MobileDayDetailsModal';
-import DailyBreakdownModal from './EmployeeRecords/DailyBreakdownModal';
-import AnalyticsModal from './EmployeeRecords/AnalyticsModal';
-import PaymentMethodDetailModal from './EmployeeRecords/PaymentMethodDetailModal';
+import MobileDaysListModal from "./EmployeeRecords/MobileDaysListModal";
+import PaymentMethodDetailModal from "./EmployeeRecords/PaymentMethodDetailModal";
 
 interface EmployeeRecordsModalProps {
   isOpen: boolean;
@@ -26,15 +26,20 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   employee,
   records,
   periodLabel,
-  dailyRoles = {}
+  dailyRoles = {},
 }) => {
   const { state } = useAppContext();
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showPaymentDetail, setShowPaymentDetail] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
-  const [paymentMethodRecords, setPaymentMethodRecords] = useState<CarWashRecord[]>([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<string>("");
+  const [paymentMethodRecords, setPaymentMethodRecords] = useState<
+    CarWashRecord[]
+  >([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedDateRecords, setSelectedDateRecords] = useState<CarWashRecord[]>([]);
+  const [selectedDateRecords, setSelectedDateRecords] = useState<
+    CarWashRecord[]
+  >([]);
 
   // Состояния для мобильной навигации
   const [isMobile, setIsMobile] = useState(false);
@@ -48,9 +53,9 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     };
 
     checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
+    window.addEventListener("resize", checkIsMobile);
 
-    return () => window.removeEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
   // При открытии модального окна показываем соответствующий интерфейс
@@ -66,7 +71,10 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   }, [isOpen, isMobile]);
 
   // Функция для обработки клика по способу оплаты
-  const handlePaymentMethodClick = (method: string, records: CarWashRecord[]) => {
+  const handlePaymentMethodClick = (
+    method: string,
+    records: CarWashRecord[],
+  ) => {
     setSelectedPaymentMethod(method);
     setPaymentMethodRecords(records);
     setShowAnalytics(false);
@@ -109,52 +117,64 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   };
 
   // Функция для расчёта заработка сотрудника от конкретной записи
-  const calculateEmployeeEarnings = React.useCallback((record: CarWashRecord, employeeId: string) => {
-    const recordDate = typeof record.date === 'string' ? record.date : format(record.date, 'yyyy-MM-dd');
+  const calculateEmployeeEarnings = React.useCallback(
+    (record: CarWashRecord, employeeId: string) => {
+      const recordDate =
+        typeof record.date === "string"
+          ? record.date
+          : format(record.date, "yyyy-MM-dd");
 
-    // Определяем роль сотрудника на дату записи
-    const employeeRole = dailyRoles[recordDate]?.[employeeId] || 'washer';
+      // Определяем роль сотрудника на дату записи
+      const employeeRole = dailyRoles[recordDate]?.[employeeId] || "washer";
 
-    // Всегда используем выбранный метод (минималка + %)
-    const methodToUse = state.salaryCalculationMethod;
+      // Всегда используем выбранный метод (минималка + %)
+      const methodToUse = state.salaryCalculationMethod;
 
-    if (methodToUse === 'minimumWithPercentage') {
-      const share = record.price / record.employeeIds.length;
-      const isDryClean = record.serviceType === 'dryclean';
+      if (methodToUse === "minimumWithPercentage") {
+        const share = record.price / record.employeeIds.length;
+        const isDryClean = record.serviceType === "dryclean";
 
-      if (employeeRole === 'washer') {
-        const percentage = isDryClean
-          ? state.minimumPaymentSettings.percentageWasherDryclean
-          : state.minimumPaymentSettings.percentageWasher;
-        return share * (percentage / 100);
-      } else if (employeeRole === 'admin') {
-        if (record.employeeIds.includes(employeeId)) {
+        if (employeeRole === "washer") {
           const percentage = isDryClean
-            ? state.minimumPaymentSettings.adminDrycleanPercentage
-            : state.minimumPaymentSettings.adminCarWashPercentage;
+            ? state.minimumPaymentSettings.percentageWasherDryclean
+            : state.minimumPaymentSettings.percentageWasher;
           return share * (percentage / 100);
+        } else if (employeeRole === "admin") {
+          if (record.employeeIds.includes(employeeId)) {
+            const percentage = isDryClean
+              ? state.minimumPaymentSettings.adminDrycleanPercentage
+              : state.minimumPaymentSettings.adminCarWashPercentage;
+            return share * (percentage / 100);
+          }
+          return 0;
         }
-        return 0;
       }
-    }
 
-    // Если метод не выбран или неизвестен, возвращаем 0
-    return 0;
-  }, [dailyRoles, state.salaryCalculationMethod, state.minimumPaymentSettings]);
+      // Если метод не выбран или неизвестен, возвращаем 0
+      return 0;
+    },
+    [dailyRoles, state.salaryCalculationMethod, state.minimumPaymentSettings],
+  );
 
   // Группировка записей по дням
   const groupedRecords = useMemo(() => {
-    const groups = records.reduce((acc, record) => {
-      const date = typeof record.date === 'string' ? record.date : format(record.date, 'yyyy-MM-dd');
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(record);
-      return acc;
-    }, {} as Record<string, CarWashRecord[]>);
+    const groups = records.reduce(
+      (acc, record) => {
+        const date =
+          typeof record.date === "string"
+            ? record.date
+            : format(record.date, "yyyy-MM-dd");
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        acc[date].push(record);
+        return acc;
+      },
+      {} as Record<string, CarWashRecord[]>,
+    );
 
     // Сортируем записи в каждом дне по времени
-    Object.keys(groups).forEach(date => {
+    Object.keys(groups).forEach((date) => {
       groups[date].sort((a, b) => {
         if (!a.time || !b.time) return 0;
         return a.time.localeCompare(b.time);
@@ -165,16 +185,16 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   }, [records]);
 
   // Сортировка дат
-  const sortedDates = useMemo(() =>
-    Object.keys(groupedRecords).sort((a, b) => b.localeCompare(a)),
-    [groupedRecords]
+  const sortedDates = useMemo(
+    () => Object.keys(groupedRecords).sort((a, b) => b.localeCompare(a)),
+    [groupedRecords],
   );
 
   // Детальная статистика
   const statistics = useMemo(() => {
     const totalRecords = records.length;
     const totalRevenue = records.reduce((sum, record) => {
-      return sum + (record.price / record.employeeIds.length);
+      return sum + record.price / record.employeeIds.length;
     }, 0);
 
     const totalEarnings = records.reduce((sum, record) => {
@@ -182,88 +202,149 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     }, 0);
 
     // Статистика по способам оплаты
-    const paymentStats = records.reduce((stats, record) => {
-      const method = record.paymentMethod.type;
-      const share = record.price / record.employeeIds.length;
+    const paymentStats = records.reduce(
+      (stats, record) => {
+        const method = record.paymentMethod.type;
+        const share = record.price / record.employeeIds.length;
 
-      if (!stats[method]) {
-        stats[method] = { count: 0, revenue: 0, earnings: 0, records: [] };
-      }
+        if (!stats[method]) {
+          stats[method] = { count: 0, revenue: 0, earnings: 0, records: [] };
+        }
 
-      stats[method].count++;
-      stats[method].revenue += share;
-      stats[method].earnings += calculateEmployeeEarnings(record, employee.id);
-      stats[method].records.push(record);
+        stats[method].count++;
+        stats[method].revenue += share;
+        stats[method].earnings += calculateEmployeeEarnings(
+          record,
+          employee.id,
+        );
+        stats[method].records.push(record);
 
-      return stats;
-    }, {} as Record<string, { count: number; revenue: number; earnings: number; records: CarWashRecord[] }>);
+        return stats;
+      },
+      {} as Record<
+        string,
+        {
+          count: number;
+          revenue: number;
+          earnings: number;
+          records: CarWashRecord[];
+        }
+      >,
+    );
 
     // Статистика по дням недели
-    const weekdayStats = records.reduce((stats, record) => {
-      const date = typeof record.date === 'string' ? parseISO(record.date) : record.date;
-      const weekday = format(date, 'EEEE', { locale: ru });
-      const share = record.price / record.employeeIds.length;
+    const weekdayStats = records.reduce(
+      (stats, record) => {
+        const date =
+          typeof record.date === "string" ? parseISO(record.date) : record.date;
+        const weekday = format(date, "EEEE", { locale: ru });
+        const share = record.price / record.employeeIds.length;
 
-      if (!stats[weekday]) {
-        stats[weekday] = { count: 0, revenue: 0, earnings: 0 };
-      }
+        if (!stats[weekday]) {
+          stats[weekday] = { count: 0, revenue: 0, earnings: 0 };
+        }
 
-      stats[weekday].count++;
-      stats[weekday].revenue += share;
-      stats[weekday].earnings += calculateEmployeeEarnings(record, employee.id);
+        stats[weekday].count++;
+        stats[weekday].revenue += share;
+        stats[weekday].earnings += calculateEmployeeEarnings(
+          record,
+          employee.id,
+        );
 
-      return stats;
-    }, {} as Record<string, { count: number; revenue: number; earnings: number }>);
+        return stats;
+      },
+      {} as Record<
+        string,
+        { count: number; revenue: number; earnings: number }
+      >,
+    );
 
     // Статистика по времени
-    const hourlyStats = records.reduce((stats, record) => {
-      if (!record.time) return stats;
+    const hourlyStats = records.reduce(
+      (stats, record) => {
+        if (!record.time) return stats;
 
-      const hour = parseInt(record.time.split(':')[0]);
-      const timeSlot = `${hour}:00-${hour + 1}:00`;
-      const share = record.price / record.employeeIds.length;
+        const hour = Number.parseInt(record.time.split(":")[0]);
+        const timeSlot = `${hour}:00-${hour + 1}:00`;
+        const share = record.price / record.employeeIds.length;
 
-      if (!stats[timeSlot]) {
-        stats[timeSlot] = { count: 0, revenue: 0, earnings: 0 };
-      }
+        if (!stats[timeSlot]) {
+          stats[timeSlot] = { count: 0, revenue: 0, earnings: 0 };
+        }
 
-      stats[timeSlot].count++;
-      stats[timeSlot].revenue += share;
-      stats[timeSlot].earnings += calculateEmployeeEarnings(record, employee.id);
+        stats[timeSlot].count++;
+        stats[timeSlot].revenue += share;
+        stats[timeSlot].earnings += calculateEmployeeEarnings(
+          record,
+          employee.id,
+        );
 
-      return stats;
-    }, {} as Record<string, { count: number; revenue: number; earnings: number }>);
+        return stats;
+      },
+      {} as Record<
+        string,
+        { count: number; revenue: number; earnings: number }
+      >,
+    );
 
     // Самые популярные услуги
-    const serviceStats = records.reduce((stats, record) => {
-      const service = record.service || 'Не указано';
-      const share = record.price / record.employeeIds.length;
+    const serviceStats = records.reduce(
+      (stats, record) => {
+        const service = record.service || "Не указано";
+        const share = record.price / record.employeeIds.length;
 
-      if (!stats[service]) {
-        stats[service] = { count: 0, revenue: 0, earnings: 0 };
-      }
+        if (!stats[service]) {
+          stats[service] = { count: 0, revenue: 0, earnings: 0 };
+        }
 
-      stats[service].count++;
-      stats[service].revenue += share;
-      stats[service].earnings += calculateEmployeeEarnings(record, employee.id);
+        stats[service].count++;
+        stats[service].revenue += share;
+        stats[service].earnings += calculateEmployeeEarnings(
+          record,
+          employee.id,
+        );
 
-      return stats;
-    }, {} as Record<string, { count: number; revenue: number; earnings: number }>);
+        return stats;
+      },
+      {} as Record<
+        string,
+        { count: number; revenue: number; earnings: number }
+      >,
+    );
 
     // Средние показатели
     const averageRevenue = totalRecords > 0 ? totalRevenue / totalRecords : 0;
     const averageEarnings = totalRecords > 0 ? totalEarnings / totalRecords : 0;
 
     // Лучший день
-    const bestDay = Object.entries(groupedRecords).reduce((best, [date, dayRecords]) => {
-      const dayRevenue = dayRecords.reduce((sum, record) => sum + (record.price / record.employeeIds.length), 0);
-      const dayEarnings = dayRecords.reduce((sum, record) => sum + calculateEmployeeEarnings(record, employee.id), 0);
+    const bestDay = Object.entries(groupedRecords).reduce(
+      (best, [date, dayRecords]) => {
+        const dayRevenue = dayRecords.reduce(
+          (sum, record) => sum + record.price / record.employeeIds.length,
+          0,
+        );
+        const dayEarnings = dayRecords.reduce(
+          (sum, record) => sum + calculateEmployeeEarnings(record, employee.id),
+          0,
+        );
 
-      if (dayEarnings > (best.earnings || 0)) {
-        return { date, count: dayRecords.length, revenue: dayRevenue, earnings: dayEarnings };
-      }
-      return best;
-    }, {} as { date?: string; count?: number; revenue?: number; earnings?: number });
+        if (dayEarnings > (best.earnings || 0)) {
+          return {
+            date,
+            count: dayRecords.length,
+            revenue: dayRevenue,
+            earnings: dayEarnings,
+          };
+        }
+        return best;
+      },
+      {} as {
+        date?: string;
+        count?: number;
+        revenue?: number;
+        earnings?: number;
+      },
+    );
 
     return {
       totalRecords,
@@ -275,9 +356,15 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
       weekdayStats,
       hourlyStats,
       serviceStats,
-      bestDay
+      bestDay,
     };
-  }, [records, employee.id, dailyRoles, groupedRecords, calculateEmployeeEarnings]);
+  }, [
+    records,
+    employee.id,
+    dailyRoles,
+    groupedRecords,
+    calculateEmployeeEarnings,
+  ]);
 
   if (!isOpen) return null;
 
@@ -308,7 +395,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
             onClose={handleMobileClose}
             onBack={handleMobileBackToDaysList}
             employee={employee}
-            selectedDate={selectedDate || ''}
+            selectedDate={selectedDate || ""}
             selectedDateRecords={selectedDateRecords}
             calculateEmployeeEarnings={calculateEmployeeEarnings}
           />

@@ -1,23 +1,35 @@
-import type React from 'react';
-import { useState, useEffect } from 'react';
-import { useAppContext } from '@/lib/context/AppContext';
-import { format, parseISO } from 'date-fns';
-import { Building, Calendar, Loader2, FileDown, X } from 'lucide-react';
-import { carWashService } from '@/lib/services/supabaseService';
-import type { CarWashRecord, Organization } from '@/lib/types';
-import { useToast } from '@/lib/hooks/useToast';
-import { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, TextRun, AlignmentType, BorderStyle } from 'docx';
-import { Packer } from 'docx';
-import { saveAs } from 'file-saver';
-import { ru } from 'date-fns/locale';
+import { useAppContext } from "@/lib/context/AppContext";
+import { useToast } from "@/lib/hooks/useToast";
+import { carWashService } from "@/lib/services/supabaseService";
+import type { CarWashRecord, Organization } from "@/lib/types";
+import { format, parseISO } from "date-fns";
+import { ru } from "date-fns/locale";
+import {
+  AlignmentType,
+  BorderStyle,
+  Document,
+  HeadingLevel,
+  Paragraph,
+  Table,
+  TableCell,
+  TableRow,
+  TextRun,
+} from "docx";
+import { Packer } from "docx";
+import { saveAs } from "file-saver";
+import { Building, Calendar, FileDown, Loader2, X } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
 
-type OrganizationsReportProps = {}
+type OrganizationsReportProps = {};
 
 const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
   const { state } = useAppContext();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<
+    string | null
+  >(null);
   const [records, setRecords] = useState<CarWashRecord[]>([]);
   const [startDate, setStartDate] = useState(() => {
     // По умолчанию начало текущего месяца
@@ -39,24 +51,27 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
 
       setLoading(true);
       try {
-        const fetchedRecords = await carWashService.getByOrganization(selectedOrganizationId);
+        const fetchedRecords = await carWashService.getByOrganization(
+          selectedOrganizationId,
+        );
 
         // Фильтрация по дате
-        const filteredRecords = fetchedRecords.filter(record => {
+        const filteredRecords = fetchedRecords.filter((record) => {
           try {
-            const recordDate = typeof record.date === 'string'
-              ? parseISO(record.date)
-              : new Date(record.date);
+            const recordDate =
+              typeof record.date === "string"
+                ? parseISO(record.date)
+                : new Date(record.date);
 
             // Проверяем валидность даты
             if (isNaN(recordDate.getTime())) {
-              console.warn('Невалидная дата в записи:', record.id, record.date);
+              console.warn("Невалидная дата в записи:", record.id, record.date);
               return false;
             }
 
             return recordDate >= startDate && recordDate <= endDate;
           } catch (error) {
-            console.error('Ошибка обработки даты:', error, record.date);
+            console.error("Ошибка обработки даты:", error, record.date);
             return false;
           }
         });
@@ -64,8 +79,10 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
         // Сортировка по дате (от новых к старым)
         filteredRecords.sort((a, b) => {
           try {
-            const dateA = typeof a.date === 'string' ? parseISO(a.date) : new Date(a.date);
-            const dateB = typeof b.date === 'string' ? parseISO(b.date) : new Date(b.date);
+            const dateA =
+              typeof a.date === "string" ? parseISO(a.date) : new Date(a.date);
+            const dateB =
+              typeof b.date === "string" ? parseISO(b.date) : new Date(b.date);
 
             // Проверяем валидность дат
             if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
@@ -74,15 +91,15 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
 
             return dateB.getTime() - dateA.getTime();
           } catch (error) {
-            console.error('Ошибка сортировки по дате:', error);
+            console.error("Ошибка сортировки по дате:", error);
             return 0;
           }
         });
 
         setRecords(filteredRecords);
       } catch (error) {
-        console.error('Ошибка при загрузке записей организации:', error);
-        toast.error('Ошибка при загрузке данных');
+        console.error("Ошибка при загрузке записей организации:", error);
+        toast.error("Ошибка при загрузке данных");
       } finally {
         setLoading(false);
       }
@@ -107,82 +124,139 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
 
   // Форматирование даты
   const formatDate = (date: Date | string) => {
-    return format(typeof date === 'string' ? parseISO(date) : date, 'dd.MM.yyyy');
+    return format(
+      typeof date === "string" ? parseISO(date) : date,
+      "dd.MM.yyyy",
+    );
   };
 
   // Функция для экспорта данных в Word
   const exportToWord = async () => {
     if (!selectedOrganizationId || records.length === 0) {
-      toast.error('Нет данных для экспорта');
+      toast.error("Нет данных для экспорта");
       return;
     }
 
     try {
       // Получаем название организации
-      const organizationName = state.organizations.find(org => org.id === selectedOrganizationId)?.name || 'Организация';
+      const organizationName =
+        state.organizations.find((org) => org.id === selectedOrganizationId)
+          ?.name || "Организация";
 
       // Создаем таблицу для отчета
       const tableRows = [
         new TableRow({
           children: [
             new TableCell({
-              children: [new Paragraph({ text: "№", alignment: AlignmentType.CENTER, bold: true })],
-              width: { size: 500, type: "dxa" }
+              children: [
+                new Paragraph({
+                  text: "№",
+                  alignment: AlignmentType.CENTER,
+                  bold: true,
+                }),
+              ],
+              width: { size: 500, type: "dxa" },
             }),
             new TableCell({
-              children: [new Paragraph({ text: "Дата", alignment: AlignmentType.CENTER, bold: true })],
-              width: { size: 1200, type: "dxa" }
+              children: [
+                new Paragraph({
+                  text: "Дата",
+                  alignment: AlignmentType.CENTER,
+                  bold: true,
+                }),
+              ],
+              width: { size: 1200, type: "dxa" },
             }),
             new TableCell({
-              children: [new Paragraph({ text: "Время", alignment: AlignmentType.CENTER, bold: true })],
-              width: { size: 1000, type: "dxa" }
+              children: [
+                new Paragraph({
+                  text: "Время",
+                  alignment: AlignmentType.CENTER,
+                  bold: true,
+                }),
+              ],
+              width: { size: 1000, type: "dxa" },
             }),
             new TableCell({
-              children: [new Paragraph({ text: "Авто", alignment: AlignmentType.CENTER, bold: true })],
-              width: { size: 2000, type: "dxa" }
+              children: [
+                new Paragraph({
+                  text: "Авто",
+                  alignment: AlignmentType.CENTER,
+                  bold: true,
+                }),
+              ],
+              width: { size: 2000, type: "dxa" },
             }),
             new TableCell({
-              children: [new Paragraph({ text: "Услуга", alignment: AlignmentType.CENTER, bold: true })],
-              width: { size: 2000, type: "dxa" }
+              children: [
+                new Paragraph({
+                  text: "Услуга",
+                  alignment: AlignmentType.CENTER,
+                  bold: true,
+                }),
+              ],
+              width: { size: 2000, type: "dxa" },
             }),
             new TableCell({
-              children: [new Paragraph({ text: "Стоимость", alignment: AlignmentType.CENTER, bold: true })],
-              width: { size: 1300, type: "dxa" }
+              children: [
+                new Paragraph({
+                  text: "Стоимость",
+                  alignment: AlignmentType.CENTER,
+                  bold: true,
+                }),
+              ],
+              width: { size: 1300, type: "dxa" },
             }),
           ],
-          tableHeader: true
-        })
+          tableHeader: true,
+        }),
       ];
 
       // Добавляем записи в таблицу
       records.forEach((record, index) => {
-        const recordDate = typeof record.date === 'string'
-          ? format(parseISO(record.date), 'dd.MM.yyyy', { locale: ru })
-          : format(new Date(record.date), 'dd.MM.yyyy', { locale: ru });
+        const recordDate =
+          typeof record.date === "string"
+            ? format(parseISO(record.date), "dd.MM.yyyy", { locale: ru })
+            : format(new Date(record.date), "dd.MM.yyyy", { locale: ru });
 
         tableRows.push(
           new TableRow({
             children: [
               new TableCell({
-                children: [new Paragraph({ text: (index + 1).toString(), alignment: AlignmentType.CENTER })]
+                children: [
+                  new Paragraph({
+                    text: (index + 1).toString(),
+                    alignment: AlignmentType.CENTER,
+                  }),
+                ],
               }),
               new TableCell({
-                children: [new Paragraph({ text: recordDate })]
+                children: [new Paragraph({ text: recordDate })],
               }),
               new TableCell({
-                children: [new Paragraph({ text: record.time || '-', alignment: AlignmentType.CENTER })]
+                children: [
+                  new Paragraph({
+                    text: record.time || "-",
+                    alignment: AlignmentType.CENTER,
+                  }),
+                ],
               }),
               new TableCell({
-                children: [new Paragraph({ text: record.carInfo || '' })]
+                children: [new Paragraph({ text: record.carInfo || "" })],
               }),
               new TableCell({
-                children: [new Paragraph({ text: record.service || '' })]
+                children: [new Paragraph({ text: record.service || "" })],
               }),
               new TableCell({
-                children: [new Paragraph({ text: record.price.toFixed(2), alignment: AlignmentType.RIGHT })]
+                children: [
+                  new Paragraph({
+                    text: record.price.toFixed(2),
+                    alignment: AlignmentType.RIGHT,
+                  }),
+                ],
               }),
-            ]
-          })
+            ],
+          }),
         );
       });
 
@@ -191,22 +265,26 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
         new TableRow({
           children: [
             new TableCell({
-              children: [new Paragraph({
-                text: "Итого:",
-                alignment: AlignmentType.RIGHT,
-                bold: true
-              })],
-              columnSpan: 5
+              children: [
+                new Paragraph({
+                  text: "Итого:",
+                  alignment: AlignmentType.RIGHT,
+                  bold: true,
+                }),
+              ],
+              columnSpan: 5,
             }),
             new TableCell({
-              children: [new Paragraph({
-                text: totalAmount.toFixed(2),
-                alignment: AlignmentType.RIGHT,
-                bold: true
-              })]
+              children: [
+                new Paragraph({
+                  text: totalAmount.toFixed(2),
+                  alignment: AlignmentType.RIGHT,
+                  bold: true,
+                }),
+              ],
             }),
-          ]
-        })
+          ],
+        }),
       );
 
       // Создаем документ
@@ -219,13 +297,13 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
               new Paragraph({
                 text: `Отчет по организации: ${organizationName}`,
                 heading: HeadingLevel.HEADING_1,
-                spacing: { after: 200 }
+                spacing: { after: 200 },
               }),
 
               // Период отчета
               new Paragraph({
                 text: `Период: ${formatDate(startDate)} - ${formatDate(endDate)}`,
-                spacing: { after: 200 }
+                spacing: { after: 200 },
               }),
 
               // Таблица отчета
@@ -234,45 +312,71 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
                 width: { size: 8000, type: "dxa" },
                 borders: {
                   top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-                  bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+                  bottom: {
+                    style: BorderStyle.SINGLE,
+                    size: 1,
+                    color: "000000",
+                  },
                   left: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-                  right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-                  insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-                  insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
-                }
+                  right: {
+                    style: BorderStyle.SINGLE,
+                    size: 1,
+                    color: "000000",
+                  },
+                  insideHorizontal: {
+                    style: BorderStyle.SINGLE,
+                    size: 1,
+                    color: "000000",
+                  },
+                  insideVertical: {
+                    style: BorderStyle.SINGLE,
+                    size: 1,
+                    color: "000000",
+                  },
+                },
               }),
 
               // Итоговая сумма и дата создания
               new Paragraph({
                 spacing: { before: 200, after: 100 },
-                children: [new TextRun({ text: `Итого: ${totalAmount.toFixed(2)} BYN`, bold: true })]
+                children: [
+                  new TextRun({
+                    text: `Итого: ${totalAmount.toFixed(2)} BYN`,
+                    bold: true,
+                  }),
+                ],
               }),
 
               new Paragraph({
                 spacing: { before: 100, after: 400 },
                 alignment: AlignmentType.RIGHT,
-                children: [new TextRun({ text: `Отчет сформирован: ${format(new Date(), 'dd.MM.yyyy HH:mm:ss', { locale: ru })}`, size: 18 })]
+                children: [
+                  new TextRun({
+                    text: `Отчет сформирован: ${format(new Date(), "dd.MM.yyyy HH:mm:ss", { locale: ru })}`,
+                    size: 18,
+                  }),
+                ],
               }),
 
               // Место для подписи
               new Paragraph({
                 text: "Подпись ответственного лица: ___________________",
-                spacing: { before: 400 }
+                spacing: { before: 400 },
               }),
-            ]
-          }
-        ]
+            ],
+          },
+        ],
       });
 
       // Сохраняем документ
       const blob = await Packer.toBlob(doc);
-      const fileName = `Отчет_${organizationName}_${format(new Date(), 'dd-MM-yyyy')}.docx`;
+      const fileName = `Отчет_${organizationName}_${format(new Date(), "dd-MM-yyyy")}.docx`;
       saveAs(blob, fileName);
 
-      toast.success('Документ успешно экспортирован');
+      toast.success("Документ успешно экспортирован");
     } catch (error) {
-      console.error('Ошибка при экспорте документа:', error);
-      toast.error('Ошибка при экспорте документа');
+      console.error("Ошибка при экспорте документа:", error);
+      toast.error("Ошибка при экспорте документа");
     }
   };
 
@@ -289,7 +393,9 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
           <div className="mb-4">
             <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
               <span className="font-medium">
-                {state.organizations.find(org => org.id === selectedOrganizationId)?.name || 'Организация'}
+                {state.organizations.find(
+                  (org) => org.id === selectedOrganizationId,
+                )?.name || "Организация"}
               </span>
               <button
                 onClick={clearSelection}
@@ -304,7 +410,7 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
           <div className="space-y-3">
             {state.organizations.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                {state.organizations.map(org => (
+                {state.organizations.map((org) => (
                   <button
                     key={org.id}
                     onClick={() => handleOrganizationSelect(org.id)}
@@ -317,7 +423,9 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
             ) : (
               <div className="text-center py-4 text-muted-foreground">
                 <p>Нет доступных организаций</p>
-                <p className="text-sm mt-1">Добавьте организации в разделе настроек</p>
+                <p className="text-sm mt-1">
+                  Добавьте организации в разделе настроек
+                </p>
               </div>
             )}
           </div>
@@ -341,7 +449,7 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
               </label>
               <input
                 type="date"
-                value={format(startDate, 'yyyy-MM-dd')}
+                value={format(startDate, "yyyy-MM-dd")}
                 onChange={(e) => setStartDate(new Date(e.target.value))}
                 className="px-3 py-1.5 border border-input rounded-lg"
               />
@@ -352,7 +460,7 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
               </label>
               <input
                 type="date"
-                value={format(endDate, 'yyyy-MM-dd')}
+                value={format(endDate, "yyyy-MM-dd")}
                 onChange={(e) => setEndDate(new Date(e.target.value))}
                 className="px-3 py-1.5 border border-input rounded-lg"
               />
@@ -366,7 +474,12 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
         <div className="card-with-shadow overflow-hidden">
           <div className="flex justify-between items-center p-4 border-b border-border">
             <h3 className="font-medium">
-              Отчет по организации: {state.organizations.find(org => org.id === selectedOrganizationId)?.name}
+              Отчет по организации:{" "}
+              {
+                state.organizations.find(
+                  (org) => org.id === selectedOrganizationId,
+                )?.name
+              }
             </h3>
             <button
               className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors text-sm"
@@ -387,26 +500,53 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
               <table className="w-full min-w-[600px]">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">Дата</th>
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">Время</th>
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">Авто</th>
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">Услуга</th>
-                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-right text-xs sm:text-sm font-medium">Стоимость</th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">
+                      Дата
+                    </th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">
+                      Время
+                    </th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">
+                      Авто
+                    </th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-left text-xs sm:text-sm font-medium">
+                      Услуга
+                    </th>
+                    <th className="py-2 px-2 sm:py-3 sm:px-4 text-right text-xs sm:text-sm font-medium">
+                      Стоимость
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {records.map(record => (
-                    <tr key={record.id} className="border-b border-border hover:bg-muted/30">
-                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{formatDate(record.date)}</td>
-                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{record.time}</td>
-                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{record.carInfo}</td>
-                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">{record.service}</td>
-                      <td className="py-3 px-4 text-right font-medium">{record.price.toFixed(2)}</td>
+                  {records.map((record) => (
+                    <tr
+                      key={record.id}
+                      className="border-b border-border hover:bg-muted/30"
+                    >
+                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">
+                        {formatDate(record.date)}
+                      </td>
+                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">
+                        {record.time}
+                      </td>
+                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">
+                        {record.carInfo}
+                      </td>
+                      <td className="py-2 px-2 sm:py-3 sm:px-4 text-xs sm:text-sm">
+                        {record.service}
+                      </td>
+                      <td className="py-3 px-4 text-right font-medium">
+                        {record.price.toFixed(2)}
+                      </td>
                     </tr>
                   ))}
                   <tr className="bg-secondary/20 font-medium">
-                    <td className="py-3 px-4" colSpan={4}>Итого:</td>
-                    <td className="py-3 px-4 text-right">{totalAmount.toFixed(2)} BYN</td>
+                    <td className="py-3 px-4" colSpan={4}>
+                      Итого:
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      {totalAmount.toFixed(2)} BYN
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -419,13 +559,17 @@ const OrganizationsReport: React.FC<OrganizationsReportProps> = () => {
 
               {/* Информация о создании */}
               <div className="mt-4 text-xs text-muted-foreground">
-                <p>Отчет сформирован: {format(new Date(), 'dd.MM.yyyy HH:mm:ss')}</p>
+                <p>
+                  Отчет сформирован: {format(new Date(), "dd.MM.yyyy HH:mm:ss")}
+                </p>
               </div>
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <p>Нет данных для отображения</p>
-              <p className="text-sm mt-1">Попробуйте изменить период отчета или выбрать другую организацию</p>
+              <p className="text-sm mt-1">
+                Попробуйте изменить период отчета или выбрать другую организацию
+              </p>
             </div>
           )}
         </div>

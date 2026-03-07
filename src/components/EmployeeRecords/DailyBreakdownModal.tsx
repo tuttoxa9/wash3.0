@@ -1,11 +1,11 @@
-import React from 'react';
-import { X, Calendar, BarChart3 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { format, parseISO } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import { useAppContext } from '@/lib/context/AppContext';
-import { getPaymentMethodColor, getPaymentMethodLabel } from './utils';
-import type { DailyBreakdownModalProps } from './types';
+import { useAppContext } from "@/lib/context/AppContext";
+import { format, parseISO } from "date-fns";
+import { ru } from "date-fns/locale";
+import { AnimatePresence, motion } from "framer-motion";
+import { BarChart3, Calendar, X } from "lucide-react";
+import type React from "react";
+import type { DailyBreakdownModalProps } from "./types";
+import { getPaymentMethodColor, getPaymentMethodLabel } from "./utils";
 
 const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
   isOpen,
@@ -19,7 +19,7 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
   selectedDate,
   selectedDateRecords,
   showAnalyticsButton = false,
-  onAnalyticsClick
+  onAnalyticsClick,
 }) => {
   const { state } = useAppContext();
 
@@ -48,20 +48,22 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
               <h2 className="text-lg font-semibold text-foreground">
                 Дни работы: {employee.name}
               </h2>
-              <p className="text-sm text-muted-foreground">
-                {periodLabel}
-              </p>
+              <p className="text-sm text-muted-foreground">{periodLabel}</p>
             </div>
 
             <div className="flex-1 overflow-y-auto p-3">
               <div className="space-y-2">
-                {sortedDates.map(date => {
+                {sortedDates.map((date) => {
                   const dayRecords = groupedRecords[date];
-                  const dayEarnings = dayRecords.reduce((sum, record) =>
-                    sum + calculateEmployeeEarnings(record, employee.id), 0
+                  const dayEarnings = dayRecords.reduce(
+                    (sum, record) =>
+                      sum + calculateEmployeeEarnings(record, employee.id),
+                    0,
                   );
-                  const dayRevenue = dayRecords.reduce((sum, record) =>
-                    sum + (record.price / record.employeeIds.length), 0
+                  const dayRevenue = dayRecords.reduce(
+                    (sum, record) =>
+                      sum + record.price / record.employeeIds.length,
+                    0,
                   );
 
                   return (
@@ -69,15 +71,17 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
                       key={date}
                       className={`p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
                         selectedDate === date
-                          ? 'bg-primary/10 border-primary'
-                          : 'bg-muted/20 border-border hover:bg-muted/40'
+                          ? "bg-primary/10 border-primary"
+                          : "bg-muted/20 border-border hover:bg-muted/40"
                       }`}
                       onClick={() => onDayClick(date, dayRecords)}
                     >
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="font-medium text-foreground">
-                            {format(parseISO(date), 'dd MMMM yyyy', { locale: ru })}
+                            {format(parseISO(date), "dd MMMM yyyy", {
+                              locale: ru,
+                            })}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {dayRecords.length} записей
@@ -104,7 +108,11 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
             <div className="p-4 border-b border-border flex justify-between items-center">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">
-                  {selectedDate ? format(parseISO(selectedDate), 'dd MMMM yyyy', { locale: ru }) : 'Выберите день'}
+                  {selectedDate
+                    ? format(parseISO(selectedDate), "dd MMMM yyyy", {
+                        locale: ru,
+                      })
+                    : "Выберите день"}
                 </h2>
                 {selectedDate && (
                   <p className="text-sm text-muted-foreground">
@@ -136,7 +144,7 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
             <div className="flex-1 overflow-y-auto p-3">
               {selectedDate && selectedDateRecords.length > 0 ? (
                 <div className="space-y-2">
-                  {selectedDateRecords.map(record => (
+                  {selectedDateRecords.map((record) => (
                     <div
                       key={record.id}
                       className="p-3 rounded-lg bg-muted/20 border border-border"
@@ -145,10 +153,16 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 text-sm mb-1">
                             <span className="text-muted-foreground">
-                              {record.time || '—'}
+                              {record.time || "—"}
                             </span>
-                            <span className={`px-2 py-0.5 rounded text-xs border ${getPaymentMethodColor(record.paymentMethod.type, state.theme)}`}>
-                              {getPaymentMethodLabel(record.paymentMethod.type, state.organizations, record.paymentMethod.organizationId)}
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs border ${getPaymentMethodColor(record.paymentMethod.type, state.theme)}`}
+                            >
+                              {getPaymentMethodLabel(
+                                record.paymentMethod.type,
+                                state.organizations,
+                                record.paymentMethod.organizationId,
+                              )}
                             </span>
                           </div>
                           <div className="font-medium text-sm truncate text-foreground">
@@ -160,7 +174,11 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
                         </div>
                         <div className="text-right ml-2">
                           <div className="text-sm font-bold text-green-600">
-                            +{calculateEmployeeEarnings(record, employee.id).toFixed(2)}
+                            +
+                            {calculateEmployeeEarnings(
+                              record,
+                              employee.id,
+                            ).toFixed(2)}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             из {record.price.toFixed(2)}

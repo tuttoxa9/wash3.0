@@ -1,6 +1,6 @@
-import type React from 'react';
-import { useRef, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from "framer-motion";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,10 +15,10 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   children,
   clickPosition = null,
-  className = ""
+  className = "",
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  const [origin, setOrigin] = useState({ x: '50%', y: '50%' });
+  const [origin, setOrigin] = useState({ x: "50%", y: "50%" });
 
   // Устанавливаем точку начала анимации на основе позиции клика
   useEffect(() => {
@@ -32,25 +32,28 @@ const Modal: React.FC<ModalProps> = ({
 
       setOrigin({ x: originX, y: originY });
     } else {
-      setOrigin({ x: '50%', y: '50%' });
+      setOrigin({ x: "50%", y: "50%" });
     }
   }, [clickPosition]);
 
   // Закрытие модального окна по клику вне его области
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     }
 
     // Добавляем обработчик только когда открыто модальное окно
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
 
@@ -67,9 +70,9 @@ const Modal: React.FC<ModalProps> = ({
           {/* Фоновое затемнение с постепенным блюром */}
           <motion.div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-            animate={{ opacity: 1, backdropFilter: 'blur(4px)' }}
-            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(4px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.3 }}
           />
 
@@ -79,24 +82,24 @@ const Modal: React.FC<ModalProps> = ({
             className={`mobile-modal relative z-10 bg-card text-card-foreground rounded-2xl shadow-lg w-full max-w-lg sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto ${className}`}
             style={{
               originX: origin.x,
-              originY: origin.y
+              originY: origin.y,
             }}
             initial={{
               opacity: 0,
-              scale: 0.5
+              scale: 0.5,
             }}
             animate={{
               opacity: 1,
-              scale: 1
+              scale: 1,
             }}
             exit={{
               opacity: 0,
-              scale: 0.75
+              scale: 0.75,
             }}
             transition={{
               type: "spring",
               damping: 20,
-              stiffness: 300
+              stiffness: 300,
             }}
           >
             {children}

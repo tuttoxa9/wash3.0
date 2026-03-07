@@ -1,4 +1,8 @@
-import type { CarWashRecord, MinimumPaymentSettings, EmployeeRole } from '@/lib/types';
+import type {
+  CarWashRecord,
+  EmployeeRole,
+  MinimumPaymentSettings,
+} from "@/lib/types";
 
 // Флаг отключения минимальной оплаты по сотруднику на день
 export type MinimumOverrideMap = Record<string, boolean>; // true = учитывать минималку, false = не учитывать
@@ -35,7 +39,7 @@ export class SalaryCalculator {
     records: CarWashRecord[],
     employeeRoles: Record<string, EmployeeRole>,
     employees: Array<{ id: string; name: string }>,
-    minimumOverride: MinimumOverrideMap = {}
+    minimumOverride: MinimumOverrideMap = {},
   ) {
     this.settings = settings;
     this.records = records;
@@ -46,19 +50,19 @@ export class SalaryCalculator {
 
   // Основной метод для расчёта зарплат всех сотрудников
   calculateSalaries(): SalaryCalculationResult[] {
-    console.log('=== ОТЛАДКА SALARY CALCULATOR ===');
-    console.log('minimumOverride карта:', this.minimumOverride);
+    console.log("=== ОТЛАДКА SALARY CALCULATOR ===");
+    console.log("minimumOverride карта:", this.minimumOverride);
     const results: SalaryCalculationResult[] = [];
 
     // Получаем всех участников (из ролей и из записей)
     const allEmployeeIds = new Set<string>();
 
     // Добавляем всех из ролей
-    Object.keys(this.employeeRoles).forEach(id => allEmployeeIds.add(id));
+    Object.keys(this.employeeRoles).forEach((id) => allEmployeeIds.add(id));
 
     // Добавляем всех из записей
-    this.records.forEach(record => {
-      record.employeeIds.forEach(id => allEmployeeIds.add(id));
+    this.records.forEach((record) => {
+      record.employeeIds.forEach((id) => allEmployeeIds.add(id));
     });
 
     // Рассчитываем общую выручку
@@ -68,12 +72,18 @@ export class SalaryCalculator {
     const adminCount = this.getAdminCount();
 
     // Рассчитываем зарплату для каждого сотрудника
-    allEmployeeIds.forEach(employeeId => {
-      const employee = this.employees.find(emp => emp.id === employeeId);
+    allEmployeeIds.forEach((employeeId) => {
+      const employee = this.employees.find((emp) => emp.id === employeeId);
       if (!employee) return;
 
-      const role = this.employeeRoles[employeeId] || 'washer';
-      const result = this.calculateEmployeeSalary(employeeId, employee.name, role, totalRevenue, adminCount);
+      const role = this.employeeRoles[employeeId] || "washer";
+      const result = this.calculateEmployeeSalary(
+        employeeId,
+        employee.name,
+        role,
+        totalRevenue,
+        adminCount,
+      );
       results.push(result);
     });
 
@@ -86,15 +96,24 @@ export class SalaryCalculator {
     employeeName: string,
     role: EmployeeRole,
     totalRevenue: number,
-    adminCount: number
+    adminCount: number,
   ): SalaryCalculationResult {
-
     const personalRevenue = this.calculatePersonalRevenue(employeeId);
 
-    if (role === 'admin') {
-      return this.calculateAdminSalary(employeeId, employeeName, totalRevenue, personalRevenue, adminCount);
+    if (role === "admin") {
+      return this.calculateAdminSalary(
+        employeeId,
+        employeeName,
+        totalRevenue,
+        personalRevenue,
+        adminCount,
+      );
     } else {
-      return this.calculateWasherSalary(employeeId, employeeName, personalRevenue);
+      return this.calculateWasherSalary(
+        employeeId,
+        employeeName,
+        personalRevenue,
+      );
     }
   }
 
@@ -104,21 +123,30 @@ export class SalaryCalculator {
     employeeName: string,
     totalRevenue: number,
     personalRevenue: number,
-    adminCount: number
+    adminCount: number,
   ): SalaryCalculationResult {
-
     // 1. Базовый процент от общей выручки (делится между всеми админами)
-    const baseCashBonus = adminCount > 0
-      ? (totalRevenue * (this.settings.adminCashPercentage / 100)) / adminCount
-      : totalRevenue * (this.settings.adminCashPercentage / 100);
+    const baseCashBonus =
+      adminCount > 0
+        ? (totalRevenue * (this.settings.adminCashPercentage / 100)) /
+          adminCount
+        : totalRevenue * (this.settings.adminCashPercentage / 100);
 
     // 2. Процент от машин, которые лично помыл этот админ (мойка)
-    const personalWashRevenue = this.calculatePersonalRevenueByType(employeeId, 'wash');
-    const washBonus = personalWashRevenue * (this.settings.adminCarWashPercentage / 100);
+    const personalWashRevenue = this.calculatePersonalRevenueByType(
+      employeeId,
+      "wash",
+    );
+    const washBonus =
+      personalWashRevenue * (this.settings.adminCarWashPercentage / 100);
 
     // 3. Процент от химчистки, которую лично выполнил этот админ
-    const personalDrycleanRevenue = this.calculatePersonalRevenueByType(employeeId, 'dryclean');
-    const drycleanBonus = personalDrycleanRevenue * (this.settings.adminDrycleanPercentage / 100);
+    const personalDrycleanRevenue = this.calculatePersonalRevenueByType(
+      employeeId,
+      "dryclean",
+    );
+    const drycleanBonus =
+      personalDrycleanRevenue * (this.settings.adminDrycleanPercentage / 100);
 
     // 4. Общий доход от процентов
     const totalPercentageEarnings = baseCashBonus + washBonus + drycleanBonus;
@@ -132,15 +160,17 @@ export class SalaryCalculator {
     return {
       employeeId,
       employeeName,
-      role: 'admin',
+      role: "admin",
       totalPersonalRevenue: personalRevenue,
       calculatedSalary: finalAmount,
       breakdown: {
         adminCashBonus: baseCashBonus,
         adminCarWashBonus: washBonus + drycleanBonus,
-        minimumGuaranteed: respectMinimum ? this.settings.minimumPaymentAdmin : 0,
-        finalAmount
-      }
+        minimumGuaranteed: respectMinimum
+          ? this.settings.minimumPaymentAdmin
+          : 0,
+        finalAmount,
+      },
     };
   }
 
@@ -148,16 +178,23 @@ export class SalaryCalculator {
   private calculateWasherSalary(
     employeeId: string,
     employeeName: string,
-    personalRevenue: number
+    personalRevenue: number,
   ): SalaryCalculationResult {
-
     // 1. Процент от машин, которые лично помыл (мойка)
-    const personalWashRevenue = this.calculatePersonalRevenueByType(employeeId, 'wash');
-    const washEarnings = personalWashRevenue * (this.settings.percentageWasher / 100);
+    const personalWashRevenue = this.calculatePersonalRevenueByType(
+      employeeId,
+      "wash",
+    );
+    const washEarnings =
+      personalWashRevenue * (this.settings.percentageWasher / 100);
 
     // 2. Процент от химчистки, которую лично выполнил
-    const personalDrycleanRevenue = this.calculatePersonalRevenueByType(employeeId, 'dryclean');
-    const drycleanEarnings = personalDrycleanRevenue * (this.settings.percentageWasherDryclean / 100);
+    const personalDrycleanRevenue = this.calculatePersonalRevenueByType(
+      employeeId,
+      "dryclean",
+    );
+    const drycleanEarnings =
+      personalDrycleanRevenue * (this.settings.percentageWasherDryclean / 100);
 
     // 3. Общий доход от процентов
     const percentageEarnings = washEarnings + drycleanEarnings;
@@ -171,14 +208,16 @@ export class SalaryCalculator {
     return {
       employeeId,
       employeeName,
-      role: 'washer',
+      role: "washer",
       totalPersonalRevenue: personalRevenue,
       calculatedSalary: finalAmount,
       breakdown: {
         washerPercentage: percentageEarnings,
-        minimumGuaranteed: respectMinimum ? this.settings.minimumPaymentWasher : 0,
-        finalAmount
-      }
+        minimumGuaranteed: respectMinimum
+          ? this.settings.minimumPaymentWasher
+          : 0,
+        finalAmount,
+      },
     };
   }
 
@@ -188,7 +227,7 @@ export class SalaryCalculator {
   private calculatePersonalRevenue(employeeId: string): number {
     let personalRevenue = 0;
 
-    this.records.forEach(record => {
+    this.records.forEach((record) => {
       if (record.employeeIds.includes(employeeId)) {
         // Доля сотрудника от стоимости машины
         const employeeShare = record.price / record.employeeIds.length;
@@ -200,14 +239,20 @@ export class SalaryCalculator {
   }
 
   // Расчёт личного дохода сотрудника по типу услуги
-  private calculatePersonalRevenueByType(employeeId: string, serviceType: 'wash' | 'dryclean'): number {
+  private calculatePersonalRevenueByType(
+    employeeId: string,
+    serviceType: "wash" | "dryclean",
+  ): number {
     let personalRevenue = 0;
 
-    this.records.forEach(record => {
+    this.records.forEach((record) => {
       // Если тип услуги не указан, считаем мойкой для обратной совместимости
-      const recordServiceType = record.serviceType || 'wash';
+      const recordServiceType = record.serviceType || "wash";
 
-      if (record.employeeIds.includes(employeeId) && recordServiceType === serviceType) {
+      if (
+        record.employeeIds.includes(employeeId) &&
+        recordServiceType === serviceType
+      ) {
         // Доля сотрудника от стоимости машины
         const employeeShare = record.price / record.employeeIds.length;
         personalRevenue += employeeShare;
@@ -224,12 +269,16 @@ export class SalaryCalculator {
 
   // Подсчёт количества админов
   private getAdminCount(): number {
-    return Object.values(this.employeeRoles).filter(role => role === 'admin').length;
+    return Object.values(this.employeeRoles).filter((role) => role === "admin")
+      .length;
   }
 
   // Получение сводной информации
   getTotalSalarySum(): number {
-    return this.calculateSalaries().reduce((sum, result) => sum + result.calculatedSalary, 0);
+    return this.calculateSalaries().reduce(
+      (sum, result) => sum + result.calculatedSalary,
+      0,
+    );
   }
 
   getTotalRevenue(): number {
@@ -239,22 +288,28 @@ export class SalaryCalculator {
   // Метод для получения разбивки по типам оплат
   getPaymentBreakdown() {
     const cash = this.records
-      .filter(r => r.paymentMethod.type === 'cash')
+      .filter((r) => r.paymentMethod.type === "cash")
       .reduce((sum, r) => sum + r.price, 0);
 
     const card = this.records
-      .filter(r => r.paymentMethod.type === 'card')
+      .filter((r) => r.paymentMethod.type === "card")
       .reduce((sum, r) => sum + r.price, 0);
 
     const organization = this.records
-      .filter(r => r.paymentMethod.type === 'organization')
+      .filter((r) => r.paymentMethod.type === "organization")
       .reduce((sum, r) => sum + r.price, 0);
 
     const debt = this.records
-      .filter(r => r.paymentMethod.type === 'debt')
+      .filter((r) => r.paymentMethod.type === "debt")
       .reduce((sum, r) => sum + r.price, 0);
 
-    return { cash, card, organization, debt, total: cash + card + organization + debt };
+    return {
+      cash,
+      card,
+      organization,
+      debt,
+      total: cash + card + organization + debt,
+    };
   }
 }
 
@@ -264,7 +319,13 @@ export function createSalaryCalculator(
   records: CarWashRecord[],
   employeeRoles: Record<string, EmployeeRole>,
   employees: Array<{ id: string; name: string }>,
-  minimumOverride: MinimumOverrideMap = {}
+  minimumOverride: MinimumOverrideMap = {},
 ): SalaryCalculator {
-  return new SalaryCalculator(settings, records, employeeRoles, employees, minimumOverride);
+  return new SalaryCalculator(
+    settings,
+    records,
+    employeeRoles,
+    employees,
+    minimumOverride,
+  );
 }

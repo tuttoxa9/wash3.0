@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/lib/context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import AnimatedBackground from "@/components/ui/AnimatedBackground";
+import { useAuth } from "@/lib/context/AuthContext";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");

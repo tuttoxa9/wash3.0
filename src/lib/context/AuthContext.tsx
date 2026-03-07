@@ -1,12 +1,24 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import type { User, Session, SignInWithPasswordCredentials } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase } from "@/lib/supabase";
+import type {
+  Session,
+  SignInWithPasswordCredentials,
+  User,
+} from "@supabase/supabase-js";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  login: (credentials: SignInWithPasswordCredentials) => Promise<{ error: any }>;
+  login: (
+    credentials: SignInWithPasswordCredentials,
+  ) => Promise<{ error: any }>;
   logout: () => Promise<{ error: any }>;
 }
 
@@ -71,9 +83,5 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

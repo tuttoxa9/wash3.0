@@ -1,4 +1,4 @@
-import type { CarWashRecord, Employee } from '@/lib/types';
+import type { CarWashRecord, Employee } from "@/lib/types";
 
 export interface AnalyticsModalProps {
   isOpen: boolean;
@@ -25,7 +25,10 @@ export interface DailyBreakdownModalProps {
   groupedRecords: Record<string, CarWashRecord[]>;
   sortedDates: string[];
   periodLabel: string;
-  calculateEmployeeEarnings: (record: CarWashRecord, employeeId: string) => number;
+  calculateEmployeeEarnings: (
+    record: CarWashRecord,
+    employeeId: string,
+  ) => number;
   onDayClick: (date: string, dayRecords: CarWashRecord[]) => void;
   selectedDate: string | null;
   selectedDateRecords: CarWashRecord[];

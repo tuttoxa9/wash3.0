@@ -1,11 +1,11 @@
-import type React from 'react';
-import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
-import { Menu } from 'lucide-react';
-import Sidebar from './Sidebar';
-import { Toaster, toast } from 'sonner';
-import NotificationPanel from '@/components/NotificationPanel';
-import { useNotifications } from '@/lib/context/NotificationContext';
+import NotificationPanel from "@/components/NotificationPanel";
+import { useNotifications } from "@/lib/context/NotificationContext";
+import { Menu } from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
+import { Toaster, toast } from "sonner";
+import Sidebar from "./Sidebar";
 
 const Layout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -17,27 +17,27 @@ const Layout: React.FC = () => {
       success: toast.success,
       error: toast.error,
       info: toast.info,
-      warning: toast.warning
+      warning: toast.warning,
     };
 
     // Переопределяем функции toast
     toast.success = (message: string) => {
-      addNotification({ type: 'success', title: message });
+      addNotification({ type: "success", title: message });
       return originalToast.success(message);
     };
 
     toast.error = (message: string) => {
-      addNotification({ type: 'error', title: message });
+      addNotification({ type: "error", title: message });
       return originalToast.error(message);
     };
 
     toast.info = (message: string) => {
-      addNotification({ type: 'info', title: message });
+      addNotification({ type: "info", title: message });
       return originalToast.info(message);
     };
 
     toast.warning = (message: string) => {
-      addNotification({ type: 'warning', title: message });
+      addNotification({ type: "warning", title: message });
       return originalToast.warning(message);
     };
 
@@ -51,7 +51,7 @@ const Layout: React.FC = () => {
   }, [addNotification]);
 
   const toggleMobileSidebar = () => {
-    setIsMobileSidebarOpen(prev => !prev);
+    setIsMobileSidebarOpen((prev) => !prev);
   };
 
   return (
@@ -75,7 +75,9 @@ const Layout: React.FC = () => {
               >
                 <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
-              <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">Detail Lab</h1>
+              <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">
+                Detail Lab
+              </h1>
             </div>
             <NotificationPanel />
           </div>
@@ -83,7 +85,6 @@ const Layout: React.FC = () => {
 
         {/* Контент с отступами */}
         <div className="p-3 sm:p-4 md:p-6">
-
           {/* Шапка для десктопа */}
           <div className="hidden md:flex justify-end mb-4">
             <NotificationPanel />
@@ -103,7 +104,7 @@ const Layout: React.FC = () => {
         visibleToasts={0}
         toastOptions={{
           duration: 1,
-          style: { display: 'none' }
+          style: { display: "none" },
         }}
       />
     </div>
