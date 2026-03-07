@@ -1218,10 +1218,94 @@ const SalaryCalculationSettings: React.FC = () => {
   );
 };
 
+// Новый компонент для настройки "Организации в Итого"
+const OrganizationsInTotalSettings = () => {
+  const { state, dispatch } = useAppContext();
+  const [loading, setLoading] = useState(false);
+
+  const toggleOrganization = async (orgId: string) => {
+    setLoading(true);
+    try {
+      const current = state.organizationsInTotal || [];
+      const isSelected = current.includes(orgId);
+      let newOrgs;
+
+      if (isSelected) {
+        newOrgs = current.filter(id => id !== orgId);
+      } else {
+        newOrgs = [...current, orgId];
+      }
+
+      const success = await settingsService.saveOrganizationsInTotal(newOrgs);
+      if (success) {
+        dispatch({
+          type: 'SET_ORGANIZATIONS_IN_TOTAL',
+          payload: newOrgs
+        });
+        toast.success('Настройки "Организации в Итого" сохранены');
+      } else {
+        throw new Error('Ошибка сохранения');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Не удалось сохранить настройки');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      className="p-3 border border-border rounded-lg bg-card mt-4"
+      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
+      transition={{ duration: 0.2 }}
+    >
+      <h3 className="text-sm font-medium mb-2">Организации в Итого</h3>
+      <p className="text-xs text-muted-foreground mb-3">
+        Выберите организации, суммы которых будут вычитаться из общего безнала и отображаться отдельным пунктом в блоке «Итого» на главной странице.
+      </p>
+
+      {state.organizations.length === 0 ? (
+        <div className="text-xs text-muted-foreground p-3 border rounded-lg bg-muted/20 text-center">
+          Нет добавленных организаций
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {state.organizations.map((org) => {
+            const isSelected = (state.organizationsInTotal || []).includes(org.id);
+            return (
+              <motion.button
+                key={org.id}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => toggleOrganization(org.id)}
+                disabled={loading}
+                className={`p-3 border rounded-lg flex items-center justify-between transition-colors text-left ${
+                  isSelected
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:bg-secondary/10'
+                }`}
+              >
+                <span className="text-sm font-medium truncate pr-2">{org.name}</span>
+                <div className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
+                  isSelected ? 'bg-primary border-primary' : 'border-input'
+                }`}>
+                  {isSelected && <Check className="w-3 h-3 text-white" />}
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
 export default function SettingsPage() {
   return (
     <div className="p-3 sm:p-4 space-y-3">
       <SettingsContent />
+      <OrganizationsInTotalSettings />
     </div>
   );
 };

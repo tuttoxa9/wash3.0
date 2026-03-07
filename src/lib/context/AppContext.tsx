@@ -22,7 +22,8 @@ const initialState: AppState = {
     adminCashPercentage: 3,
     adminCarWashPercentage: 2,
     adminDrycleanPercentage: 3
-  }
+  },
+  organizationsInTotal: []
 };
 
 // Создаем контекст
@@ -161,6 +162,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         minimumPaymentSettings: action.payload
       };
+    case 'SET_ORGANIZATIONS_IN_TOTAL':
+      localStorage.setItem('organizationsInTotal', JSON.stringify(action.payload));
+      return {
+        ...state,
+        organizationsInTotal: action.payload
+      };
     default:
       return state;
   }
@@ -192,12 +199,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const savedOrgsInTotal = localStorage.getItem('organizationsInTotal');
+  let parsedOrgsInTotal = initialState.organizationsInTotal;
+  if (savedOrgsInTotal) {
+    try {
+      parsedOrgsInTotal = JSON.parse(savedOrgsInTotal);
+    } catch (error) {
+      console.error('Ошибка при парсинге организаций в итого:', error);
+    }
+  }
+
   const initialStateWithSaved = {
     ...initialState,
     theme: savedTheme || initialState.theme,
     salaryCalculationMethod: 'minimumWithPercentage', // Принудительно устанавливаем единственный метод
     salaryCalculationDate: savedSalaryDate || initialState.salaryCalculationDate,
-    minimumPaymentSettings: parsedMinimumPaymentSettings
+    minimumPaymentSettings: parsedMinimumPaymentSettings,
+    organizationsInTotal: parsedOrgsInTotal
   };
 
   const [state, dispatch] = useReducer(appReducer, initialStateWithSaved);
@@ -294,6 +312,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
             payload: minimumPaymentSettings
           });
           console.log('Настройки минимальной оплаты загружены из базы данных:', minimumPaymentSettings);
+        }
+
+        // Загружаем настройки организаций в итого из базы данных
+        const orgsInTotal = await settingsService.getOrganizationsInTotal();
+        if (orgsInTotal) {
+          dispatch({
+            type: 'SET_ORGANIZATIONS_IN_TOTAL',
+            payload: orgsInTotal
+          });
+          console.log('Настройки организаций в итого загружены из БД:', orgsInTotal);
         }
       } catch (error) {
         console.error('Ошибка при загрузке данных при запуске:', error);

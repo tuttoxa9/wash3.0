@@ -54,7 +54,7 @@ export interface DailyReport {
   totalNonCash: number; // Сумма безналичных платежей
   dailyEmployeeRoles?: Record<string, EmployeeRole>; // Ежедневные роли сотрудников (employeeId -> role)
   manualSalaries?: Record<string, number>; // Ручные изменения зарплат (employeeId -> amount)
-  // Дополнительные поля могут быть добавлены по мере необходимости
+  notes?: { id: string, text: string, createdAt: string }[]; // Заметки по смене
 }
 
 // Тип для записи на мойку (предварительная запись)
@@ -102,6 +102,7 @@ export interface AppState {
   salaryCalculationMethod: SalaryCalculationMethod; // Метод расчета зарплаты
   salaryCalculationDate: string; // Дата изменения метода расчета зарплаты в формате YYYY-MM-DD
   minimumPaymentSettings: MinimumPaymentSettings; // Настройки минимальной оплаты
+  organizationsInTotal: string[]; // ID организаций, которые считаются в Итого
 }
 
 // Типы действий для редьюсера
@@ -125,4 +126,5 @@ export type AppAction =
   | { type: 'UPDATE_APPOINTMENT'; payload: Appointment }
   | { type: 'REMOVE_APPOINTMENT'; payload: string } // payload - id записи
   | { type: 'SET_SALARY_CALCULATION_METHOD'; payload: { method: SalaryCalculationMethod, date: string } }
-  | { type: 'SET_MINIMUM_PAYMENT_SETTINGS'; payload: MinimumPaymentSettings };
+  | { type: 'SET_MINIMUM_PAYMENT_SETTINGS'; payload: MinimumPaymentSettings }
+  | { type: 'SET_ORGANIZATIONS_IN_TOTAL'; payload: string[] };

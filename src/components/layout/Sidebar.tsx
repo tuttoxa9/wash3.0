@@ -1,9 +1,12 @@
-import type React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download, LogOut } from 'lucide-react';
+import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download, LogOut, StickyNote, Plus, Trash2 } from 'lucide-react';
 import { useAppContext } from '@/lib/context/AppContext';
 import { useAuth } from '@/lib/context/AuthContext';
+import { dailyReportService } from '@/lib/services/supabaseService';
+import { toast } from 'sonner';
 import type { ThemeMode } from '@/lib/types';
+import Modal from '@/components/ui/modal';
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -13,6 +16,73 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) => {
   const { state, dispatch } = useAppContext();
   const { logout } = useAuth();
+
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [newNoteText, setNewNoteText] = useState('');
+
+  const currentReport = state.dailyReports[state.currentDate];
+  const notes = currentReport?.notes || [];
+
+  const handleAddNote = async () => {
+    if (!newNoteText.trim()) return;
+    if (!currentReport) {
+      toast.error('Сначала начните смену');
+      return;
+    }
+
+    const newNote = {
+      id: crypto.randomUUID(),
+      text: newNoteText.trim(),
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedReport = {
+      ...currentReport,
+      notes: [...notes, newNote]
+    };
+
+    try {
+      const success = await dailyReportService.updateReport(updatedReport);
+      if (success) {
+        dispatch({
+          type: 'SET_DAILY_REPORT',
+          payload: { date: state.currentDate, report: updatedReport }
+        });
+        setNewNoteText('');
+        toast.success('Заметка добавлена');
+      } else {
+        toast.error('Не удалось сохранить заметку');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Ошибка при сохранении заметки');
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!currentReport) return;
+
+    const updatedReport = {
+      ...currentReport,
+      notes: notes.filter(n => n.id !== noteId)
+    };
+
+    try {
+      const success = await dailyReportService.updateReport(updatedReport);
+      if (success) {
+        dispatch({
+          type: 'SET_DAILY_REPORT',
+          payload: { date: state.currentDate, report: updatedReport }
+        });
+        toast.success('Заметка удалена');
+      } else {
+        toast.error('Не удалось удалить заметку');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Ошибка при удалении заметки');
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -166,8 +236,48 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             </NavLink>
           </nav>
 
+          {/* Заметки смены */}
+          <div className="mt-auto mb-4 px-1">
+            <div
+              className="bg-card border border-border/40 rounded-xl p-3 cursor-pointer hover:border-primary/30 transition-colors group"
+              onClick={() => {
+                if (!currentReport) {
+                  toast.error('Выберите дату со сменой');
+                  return;
+                }
+                setIsNotesModalOpen(true);
+              }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <StickyNote className="w-4 h-4 text-primary" />
+                  <span>Заметки</span>
+                </div>
+                <div className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
+                  {notes.length}
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                {notes.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">Нет заметок на эту смену</p>
+                ) : (
+                  notes.slice(0, 2).map((note) => (
+                    <p key={note.id} className="text-xs text-foreground/80 line-clamp-1 truncate">
+                      • {note.text}
+                    </p>
+                  ))
+                )}
+                {notes.length > 2 && (
+                  <p className="text-[10px] text-muted-foreground font-medium pt-1">
+                    +{notes.length - 2} еще...
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Кнопка установки PWA */}
-          <div className="mt-auto mb-4">
+          <div className="mb-4">
             <button
               onClick={handleInstallPWA}
               className="w-full flex items-center gap-3 p-3 rounded-xl install-pwa-btn"
@@ -222,6 +332,75 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
           </div>
         </div>
       </aside>
+
+      {/* Модальное окно заметок */}
+      {isNotesModalOpen && (
+        <Modal
+          isOpen={isNotesModalOpen}
+          onClose={() => setIsNotesModalOpen(false)}
+        >
+          <div className="p-4 sm:p-6 flex flex-col h-[80vh] max-h-[600px]">
+            <div className="flex items-center justify-between mb-4 shrink-0">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <StickyNote className="w-5 h-5 text-primary" />
+                Заметки смены
+              </h3>
+            </div>
+
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-3 pr-1">
+              {notes.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm space-y-2 pb-10">
+                  <StickyNote className="w-8 h-8 opacity-20" />
+                  <p>Нет добавленных заметок</p>
+                </div>
+              ) : (
+                notes.map((note) => (
+                  <div key={note.id} className="bg-muted/30 border border-border/50 rounded-lg p-3 group relative">
+                    <p className="text-sm text-foreground whitespace-pre-wrap pr-8">{note.text}</p>
+                    <div className="flex justify-between items-end mt-2">
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteNote(note.id)}
+                        className="text-red-500/50 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded transition-colors absolute top-2 right-2 opacity-0 group-hover:opacity-100 sm:opacity-100"
+                        title="Удалить заметку"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-border/50 shrink-0">
+              <div className="flex gap-2 relative">
+                <textarea
+                  value={newNoteText}
+                  onChange={(e) => setNewNoteText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAddNote();
+                    }
+                  }}
+                  placeholder="Добавить новую заметку..."
+                  className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 resize-none h-12 min-h-[48px] placeholder:text-muted-foreground"
+                  rows={1}
+                />
+                <button
+                  onClick={handleAddNote}
+                  disabled={!newNoteText.trim()}
+                  className="absolute right-1 top-1 h-10 w-10 flex items-center justify-center bg-primary text-primary-foreground rounded-lg disabled:opacity-50 hover:bg-primary/90 transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </>
   );
 };
