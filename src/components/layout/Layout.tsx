@@ -55,7 +55,7 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-[100dvh] bg-background overflow-hidden">
       {/* Боковая панель */}
       <Sidebar
         isMobileOpen={isMobileSidebarOpen}

@@ -910,32 +910,34 @@ const ReportsPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="border rounded-md overflow-x-auto">
-              <div className="min-w-[500px]">
-                <div className="grid grid-cols-7 gap-1 sm:gap-2 bg-muted/50 px-2 md:px-4 py-1.5 md:py-2 border-b">
-                  <div className="font-medium text-xs md:text-sm px-1">
-                    Сотрудник
-                  </div>
-                  <div className="font-medium text-xs md:text-sm text-right px-1">
-                    Нал
-                  </div>
-                  <div className="font-medium text-xs md:text-sm text-right px-1">
-                    Карт
-                  </div>
-                  <div className="font-medium text-xs md:text-sm text-right px-1">
-                    Безнал
-                  </div>
-                  <div className="font-medium text-xs md:text-sm text-right px-1">
-                    Долг
-                  </div>
-                  <div className="font-medium text-xs md:text-sm text-right px-1">
-                    Всего
-                  </div>
-                  <div className="font-medium text-xs md:text-sm text-right px-1">
-                    ЗП
-                  </div>
-                </div>
-                <div className="divide-y">
+            <div className="border rounded-md overflow-x-auto custom-scrollbar">
+              <table className="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                  <tr className="bg-muted/50 border-b">
+                    <th className="font-medium text-xs md:text-sm px-2 md:px-4 py-2">
+                      Сотрудник
+                    </th>
+                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                      Нал
+                    </th>
+                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                      Карт
+                    </th>
+                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                      Безнал
+                    </th>
+                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                      Долг
+                    </th>
+                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                      Всего
+                    </th>
+                    <th className="font-medium text-xs md:text-sm text-right px-2 md:px-4 py-2">
+                      ЗП
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
                   {earningsReport.map((report) => {
                     const totalRevenueEmp =
                       report.totalCash +
@@ -985,67 +987,68 @@ const ReportsPage: React.FC = () => {
                     };
 
                     return (
-                      <div
+                      <tr
                         key={report.employeeId}
-                        className="grid grid-cols-7 gap-1 sm:gap-2 px-2 md:px-4 py-1.5 md:py-2 hover:bg-muted/30 cursor-pointer transition-colors"
+                        className="hover:bg-muted/30 cursor-pointer transition-colors"
                         onClick={handleEmployeeClick}
                       >
-                        <div
-                          className="text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate px-1"
-                          title={report.employeeName}
-                        >
+                        <td className="px-2 md:px-4 py-2 text-primary hover:text-primary/80 font-medium text-xs md:text-sm truncate max-w-[120px]" title={report.employeeName}>
                           {report.employeeName}
-                        </div>
-                        <div className="text-right text-xs md:text-sm px-1">
+                        </td>
+                        <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
                           {report.totalCash.toFixed(2)}
-                        </div>
-                        <div className="text-right text-xs md:text-sm px-1">
+                        </td>
+                        <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
                           {report.totalNonCash.toFixed(2)}
-                        </div>
-                        <div className="text-right text-xs md:text-sm px-1">
+                        </td>
+                        <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
                           {report.totalOrganizations.toFixed(2)}
-                        </div>
-                        <div className="text-right text-xs md:text-sm px-1 text-red-500">
+                        </td>
+                        <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm text-red-500">
                           {report.totalDebt.toFixed(2)}
-                        </div>
-                        <div className="text-right text-xs md:text-sm px-1">
+                        </td>
+                        <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
                           {totalRevenueEmp.toFixed(2)}
-                        </div>
-                        <div className="text-right font-medium text-xs md:text-sm px-1 flex items-center justify-end gap-1">
-                          <span
-                            className={
-                              report.isManual ? "text-orange-500 font-bold" : ""
-                            }
-                          >
-                            {perEmployee.toFixed(2)}
-                            {report.isManual && "*"}
-                          </span>
-                          {periodType === "day" && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleManualSalaryEdit(
-                                  report.employeeId,
-                                  perEmployee,
-                                );
-                              }}
-                              className="p-1 hover:bg-muted rounded transition-colors"
-                              title="Изменить зарплату вручную"
+                        </td>
+                        <td className="px-2 md:px-4 py-2 text-right font-medium text-xs md:text-sm">
+                          <div className="flex items-center justify-end gap-1">
+                            <span
+                              className={
+                                report.isManual ? "text-orange-500 font-bold" : ""
+                              }
                             >
-                              <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                              {perEmployee.toFixed(2)}
+                              {report.isManual && "*"}
+                            </span>
+                            {periodType === "day" && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleManualSalaryEdit(
+                                    report.employeeId,
+                                    perEmployee,
+                                  );
+                                }}
+                                className="p-1 hover:bg-muted rounded transition-colors"
+                                title="Изменить зарплату вручную"
+                              >
+                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
                     );
                   })}
                   {earningsReport.length === 0 && (
-                    <div className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
-                      Нет данных для выбранного периода и фильтра
-                    </div>
+                    <tr>
+                      <td colSpan={7} className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
+                        Нет данных для выбранного периода и фильтра
+                      </td>
+                    </tr>
                   )}
-                </div>
-              </div>
+                </tbody>
+              </table>
             </div>
 
             {/* Итоговая сумма - заменим таблицу на строку с итоговыми цифрами */}
