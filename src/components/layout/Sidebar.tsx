@@ -252,6 +252,63 @@ const Sidebar: React.FC<SidebarProps> = ({
               <BarChart className="w-5 h-5" />
               <span>Отчеты</span>
             </NavLink>
+
+            {/* Заметки смены (встроены в навигацию) */}
+            <div className="pt-2 pb-2">
+              <div
+                className="relative overflow-hidden bg-primary/5 border border-primary/10 hover:border-primary/20 hover:bg-primary/10 rounded-2xl p-3 cursor-pointer transition-all duration-300 group shadow-sm"
+                onClick={() => {
+                  if (!currentReport) {
+                    toast.error("Выберите дату со сменой");
+                    return;
+                  }
+                  setIsNotesModalOpen(true);
+                }}
+              >
+                <div className="flex items-center justify-between mb-2 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-primary/10 rounded-lg">
+                      <StickyNote className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="text-[14px] font-medium text-foreground">
+                      Заметки
+                    </span>
+                  </div>
+                  {notes.length > 0 ? (
+                    <div className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium shadow-sm">
+                      {notes.length}
+                    </div>
+                  ) : (
+                    <Plus className="w-4 h-4 text-primary/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </div>
+
+                <div className="space-y-1 relative z-10">
+                  {notes.length === 0 ? (
+                    <p className="text-[12px] text-muted-foreground/60 italic pl-1">
+                      Оставить заметку...
+                    </p>
+                  ) : (
+                    <div className="space-y-1.5 pl-1">
+                      {notes.slice(0, 2).map((note) => (
+                        <p
+                          key={note.id}
+                          className="text-[12px] text-muted-foreground leading-tight line-clamp-1 truncate relative before:content-[''] before:absolute before:left-[-8px] before:top-[6px] before:w-[4px] before:h-[4px] before:bg-primary/40 before:rounded-full pl-2"
+                        >
+                          {note.text}
+                        </p>
+                      ))}
+                      {notes.length > 2 && (
+                        <p className="text-[10px] text-primary/70 font-medium pt-0.5 pl-2">
+                          + еще {notes.length - 2}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <NavLink
               to="/settings"
               className={({ isActive }) =>
@@ -264,73 +321,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             </NavLink>
           </nav>
 
-          {/* Заметки смены */}
-          <div className="mt-auto mb-3">
-            <div
-              className="relative overflow-hidden bg-primary/5 border border-primary/10 hover:border-primary/30 hover:bg-primary/10 rounded-xl p-2.5 cursor-pointer transition-all duration-200 group"
-              onClick={() => {
-                if (!currentReport) {
-                  toast.error("Выберите дату со сменой");
-                  return;
-                }
-                setIsNotesModalOpen(true);
-              }}
-            >
-              <div className="flex items-center justify-between mb-1.5 relative z-10">
-                <div className="flex items-center gap-1.5">
-                  <StickyNote className="w-3.5 h-3.5 text-primary/70" />
-                  <span className="text-[13px] font-medium text-foreground/80">
-                    Заметки
-                  </span>
-                </div>
-                {notes.length > 0 && (
-                  <div className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-semibold">
-                    {notes.length}
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-1 relative z-10 pl-1">
-                {notes.length === 0 ? (
-                  <p className="text-[10px] text-muted-foreground/60 italic">
-                    Нажмите, чтобы добавить...
-                  </p>
-                ) : (
-                  <>
-                    {notes.slice(0, 2).map((note) => (
-                      <p
-                        key={note.id}
-                        className="text-[11px] text-foreground/70 leading-tight line-clamp-1 truncate relative before:content-[''] before:absolute before:left-[-6px] before:top-[6px] before:w-[3px] before:h-[3px] before:bg-primary/40 before:rounded-full pl-1"
-                      >
-                        {note.text}
-                      </p>
-                    ))}
-                    {notes.length > 2 && (
-                      <p className="text-[9px] text-primary/60 font-medium pt-0.5 pl-1">
-                        +{notes.length - 2}
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Кнопка установки PWA */}
-          <div className="mb-4">
-            <button
-              onClick={handleInstallPWA}
-              className="w-full flex items-center gap-3 p-3 rounded-xl install-pwa-btn"
-            >
-              <Download className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium text-primary">
-                Установить приложение
-              </span>
-            </button>
-          </div>
-
           {/* Настройки интерфейса (Тема и Выход) */}
-          <div className="pt-4 border-t border-border/60 space-y-4">
+          <div className="mt-auto pt-4 border-t border-border/60 space-y-4">
             <div>
               <p className="text-sm text-muted-foreground mb-3 px-1">
                 Тема оформления
@@ -364,17 +356,28 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors"
+              className="w-full flex items-center gap-3 p-3 rounded-xl text-destructive hover:bg-destructive/10 transition-colors"
             >
               <LogOut className="w-5 h-5" />
               <span className="text-sm font-medium">Выйти</span>
             </button>
           </div>
 
-          {/* Футер сайдбара */}
-          <div className="mt-6 text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} Detail Lab</p>
-            <p className="mt-1">0.9a</p>
+          {/* Кнопка установки PWA и Футер */}
+          <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+            <div>
+              <p>© {new Date().getFullYear()} Detail Lab</p>
+              <p className="mt-0.5">0.9a</p>
+            </div>
+
+            <button
+              onClick={handleInstallPWA}
+              className="p-2 rounded-lg bg-primary/5 text-primary hover:bg-primary/10 transition-colors"
+              title="Установить приложение"
+              aria-label="Установить приложение"
+            >
+              <Download className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>
