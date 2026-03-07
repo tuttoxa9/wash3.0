@@ -1,4 +1,5 @@
-import { format, isToday, isTomorrow, parseISO, ru } from "date-fns";
+import { ru } from "date-fns/locale";
+import { format, isToday, isTomorrow, parseISO } from "date-fns";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { DayPicker } from "react-day-picker";
