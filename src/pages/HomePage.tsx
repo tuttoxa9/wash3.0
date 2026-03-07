@@ -847,7 +847,7 @@ const HomePage: React.FC = () => {
               {isCalendarOpen && (
                 <div
                   ref={calendarRef}
-                  className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-card rounded-xl shadow-xl border border-border z-50 p-2 animate-in slide-in-from-top-2 duration-200"
+                  className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-card rounded-xl shadow-xl border border-border z-50 p-3 animate-in slide-in-from-top-2 duration-200"
                 >
                   <DayPicker
                     mode="single"
@@ -869,30 +869,10 @@ const HomePage: React.FC = () => {
                     modifiersStyles={{
                       today: { fontWeight: "bold", color: "var(--primary)" },
                     }}
-                    className="p-3 bg-card rounded-xl border-none"
+                    className="bg-card rounded-xl border-none m-0"
                     classNames={{
-                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                      month: "space-y-4",
-                      caption: "flex justify-center pt-1 relative items-center",
-                      caption_label: "text-sm font-medium text-foreground",
-                      nav: "space-x-1 flex items-center",
-                      nav_button:
-                        "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 flex items-center justify-center rounded-md hover:bg-muted transition-colors",
-                      nav_button_previous: "absolute left-1",
-                      nav_button_next: "absolute right-1",
-                      table: "w-full border-collapse space-y-1",
-                      head_row: "flex",
-                      head_cell:
-                        "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem] capitalize",
-                      row: "flex w-full mt-2",
-                      cell: "text-center text-sm relative p-0 hover:bg-muted rounded-md focus-within:relative focus-within:z-20",
-                      day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100 flex items-center justify-center rounded-md transition-colors",
-                      day_selected:
-                        "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-bold shadow-md",
+                      day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-bold shadow-md",
                       day_today: "text-primary font-bold bg-primary/10",
-                      day_outside: "text-muted-foreground opacity-50",
-                      day_disabled: "text-muted-foreground opacity-50",
-                      day_hidden: "invisible",
                     }}
                   />
                 </div>
@@ -1067,11 +1047,23 @@ const HomePage: React.FC = () => {
                     </span>
                   </div>
                   {isCalendarOpen && (
-                    <div className="absolute top-full left-0 mt-2 z-10 bg-card rounded-xl shadow-xl border border-border/40 p-3 backdrop-blur-sm">
+                    <div className="absolute top-full left-0 mt-2 z-50 bg-card rounded-xl shadow-xl border border-border/40 p-3 backdrop-blur-sm">
                       <DayPicker
                         mode="single"
                         selected={new Date(selectedDate)}
                         onDayClick={handleDaySelect}
+                        locale={ru}
+                        modifiers={{
+                          today: new Date(),
+                        }}
+                        modifiersStyles={{
+                          today: { fontWeight: "bold", color: "var(--primary)" },
+                        }}
+                        className="bg-card rounded-xl border-none m-0"
+                        classNames={{
+                          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-bold shadow-md",
+                          day_today: "text-primary font-bold bg-primary/10",
+                        }}
                       />
                     </div>
                   )}
