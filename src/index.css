@@ -1168,6 +1168,7 @@ h1, h2, h3, h4, h5, h6 {
   /* Убираем скролл на основном контейнере на мобильных */
   .mobile-main-content {
     @apply h-full overflow-auto;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
   }
 
   /* Поддержка safe-area на iOS */

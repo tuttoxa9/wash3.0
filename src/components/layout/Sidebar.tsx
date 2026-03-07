@@ -200,11 +200,16 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Сайдбар */}
       <aside
-        className={`sidebar fixed top-0 left-0 z-50 w-[85vw] max-w-[320px] sm:w-80 md:w-64 h-screen bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-3 sm:p-4 border-r border-border/40 shadow-xl transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:z-0 ${
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+        className={`sidebar fixed bottom-0 left-0 z-50 w-full h-[85dvh] md:h-screen md:w-64 md:top-0 bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-4 rounded-t-2xl md:rounded-none border-t md:border-t-0 md:border-r border-border/40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-xl transition-transform duration-300 ease-in-out md:static md:translate-y-0 md:translate-x-0 md:z-0 ${
+          isMobileOpen ? "translate-y-0" : "translate-y-full md:translate-y-0 md:translate-x-0"
         }`}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full relative">
+          {/* Ползунок для закрытия свайпом на мобильных */}
+          <div
+            className="w-12 h-1.5 bg-muted/50 rounded-full mx-auto mb-4 md:hidden cursor-pointer"
+            onClick={toggleMobileSidebar}
+          />
           {/* Шапка сайдбара */}
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">
@@ -251,6 +256,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             >
               <BarChart className="w-5 h-5" />
               <span>Отчеты</span>
+            </NavLink>
+
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? "active" : ""}`
+              }
+              onClick={toggleMobileSidebar}
+            >
+              <Settings className="w-5 h-5" />
+              <span>Настройки</span>
             </NavLink>
 
             {/* Заметки смены (встроены в навигацию) */}
@@ -308,17 +324,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               </div>
             </div>
-
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                `sidebar-link ${isActive ? "active" : ""}`
-              }
-              onClick={toggleMobileSidebar}
-            >
-              <Settings className="w-5 h-5" />
-              <span>Настройки</span>
-            </NavLink>
           </nav>
 
           {/* Настройки интерфейса (Тема и Выход) */}
