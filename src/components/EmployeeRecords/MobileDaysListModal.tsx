@@ -1,9 +1,9 @@
-import React from 'react';
-import { X, BarChart3 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { format, parseISO } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import type { CarWashRecord, Employee } from '@/lib/types';
+import type { CarWashRecord, Employee } from "@/lib/types";
+import { format, parseISO } from "date-fns";
+import { ru } from "date-fns/locale";
+import { AnimatePresence, motion } from "framer-motion";
+import { BarChart3, X } from "lucide-react";
+import type React from "react";
 
 interface MobileDaysListModalProps {
   isOpen: boolean;
@@ -12,7 +12,10 @@ interface MobileDaysListModalProps {
   groupedRecords: Record<string, CarWashRecord[]>;
   sortedDates: string[];
   periodLabel: string;
-  calculateEmployeeEarnings: (record: CarWashRecord, employeeId: string) => number;
+  calculateEmployeeEarnings: (
+    record: CarWashRecord,
+    employeeId: string,
+  ) => number;
   onDayClick: (date: string, dayRecords: CarWashRecord[]) => void;
   onAnalyticsClick: () => void;
 }
@@ -26,7 +29,7 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
   periodLabel,
   calculateEmployeeEarnings,
   onDayClick,
-  onAnalyticsClick
+  onAnalyticsClick,
 }) => {
   if (!isOpen) return null;
 
@@ -53,9 +56,7 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
                 <h2 className="text-lg font-semibold text-foreground">
                   Дни работы: {employee.name}
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  {periodLabel}
-                </p>
+                <p className="text-sm text-muted-foreground">{periodLabel}</p>
               </div>
               <div className="flex items-center gap-2">
                 <motion.button
@@ -79,13 +80,17 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
 
           <div className="flex-1 overflow-y-auto p-3">
             <div className="space-y-2">
-              {sortedDates.map(date => {
+              {sortedDates.map((date) => {
                 const dayRecords = groupedRecords[date];
-                const dayEarnings = dayRecords.reduce((sum, record) =>
-                  sum + calculateEmployeeEarnings(record, employee.id), 0
+                const dayEarnings = dayRecords.reduce(
+                  (sum, record) =>
+                    sum + calculateEmployeeEarnings(record, employee.id),
+                  0,
                 );
-                const dayRevenue = dayRecords.reduce((sum, record) =>
-                  sum + (record.price / record.employeeIds.length), 0
+                const dayRevenue = dayRecords.reduce(
+                  (sum, record) =>
+                    sum + record.price / record.employeeIds.length,
+                  0,
                 );
 
                 return (
@@ -97,7 +102,9 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="font-medium text-foreground">
-                          {format(parseISO(date), 'dd MMMM yyyy', { locale: ru })}
+                          {format(parseISO(date), "dd MMMM yyyy", {
+                            locale: ru,
+                          })}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {dayRecords.length} записей

@@ -1,22 +1,22 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import HomePage from '@/pages/HomePage';
-import RecordsPage from '@/pages/RecordsPage';
-import SettingsPage from '@/pages/SettingsPage';
-import ReportsPage from '@/pages/ReportsPage';
-import LoginPage from '@/pages/LoginPage';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { AppProvider } from '@/lib/context/AppContext';
-import { NotificationProvider } from '@/lib/context/NotificationContext';
-import { AuthProvider } from '@/lib/context/AuthContext';
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/components/layout/Layout";
+import { AppProvider } from "@/lib/context/AppContext";
+import { AuthProvider } from "@/lib/context/AuthContext";
+import { NotificationProvider } from "@/lib/context/NotificationContext";
+import HomePage from "@/pages/HomePage";
+import LoginPage from "@/pages/LoginPage";
+import RecordsPage from "@/pages/RecordsPage";
+import ReportsPage from "@/pages/ReportsPage";
+import SettingsPage from "@/pages/SettingsPage";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
-    path: '/login',
-    element: <LoginPage />
+    path: "/login",
+    element: <LoginPage />,
   },
   {
-    path: '/',
+    path: "/",
     element: <ProtectedRoute />,
     children: [
       {
@@ -24,24 +24,24 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <HomePage />
+            element: <HomePage />,
           },
           {
-            path: 'records',
-            element: <RecordsPage />
+            path: "records",
+            element: <RecordsPage />,
           },
           {
-            path: 'reports',
-            element: <ReportsPage />
+            path: "reports",
+            element: <ReportsPage />,
           },
           {
-            path: 'settings',
-            element: <SettingsPage />
-          }
-        ]
-      }
-    ]
-  }
+            path: "settings",
+            element: <SettingsPage />,
+          },
+        ],
+      },
+    ],
+  },
 ]);
 
 function App() {

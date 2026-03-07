@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { X, HelpCircle } from 'lucide-react';
+import { HelpCircle, X } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 interface TooltipModalProps {
   title: string;
@@ -8,7 +9,12 @@ interface TooltipModalProps {
   className?: string;
 }
 
-const TooltipModal: React.FC<TooltipModalProps> = ({ title, content, children, className = "" }) => {
+const TooltipModal: React.FC<TooltipModalProps> = ({
+  title,
+  content,
+  children,
+  className = "",
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -48,7 +54,7 @@ const TooltipModal: React.FC<TooltipModalProps> = ({ title, content, children, c
 
             {/* Контент */}
             <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed space-y-3">
-              {content.split('\n\n').map((paragraph, index) => (
+              {content.split("\n\n").map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
               {children}

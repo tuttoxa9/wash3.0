@@ -1,11 +1,11 @@
-import React from 'react';
-import { X, ArrowLeft } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { format, parseISO } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import type { CarWashRecord, Employee } from '@/lib/types';
-import { useAppContext } from '@/lib/context/AppContext';
-import { getPaymentMethodColor, getPaymentMethodLabel } from './utils';
+import { useAppContext } from "@/lib/context/AppContext";
+import type { CarWashRecord, Employee } from "@/lib/types";
+import { format, parseISO } from "date-fns";
+import { ru } from "date-fns/locale";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, X } from "lucide-react";
+import type React from "react";
+import { getPaymentMethodColor, getPaymentMethodLabel } from "./utils";
 
 interface MobileDayDetailsModalProps {
   isOpen: boolean;
@@ -14,7 +14,10 @@ interface MobileDayDetailsModalProps {
   employee: Employee;
   selectedDate: string;
   selectedDateRecords: CarWashRecord[];
-  calculateEmployeeEarnings: (record: CarWashRecord, employeeId: string) => number;
+  calculateEmployeeEarnings: (
+    record: CarWashRecord,
+    employeeId: string,
+  ) => number;
 }
 
 const MobileDayDetailsModal: React.FC<MobileDayDetailsModalProps> = ({
@@ -24,7 +27,7 @@ const MobileDayDetailsModal: React.FC<MobileDayDetailsModalProps> = ({
   employee,
   selectedDate,
   selectedDateRecords,
-  calculateEmployeeEarnings
+  calculateEmployeeEarnings,
 }) => {
   const { state } = useAppContext();
 
@@ -58,7 +61,9 @@ const MobileDayDetailsModal: React.FC<MobileDayDetailsModalProps> = ({
                 </button>
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">
-                    {format(parseISO(selectedDate), 'dd MMMM yyyy', { locale: ru })}
+                    {format(parseISO(selectedDate), "dd MMMM yyyy", {
+                      locale: ru,
+                    })}
                   </h2>
                   <p className="text-sm text-muted-foreground">
                     {selectedDateRecords.length} записей
@@ -76,7 +81,7 @@ const MobileDayDetailsModal: React.FC<MobileDayDetailsModalProps> = ({
 
           <div className="flex-1 overflow-y-auto p-3">
             <div className="space-y-2">
-              {selectedDateRecords.map(record => (
+              {selectedDateRecords.map((record) => (
                 <div
                   key={record.id}
                   className="p-3 rounded-lg bg-muted/20 border border-border"
@@ -85,10 +90,16 @@ const MobileDayDetailsModal: React.FC<MobileDayDetailsModalProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 text-sm mb-1">
                         <span className="text-muted-foreground">
-                          {record.time || '—'}
+                          {record.time || "—"}
                         </span>
-                        <span className={`px-2 py-0.5 rounded text-xs border ${getPaymentMethodColor(record.paymentMethod.type, state.theme)}`}>
-                          {getPaymentMethodLabel(record.paymentMethod.type, state.organizations, record.paymentMethod.organizationId)}
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs border ${getPaymentMethodColor(record.paymentMethod.type, state.theme)}`}
+                        >
+                          {getPaymentMethodLabel(
+                            record.paymentMethod.type,
+                            state.organizations,
+                            record.paymentMethod.organizationId,
+                          )}
                         </span>
                       </div>
                       <div className="font-medium text-sm truncate text-foreground">
@@ -100,7 +111,10 @@ const MobileDayDetailsModal: React.FC<MobileDayDetailsModalProps> = ({
                     </div>
                     <div className="text-right ml-2">
                       <div className="text-sm font-bold text-green-600">
-                        +{calculateEmployeeEarnings(record, employee.id).toFixed(2)}
+                        +
+                        {calculateEmployeeEarnings(record, employee.id).toFixed(
+                          2,
+                        )}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         из {record.price.toFixed(2)}

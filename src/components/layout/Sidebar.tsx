@@ -1,24 +1,44 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Archive, Settings, BarChart3, X, Home, Clipboard, BarChart, Sun, Moon, Download, LogOut, StickyNote, Plus, Trash2 } from 'lucide-react';
-import { useAppContext } from '@/lib/context/AppContext';
-import { useAuth } from '@/lib/context/AuthContext';
-import { dailyReportService } from '@/lib/services/supabaseService';
-import { toast } from 'sonner';
-import type { ThemeMode } from '@/lib/types';
-import Modal from '@/components/ui/modal';
+import Modal from "@/components/ui/modal";
+import { useAppContext } from "@/lib/context/AppContext";
+import { useAuth } from "@/lib/context/AuthContext";
+import { dailyReportService } from "@/lib/services/supabaseService";
+import type { ThemeMode } from "@/lib/types";
+import {
+  Archive,
+  BarChart,
+  BarChart3,
+  Clipboard,
+  Download,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  Moon,
+  Plus,
+  Settings,
+  StickyNote,
+  Sun,
+  Trash2,
+  X,
+} from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
+import { toast } from "sonner";
 
 interface SidebarProps {
   isMobileOpen: boolean;
   toggleMobileSidebar: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  isMobileOpen,
+  toggleMobileSidebar,
+}) => {
   const { state, dispatch } = useAppContext();
   const { logout } = useAuth();
 
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
-  const [newNoteText, setNewNoteText] = useState('');
+  const [newNoteText, setNewNoteText] = useState("");
 
   const currentReport = state.dailyReports[state.currentDate];
   const notes = currentReport?.notes || [];
@@ -26,36 +46,36 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
   const handleAddNote = async () => {
     if (!newNoteText.trim()) return;
     if (!currentReport) {
-      toast.error('Сначала начните смену');
+      toast.error("Сначала начните смену");
       return;
     }
 
     const newNote = {
       id: crypto.randomUUID(),
       text: newNoteText.trim(),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     const updatedReport = {
       ...currentReport,
-      notes: [...notes, newNote]
+      notes: [...notes, newNote],
     };
 
     try {
       const success = await dailyReportService.updateReport(updatedReport);
       if (success) {
         dispatch({
-          type: 'SET_DAILY_REPORT',
-          payload: { date: state.currentDate, report: updatedReport }
+          type: "SET_DAILY_REPORT",
+          payload: { date: state.currentDate, report: updatedReport },
         });
-        setNewNoteText('');
-        toast.success('Заметка добавлена');
+        setNewNoteText("");
+        toast.success("Заметка добавлена");
       } else {
-        toast.error('Не удалось сохранить заметку');
+        toast.error("Не удалось сохранить заметку");
       }
     } catch (error) {
       console.error(error);
-      toast.error('Ошибка при сохранении заметки');
+      toast.error("Ошибка при сохранении заметки");
     }
   };
 
@@ -64,23 +84,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
 
     const updatedReport = {
       ...currentReport,
-      notes: notes.filter(n => n.id !== noteId)
+      notes: notes.filter((n) => n.id !== noteId),
     };
 
     try {
       const success = await dailyReportService.updateReport(updatedReport);
       if (success) {
         dispatch({
-          type: 'SET_DAILY_REPORT',
-          payload: { date: state.currentDate, report: updatedReport }
+          type: "SET_DAILY_REPORT",
+          payload: { date: state.currentDate, report: updatedReport },
         });
-        toast.success('Заметка удалена');
+        toast.success("Заметка удалена");
       } else {
-        toast.error('Не удалось удалить заметку');
+        toast.error("Не удалось удалить заметку");
       }
     } catch (error) {
       console.error(error);
-      toast.error('Ошибка при удалении заметки');
+      toast.error("Ошибка при удалении заметки");
     }
   };
 
@@ -88,24 +108,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
     try {
       await logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
   const handleThemeChange = (newTheme: ThemeMode) => {
-    dispatch({ type: 'SET_THEME', payload: newTheme });
+    dispatch({ type: "SET_THEME", payload: newTheme });
   };
 
   const handleInstallPWA = async () => {
     const deferredPrompt = (window as any).deferredPrompt;
 
     // Проверяем, запущено ли приложение в режиме PWA
-    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
-                              (window.navigator as any).standalone ||
-                              document.referrer.includes('android-app://');
+    const isInStandaloneMode =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone ||
+      document.referrer.includes("android-app://");
 
     if (isInStandaloneMode) {
-      alert('Приложение уже установлено!');
+      alert("Приложение уже установлено!");
       return;
     }
 
@@ -114,15 +135,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
         await deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
 
-        if (choiceResult.outcome === 'accepted') {
-          console.log('[Sidebar] PWA установлено');
+        if (choiceResult.outcome === "accepted") {
+          console.log("[Sidebar] PWA установлено");
         } else {
-          console.log('[Sidebar] Пользователь отказался от установки');
+          console.log("[Sidebar] Пользователь отказался от установки");
         }
 
         (window as any).deferredPrompt = null;
       } catch (error) {
-        console.error('[Sidebar] Ошибка при установке PWA:', error);
+        console.error("[Sidebar] Ошибка при установке PWA:", error);
       }
     } else {
       // Определяем тип устройства и браузер для более точных инструкций
@@ -133,28 +154,33 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
       const isFirefox = /Firefox/.test(userAgent);
       const isAndroid = /Android/.test(userAgent);
 
-      let message = '';
+      let message = "";
 
       if (isIOS) {
         if (isSafari) {
-          message = 'Для установки приложения:\n1. Нажмите кнопку "Поделиться" внизу экрана\n2. Выберите "На экран Домой"\n3. Нажмите "Добавить"';
+          message =
+            'Для установки приложения:\n1. Нажмите кнопку "Поделиться" внизу экрана\n2. Выберите "На экран Домой"\n3. Нажмите "Добавить"';
         } else {
-          message = 'Для установки на iOS используйте Safari браузер';
+          message = "Для установки на iOS используйте Safari браузер";
         }
       } else if (isAndroid) {
         if (isChrome) {
-          message = 'Для установки приложения:\n1. Нажмите на меню браузера (⋮)\n2. Выберите "Установить приложение"\n3. Нажмите "Установить"';
+          message =
+            'Для установки приложения:\n1. Нажмите на меню браузера (⋮)\n2. Выберите "Установить приложение"\n3. Нажмите "Установить"';
         } else if (isFirefox) {
-          message = 'Для установки приложения:\n1. Нажмите на меню браузера\n2. Выберите "Установить"\n3. Нажмите "Добавить на главный экран"';
+          message =
+            'Для установки приложения:\n1. Нажмите на меню браузера\n2. Выберите "Установить"\n3. Нажмите "Добавить на главный экран"';
         } else {
-          message = 'Для установки используйте Chrome или Firefox браузер';
+          message = "Для установки используйте Chrome или Firefox браузер";
         }
       } else {
         // Desktop
         if (isChrome) {
-          message = 'Для установки приложения:\n1. Нажмите на иконку установки в адресной строке\n2. Нажмите "Установить"';
+          message =
+            'Для установки приложения:\n1. Нажмите на иконку установки в адресной строке\n2. Нажмите "Установить"';
         } else {
-          message = 'Для установки приложения используйте Chrome, Edge или другой современный браузер';
+          message =
+            "Для установки приложения используйте Chrome, Edge или другой современный браузер";
         }
       }
 
@@ -175,13 +201,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
       {/* Сайдбар */}
       <aside
         className={`sidebar fixed top-0 left-0 z-50 w-[85vw] max-w-[320px] sm:w-80 md:w-64 h-screen bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-3 sm:p-4 border-r border-border/40 shadow-xl transition-transform duration-300 ease-in-out md:static md:translate-x-0 md:z-0 ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Шапка сайдбара */}
           <div className="flex items-center justify-between mb-6 sm:mb-8">
-            <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">Detail Lab</h1>
+            <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">
+              Detail Lab
+            </h1>
             <button
               onClick={toggleMobileSidebar}
               className="mobile-button p-2 rounded-lg hover:bg-secondary md:hidden touch-manipulation active:scale-95 transition-transform"
@@ -196,7 +224,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `sidebar-link ${isActive ? 'active' : ''}`
+                `sidebar-link ${isActive ? "active" : ""}`
               }
               end
               onClick={toggleMobileSidebar}
@@ -207,7 +235,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             <NavLink
               to="/records"
               className={({ isActive }) =>
-                `sidebar-link ${isActive ? 'active' : ''}`
+                `sidebar-link ${isActive ? "active" : ""}`
               }
               onClick={toggleMobileSidebar}
             >
@@ -217,7 +245,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             <NavLink
               to="/reports"
               className={({ isActive }) =>
-                `sidebar-link ${isActive ? 'active' : ''}`
+                `sidebar-link ${isActive ? "active" : ""}`
               }
               onClick={toggleMobileSidebar}
             >
@@ -227,7 +255,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
             <NavLink
               to="/settings"
               className={({ isActive }) =>
-                `sidebar-link ${isActive ? 'active' : ''}`
+                `sidebar-link ${isActive ? "active" : ""}`
               }
               onClick={toggleMobileSidebar}
             >
@@ -237,40 +265,56 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
           </nav>
 
           {/* Заметки смены */}
-          <div className="mt-auto mb-4 px-1">
+          <div className="mt-auto mb-4">
             <div
-              className="bg-card border border-border/40 rounded-xl p-3 cursor-pointer hover:border-primary/30 transition-colors group"
+              className="relative overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:border-primary/40 rounded-2xl p-3 cursor-pointer transition-all duration-300 group shadow-sm hover:shadow-md"
               onClick={() => {
                 if (!currentReport) {
-                  toast.error('Выберите дату со сменой');
+                  toast.error("Выберите дату со сменой");
                   return;
                 }
                 setIsNotesModalOpen(true);
               }}
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  <StickyNote className="w-4 h-4 text-primary" />
-                  <span>Заметки</span>
+              <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+
+              <div className="flex items-center justify-between mb-2.5 relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-background/80 backdrop-blur-sm rounded-lg shadow-sm border border-border/40 text-primary group-hover:text-primary transition-colors">
+                    <StickyNote className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-sm font-bold tracking-tight text-foreground/90">
+                    Заметки
+                  </span>
                 </div>
-                <div className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
-                  {notes.length}
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                {notes.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">Нет заметок на эту смену</p>
-                ) : (
-                  notes.slice(0, 2).map((note) => (
-                    <p key={note.id} className="text-xs text-foreground/80 line-clamp-1 truncate">
-                      • {note.text}
-                    </p>
-                  ))
+                {notes.length > 0 && (
+                  <div className="text-[10px] bg-background/80 backdrop-blur-sm border border-border/40 text-foreground px-2 py-0.5 rounded-full font-bold shadow-sm">
+                    {notes.length}
+                  </div>
                 )}
-                {notes.length > 2 && (
-                  <p className="text-[10px] text-muted-foreground font-medium pt-1">
-                    +{notes.length - 2} еще...
+              </div>
+
+              <div className="space-y-1.5 relative z-10">
+                {notes.length === 0 ? (
+                  <p className="text-[11px] text-muted-foreground/80 font-medium">
+                    Оставить заметку о смене...
                   </p>
+                ) : (
+                  <>
+                    {notes.slice(0, 2).map((note) => (
+                      <div key={note.id} className="flex items-start gap-1.5">
+                        <div className="w-1 h-1 rounded-full bg-primary/50 mt-1.5 shrink-0" />
+                        <p className="text-[11px] text-foreground/80 leading-snug line-clamp-1 truncate font-medium">
+                          {note.text}
+                        </p>
+                      </div>
+                    ))}
+                    {notes.length > 2 && (
+                      <p className="text-[10px] text-primary/70 font-bold pt-0.5 pl-2.5">
+                        +{notes.length - 2} ещё
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -283,35 +327,41 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
               className="w-full flex items-center gap-3 p-3 rounded-xl install-pwa-btn"
             >
               <Download className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium text-primary">Установить приложение</span>
+              <span className="text-sm font-medium text-primary">
+                Установить приложение
+              </span>
             </button>
           </div>
 
           {/* Настройки интерфейса (Тема и Выход) */}
           <div className="pt-4 border-t border-border/60 space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-3 px-1">Тема оформления</p>
+              <p className="text-sm text-muted-foreground mb-3 px-1">
+                Тема оформления
+              </p>
               <div className="segmented-control">
                 <button
-                  onClick={() => handleThemeChange('light')}
-                  className={state.theme === 'light' ? 'active' : ''}
+                  onClick={() => handleThemeChange("light")}
+                  className={state.theme === "light" ? "active" : ""}
                   aria-label="Светлая тема"
                 >
                   <Sun className="w-4 h-4 mx-auto" />
                 </button>
                 <button
-                  onClick={() => handleThemeChange('dark')}
-                  className={state.theme === 'dark' ? 'active' : ''}
+                  onClick={() => handleThemeChange("dark")}
+                  className={state.theme === "dark" ? "active" : ""}
                   aria-label="Темная тема"
                 >
                   <Moon className="w-4 h-4 mx-auto" />
                 </button>
                 <button
-                  onClick={() => handleThemeChange('black')}
-                  className={state.theme === 'black' ? 'active' : ''}
+                  onClick={() => handleThemeChange("black")}
+                  className={state.theme === "black" ? "active" : ""}
                   aria-label="Черная тема"
                 >
-                  <span className="flex items-center justify-center font-bold text-xs">B</span>
+                  <span className="flex items-center justify-center font-bold text-xs">
+                    B
+                  </span>
                 </button>
               </div>
             </div>
@@ -339,34 +389,52 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
           isOpen={isNotesModalOpen}
           onClose={() => setIsNotesModalOpen(false)}
         >
-          <div className="p-4 sm:p-6 flex flex-col h-[80vh] max-h-[600px]">
-            <div className="flex items-center justify-between mb-4 shrink-0">
-              <h3 className="text-xl font-bold flex items-center gap-2">
-                <StickyNote className="w-5 h-5 text-primary" />
+          <div className="p-5 sm:p-6 flex flex-col h-[85vh] sm:h-[80vh] max-h-[700px] bg-background/50">
+            <div className="flex items-center justify-between mb-6 shrink-0 relative">
+              <h3 className="text-xl font-bold flex items-center gap-2.5">
+                <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                  <StickyNote className="w-5 h-5" />
+                </div>
                 Заметки смены
               </h3>
             </div>
 
-            <div className="flex-1 overflow-y-auto min-h-0 space-y-3 pr-1">
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-2 custom-scrollbar">
               {notes.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm space-y-2 pb-10">
-                  <StickyNote className="w-8 h-8 opacity-20" />
-                  <p>Нет добавленных заметок</p>
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm space-y-3 pb-10">
+                  <div className="p-4 bg-muted/50 rounded-full">
+                    <StickyNote className="w-8 h-8 opacity-40 text-primary" />
+                  </div>
+                  <p className="font-medium">Здесь пока нет заметок</p>
+                  <p className="text-xs opacity-70">
+                    Напишите что-нибудь важное для этой смены
+                  </p>
                 </div>
               ) : (
                 notes.map((note) => (
-                  <div key={note.id} className="bg-muted/30 border border-border/50 rounded-lg p-3 group relative">
-                    <p className="text-sm text-foreground whitespace-pre-wrap pr-8">{note.text}</p>
-                    <div className="flex justify-between items-end mt-2">
-                      <span className="text-[10px] text-muted-foreground">
-                        {new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <div
+                    key={note.id}
+                    className="bg-card border border-border/40 rounded-2xl p-4 group relative shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300"
+                  >
+                    <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap pr-8">
+                      {note.text}
+                    </p>
+                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-border/30">
+                      <span className="text-[11px] font-medium text-muted-foreground/70 bg-muted/30 px-2 py-0.5 rounded-md">
+                        {new Date(note.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                       <button
                         onClick={() => handleDeleteNote(note.id)}
-                        className="text-red-500/50 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded transition-colors absolute top-2 right-2 opacity-0 group-hover:opacity-100 sm:opacity-100"
+                        className="text-destructive/60 hover:text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100 flex items-center gap-1.5"
                         title="Удалить заметку"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-bold hidden sm:inline-block">
+                          УДАЛИТЬ
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -374,29 +442,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, toggleMobileSidebar }) 
               )}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-border/50 shrink-0">
-              <div className="flex gap-2 relative">
+            <div className="mt-5 pt-4 shrink-0 relative">
+              <div className="flex items-end gap-2 bg-muted/30 p-2 rounded-2xl border border-border/50 focus-within:border-primary/40 focus-within:bg-background transition-colors shadow-inner">
                 <textarea
                   value={newNoteText}
                   onChange={(e) => setNewNoteText(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
+                    if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       handleAddNote();
                     }
                   }}
-                  placeholder="Добавить новую заметку..."
-                  className="w-full bg-background border border-border/50 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 resize-none h-12 min-h-[48px] placeholder:text-muted-foreground"
+                  placeholder="Новая заметка..."
+                  className="w-full bg-transparent border-none px-3 py-2 text-sm focus:outline-none resize-none min-h-[44px] max-h-[120px] placeholder:text-muted-foreground/60 custom-scrollbar leading-relaxed"
                   rows={1}
                 />
                 <button
                   onClick={handleAddNote}
                   disabled={!newNoteText.trim()}
-                  className="absolute right-1 top-1 h-10 w-10 flex items-center justify-center bg-primary text-primary-foreground rounded-lg disabled:opacity-50 hover:bg-primary/90 transition-colors"
+                  className="h-11 w-11 shrink-0 flex items-center justify-center bg-primary text-primary-foreground rounded-xl disabled:opacity-40 hover:bg-primary/90 transition-all active:scale-95 shadow-sm disabled:shadow-none"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
               </div>
+              <p className="text-[10px] text-muted-foreground/50 text-center mt-2">
+                Нажмите Enter для отправки, Shift+Enter для переноса строки
+              </p>
             </div>
           </div>
         </Modal>

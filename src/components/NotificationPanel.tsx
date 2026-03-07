@@ -1,59 +1,75 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Bell, X, Trash2, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
-import { useNotifications, type Notification } from '@/lib/context/NotificationContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
+import {
+  type Notification,
+  useNotifications,
+} from "@/lib/context/NotificationContext";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  CheckCircle,
+  Info,
+  Trash2,
+  X,
+} from "lucide-react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 const NotificationPanel: React.FC = () => {
-  const { notifications, removeNotification, clearAllNotifications } = useNotifications();
+  const { notifications, removeNotification, clearAllNotifications } =
+    useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Закрытие панели при клике вне её
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
 
-  const getNotificationIcon = (type: Notification['type']) => {
+  const getNotificationIcon = (type: Notification["type"]) => {
     switch (type) {
-      case 'success':
+      case "success":
         return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'error':
+      case "error":
         return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case 'warning':
+      case "warning":
         return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'info':
+      case "info":
         return <Info className="w-4 h-4 text-blue-500" />;
       default:
         return <Info className="w-4 h-4 text-gray-500" />;
     }
   };
 
-  const getNotificationBgColor = (type: Notification['type']) => {
+  const getNotificationBgColor = (type: Notification["type"]) => {
     switch (type) {
-      case 'success':
-        return 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800';
-      case 'error':
-        return 'bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800';
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800';
-      case 'info':
-        return 'bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800';
+      case "success":
+        return "bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800";
+      case "error":
+        return "bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800";
+      case "warning":
+        return "bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800";
+      case "info":
+        return "bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800";
       default:
-        return 'bg-gray-50 border-gray-200 dark:bg-gray-950 dark:border-gray-800';
+        return "bg-gray-50 border-gray-200 dark:bg-gray-950 dark:border-gray-800";
     }
   };
 
@@ -73,7 +89,7 @@ const NotificationPanel: React.FC = () => {
             animate={{ scale: 1 }}
             className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium"
           >
-            {notifications.length > 99 ? '99+' : notifications.length}
+            {notifications.length > 99 ? "99+" : notifications.length}
           </motion.span>
         )}
       </motion.button>
@@ -145,7 +161,11 @@ const NotificationPanel: React.FC = () => {
                             </p>
                           )}
                           <p className="text-xs text-muted-foreground mt-1">
-                            {format(notification.timestamp, 'dd.MM.yyyy HH:mm', { locale: ru })}
+                            {format(
+                              notification.timestamp,
+                              "dd.MM.yyyy HH:mm",
+                              { locale: ru },
+                            )}
                           </p>
                         </div>
                         <motion.button
