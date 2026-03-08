@@ -210,17 +210,17 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
                               e.stopPropagation();
                               setEmployeeRoles({
                                 ...employeeRoles,
-                                [employee.id]: "trainee",
+                                [employee.id]: "admin",
                               });
                             }}
                             className={`flex-1 flex items-center justify-center gap-1.5 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
-                              currentRole === "trainee"
+                              currentRole === "admin"
                                 ? "bg-amber-500 text-white shadow-sm"
                                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
                             }`}
                           >
                             <Shield className="w-3 h-3" />
-                            Стажер
+                            Админ
                           </button>
                         </div>
                       </div>
