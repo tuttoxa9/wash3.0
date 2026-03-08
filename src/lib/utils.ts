@@ -378,17 +378,24 @@ export function generateDailyReportDocx(
   const salaryResults = salaryCalculator.calculateSalaries();
 
   // Подсчитываем итоги
-  const totalCash = report.totalCash;
-  const totalCard = report.totalNonCash;
+  let totalCash = 0;
+  let totalCard = 0;
   let totalOrganizations = 0;
+  let totalDebt = 0;
   if (report.records) {
-    totalOrganizations = report.records.reduce((sum, record) => {
-      return (
-        sum + (record.paymentMethod.type === "organization" ? record.price : 0)
-      );
-    }, 0);
+    report.records.forEach((record) => {
+      if (record.paymentMethod.type === "cash") {
+        totalCash += record.price;
+      } else if (record.paymentMethod.type === "card") {
+        totalCard += record.price;
+      } else if (record.paymentMethod.type === "organization") {
+        totalOrganizations += record.price;
+      } else if (record.paymentMethod.type === "debt") {
+        totalDebt += record.price;
+      }
+    });
   }
-  const totalRevenue = totalCash + totalCard + totalOrganizations;
+  const totalRevenue = totalCash + totalCard + totalOrganizations + totalDebt;
   const totalSalary = salaryResults.reduce(
     (sum, result) => sum + result.calculatedSalary,
     0,
@@ -484,6 +491,21 @@ export function generateDailyReportDocx(
                 children: [
                   new Paragraph({
                     text: totalCard.toFixed(2),
+                    alignment: AlignmentType.RIGHT,
+                  }),
+                ],
+              }),
+            ],
+          }),
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [new Paragraph({ text: "Долг" })],
+              }),
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    text: totalDebt.toFixed(2),
                     alignment: AlignmentType.RIGHT,
                   }),
                 ],
@@ -674,6 +696,7 @@ export function generateDailyReportDocx(
     let empCash = 0;
     let empCard = 0;
     let empOrganizations = 0;
+    let empDebt = 0;
 
     employeeRecords.forEach((record) => {
       const share = record.price / record.employeeIds.length;
@@ -683,10 +706,12 @@ export function generateDailyReportDocx(
         empCard += share;
       } else if (record.paymentMethod.type === "organization") {
         empOrganizations += share;
+      } else if (record.paymentMethod.type === "debt") {
+        empDebt += share;
       }
     });
 
-    const empTotal = empCash + empCard + empOrganizations;
+    const empTotal = empCash + empCard + empOrganizations + empDebt;
     const empSalary =
       salaryResults.find((r) => r.employeeId === employee.id)
         ?.calculatedSalary || 0;
@@ -760,6 +785,8 @@ export function generateDailyReportDocx(
         } else if (record.paymentMethod.type === "organization") {
           paymentMethod =
             record.paymentMethod.organizationName || "Организация";
+        } else if (record.paymentMethod.type === "debt") {
+          paymentMethod = "Долг";
         }
 
         const share = record.price / record.employeeIds.length;
@@ -927,6 +954,21 @@ export function generateDailyReportDocx(
                   children: [
                     new Paragraph({
                       text: employeeRecords.length.toString(),
+                      alignment: AlignmentType.RIGHT,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: [new Paragraph({ text: "Долг" })],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      text: empDebt.toFixed(2),
                       alignment: AlignmentType.RIGHT,
                     }),
                   ],
