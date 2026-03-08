@@ -822,6 +822,14 @@ const HomePage: React.FC = () => {
   }, [calendarRef]);
 
 
+
+  useEffect(() => {
+    // В AppContext данные загружаются, как только они приходят, отключаем лоадер
+    if (state.employees) {
+      setLoading((prev) => ({ ...prev, employees: false }));
+    }
+  }, [state.employees]);
+
   // --- RENDERING SPLIT ---
   // If the shift hasn't started, we render the Morning Lobby (Pre-shift state)
 
