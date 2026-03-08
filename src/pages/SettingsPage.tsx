@@ -3,7 +3,6 @@ import {
   databaseService,
   employeeService,
   organizationService,
-  serviceService,
   settingsService,
 } from "@/lib/services/supabaseService";
 import type {
@@ -26,14 +25,30 @@ import {
   Moon,
   Plus,
   RefreshCw,
-  Save,
   Sun,
   Trash,
   X,
+  Settings,
+  Users,
+  Banknote,
+  Database
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Базовый компонент карточки для Meta-стиля
+const Card = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
+  <motion.div
+    className={`bg-card rounded-2xl border border-border/50 shadow-sm p-4 sm:p-5 ${className}`}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3, ease: "easeOut" }}
+  >
+    {children}
+  </motion.div>
+);
 
 // Компонент для ввода пароля
 const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
@@ -53,59 +68,58 @@ const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
         setError("Неверный пароль. Попробуйте еще раз.");
       }
       setIsLoading(false);
-    }, 500); // Небольшая задержка для симуляции проверки
+    }, 500);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="card-with-shadow max-w-md mx-auto mt-8"
-    >
-      <div className="text-center mb-6">
-        <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Lock className="w-7 h-7 text-primary" />
+    <div className="flex items-center justify-center min-h-[60vh] p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="bg-card w-full max-w-md p-6 sm:p-8 rounded-2xl border border-border/50 shadow-sm"
+      >
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-2xl font-semibold text-foreground">
+            Доступ к настройкам
+          </h2>
+          <p className="text-muted-foreground mt-2 text-sm">
+            Введите пароль для доступа к панели управления
+          </p>
         </div>
-        <h2 className="text-xl font-bold gradient-heading">
-          Доступ к настройкам
-        </h2>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Введите пароль для доступа к панели настроек
-        </p>
-      </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Введите пароль"
-            className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-            autoFocus
-          />
-          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-sm"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Проверка...
-            </>
-          ) : (
-            <>
-              <Lock className="w-4 h-4" />
-              Войти
-            </>
-          )}
-        </button>
-      </form>
-    </motion.div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Пароль"
+              className="w-full px-4 py-3 bg-muted/50 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all text-sm"
+              autoFocus
+            />
+            {error && <p className="mt-2 text-sm text-destructive pl-1">{error}</p>}
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-primary text-primary-foreground font-medium py-3 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-sm"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Проверка...
+              </>
+            ) : (
+              "Войти"
+            )}
+          </button>
+        </form>
+      </motion.div>
+    </div>
   );
 };
 
@@ -124,9 +138,9 @@ const AnimatedCloud: React.FC = () => {
         times: [0, 0.7, 1],
       }}
     >
-      <Cloud className="w-6 h-6 text-primary" />
+      <Cloud className="w-5 h-5 text-primary" />
       <motion.div
-        className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"
+        className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-primary rounded-full"
         animate={{
           opacity: [0, 1, 0],
           scale: [0.8, 1.2, 0.8],
@@ -152,44 +166,43 @@ const ThemeSettings: React.FC = () => {
   };
 
   return (
-    <motion.div
-      className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-      transition={{ duration: 0.2 }}
-    >
-      <h3 className="text-sm sm:text-base font-medium mb-1">Внешний вид</h3>
-      <p className="text-xs text-muted-foreground mb-4">
+    <Card>
+      <div className="flex items-center gap-2 mb-1">
+        <Sun className="w-5 h-5 text-muted-foreground" />
+        <h3 className="text-base font-semibold">Внешний вид</h3>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">
         Выберите тему оформления приложения
       </p>
 
-      <div className="segmented-control">
-        <button
-          onClick={() => setTheme("light")}
-          className={state.theme === "light" ? "active" : ""}
-        >
-          <Sun className="w-4 h-4 mx-auto mb-0.5" />
-          <span className="text-[10px] sm:text-xs">Светлая</span>
-        </button>
-
-        <button
-          onClick={() => setTheme("dark")}
-          className={state.theme === "dark" ? "active" : ""}
-        >
-          <Moon className="w-4 h-4 mx-auto mb-0.5" />
-          <span className="text-[10px] sm:text-xs">Темная</span>
-        </button>
-
-        <button
-          onClick={() => setTheme("black")}
-          className={state.theme === "black" ? "active" : ""}
-        >
-          <div className="w-4 h-4 rounded-full bg-foreground mx-auto mb-0.5 flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-background" />
-          </div>
-          <span className="text-[10px] sm:text-xs">Черная</span>
-        </button>
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        {(["light", "dark", "black"] as ThemeMode[]).map((theme) => {
+          const isActive = state.theme === theme;
+          return (
+            <button
+              key={theme}
+              onClick={() => setTheme(theme)}
+              className={`flex flex-col items-center justify-center py-3 sm:py-4 rounded-xl border transition-all ${
+                isActive
+                  ? "border-primary bg-primary/5 text-primary shadow-sm"
+                  : "border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/50 hover:border-border"
+              }`}
+            >
+              {theme === "light" && <Sun className="w-5 h-5 mb-2" />}
+              {theme === "dark" && <Moon className="w-5 h-5 mb-2" />}
+              {theme === "black" && (
+                <div className="w-5 h-5 rounded-full bg-foreground mb-2 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-background" />
+                </div>
+              )}
+              <span className="text-xs sm:text-sm font-medium">
+                {theme === "light" ? "Светлая" : theme === "dark" ? "Темная" : "Черная"}
+              </span>
+            </button>
+          )
+        })}
       </div>
-    </motion.div>
+    </Card>
   );
 };
 
@@ -206,7 +219,6 @@ const OrganizationsSettings: React.FC = () => {
     fetchOrgs: false,
   });
 
-  // Обновление списка организаций
   const fetchOrganizations = async () => {
     setLoading((prev) => ({ ...prev, fetchOrgs: true }));
     try {
@@ -220,7 +232,6 @@ const OrganizationsSettings: React.FC = () => {
     }
   };
 
-  // Добавление новой организации
   const handleAddOrganization = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newOrganizationName.trim()) {
@@ -250,17 +261,14 @@ const OrganizationsSettings: React.FC = () => {
     }
   };
 
-  // Начало редактирования организации
   const startEditing = (org: Organization) => {
     setEditingOrganization({ ...org });
   };
 
-  // Отмена редактирования
   const cancelEditing = () => {
     setEditingOrganization(null);
   };
 
-  // Обновление организации
   const handleUpdateOrganization = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingOrganization) return;
@@ -288,7 +296,6 @@ const OrganizationsSettings: React.FC = () => {
     }
   };
 
-  // Удаление организации
   const handleDeleteOrganization = async (orgId: string, orgName: string) => {
     if (!confirm(`Вы уверены, что хотите удалить организацию "${orgName}"?`)) {
       return;
@@ -315,39 +322,28 @@ const OrganizationsSettings: React.FC = () => {
   };
 
   return (
-    <motion.div
-      className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-      transition={{ duration: 0.2 }}
-    >
+    <Card>
       <div className="flex justify-between items-center mb-1">
-        <h3 className="text-sm sm:text-base font-medium flex items-center">
-          <Building className="w-4 h-4 mr-1.5 text-primary" />
-          Организации-партнеры
+        <h3 className="text-base font-semibold flex items-center gap-2">
+          <Building className="w-5 h-5 text-primary" />
+          Список организаций
         </h3>
 
         {loading.fetchOrgs ? (
-          <div className="flex flex-col items-center justify-center py-6">
-            <Loader2 className="w-5 h-5 animate-spin text-primary mb-2" />
-            <span className="text-xs text-muted-foreground">
-              Загрузка организаций...
-            </span>
-          </div>
+          <Loader2 className="w-4 h-4 animate-spin text-primary" />
         ) : (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={fetchOrganizations}
-            className="text-xs text-primary flex items-center gap-1"
+            className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-1 font-medium"
           >
-            <RefreshCw className="w-3 h-3" />
+            <RefreshCw className="w-3.5 h-3.5" />
             Обновить
-          </motion.button>
+          </button>
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground mb-4">
-        Управление списком организаций, которые используются для оплаты услуг
+      <p className="text-sm text-muted-foreground mb-4">
+        Организации-партнеры, которые используются для оплаты услуг по безналу
       </p>
 
       {/* Форма добавления новой организации */}
@@ -358,41 +354,33 @@ const OrganizationsSettings: React.FC = () => {
               type="text"
               value={newOrganizationName}
               onChange={(e) => setNewOrganizationName(e.target.value)}
-              placeholder="Название организации"
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-sm"
+              placeholder="Новая организация..."
+              className="w-full px-3 py-2 border border-border/60 bg-muted/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all text-sm"
               disabled={loading.addOrg}
             />
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             type="submit"
-            className="flex items-center gap-1 px-2 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-70 text-xs"
+            className="flex items-center justify-center h-9 w-9 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-70 flex-shrink-0"
             disabled={loading.addOrg}
           >
             {loading.addOrg ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Plus className="w-3 h-3" />
+              <Plus className="w-4 h-4" />
             )}
-            <span>Добавить</span>
-          </motion.button>
+          </button>
         </div>
       </form>
 
       {/* Список организаций */}
-      <div className="border border-border rounded-md overflow-hidden bg-card/50">
-        <div className="bg-muted/30 px-2 py-1.5 border-b border-border">
-          <h4 className="text-xs font-medium">Список организаций</h4>
-        </div>
-
-        <ul className="divide-y divide-border max-h-[220px] overflow-y-auto">
+      <div className="border border-border/60 rounded-xl overflow-hidden bg-muted/10">
+        <ul className="divide-y divide-border/60 max-h-[250px] overflow-y-auto custom-scrollbar">
           {state.organizations.length > 0 ? (
             state.organizations.map((org) => (
-              <motion.li
+              <li
                 key={org.id}
-                className="px-2 py-2 flex items-center justify-between text-sm group"
-                whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
+                className="px-3 py-2.5 flex items-center justify-between text-sm group hover:bg-muted/30 transition-colors"
               >
                 {editingOrganization?.id === org.id ? (
                   <form
@@ -408,55 +396,47 @@ const OrganizationsSettings: React.FC = () => {
                           name: e.target.value,
                         })
                       }
-                      className="flex-1 px-3 py-1.5 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-xs"
+                      className="flex-1 px-3 py-1 border border-border/60 rounded-md focus:outline-none focus:border-primary/50 text-sm bg-background"
                       autoFocus
                     />
                     <div className="flex items-center gap-1">
-                      <motion.button
+                      <button
                         type="button"
                         onClick={cancelEditing}
-                        className="text-muted-foreground hover:text-foreground"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
                         disabled={loading.updateOrg === org.id}
                       >
-                        <X className="w-3.5 h-3.5" />
-                      </motion.button>
-                      <motion.button
+                        <X className="w-4 h-4" />
+                      </button>
+                      <button
                         type="submit"
-                        className="text-primary hover:text-primary/80"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        className="p-1 text-primary hover:text-primary/80 hover:bg-primary/10 rounded-md transition-colors"
                         disabled={loading.updateOrg === org.id}
                       >
                         {loading.updateOrg === org.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                          <Check className="w-3.5 h-3.5" />
+                          <Check className="w-4 h-4" />
                         )}
-                      </motion.button>
+                      </button>
                     </div>
                   </form>
                 ) : (
                   <>
-                    <span>{org.name}</span>
+                    <span className="font-medium">{org.name}</span>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <motion.button
+                      <button
                         onClick={() => startEditing(org)}
-                        className="text-primary"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
                         disabled={!!editingOrganization}
                       >
                         <Edit className="w-3.5 h-3.5" />
-                      </motion.button>
-                      <motion.button
+                      </button>
+                      <button
                         onClick={() =>
                           handleDeleteOrganization(org.id, org.name)
                         }
-                        className="text-destructive"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                         disabled={
                           loading.deleteOrg === org.id || !!editingOrganization
                         }
@@ -466,14 +446,14 @@ const OrganizationsSettings: React.FC = () => {
                         ) : (
                           <Trash className="w-3.5 h-3.5" />
                         )}
-                      </motion.button>
+                      </button>
                     </div>
                   </>
                 )}
-              </motion.li>
+              </li>
             ))
           ) : (
-            <li className="px-2 py-2 text-center text-muted-foreground text-xs">
+            <li className="px-3 py-6 text-center text-muted-foreground text-sm">
               {loading.fetchOrgs
                 ? "Загрузка организаций..."
                 : "Нет добавленных организаций"}
@@ -481,7 +461,7 @@ const OrganizationsSettings: React.FC = () => {
           )}
         </ul>
       </div>
-    </motion.div>
+    </Card>
   );
 };
 
@@ -504,14 +484,12 @@ const SettingsContent: React.FC = () => {
     status: "none",
   });
 
-  // Загрузка сотрудников при монтировании компонента
   useEffect(() => {
     if (isAuthenticated) {
       fetchEmployees();
     }
   }, [isAuthenticated]);
 
-  // Функция для загрузки сотрудников из Supabase
   const fetchEmployees = async () => {
     setLoading((prev) => ({ ...prev, fetchEmployees: true }));
     try {
@@ -525,7 +503,6 @@ const SettingsContent: React.FC = () => {
     }
   };
 
-  // Функция для проверки соединения с Supabase
   const checkFirebaseConnection = async () => {
     setConnectionStatus({ status: "checking" });
     setLoading((prev) => ({ ...prev, connection: true }));
@@ -533,20 +510,12 @@ const SettingsContent: React.FC = () => {
     const startTime = performance.now();
 
     try {
-      toast.info("Проверка соединения с базой данных...");
-      console.log("Начинаем проверку соединения с Supabase...");
-
       const connected = await databaseService.testConnection();
 
       const endTime = performance.now();
       const responseTime = Math.round(endTime - startTime);
 
       if (connected) {
-        toast.success("Соединение с базой данных установлено успешно!");
-        console.log(
-          `Соединение (Supabase) успешно, время отклика: ${responseTime}ms`,
-        );
-
         setTimeout(() => {
           setConnectionStatus({
             status: "success",
@@ -559,16 +528,11 @@ const SettingsContent: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Ошибка при проверке соединения с Supabase:", error);
-
-      const errorMessage = "Не удалось подключиться к базе данных.";
-      toast.error(errorMessage);
-
       setConnectionStatus({ status: "error" });
       setLoading((prev) => ({ ...prev, connection: false }));
     }
   };
 
-  // Добавление нового сотрудника
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmployee.trim()) {
@@ -578,9 +542,6 @@ const SettingsContent: React.FC = () => {
 
     setLoading((prev) => ({ ...prev, employee: true }));
     try {
-      toast.info(`Добавление сотрудника "${newEmployee.trim()}"...`);
-      console.log("Начинаем добавление нового сотрудника:", newEmployee.trim());
-
       const employee: Omit<Employee, "id"> = {
         name: newEmployee.trim(),
       };
@@ -595,17 +556,12 @@ const SettingsContent: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Ошибка при добавлении сотрудника:", error);
-
-      let errorMessage = "Не удалось добавить сотрудника. ";
-      errorMessage += `${error.message || "Неизвестная ошибка."}`;
-
-      toast.error(errorMessage);
+      toast.error("Не удалось добавить сотрудника");
     } finally {
       setLoading((prev) => ({ ...prev, employee: false }));
     }
   };
 
-  // Удаление сотрудника
   const handleDeleteEmployee = async (
     employeeId: string,
     employeeName: string,
@@ -633,20 +589,17 @@ const SettingsContent: React.FC = () => {
     }
   };
 
-  // Очистка всей базы данных Supabase
   const handleClearDatabase = async () => {
     setLoading((prev) => ({ ...prev, clearDatabase: true }));
     try {
       const success = await databaseService.clearAllData();
 
       if (success) {
-        // Очищаем состояние приложения
         dispatch({ type: "SET_EMPLOYEES", payload: [] });
         dispatch({ type: "SET_ORGANIZATIONS", payload: [] });
         dispatch({ type: "SET_SERVICES", payload: [] });
         dispatch({ type: "SET_APPOINTMENTS", payload: [] });
 
-        // Сбрасываем настройки к значениям по умолчанию
         dispatch({
           type: "SET_SALARY_CALCULATION_METHOD",
           payload: {
@@ -686,308 +639,267 @@ const SettingsContent: React.FC = () => {
   }
 
   return (
-    <div className="space-y-5">
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="max-w-4xl mx-auto space-y-3 sm:space-y-5"
-        >
-          <div className="px-1 sm:px-0">
-            <h2 className="text-xl sm:text-2xl font-bold gradient-heading">
-              Настройки системы
-            </h2>
-            <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-              Управление сотрудниками, организациями и параметрами
-            </p>
-          </div>
+    <div className="space-y-6">
+      <div className="px-1 sm:px-0 mb-4">
+        <h2 className="text-2xl font-bold text-foreground">
+          Настройки системы
+        </h2>
+        <p className="text-muted-foreground text-sm mt-1">
+          Управление параметрами приложения, сотрудниками и базами данных
+        </p>
+      </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            <div className="space-y-3 sm:space-y-4">
-              <ThemeSettings />
-              <SalaryCalculationSettings />
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-6 bg-muted/50 p-1 rounded-xl">
+          <TabsTrigger value="general" className="rounded-lg py-2 data-[state=active]:shadow-sm">
+            <Settings className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Общие</span>
+          </TabsTrigger>
+          <TabsTrigger value="employees" className="rounded-lg py-2 data-[state=active]:shadow-sm">
+            <Users className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Сотрудники и ЗП</span>
+          </TabsTrigger>
+          <TabsTrigger value="organizations" className="rounded-lg py-2 data-[state=active]:shadow-sm">
+            <Building className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Организации</span>
+          </TabsTrigger>
+        </TabsList>
 
-              <motion.div
-                className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-                whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                transition={{ duration: 0.2 }}
-              >
-                <h3 className="text-sm sm:text-base font-medium mb-4">
-                  Состояние базы данных
-                </h3>
-                <div className="flex items-center">
-                  <div className="flex items-center flex-1">
-                    <div
-                      className={`w-8 h-8 mr-2 rounded-full flex items-center justify-center
-                      ${
-                        connectionStatus.status === "none"
-                          ? "bg-muted"
-                          : connectionStatus.status === "checking"
-                            ? "bg-primary/20"
-                            : connectionStatus.status === "success"
-                              ? "bg-green-100"
-                              : "bg-destructive/20"
-                      }`}
-                    >
-                      {connectionStatus.status === "checking" ? (
-                        <AnimatedCloud />
-                      ) : connectionStatus.status === "success" ? (
-                        <Check className="w-4 h-4 text-green-600" />
-                      ) : connectionStatus.status === "error" ? (
-                        <AlertTriangle className="w-4 h-4 text-destructive" />
-                      ) : (
-                        <Cloud className="w-4 h-4 text-muted-foreground/70" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        {connectionStatus.status === "none"
-                          ? "Не проверено"
-                          : connectionStatus.status === "checking"
-                            ? "Проверка..."
-                            : connectionStatus.status === "success"
-                              ? "Подключено"
-                              : "Ошибка соединения"}
-                      </p>
-                      {connectionStatus.status === "success" &&
-                        connectionStatus.time && (
-                          <p className="text-xs text-muted-foreground">
-                            Отклик: {connectionStatus.time} мс
-                          </p>
-                        )}
-                    </div>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={checkFirebaseConnection}
-                    disabled={loading.connection}
-                    className="px-2 py-1 bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors disabled:opacity-70 text-xs flex items-center gap-1"
+        {/* Вкладка 1: Общие настройки */}
+        <TabsContent value="general" className="space-y-4 outline-none focus:ring-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ThemeSettings />
+
+            <Card>
+              <div className="flex items-center gap-2 mb-1">
+                <Database className="w-5 h-5 text-primary" />
+                <h3 className="text-base font-semibold">Состояние базы</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Проверка подключения к серверу Supabase
+              </p>
+
+              <div className="flex items-center justify-between bg-muted/20 p-3 rounded-xl border border-border/60">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center
+                    ${
+                      connectionStatus.status === "none"
+                        ? "bg-muted text-muted-foreground"
+                        : connectionStatus.status === "checking"
+                          ? "bg-primary/20 text-primary"
+                          : connectionStatus.status === "success"
+                            ? "bg-green-500/10 text-green-500"
+                            : "bg-destructive/10 text-destructive"
+                    }`}
                   >
-                    {loading.connection ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
+                    {connectionStatus.status === "checking" ? (
+                      <AnimatedCloud />
+                    ) : connectionStatus.status === "success" ? (
+                      <Check className="w-5 h-5" />
+                    ) : connectionStatus.status === "error" ? (
+                      <AlertTriangle className="w-5 h-5" />
                     ) : (
-                      <>
-                        <RefreshCw className="w-3 h-3" />
-                        <span>Проверить</span>
-                      </>
+                      <Cloud className="w-5 h-5 opacity-50" />
                     )}
-                  </motion.button>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {connectionStatus.status === "none"
+                        ? "Не проверено"
+                        : connectionStatus.status === "checking"
+                          ? "Проверка..."
+                          : connectionStatus.status === "success"
+                            ? "Подключено"
+                            : "Ошибка соединения"}
+                    </p>
+                    {connectionStatus.status === "success" && connectionStatus.time && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Отклик: {connectionStatus.time} мс
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </motion.div>
-            </div>
-
-            <div className="space-y-3 sm:space-y-4">
-              <motion.div
-                className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-                whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm sm:text-base font-medium">Сотрудники</h3>
-
-                  {loading.fetchEmployees ? (
-                    <div className="flex flex-col items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
-                      <span className="text-xs text-muted-foreground">
-                        Загрузка сотрудников...
-                      </span>
-                      <div className="flex gap-1 mt-2">
-                        <div
-                          className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse"
-                          style={{ animationDelay: "0ms" }}
-                        ></div>
-                        <div
-                          className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse"
-                          style={{ animationDelay: "150ms" }}
-                        ></div>
-                        <div
-                          className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse"
-                          style={{ animationDelay: "300ms" }}
-                        ></div>
-                      </div>
-                    </div>
+                <button
+                  onClick={checkFirebaseConnection}
+                  disabled={loading.connection}
+                  className="px-3 py-1.5 bg-background border border-border rounded-lg hover:bg-muted/50 transition-colors disabled:opacity-50 text-sm font-medium flex items-center gap-1.5"
+                >
+                  {loading.connection ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={fetchEmployees}
-                      className="text-xs text-primary flex items-center gap-1"
-                    >
-                      <RefreshCw className="w-3 h-3" />
-                      Обновить
-                    </motion.button>
+                    <RefreshCw className="w-3.5 h-3.5" />
                   )}
-                </div>
+                  Проверить
+                </button>
+              </div>
+            </Card>
+          </div>
 
-                <form onSubmit={handleAddEmployee} className="mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={newEmployee}
-                        onChange={(e) => setNewEmployee(e.target.value)}
-                        placeholder="Имя сотрудника"
-                        className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-sm"
-                        disabled={loading.employee}
-                      />
-                    </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      type="submit"
-                      className="flex items-center gap-1 px-2 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-70 text-xs"
-                      disabled={loading.employee}
+          <Card className="border-destructive/30 bg-destructive/5">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              <h3 className="text-base font-semibold text-destructive">
+                Управление данными
+              </h3>
+            </div>
+            <p className="text-sm text-destructive/80 mb-4">
+              Удаление всех данных из базы данных Supabase.
+              <span className="font-bold"> Это действие необратимо!</span>
+            </p>
+
+            <AnimatePresence mode="wait">
+              {showConfirmation ? (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-background border border-destructive/50 rounded-xl p-4 overflow-hidden"
+                >
+                  <h4 className="font-semibold text-destructive mb-2 text-sm">
+                    Вы уверены?
+                  </h4>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    Все сотрудники, организации, записи и настройки будут безвозвратно удалены.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowConfirmation(false)}
+                      className="px-4 py-2 rounded-xl border border-border hover:bg-muted/50 transition-colors text-sm font-medium flex-1"
+                      disabled={loading.clearDatabase}
                     >
-                      {loading.employee ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
+                      Отмена
+                    </button>
+                    <button
+                      onClick={handleClearDatabase}
+                      className="px-4 py-2 bg-destructive text-destructive-foreground rounded-xl hover:bg-destructive/90 transition-colors disabled:opacity-70 text-sm font-medium flex items-center justify-center gap-2 flex-1"
+                      disabled={loading.clearDatabase}
+                    >
+                      {loading.clearDatabase ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Удаление...
+                        </>
                       ) : (
-                        <Plus className="w-3 h-3" />
+                        <>
+                          <Trash className="w-4 h-4" />
+                          Да, удалить всё
+                        </>
                       )}
-                      <span>Добавить</span>
-                    </motion.button>
+                    </button>
                   </div>
-                </form>
-
-                <div className="border border-border rounded-md overflow-hidden bg-card/50">
-                  <div className="bg-muted/30 px-2 py-1.5 border-b border-border">
-                    <h4 className="text-xs font-medium">Список сотрудников</h4>
-                  </div>
-                  <ul className="divide-y divide-border max-h-[220px] overflow-y-auto">
-                    {state.employees.length > 0 ? (
-                      state.employees.map((employee) => (
-                        <motion.li
-                          key={employee.id}
-                          className="px-2 py-2 flex items-center justify-between text-sm group"
-                          whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
-                        >
-                          <span>{employee.name}</span>
-
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() =>
-                              handleDeleteEmployee(employee.id, employee.name)
-                            }
-                            className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                            disabled={loading.deleteEmployee === employee.id}
-                          >
-                            {loading.deleteEmployee === employee.id ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <X className="w-3.5 h-3.5" />
-                            )}
-                          </motion.button>
-                        </motion.li>
-                      ))
-                    ) : (
-                      <li className="px-2 py-2 text-center text-muted-foreground text-xs">
-                        {loading.fetchEmployees
-                          ? "Загрузка сотрудников..."
-                          : "Нет добавленных сотрудников"}
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              </motion.div>
-
-              <OrganizationsSettings />
-
-              <motion.div
-                className="p-3 sm:p-4 border border-destructive/30 rounded-xl bg-destructive/5"
-                whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                transition={{ duration: 0.2 }}
-              >
-                <h3 className="text-sm sm:text-base font-medium mb-2 text-destructive flex items-center gap-2">
+                </motion.div>
+              ) : (
+                <button
+                  onClick={() => setShowConfirmation(true)}
+                  className="w-full px-4 py-2.5 bg-destructive text-destructive-foreground rounded-xl hover:bg-destructive/90 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                >
                   <Trash className="w-4 h-4" />
-                  Управление данными
+                  <span>Удалить все данные из базы</span>
+                </button>
+              )}
+            </AnimatePresence>
+          </Card>
+        </TabsContent>
+
+        {/* Вкладка 2: Сотрудники и ЗП */}
+        <TabsContent value="employees" className="space-y-4 outline-none focus:ring-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <div className="flex justify-between items-center mb-1">
+                <h3 className="text-base font-semibold flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Сотрудники
                 </h3>
-                <p className="text-xs text-muted-foreground mb-3">
-                  Удаление всех данных из базы данных Supabase.
-                  <span className="font-bold text-destructive">
-                    {" "}
-                    Это действие необратимо!
-                  </span>
-                </p>
 
-                <AnimatePresence>
-                  {showConfirmation ? (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="bg-destructive/10 border border-destructive rounded-lg p-3 mb-3"
-                    >
-                      <div className="flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="font-medium text-destructive mb-1 text-sm">
-                            Подтверждение удаления
-                          </h4>
-                          <p className="mb-3 text-xs">
-                            Вы действительно хотите удалить{" "}
-                            <span className="font-bold">
-                              ВСЕ данные из Supabase
-                            </span>
-                            ? Будут удалены: сотрудники, организации, услуги,
-                            записи о мойках и все настройки.
-                          </p>
-                          <div className="flex gap-2">
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => setShowConfirmation(false)}
-                              className="px-2 py-1 rounded-md border border-input hover:bg-secondary/50 transition-colors text-xs"
-                              disabled={loading.clearDatabase}
-                            >
-                              Отмена
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={handleClearDatabase}
-                              className="flex items-center justify-center gap-1 px-2 py-1 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-70 text-xs"
-                              disabled={loading.clearDatabase}
-                            >
-                              {loading.clearDatabase ? (
-                                <>
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                  Удаление...
-                                </>
-                              ) : (
-                                <>
-                                  <Trash className="w-3 h-3" />
-                                  Да, удалить всё из Supabase
-                                </>
-                              )}
-                            </motion.button>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+                {loading.fetchEmployees ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                ) : (
+                  <button
+                    onClick={fetchEmployees}
+                    className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-1 font-medium"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Обновить
+                  </button>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Управление списком персонала
+              </p>
+
+              <form onSubmit={handleAddEmployee} className="mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={newEmployee}
+                      onChange={(e) => setNewEmployee(e.target.value)}
+                      placeholder="Имя сотрудника..."
+                      className="w-full px-3 py-2 border border-border/60 bg-muted/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all text-sm"
+                      disabled={loading.employee}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="flex items-center justify-center h-9 w-9 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-70 flex-shrink-0"
+                    disabled={loading.employee}
+                  >
+                    {loading.employee ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              <div className="border border-border/60 rounded-xl overflow-hidden bg-muted/10">
+                <ul className="divide-y divide-border/60 max-h-[250px] overflow-y-auto custom-scrollbar">
+                  {state.employees.length > 0 ? (
+                    state.employees.map((employee) => (
+                      <li
+                        key={employee.id}
+                        className="px-3 py-2.5 flex items-center justify-between text-sm group hover:bg-muted/30 transition-colors"
+                      >
+                        <span className="font-medium">{employee.name}</span>
+                        <button
+                          onClick={() =>
+                            handleDeleteEmployee(employee.id, employee.name)
+                          }
+                          className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md opacity-0 group-hover:opacity-100 transition-all"
+                          disabled={loading.deleteEmployee === employee.id}
+                        >
+                          {loading.deleteEmployee === employee.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <X className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </li>
+                    ))
                   ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setShowConfirmation(true)}
-                      className="w-full px-3 py-2 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors text-xs flex items-center justify-center gap-2"
-                    >
-                      <Trash className="w-4 h-4" />
-                      <span>Удалить все данные из Supabase</span>
-                    </motion.button>
+                    <li className="px-3 py-6 text-center text-muted-foreground text-sm">
+                      {loading.fetchEmployees
+                        ? "Загрузка сотрудников..."
+                        : "Нет сотрудников"}
+                    </li>
                   )}
-                </AnimatePresence>
-              </motion.div>
-            </div>
-          </div>
+                </ul>
+              </div>
+            </Card>
 
-          {/* Организации в Итого (теперь внутри SettingsContent, за паролем) */}
-          <div className="mt-4 sm:mt-5 border-t border-border pt-4 sm:pt-5">
-            <OrganizationsInTotalSettings />
+            <SalaryCalculationSettings />
           </div>
-        </motion.div>
-      </AnimatePresence>
+        </TabsContent>
+
+        {/* Вкладка 3: Организации */}
+        <TabsContent value="organizations" className="space-y-4 outline-none focus:ring-0">
+          <OrganizationsSettings />
+          <OrganizationsInTotalSettings />
+        </TabsContent>
+
+      </Tabs>
     </div>
   );
 };
@@ -1004,7 +916,6 @@ const SalaryCalculationSettings: React.FC = () => {
     const loadSalaryCalculationMethod = async () => {
       try {
         const result = await settingsService.getSalaryCalculationMethod();
-
         if (result) {
           dispatch({
             type: "SET_SALARY_CALCULATION_METHOD",
@@ -1013,9 +924,6 @@ const SalaryCalculationSettings: React.FC = () => {
               date: result.date,
             },
           });
-          console.log(
-            `Загружен метод расчета зарплаты из базы данных: ${result.method}, дата: ${result.date}`,
-          );
         }
       } catch (error) {
         console.error("Ошибка при загрузке метода расчета зарплаты:", error);
@@ -1031,7 +939,6 @@ const SalaryCalculationSettings: React.FC = () => {
 
     try {
       const today = format(new Date(), "yyyy-MM-dd");
-
       const success = await settingsService.saveSalaryCalculationMethod(
         method,
         today,
@@ -1045,20 +952,12 @@ const SalaryCalculationSettings: React.FC = () => {
             date: today,
           },
         });
-
-        const methodDescription = "Минимальная оплата + процент";
-
-        toast.success(
-          `Метод расчета зарплаты изменен на: ${methodDescription}`,
-        );
+        toast.success("Метод расчета зарплаты изменен");
       } else {
-        throw new Error(
-          "Не удалось сохранить метод расчета зарплаты в базе данных",
-        );
+        throw new Error("Не удалось сохранить метод");
       }
     } catch (error) {
-      console.error("Ошибка при изменении метода расчета зарплаты:", error);
-      toast.error("Ошибка при изменении метода расчета зарплаты");
+      console.error(error);
       setSavingError("Не удалось сохранить настройки. Попробуйте еще раз.");
     } finally {
       setLoading(false);
@@ -1078,282 +977,242 @@ const SalaryCalculationSettings: React.FC = () => {
         });
         toast.success("Настройки минимальной оплаты сохранены");
       } else {
-        throw new Error("Не удалось сохранить настройки в базе данных");
+        throw new Error("Ошибка сохранения");
       }
     } catch (error) {
-      console.error(
-        "Ошибка при сохранении настроек минимальной оплаты:",
-        error,
-      );
-      toast.error("Ошибка при сохранении настроек минимальной оплаты");
+      console.error(error);
+      toast.error("Ошибка при сохранении настроек");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <motion.div
-      className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-      transition={{ duration: 0.2 }}
-    >
-      <h3 className="text-sm sm:text-base font-medium mb-1">Расчет заработной платы</h3>
-      <p className="text-xs text-muted-foreground mb-4">
-        Выберите метод расчета заработной платы. Изменение будет применено ко
-        всем дням начиная с сегодняшнего.
+    <Card>
+      <div className="flex items-center gap-2 mb-1">
+        <Banknote className="w-5 h-5 text-primary" />
+        <h3 className="text-base font-semibold">Расчет зарплаты</h3>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">
+        Параметры расчета, применяемые начиная с сегодняшнего дня
       </p>
 
       {savingError && (
-        <div className="mb-3 p-2 bg-destructive/10 text-destructive text-xs rounded-md">
+        <div className="mb-3 p-2 bg-destructive/10 text-destructive text-sm rounded-lg border border-destructive/20">
           {savingError}
         </div>
       )}
 
-      <div className="flex flex-col gap-3 mb-2">
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
+      <div className="space-y-3">
+        <button
           onClick={() => handleSalaryMethodChange("minimumWithPercentage")}
-          className={`p-3 border rounded-lg flex items-start transition-colors ${
+          className={`w-full p-3 border rounded-xl flex items-start text-left transition-colors ${
             state.salaryCalculationMethod === "minimumWithPercentage"
-              ? "border-primary bg-primary/5"
-              : "border-border hover:bg-secondary/10"
+              ? "border-primary bg-primary/5 shadow-sm"
+              : "border-border/60 hover:border-border hover:bg-muted/30"
           }`}
           disabled={loading}
         >
           <div
-            className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center ${
+            className={`w-4 h-4 rounded-full border mt-0.5 mr-3 flex-shrink-0 flex items-center justify-center transition-colors ${
               state.salaryCalculationMethod === "minimumWithPercentage"
                 ? "border-primary"
-                : "border-input"
+                : "border-muted-foreground"
             }`}
           >
             {state.salaryCalculationMethod === "minimumWithPercentage" && (
-              <div className="w-3 h-3 rounded-full bg-primary"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-primary" />
             )}
           </div>
-          <div className="flex-1">
+          <div>
             <p className="font-medium text-sm">Минимальная оплата + процент</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Мойщик: % от выручки мойки и химчистки (раздельно) или минимальная
-              оплата. Админ: % от кассы + % от лично выполненных услуг (мойка и
-              химчистка раздельно) или минимальная оплата.
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              Мойщик: % от выручки или мин. оплата. <br />
+              Админ: % от кассы + % от лично выполненных услуг или мин. оплата.
             </p>
           </div>
-          {loading && (
-            <Loader2 className="w-4 h-4 animate-spin ml-2 text-primary" />
+        </button>
+
+        <AnimatePresence>
+          {state.salaryCalculationMethod === "minimumWithPercentage" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-2 pb-1 space-y-4">
+                {/* Настройки мойщика */}
+                <div className="bg-muted/20 p-3 rounded-xl border border-border/50">
+                  <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-3 tracking-wider">
+                    Мойщик
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-xs text-muted-foreground mb-1.5">
+                        Мин. оплата (₽)
+                      </label>
+                      <input
+                        type="number"
+                        value={minimumSettings.minimumPaymentWasher}
+                        onChange={(e) =>
+                          setMinimumSettings({
+                            ...minimumSettings,
+                            minimumPaymentWasher: Number.parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="w-full px-3 py-2 text-sm border border-border/60 bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1.5">
+                        % мойка
+                      </label>
+                      <input
+                        type="number"
+                        value={minimumSettings.percentageWasher}
+                        onChange={(e) =>
+                          setMinimumSettings({
+                            ...minimumSettings,
+                            percentageWasher: Number.parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="w-full px-3 py-2 text-sm border border-border/60 bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                        min="0" max="100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1.5">
+                        % химчистка
+                      </label>
+                      <input
+                        type="number"
+                        value={minimumSettings.percentageWasherDryclean}
+                        onChange={(e) =>
+                          setMinimumSettings({
+                            ...minimumSettings,
+                            percentageWasherDryclean: Number.parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="w-full px-3 py-2 text-sm border border-border/60 bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                        min="0" max="100"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Настройки админа */}
+                <div className="bg-muted/20 p-3 rounded-xl border border-border/50">
+                  <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-3 tracking-wider">
+                    Администратор
+                  </h4>
+                  <div className="mb-3">
+                    <label className="block text-xs text-muted-foreground mb-1.5">
+                      Мин. оплата (₽)
+                    </label>
+                    <input
+                      type="number"
+                      value={minimumSettings.minimumPaymentAdmin}
+                      onChange={(e) =>
+                        setMinimumSettings({
+                          ...minimumSettings,
+                          minimumPaymentAdmin: Number.parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      className="w-full sm:w-1/2 px-3 py-2 text-sm border border-border/60 bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                      min="0"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1.5">
+                        % касса
+                      </label>
+                      <input
+                        type="number"
+                        value={minimumSettings.adminCashPercentage}
+                        onChange={(e) =>
+                          setMinimumSettings({
+                            ...minimumSettings,
+                            adminCashPercentage: Number.parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="w-full px-3 py-2 text-sm border border-border/60 bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                        min="0" max="100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1.5">
+                        % мойка
+                      </label>
+                      <input
+                        type="number"
+                        value={minimumSettings.adminCarWashPercentage}
+                        onChange={(e) =>
+                          setMinimumSettings({
+                            ...minimumSettings,
+                            adminCarWashPercentage: Number.parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="w-full px-3 py-2 text-sm border border-border/60 bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                        min="0" max="100"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1.5">
+                        % химч.
+                      </label>
+                      <input
+                        type="number"
+                        value={minimumSettings.adminDrycleanPercentage}
+                        onChange={(e) =>
+                          setMinimumSettings({
+                            ...minimumSettings,
+                            adminDrycleanPercentage: Number.parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="w-full px-3 py-2 text-sm border border-border/60 bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                        min="0" max="100"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSaveMinimumSettings}
+                  disabled={loading}
+                  className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Сохранить проценты"
+                  )}
+                </button>
+              </div>
+            </motion.div>
           )}
-        </motion.button>
-
-        {state.salaryCalculationMethod === "minimumWithPercentage" && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="pl-8 pr-3 py-3 border-l-2 border-primary/30 bg-primary/5 rounded-r-lg"
-          >
-            <h4 className="text-sm font-medium mb-3">
-              Настройки минимальной оплаты
-            </h4>
-
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
-                    Мин. оплата мойщика
-                  </label>
-                  <input
-                    type="number"
-                    value={minimumSettings.minimumPaymentWasher}
-                    onChange={(e) =>
-                      setMinimumSettings({
-                        ...minimumSettings,
-                        minimumPaymentWasher:
-                          Number.parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="0"
-                    step="0.01"
-                    min="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
-                    % мойщика - мойка
-                  </label>
-                  <input
-                    type="number"
-                    value={minimumSettings.percentageWasher}
-                    onChange={(e) =>
-                      setMinimumSettings({
-                        ...minimumSettings,
-                        percentageWasher:
-                          Number.parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="10"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
-                    % мойщика - химчистка
-                  </label>
-                  <input
-                    type="number"
-                    value={minimumSettings.percentageWasherDryclean}
-                    onChange={(e) =>
-                      setMinimumSettings({
-                        ...minimumSettings,
-                        percentageWasherDryclean:
-                          Number.parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="15"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
-                    Мин. оплата админа
-                  </label>
-                  <input
-                    type="number"
-                    value={minimumSettings.minimumPaymentAdmin}
-                    onChange={(e) =>
-                      setMinimumSettings({
-                        ...minimumSettings,
-                        minimumPaymentAdmin:
-                          Number.parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="0"
-                    step="0.01"
-                    min="0"
-                  />
-                </div>
-                <div></div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
-                    % адм от кассы
-                  </label>
-                  <input
-                    type="number"
-                    value={minimumSettings.adminCashPercentage}
-                    onChange={(e) =>
-                      setMinimumSettings({
-                        ...minimumSettings,
-                        adminCashPercentage:
-                          Number.parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="3"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
-                    % адм от мойки
-                  </label>
-                  <input
-                    type="number"
-                    value={minimumSettings.adminCarWashPercentage}
-                    onChange={(e) =>
-                      setMinimumSettings({
-                        ...minimumSettings,
-                        adminCarWashPercentage:
-                          Number.parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="2"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
-                    % адм от химчистки
-                  </label>
-                  <input
-                    type="number"
-                    value={minimumSettings.adminDrycleanPercentage}
-                    onChange={(e) =>
-                      setMinimumSettings({
-                        ...minimumSettings,
-                        adminDrycleanPercentage:
-                          Number.parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="3"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                  />
-                </div>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSaveMinimumSettings}
-                disabled={loading}
-                className="w-full px-3 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs disabled:opacity-70 flex items-center justify-center gap-1"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Сохранение...
-                  </>
-                ) : (
-                  "Сохранить настройки"
-                )}
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
+        </AnimatePresence>
       </div>
 
-      <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border">
-        <p>
-          <span className="font-medium">Текущий метод:</span>{" "}
-          {state.salaryCalculationMethod === "none"
-            ? "Не выбран"
-            : "Минимальная оплата + процент"}
-        </p>
-        <p className="mt-1">
-          <span className="font-medium">Дата изменения:</span> {(() => {
+      <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border/50 flex justify-between">
+        <span>
+          Текущий: <span className="font-medium text-foreground">{state.salaryCalculationMethod === "none" ? "Не выбран" : "Мин. оплата + %"}</span>
+        </span>
+        <span>
+          Изменен: {(() => {
             try {
-              return format(
-                parseISO(state.salaryCalculationDate),
-                "dd.MM.yyyy",
-              );
+              return format(parseISO(state.salaryCalculationDate), "dd.MM.yyyy");
             } catch (error) {
-              return "Неверная дата";
+              return "Неизвестно";
             }
           })()}
-        </p>
+        </span>
       </div>
-    </motion.div>
+    </Card>
   );
 };
 
@@ -1381,7 +1240,6 @@ const OrganizationsInTotalSettings = () => {
           type: "SET_ORGANIZATIONS_IN_TOTAL",
           payload: newOrgs,
         });
-        toast.success('Настройки "Организации в Итого" сохранены');
       } else {
         throw new Error("Ошибка сохранения");
       }
@@ -1394,80 +1252,65 @@ const OrganizationsInTotalSettings = () => {
   };
 
   return (
-    <motion.div
-      className="p-3 sm:p-5 border border-border/60 rounded-xl bg-card/80 mt-2 shadow-sm"
-      whileHover={{
-        boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
-        borderColor: "hsl(var(--primary)/0.2)",
-      }}
-      transition={{ duration: 0.3 }}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <Building className="w-4 h-4 text-primary" />
-        <h3 className="text-base font-semibold">Организации в Итого</h3>
+    <Card>
+      <div className="flex items-center gap-2 mb-1">
+        <Building className="w-5 h-5 text-primary" />
+        <h3 className="text-base font-semibold">Исключения для Итого</h3>
       </div>
-      <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-        Выберите организации, суммы которых будут вычитаться из общего безнала и
-        отображаться отдельным пунктом в блоке «Итого».
+      <p className="text-sm text-muted-foreground mb-4">
+        Организации, суммы которых будут вычитаться из общего безнала и отображаться отдельно.
       </p>
 
       {state.organizations.length === 0 ? (
-        <div className="text-xs text-muted-foreground p-3 sm:p-4 border rounded-xl bg-muted/20 text-center">
-          Нет добавленных организаций
+        <div className="text-sm text-muted-foreground p-6 border border-border/60 rounded-xl bg-muted/10 text-center">
+          Сначала добавьте организации в списке выше
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {state.organizations.map((org) => {
-            const isSelected = (state.organizationsInTotal || []).includes(
-              org.id,
-            );
+            const isSelected = (state.organizationsInTotal || []).includes(org.id);
             return (
-              <motion.button
+              <button
                 key={org.id}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 onClick={() => toggleOrganization(org.id)}
                 disabled={loading}
-                className={`relative overflow-hidden p-2.5 sm:p-4 rounded-xl flex items-center justify-between transition-all duration-300 text-left border ${
+                className={`group flex items-center justify-between p-3 rounded-xl border text-left transition-all duration-200 ${
                   isSelected
-                    ? "border-primary/50 shadow-md bg-gradient-to-br from-primary/5 to-primary/10"
-                    : "border-border/60 hover:border-primary/30 hover:shadow-sm bg-gradient-to-br from-background to-muted/20"
+                    ? "border-primary/40 bg-primary/5 shadow-sm"
+                    : "border-border/60 hover:border-primary/30 hover:bg-muted/20"
                 }`}
               >
-                {/* Индикатор выбора сбоку (как в ролях) */}
-                <div
-                  className={`absolute left-0 top-0 bottom-0 w-1 transition-colors duration-300 ${isSelected ? "bg-primary" : "bg-transparent"}`}
-                />
-
                 <span
-                  className={`text-xs sm:text-sm font-medium truncate pr-2 sm:pr-3 transition-colors duration-300 ${isSelected ? "text-primary" : "text-foreground"}`}
+                  className={`text-sm font-medium truncate pr-2 transition-colors ${
+                    isSelected ? "text-primary" : "text-foreground group-hover:text-primary/80"
+                  }`}
                 >
                   {org.name}
                 </span>
 
                 <div
-                  className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border flex-shrink-0 flex items-center justify-center transition-all duration-300 ${
+                  className={`w-5 h-5 rounded-md border flex-shrink-0 flex items-center justify-center transition-all ${
                     isSelected
-                      ? "bg-primary border-primary text-primary-foreground shadow-sm"
-                      : "border-input text-transparent bg-background/50"
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : "border-input bg-background"
                   }`}
                 >
                   <Check
-                    className={`w-3 h-3 transition-opacity duration-300 ${isSelected ? "opacity-100" : "opacity-0"}`}
+                    className={`w-3.5 h-3.5 transition-opacity ${isSelected ? "opacity-100" : "opacity-0"}`}
                   />
                 </div>
-              </motion.button>
+              </button>
             );
           })}
         </div>
       )}
-    </motion.div>
+    </Card>
   );
 };
 
 export default function SettingsPage() {
   return (
-    <div className="p-3 sm:p-4 space-y-3">
+    <div className="p-3 sm:p-5 max-w-5xl mx-auto">
       <SettingsContent />
     </div>
   );
