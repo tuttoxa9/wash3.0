@@ -79,7 +79,7 @@ const HomePage: React.FC = () => {
     useState(false);
 
   // Shift start animation state
-  const [shiftPhase, setShiftPhase] = useState<"idle" | "starting" | "success" | "active">("idle");
+  const [shiftPhase, setShiftPhase] = useState<"idle" | "starting" | "success" | "active" | "closing" | "closed">("idle");
 
   // Smooth scroll to shift selection with highlight
   const scrollToShift = () => {
@@ -439,12 +439,55 @@ const HomePage: React.FC = () => {
 
   // Начало смены - зафиксировать сотрудников
   const startShift = async () => {
+    // Логика закрытия смены
+    if (shiftEmployees.length === 0 && isEditingShift) {
+      setShiftPhase("closing");
+      try {
+        setLoading((prev) => ({ ...prev, savingShift: true }));
+
+        if (currentReport) {
+          const updatedReport = {
+            ...currentReport,
+            employeeIds: [],
+            dailyEmployeeRoles: {},
+          };
+
+          await dailyReportService.updateReport(updatedReport);
+
+          dispatch({
+            type: "SET_DAILY_REPORT",
+            payload: { date: selectedDate, report: updatedReport },
+          });
+        }
+
+        setTimeout(() => {
+          setShiftPhase("closed");
+          setLoading((prev) => ({ ...prev, savingShift: false }));
+
+          setTimeout(() => {
+            setIsShiftLocked(false);
+            setIsEditingShift(false);
+            setShiftPhase("idle");
+            toast.success("Смена закрыта");
+          }, 1500);
+        }, 1500);
+      } catch (error) {
+        console.error("Ошибка при закрытии смены:", error);
+        toast.error("Не удалось закрыть смену");
+        setShiftPhase("active");
+        setLoading((prev) => ({ ...prev, savingShift: false }));
+      }
+      return;
+    }
+
     if (shiftEmployees.length === 0) {
       toast.error("Выберите хотя бы одного сотрудника для смены");
       return;
     }
 
-    setShiftPhase("starting");
+    if (!isEditingShift) {
+      setShiftPhase("starting");
+    }
 
     try {
       setLoading((prev) => ({ ...prev, savingShift: true }));
@@ -496,22 +539,27 @@ const HomePage: React.FC = () => {
       setIsShiftLocked(true);
       setIsEditingShift(false);
 
-      // Имитируем небольшую задержку загрузки (минимум 1.5 сек)
-      setTimeout(() => {
-        setShiftPhase("success");
-        setLoading((prev) => ({ ...prev, savingShift: false }));
-
-        // Галочка висит 1.5 сек, потом переходим к активной смене
+      if (!isEditingShift) {
+        // Имитируем небольшую задержку загрузки (минимум 1.5 сек)
         setTimeout(() => {
-          setShiftPhase("active");
-          toast.success("Смена успешно открыта");
+          setShiftPhase("success");
+          setLoading((prev) => ({ ...prev, savingShift: false }));
+
+          // Галочка висит 1.5 сек, потом переходим к активной смене
+          setTimeout(() => {
+            setShiftPhase("active");
+            toast.success("Смена успешно открыта");
+          }, 1500);
         }, 1500);
-      }, 1500);
+      } else {
+        setLoading((prev) => ({ ...prev, savingShift: false }));
+        toast.success("Состав смены обновлен");
+      }
 
     } catch (error) {
       console.error("Ошибка при сохранении состава смены:", error);
       toast.error("Не удалось сохранить состав смены");
-      setShiftPhase("idle");
+      if (!isEditingShift) setShiftPhase("idle");
       setLoading((prev) => ({ ...prev, savingShift: false }));
     }
   };
@@ -852,7 +900,7 @@ const HomePage: React.FC = () => {
   // If the shift hasn't started, we render the Morning Lobby (Pre-shift state)
 
   // Окно начала смены и анимация перехода
-  if ((!shiftStarted && !isEditingShift) || shiftPhase === "starting" || shiftPhase === "success") {
+  if ((!shiftStarted && !isEditingShift) || ["starting", "success", "closing", "closed"].includes(shiftPhase)) {
     // Получаем записи на ближайшие 2 часа для текущей даты
     const now = new Date();
     const isDateToday = selectedDate === format(now, "yyyy-MM-dd");
@@ -924,43 +972,76 @@ const HomePage: React.FC = () => {
           </motion.div>
         )}
 
-        {(shiftPhase === "starting" || shiftPhase === "success") && (
+        {["starting", "success", "closing", "closed"].includes(shiftPhase) && (
           <motion.div
             key="loading"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.1 }}
-            transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md"
           >
             <motion.div
-              layoutId="main-dashboard-card"
-              className="bg-card w-[300px] h-[300px] rounded-[2rem] shadow-2xl border border-border flex flex-col items-center justify-center p-8 gap-6"
+              className="bg-card min-w-[320px] rounded-3xl shadow-xl border border-border/50 flex flex-col items-center justify-center p-10 gap-6"
             >
               <AnimatePresence mode="wait">
-                {shiftPhase === "starting" ? (
+                {shiftPhase === "starting" && (
                   <motion.div
-                    key="spinner"
+                    key="spinner-start"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
-                    className="flex flex-col items-center gap-4 text-primary"
-                  >
-                    <Loader2 className="w-16 h-16 animate-spin" />
-                    <span className="text-lg font-medium text-foreground">Открытие смены...</span>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="check"
-                    initial={{ opacity: 1, scale: 1 }}
-                    animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-4 text-green-500"
+                    transition={{ duration: 0.2 }}
+                    className="flex flex-col items-center gap-5 text-primary"
                   >
-                    <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center">
-                      <Check className="w-10 h-10" />
+                    <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
+                    <span className="text-base font-medium text-foreground">Открытие смены...</span>
+                  </motion.div>
+                )}
+
+                {shiftPhase === "success" && (
+                  <motion.div
+                    key="check-start"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex flex-col items-center gap-5"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
+                      <Check className="w-8 h-8" />
                     </div>
-                    <span className="text-xl font-semibold text-foreground">Смена открыта</span>
+                    <span className="text-base font-medium text-foreground">Смена открыта</span>
+                  </motion.div>
+                )}
+
+                {shiftPhase === "closing" && (
+                  <motion.div
+                    key="spinner-close"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex flex-col items-center gap-5 text-destructive"
+                  >
+                    <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
+                    <span className="text-base font-medium text-foreground">Закрытие смены...</span>
+                  </motion.div>
+                )}
+
+                {shiftPhase === "closed" && (
+                  <motion.div
+                    key="check-close"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex flex-col items-center gap-5"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                      <Check className="w-8 h-8" />
+                    </div>
+                    <span className="text-base font-medium text-foreground">Смена закрыта</span>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -974,11 +1055,10 @@ const HomePage: React.FC = () => {
   // --- ACTIVE SHIFT VIEW ---
   return (
     <motion.div
-      layoutId="main-dashboard-card"
       className="bg-card rounded-[2rem] p-4 sm:p-6 shadow-sm border border-border/50 min-h-[85dvh] flex flex-col gap-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
     >
 
       {/* Модальное окно закрытия долга */}
@@ -1093,20 +1173,11 @@ const HomePage: React.FC = () => {
               {/* Кнопка изменить состав смены */}
               {shiftStarted && isShiftLocked && (
                 <button
-                  onClick={() => setIsEditingShift(!isEditingShift)}
+                  onClick={() => setIsEditingShift(true)}
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-background hover:bg-accent transition-colors text-sm font-medium shadow-sm"
                 >
-                  {isEditingShift ? (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      Готово
-                    </>
-                  ) : (
-                    <>
-                      <Edit className="w-3.5 h-3.5" />
-                      Изменить состав
-                    </>
-                  )}
+                  <Edit className="w-3.5 h-3.5" />
+                  Изменить состав
                 </button>
               )}
             </div>
@@ -1286,166 +1357,158 @@ const HomePage: React.FC = () => {
               </div>
             )}
 
-            {/* Интерфейс выбора сотрудников для смены */}
-            {(!isShiftLocked || isEditingShift) && (
-              <div
-                id="employees-section"
-                ref={shiftSectionRef}
-                className={`mt-4 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-card border border-border/40 shadow-sm transition-all duration-300 ${
-                  isShiftSectionHighlighted
-                    ? "ring-2 ring-primary/30 shadow-lg"
-                    : ""
-                }`}
+            {/* Модальное окно редактирования состава смены */}
+            {isEditingShift && (
+              <Modal
+                isOpen={isEditingShift}
+                onClose={() => {
+                  setIsEditingShift(false);
+                  // Восстанавливаем сотрудников, если отменили редактирование
+                  if (currentReport) {
+                    setShiftEmployees([...currentReport.employeeIds]);
+                  }
+                }}
+                className="max-w-xl"
               >
-                <div className="mb-4">
-                  <h4 className="text-base sm:text-lg font-semibold">
-                    {isShiftLocked && isEditingShift
-                      ? "Редактировать состав смены"
-                      : "Состав смены"}
-                  </h4>
-                </div>
-
-                <div className="space-y-3 sm:space-y-4 mb-3 sm:mb-4">
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
-                    {state.employees.map((employee) => (
-                      <button
-                        key={employee.id}
-                        onClick={() => handleEmployeeSelection(employee.id)}
-                        className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 border shadow-sm ${
-                          shiftEmployees.includes(employee.id)
-                            ? "bg-gradient-to-r from-sky-500 to-sky-600 text-white border-sky-400/30 shadow-lg"
-                            : "bg-gradient-to-r from-secondary/60 to-secondary/40 hover:from-secondary/80 hover:to-secondary/60 border-border/40"
-                        }`}
-                      >
-                        {employee.name}
-                      </button>
-                    ))}
+                <div className="p-6 flex flex-col gap-6">
+                  <div className="flex items-center justify-between border-b border-border/50 pb-4">
+                    <h3 className="text-xl font-bold text-foreground">
+                      Редактировать состав смены
+                    </h3>
+                    <button
+                      onClick={() => {
+                        setIsEditingShift(false);
+                        if (currentReport) {
+                          setShiftEmployees([...currentReport.employeeIds]);
+                        }
+                      }}
+                      className="p-2 rounded-full hover:bg-accent transition-colors"
+                    >
+                      <X className="w-5 h-5 text-muted-foreground" />
+                    </button>
                   </div>
 
-                  {/* Выбор ролей для выбранных сотрудников */}
-                  {shiftEmployees.length > 0 &&
-                    state.salaryCalculationMethod ===
-                      "minimumWithPercentage" && (
-                      <div className="p-3 sm:p-4 border border-border/40 rounded-lg sm:rounded-xl bg-gradient-to-r from-muted/20 to-muted/10 shadow-sm">
-                        <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 text-foreground">
-                          Назначение ролей сотрудников:
-                        </h4>
-                        <div className="space-y-2 sm:space-y-3">
-                          {shiftEmployees.map((employeeId) => {
-                            const employee = state.employees.find(
-                              (emp) => emp.id === employeeId,
-                            );
-                            if (!employee) return null;
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-2">
+                    {state.employees.map((employee) => {
+                      const isSelected = shiftEmployees.includes(employee.id);
+                      const currentRole = employeeRoles[employee.id] || "washer";
 
-                            return (
-                              <div
-                                key={employeeId}
-                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-r from-background/80 to-background/60 border border-border/30"
+                      return (
+                        <div
+                          key={employee.id}
+                          className={`relative flex flex-col p-3 rounded-xl border transition-all duration-200 ${
+                            isSelected
+                              ? "bg-primary/5 border-primary/30 shadow-sm"
+                              : "bg-background border-border hover:border-border/80 hover:bg-accent/5"
+                          }`}
+                        >
+                          <label className="flex items-center gap-3 cursor-pointer select-none">
+                            <div
+                              className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                                isSelected
+                                  ? "bg-primary border-primary text-white"
+                                  : "border-input bg-background"
+                              }`}
+                            >
+                              {isSelected && <Check className="w-3.5 h-3.5" />}
+                            </div>
+                            <input
+                              type="checkbox"
+                              className="hidden"
+                              checked={isSelected}
+                              onChange={() => handleEmployeeSelection(employee.id)}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p
+                                className={`text-sm font-medium truncate transition-colors ${
+                                  isSelected
+                                    ? "text-foreground"
+                                    : "text-muted-foreground"
+                                }`}
                               >
-                                <div className="flex items-center justify-between sm:justify-start gap-2">
-                                  <span className="text-xs sm:text-sm font-medium flex-1 sm:flex-none">
-                                    {employee.name}
-                                  </span>
-                                  {/* Кнопка удаления сотрудника из смены */}
-                                  <button
-                                    onClick={() =>
-                                      handleEmployeeSelection(employeeId)
-                                    }
-                                    className="p-1.5 sm:p-2 rounded-md sm:rounded-lg hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-800 text-red-500"
-                                    title="Удалить из смены"
-                                  >
-                                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                  </button>
-                                </div>
+                                {employee.name}
+                              </p>
+                            </div>
+                          </label>
 
-                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-                                  {/* Переключатель учета минималки */}
-                                  <div
-                                    className="flex items-center gap-3 p-2 rounded-xl border border-border/40 bg-background/50 cursor-pointer hover:bg-background/80 transition-colors"
-                                    onClick={() => {
-                                      const key = `min_${employeeId}` as any;
-                                      const current =
-                                        (employeeRoles as any)[key] !== false;
-                                      const newRoles: any = {
-                                        ...employeeRoles,
-                                      };
-                                      newRoles[key] = !current;
-                                      setEmployeeRoles(newRoles);
-                                    }}
-                                  >
-                                    <div
-                                      className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${(employeeRoles as any)[`min_${employeeId}`] !== false ? "bg-primary border-primary text-white" : "border-input bg-background"}`}
-                                    >
-                                      {(employeeRoles as any)[
-                                        `min_${employeeId}`
-                                      ] !== false && (
-                                        <Check className="w-3.5 h-3.5" />
-                                      )}
-                                    </div>
-                                    <span className="text-xs font-medium text-foreground">
-                                      Минималка
-                                    </span>
-                                  </div>
-
-                                  <div className="segmented-control min-w-[160px]">
-                                    <button
-                                      onClick={() =>
-                                        handleEmployeeRoleChange(
-                                          employeeId,
-                                          "washer",
-                                        )
-                                      }
-                                      className={
-                                        employeeRoles[employeeId] === "washer"
-                                          ? "active"
-                                          : ""
-                                      }
-                                    >
-                                      Мойщик
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleEmployeeRoleChange(
-                                          employeeId,
-                                          "admin",
-                                        )
-                                      }
-                                      className={
-                                        employeeRoles[employeeId] === "admin"
-                                          ? "active"
-                                          : ""
-                                      }
-                                    >
-                                      Админ
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
+                          <div
+                            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                              isSelected
+                                ? "max-h-12 opacity-100 mt-3"
+                                : "max-h-0 opacity-0 mt-0"
+                            }`}
+                          >
+                            <div className="flex items-center bg-background rounded-lg border border-border/50 p-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEmployeeRoles({
+                                    ...employeeRoles,
+                                    [employee.id]: "washer",
+                                  });
+                                }}
+                                className={`flex-1 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                                  currentRole === "washer"
+                                    ? "bg-primary text-primary-foreground shadow-sm"
+                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                }`}
+                              >
+                                Мойщик
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEmployeeRoles({
+                                    ...employeeRoles,
+                                    [employee.id]: "admin",
+                                  });
+                                }}
+                                className={`flex-1 flex items-center justify-center gap-1.5 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                                  currentRole === "admin"
+                                    ? "bg-amber-500 text-white shadow-sm"
+                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                }`}
+                              >
+                                <Shield className="w-3 h-3" />
+                                Админ
+                              </button>
+                            </div>
+                          </div>
                         </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="pt-4 border-t border-border/50 flex flex-col gap-3">
+                    {shiftEmployees.length === 0 && (
+                      <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400 text-sm text-center font-medium">
+                        Вы сняли всех сотрудников. Сохранение закроет текущую смену.
                       </div>
                     )}
+                    <button
+                      onClick={startShift}
+                      disabled={loading.savingShift}
+                      className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white transition-all shadow-sm ${
+                        shiftEmployees.length === 0
+                          ? "bg-red-500 hover:bg-red-600"
+                          : "bg-primary hover:bg-primary/90"
+                      } disabled:opacity-50`}
+                    >
+                      {loading.savingShift ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>Сохранение...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-5 h-5" />
+                          <span>{shiftEmployees.length === 0 ? "Закрыть смену" : "Сохранить изменения"}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-
-                <button
-                  onClick={startShift}
-                  disabled={loading.savingShift || shiftEmployees.length === 0}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-200 disabled:opacity-50 text-sm font-semibold shadow-lg hover:shadow-xl border border-primary/30"
-                >
-                  {loading.savingShift ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Сохранение...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5" />
-                      {isEditingShift ? "Сохранить изменения" : "Начать смену"}
-                    </>
-                  )}
-                </button>
-              </div>
+              </Modal>
             )}
           </div>
 
