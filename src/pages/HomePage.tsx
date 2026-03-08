@@ -37,6 +37,7 @@ import {
   Plus,
   Receipt,
   Save,
+  Shield,
   Trash2,
   User,
   X,
