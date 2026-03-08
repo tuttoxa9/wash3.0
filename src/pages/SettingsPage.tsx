@@ -1,9 +1,9 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppContext } from "@/lib/context/AppContext";
 import {
   databaseService,
   employeeService,
   organizationService,
-  serviceService,
   settingsService,
 } from "@/lib/services/supabaseService";
 import type {
@@ -14,7 +14,6 @@ import type {
   ThemeMode,
 } from "@/lib/types";
 import { format, parseISO } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   Building,
@@ -26,9 +25,10 @@ import {
   Moon,
   Plus,
   RefreshCw,
-  Save,
+  Settings as SettingsIcon,
   Sun,
   Trash,
+  Users,
   X,
 } from "lucide-react";
 import type React from "react";
@@ -53,43 +53,36 @@ const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
         setError("Неверный пароль. Попробуйте еще раз.");
       }
       setIsLoading(false);
-    }, 500); // Небольшая задержка для симуляции проверки
+    }, 500);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="card-with-shadow max-w-md mx-auto mt-8"
-    >
+    <div className="max-w-md mx-auto mt-12 bg-card rounded-2xl border border-border/50 shadow-sm p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
       <div className="text-center mb-6">
-        <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Lock className="w-7 h-7 text-primary" />
+        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <Lock className="w-6 h-6 text-primary" />
         </div>
-        <h2 className="text-xl font-bold gradient-heading">
-          Доступ к настройкам
-        </h2>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Введите пароль для доступа к панели настроек
+        <h2 className="text-xl font-semibold">Доступ к настройкам</h2>
+        <p className="text-muted-foreground mt-2 text-sm">
+          Введите пароль для доступа к панели управления
         </p>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
+        <div className="mb-5">
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Введите пароль"
-            className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+            className="w-full px-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
             autoFocus
           />
           {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
         </div>
         <button
           type="submit"
-          className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-sm"
+          className="w-full bg-primary text-primary-foreground py-2.5 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -98,45 +91,11 @@ const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
               Проверка...
             </>
           ) : (
-            <>
-              <Lock className="w-4 h-4" />
-              Войти
-            </>
+            <>Войти</>
           )}
         </button>
       </form>
-    </motion.div>
-  );
-};
-
-// Компонент анимированного облака
-const AnimatedCloud: React.FC = () => {
-  return (
-    <motion.div
-      className="relative"
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{
-        scale: [0.9, 1.02, 1],
-        opacity: 1,
-      }}
-      transition={{
-        duration: 1,
-        times: [0, 0.7, 1],
-      }}
-    >
-      <Cloud className="w-6 h-6 text-primary" />
-      <motion.div
-        className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"
-        animate={{
-          opacity: [0, 1, 0],
-          scale: [0.8, 1.2, 0.8],
-        }}
-        transition={{
-          repeat: Number.POSITIVE_INFINITY,
-          duration: 2,
-        }}
-      />
-    </motion.div>
+    </div>
   );
 };
 
@@ -152,501 +111,171 @@ const ThemeSettings: React.FC = () => {
   };
 
   return (
-    <motion.div
-      className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-      transition={{ duration: 0.2 }}
-    >
-      <h3 className="text-sm sm:text-base font-medium mb-1">Внешний вид</h3>
-      <p className="text-xs text-muted-foreground mb-4">
+    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
+      <h3 className="text-base font-semibold mb-1">Внешний вид</h3>
+      <p className="text-sm text-muted-foreground mb-4">
         Выберите тему оформления приложения
       </p>
 
-      <div className="segmented-control">
+      <div className="flex bg-muted/50 p-1 rounded-xl gap-1">
         <button
           onClick={() => setTheme("light")}
-          className={state.theme === "light" ? "active" : ""}
+          className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-colors text-xs font-medium ${
+            state.theme === "light"
+              ? "bg-background shadow-sm text-foreground"
+              : "text-muted-foreground hover:bg-background/50"
+          }`}
         >
-          <Sun className="w-4 h-4 mx-auto mb-0.5" />
-          <span className="text-[10px] sm:text-xs">Светлая</span>
+          <Sun className="w-4 h-4 mb-1.5" />
+          Светлая
         </button>
 
         <button
           onClick={() => setTheme("dark")}
-          className={state.theme === "dark" ? "active" : ""}
+          className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-colors text-xs font-medium ${
+            state.theme === "dark"
+              ? "bg-background shadow-sm text-foreground"
+              : "text-muted-foreground hover:bg-background/50"
+          }`}
         >
-          <Moon className="w-4 h-4 mx-auto mb-0.5" />
-          <span className="text-[10px] sm:text-xs">Темная</span>
+          <Moon className="w-4 h-4 mb-1.5" />
+          Темная
         </button>
 
         <button
           onClick={() => setTheme("black")}
-          className={state.theme === "black" ? "active" : ""}
+          className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-colors text-xs font-medium ${
+            state.theme === "black"
+              ? "bg-background shadow-sm text-foreground"
+              : "text-muted-foreground hover:bg-background/50"
+          }`}
         >
-          <div className="w-4 h-4 rounded-full bg-foreground mx-auto mb-0.5 flex items-center justify-center">
+          <div className="w-4 h-4 rounded-full bg-foreground flex items-center justify-center mb-1.5">
             <div className="w-2 h-2 rounded-full bg-background" />
           </div>
-          <span className="text-[10px] sm:text-xs">Черная</span>
+          Черная
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
-// Компонент для управления организациями-партнерами
-const OrganizationsSettings: React.FC = () => {
-  const { state, dispatch } = useAppContext();
-  const [newOrganizationName, setNewOrganizationName] = useState("");
-  const [editingOrganization, setEditingOrganization] =
-    useState<Organization | null>(null);
-  const [loading, setLoading] = useState({
-    addOrg: false,
-    deleteOrg: null as string | null,
-    updateOrg: null as string | null,
-    fetchOrgs: false,
-  });
-
-  // Обновление списка организаций
-  const fetchOrganizations = async () => {
-    setLoading((prev) => ({ ...prev, fetchOrgs: true }));
-    try {
-      const orgs = await organizationService.getAll();
-      dispatch({ type: "SET_ORGANIZATIONS", payload: orgs });
-    } catch (error) {
-      console.error("Ошибка при загрузке списка организаций:", error);
-      toast.error("Не удалось загрузить список организаций");
-    } finally {
-      setLoading((prev) => ({ ...prev, fetchOrgs: false }));
-    }
-  };
-
-  // Добавление новой организации
-  const handleAddOrganization = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newOrganizationName.trim()) {
-      toast.error("Введите название организации");
-      return;
-    }
-
-    setLoading((prev) => ({ ...prev, addOrg: true }));
-    try {
-      const organization: Omit<Organization, "id"> = {
-        name: newOrganizationName.trim(),
-      };
-
-      const addedOrg = await organizationService.add(organization);
-      if (addedOrg) {
-        dispatch({ type: "ADD_ORGANIZATION", payload: addedOrg });
-        toast.success(`Организация "${addedOrg.name}" добавлена`);
-        setNewOrganizationName("");
-      } else {
-        throw new Error("Не удалось добавить организацию");
-      }
-    } catch (error) {
-      console.error("Ошибка при добавлении организации:", error);
-      toast.error("Произошла ошибка при добавлении организации");
-    } finally {
-      setLoading((prev) => ({ ...prev, addOrg: false }));
-    }
-  };
-
-  // Начало редактирования организации
-  const startEditing = (org: Organization) => {
-    setEditingOrganization({ ...org });
-  };
-
-  // Отмена редактирования
-  const cancelEditing = () => {
-    setEditingOrganization(null);
-  };
-
-  // Обновление организации
-  const handleUpdateOrganization = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingOrganization) return;
-
-    if (!editingOrganization.name.trim()) {
-      toast.error("Введите название организации");
-      return;
-    }
-
-    setLoading((prev) => ({ ...prev, updateOrg: editingOrganization.id }));
-    try {
-      const success = await organizationService.update(editingOrganization);
-      if (success) {
-        dispatch({ type: "UPDATE_ORGANIZATION", payload: editingOrganization });
-        toast.success(`Организация "${editingOrganization.name}" обновлена`);
-        setEditingOrganization(null);
-      } else {
-        throw new Error("Не удалось обновить организацию");
-      }
-    } catch (error) {
-      console.error("Ошибка при обновлении организации:", error);
-      toast.error("Произошла ошибка при обновлении организации");
-    } finally {
-      setLoading((prev) => ({ ...prev, updateOrg: null }));
-    }
-  };
-
-  // Удаление организации
-  const handleDeleteOrganization = async (orgId: string, orgName: string) => {
-    if (!confirm(`Вы уверены, что хотите удалить организацию "${orgName}"?`)) {
-      return;
-    }
-
-    setLoading((prev) => ({ ...prev, deleteOrg: orgId }));
-    try {
-      const success = await organizationService.delete(orgId);
-      if (success) {
-        dispatch({ type: "REMOVE_ORGANIZATION", payload: orgId });
-        toast.success(`Организация "${orgName}" удалена`);
-        if (editingOrganization?.id === orgId) {
-          setEditingOrganization(null);
-        }
-      } else {
-        throw new Error("Не удалось удалить организацию");
-      }
-    } catch (error) {
-      console.error("Ошибка при удалении организации:", error);
-      toast.error("Произошла ошибка при удалении организации");
-    } finally {
-      setLoading((prev) => ({ ...prev, deleteOrg: null }));
-    }
-  };
-
-  return (
-    <motion.div
-      className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-      transition={{ duration: 0.2 }}
-    >
-      <div className="flex justify-between items-center mb-1">
-        <h3 className="text-sm sm:text-base font-medium flex items-center">
-          <Building className="w-4 h-4 mr-1.5 text-primary" />
-          Организации-партнеры
-        </h3>
-
-        {loading.fetchOrgs ? (
-          <div className="flex flex-col items-center justify-center py-6">
-            <Loader2 className="w-5 h-5 animate-spin text-primary mb-2" />
-            <span className="text-xs text-muted-foreground">
-              Загрузка организаций...
-            </span>
-          </div>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={fetchOrganizations}
-            className="text-xs text-primary flex items-center gap-1"
-          >
-            <RefreshCw className="w-3 h-3" />
-            Обновить
-          </motion.button>
-        )}
-      </div>
-
-      <p className="text-xs text-muted-foreground mb-4">
-        Управление списком организаций, которые используются для оплаты услуг
-      </p>
-
-      {/* Форма добавления новой организации */}
-      <form onSubmit={handleAddOrganization} className="mb-4">
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <input
-              type="text"
-              value={newOrganizationName}
-              onChange={(e) => setNewOrganizationName(e.target.value)}
-              placeholder="Название организации"
-              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-sm"
-              disabled={loading.addOrg}
-            />
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="submit"
-            className="flex items-center gap-1 px-2 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-70 text-xs"
-            disabled={loading.addOrg}
-          >
-            {loading.addOrg ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
-            ) : (
-              <Plus className="w-3 h-3" />
-            )}
-            <span>Добавить</span>
-          </motion.button>
-        </div>
-      </form>
-
-      {/* Список организаций */}
-      <div className="border border-border rounded-md overflow-hidden bg-card/50">
-        <div className="bg-muted/30 px-2 py-1.5 border-b border-border">
-          <h4 className="text-xs font-medium">Список организаций</h4>
-        </div>
-
-        <ul className="divide-y divide-border">
-          {state.organizations.length > 0 ? (
-            state.organizations.map((org) => (
-              <motion.li
-                key={org.id}
-                className="px-2 py-2 flex items-center justify-between text-sm group"
-                whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
-              >
-                {editingOrganization?.id === org.id ? (
-                  <form
-                    onSubmit={handleUpdateOrganization}
-                    className="flex items-center gap-2 w-full"
-                  >
-                    <input
-                      type="text"
-                      value={editingOrganization.name}
-                      onChange={(e) =>
-                        setEditingOrganization({
-                          ...editingOrganization,
-                          name: e.target.value,
-                        })
-                      }
-                      className="flex-1 px-3 py-1.5 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-xs"
-                      autoFocus
-                    />
-                    <div className="flex items-center gap-1">
-                      <motion.button
-                        type="button"
-                        onClick={cancelEditing}
-                        className="text-muted-foreground hover:text-foreground"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        disabled={loading.updateOrg === org.id}
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </motion.button>
-                      <motion.button
-                        type="submit"
-                        className="text-primary hover:text-primary/80"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        disabled={loading.updateOrg === org.id}
-                      >
-                        {loading.updateOrg === org.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Check className="w-3.5 h-3.5" />
-                        )}
-                      </motion.button>
-                    </div>
-                  </form>
-                ) : (
-                  <>
-                    <span>{org.name}</span>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <motion.button
-                        onClick={() => startEditing(org)}
-                        className="text-primary"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        disabled={!!editingOrganization}
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </motion.button>
-                      <motion.button
-                        onClick={() =>
-                          handleDeleteOrganization(org.id, org.name)
-                        }
-                        className="text-destructive"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        disabled={
-                          loading.deleteOrg === org.id || !!editingOrganization
-                        }
-                      >
-                        {loading.deleteOrg === org.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Trash className="w-3.5 h-3.5" />
-                        )}
-                      </motion.button>
-                    </div>
-                  </>
-                )}
-              </motion.li>
-            ))
-          ) : (
-            <li className="px-2 py-2 text-center text-muted-foreground text-xs">
-              {loading.fetchOrgs
-                ? "Загрузка организаций..."
-                : "Нет добавленных организаций"}
-            </li>
-          )}
-        </ul>
-      </div>
-    </motion.div>
-  );
-};
-
-const SettingsContent: React.FC = () => {
-  const { state, dispatch } = useAppContext();
-  const [newEmployee, setNewEmployee] = useState("");
-  const [loading, setLoading] = useState({
-    employee: false,
-    clearDatabase: false,
-    connection: false,
-    fetchEmployees: false,
-    deleteEmployee: null as string | null,
-  });
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+// Database Status Component
+const DatabaseStatus: React.FC = () => {
+  const [loading, setLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<{
     status: "none" | "checking" | "success" | "error";
     time?: number;
-  }>({
-    status: "none",
-  });
+  }>({ status: "none" });
 
-  // Загрузка сотрудников при монтировании компонента
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchEmployees();
-    }
-  }, [isAuthenticated]);
-
-  // Функция для загрузки сотрудников из Supabase
-  const fetchEmployees = async () => {
-    setLoading((prev) => ({ ...prev, fetchEmployees: true }));
-    try {
-      const employees = await employeeService.getAll();
-      dispatch({ type: "SET_EMPLOYEES", payload: employees });
-    } catch (error) {
-      console.error("Ошибка при загрузке сотрудников:", error);
-      toast.error("Не удалось загрузить список сотрудников");
-    } finally {
-      setLoading((prev) => ({ ...prev, fetchEmployees: false }));
-    }
-  };
-
-  // Функция для проверки соединения с Supabase
   const checkFirebaseConnection = async () => {
     setConnectionStatus({ status: "checking" });
-    setLoading((prev) => ({ ...prev, connection: true }));
+    setLoading(true);
 
     const startTime = performance.now();
 
     try {
-      toast.info("Проверка соединения с базой данных...");
-      console.log("Начинаем проверку соединения с Supabase...");
-
       const connected = await databaseService.testConnection();
-
       const endTime = performance.now();
       const responseTime = Math.round(endTime - startTime);
 
       if (connected) {
-        toast.success("Соединение с базой данных установлено успешно!");
-        console.log(
-          `Соединение (Supabase) успешно, время отклика: ${responseTime}ms`,
-        );
-
-        setTimeout(() => {
-          setConnectionStatus({
-            status: "success",
-            time: responseTime,
-          });
-          setLoading((prev) => ({ ...prev, connection: false }));
-        }, 500);
+        setConnectionStatus({
+          status: "success",
+          time: responseTime,
+        });
+        toast.success("Соединение установлено");
       } else {
         throw new Error("Не удалось подключиться к базе данных");
       }
-    } catch (error: any) {
-      console.error("Ошибка при проверке соединения с Supabase:", error);
-
-      const errorMessage = "Не удалось подключиться к базе данных.";
-      toast.error(errorMessage);
-
-      setConnectionStatus({ status: "error" });
-      setLoading((prev) => ({ ...prev, connection: false }));
-    }
-  };
-
-  // Добавление нового сотрудника
-  const handleAddEmployee = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newEmployee.trim()) {
-      toast.error("Введите имя сотрудника");
-      return;
-    }
-
-    setLoading((prev) => ({ ...prev, employee: true }));
-    try {
-      toast.info(`Добавление сотрудника "${newEmployee.trim()}"...`);
-      console.log("Начинаем добавление нового сотрудника:", newEmployee.trim());
-
-      const employee: Omit<Employee, "id"> = {
-        name: newEmployee.trim(),
-      };
-
-      const addedEmployee = await employeeService.add(employee);
-      if (addedEmployee) {
-        dispatch({ type: "ADD_EMPLOYEE", payload: addedEmployee });
-        toast.success(`Сотрудник ${addedEmployee.name} успешно добавлен!`);
-        setNewEmployee("");
-      } else {
-        throw new Error("Не удалось добавить сотрудника");
-      }
-    } catch (error: any) {
-      console.error("Ошибка при добавлении сотрудника:", error);
-
-      let errorMessage = "Не удалось добавить сотрудника. ";
-      errorMessage += `${error.message || "Неизвестная ошибка."}`;
-
-      toast.error(errorMessage);
-    } finally {
-      setLoading((prev) => ({ ...prev, employee: false }));
-    }
-  };
-
-  // Удаление сотрудника
-  const handleDeleteEmployee = async (
-    employeeId: string,
-    employeeName: string,
-  ) => {
-    if (
-      !confirm(`Вы уверены, что хотите удалить сотрудника "${employeeName}"?`)
-    ) {
-      return;
-    }
-
-    setLoading((prev) => ({ ...prev, deleteEmployee: employeeId }));
-    try {
-      const success = await employeeService.delete(employeeId);
-      if (success) {
-        dispatch({ type: "REMOVE_EMPLOYEE", payload: employeeId });
-        toast.success(`Сотрудник ${employeeName} удален`);
-      } else {
-        throw new Error("Не удалось удалить сотрудника");
-      }
     } catch (error) {
-      console.error("Ошибка при удалении сотрудника:", error);
-      toast.error("Произошла ошибка при удалении сотрудника");
+      setConnectionStatus({ status: "error" });
+      toast.error("Не удалось подключиться к базе данных");
     } finally {
-      setLoading((prev) => ({ ...prev, deleteEmployee: null }));
+      setLoading(false);
     }
   };
 
-  // Очистка всей базы данных Supabase
+  return (
+    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
+      <h3 className="text-base font-semibold mb-4">Состояние базы данных</h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <div
+            className={`w-10 h-10 mr-3 rounded-xl flex items-center justify-center transition-colors
+            ${
+              connectionStatus.status === "none"
+                ? "bg-muted text-muted-foreground"
+                : connectionStatus.status === "checking"
+                  ? "bg-primary/10 text-primary"
+                  : connectionStatus.status === "success"
+                    ? "bg-green-500/10 text-green-600"
+                    : "bg-destructive/10 text-destructive"
+            }`}
+          >
+            {connectionStatus.status === "checking" ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : connectionStatus.status === "success" ? (
+              <Check className="w-5 h-5" />
+            ) : connectionStatus.status === "error" ? (
+              <AlertTriangle className="w-5 h-5" />
+            ) : (
+              <Cloud className="w-5 h-5" />
+            )}
+          </div>
+          <div>
+            <p className="text-sm font-medium">
+              {connectionStatus.status === "none"
+                ? "Не проверено"
+                : connectionStatus.status === "checking"
+                  ? "Проверка..."
+                  : connectionStatus.status === "success"
+                    ? "Подключено"
+                    : "Ошибка соединения"}
+            </p>
+            {connectionStatus.status === "success" && connectionStatus.time && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Отклик: {connectionStatus.time} мс
+              </p>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={checkFirebaseConnection}
+          disabled={loading}
+          className="px-3 py-1.5 bg-secondary/50 text-secondary-foreground rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 text-xs font-medium flex items-center gap-1.5"
+        >
+          {loading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <>
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Проверить</span>
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Data Management Component
+const DataManagement: React.FC = () => {
+  const { dispatch } = useAppContext();
+  const [loading, setLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
   const handleClearDatabase = async () => {
-    setLoading((prev) => ({ ...prev, clearDatabase: true }));
+    setLoading(true);
     try {
       const success = await databaseService.clearAllData();
 
       if (success) {
-        // Очищаем состояние приложения
         dispatch({ type: "SET_EMPLOYEES", payload: [] });
         dispatch({ type: "SET_ORGANIZATIONS", payload: [] });
         dispatch({ type: "SET_SERVICES", payload: [] });
         dispatch({ type: "SET_APPOINTMENTS", payload: [] });
 
-        // Сбрасываем настройки к значениям по умолчанию
         dispatch({
           type: "SET_SALARY_CALCULATION_METHOD",
           payload: {
@@ -668,343 +297,241 @@ const SettingsContent: React.FC = () => {
           },
         });
 
-        toast.success("Все данные из Supabase успешно удалены");
+        toast.success("Все данные удалены");
         setShowConfirmation(false);
       } else {
-        throw new Error("Не удалось удалить данные из Supabase");
+        throw new Error("Не удалось удалить данные");
       }
     } catch (error) {
-      console.error("Ошибка при очистке базы данных Supabase:", error);
-      toast.error("Произошла ошибка при очистке базы данных");
+      toast.error("Произошла ошибка при очистке");
     } finally {
-      setLoading((prev) => ({ ...prev, clearDatabase: false }));
+      setLoading(false);
     }
   };
 
-  if (!isAuthenticated) {
-    return <PasswordAuth onSuccess={() => setIsAuthenticated(true)} />;
-  }
-
   return (
-    <div className="space-y-5">
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="max-w-4xl mx-auto space-y-3 sm:space-y-5"
+    <div className="p-5 sm:p-6 border border-destructive/20 rounded-2xl bg-destructive/5 shadow-sm">
+      <h3 className="text-base font-semibold mb-2 text-destructive flex items-center gap-2">
+        <Trash className="w-4 h-4" />
+        Опасная зона
+      </h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        Удаление всех данных из базы данных.
+        <span className="font-medium text-destructive">
+          {" "}
+          Это действие необратимо.
+        </span>
+      </p>
+
+      {showConfirmation ? (
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 mb-2 animate-in fade-in duration-200">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-medium text-destructive mb-1 text-sm">
+                Подтверждение удаления
+              </h4>
+              <p className="mb-4 text-xs text-destructive/80 leading-relaxed">
+                Вы действительно хотите удалить <strong>ВСЕ данные</strong>? Будут
+                удалены: сотрудники, организации, услуги, записи и настройки.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowConfirmation(false)}
+                  className="px-3 py-1.5 rounded-lg bg-background border border-input hover:bg-muted transition-colors text-xs font-medium"
+                  disabled={loading}
+                >
+                  Отмена
+                </button>
+                <button
+                  onClick={handleClearDatabase}
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50 text-xs font-medium"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Trash className="w-3 h-3" />
+                  )}
+                  Удалить всё
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setShowConfirmation(true)}
+          className="px-4 py-2 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-xl transition-colors duration-200 text-sm font-medium flex items-center gap-2"
         >
-          <div className="px-1 sm:px-0">
-            <h2 className="text-xl sm:text-2xl font-bold gradient-heading">
-              Настройки системы
-            </h2>
-            <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-              Управление сотрудниками, организациями и параметрами
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            <div className="space-y-3 sm:space-y-4">
-              <ThemeSettings />
-              <SalaryCalculationSettings />
-
-              <motion.div
-                className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-                whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                transition={{ duration: 0.2 }}
-              >
-                <h3 className="text-sm sm:text-base font-medium mb-4">
-                  Состояние базы данных
-                </h3>
-                <div className="flex items-center">
-                  <div className="flex items-center flex-1">
-                    <div
-                      className={`w-8 h-8 mr-2 rounded-full flex items-center justify-center
-                      ${
-                        connectionStatus.status === "none"
-                          ? "bg-muted"
-                          : connectionStatus.status === "checking"
-                            ? "bg-primary/20"
-                            : connectionStatus.status === "success"
-                              ? "bg-green-100"
-                              : "bg-destructive/20"
-                      }`}
-                    >
-                      {connectionStatus.status === "checking" ? (
-                        <AnimatedCloud />
-                      ) : connectionStatus.status === "success" ? (
-                        <Check className="w-4 h-4 text-green-600" />
-                      ) : connectionStatus.status === "error" ? (
-                        <AlertTriangle className="w-4 h-4 text-destructive" />
-                      ) : (
-                        <Cloud className="w-4 h-4 text-muted-foreground/70" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        {connectionStatus.status === "none"
-                          ? "Не проверено"
-                          : connectionStatus.status === "checking"
-                            ? "Проверка..."
-                            : connectionStatus.status === "success"
-                              ? "Подключено"
-                              : "Ошибка соединения"}
-                      </p>
-                      {connectionStatus.status === "success" &&
-                        connectionStatus.time && (
-                          <p className="text-xs text-muted-foreground">
-                            Отклик: {connectionStatus.time} мс
-                          </p>
-                        )}
-                    </div>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={checkFirebaseConnection}
-                    disabled={loading.connection}
-                    className="px-2 py-1 bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors disabled:opacity-70 text-xs flex items-center gap-1"
-                  >
-                    {loading.connection ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <>
-                        <RefreshCw className="w-3 h-3" />
-                        <span>Проверить</span>
-                      </>
-                    )}
-                  </motion.button>
-                </div>
-              </motion.div>
-            </div>
-
-            <div className="space-y-3 sm:space-y-4">
-              <motion.div
-                className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-                whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm sm:text-base font-medium">Сотрудники</h3>
-
-                  {loading.fetchEmployees ? (
-                    <div className="flex flex-col items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-primary mb-2" />
-                      <span className="text-xs text-muted-foreground">
-                        Загрузка сотрудников...
-                      </span>
-                      <div className="flex gap-1 mt-2">
-                        <div
-                          className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse"
-                          style={{ animationDelay: "0ms" }}
-                        ></div>
-                        <div
-                          className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse"
-                          style={{ animationDelay: "150ms" }}
-                        ></div>
-                        <div
-                          className="w-1.5 h-1.5 bg-primary/30 rounded-full animate-pulse"
-                          style={{ animationDelay: "300ms" }}
-                        ></div>
-                      </div>
-                    </div>
-                  ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={fetchEmployees}
-                      className="text-xs text-primary flex items-center gap-1"
-                    >
-                      <RefreshCw className="w-3 h-3" />
-                      Обновить
-                    </motion.button>
-                  )}
-                </div>
-
-                <form onSubmit={handleAddEmployee} className="mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={newEmployee}
-                        onChange={(e) => setNewEmployee(e.target.value)}
-                        placeholder="Имя сотрудника"
-                        className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-ring text-sm"
-                        disabled={loading.employee}
-                      />
-                    </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      type="submit"
-                      className="flex items-center gap-1 px-2 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-70 text-xs"
-                      disabled={loading.employee}
-                    >
-                      {loading.employee ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <Plus className="w-3 h-3" />
-                      )}
-                      <span>Добавить</span>
-                    </motion.button>
-                  </div>
-                </form>
-
-                <div className="border border-border rounded-md overflow-hidden bg-card/50">
-                  <div className="bg-muted/30 px-2 py-1.5 border-b border-border">
-                    <h4 className="text-xs font-medium">Список сотрудников</h4>
-                  </div>
-                  <ul className="divide-y divide-border">
-                    {state.employees.length > 0 ? (
-                      state.employees.map((employee) => (
-                        <motion.li
-                          key={employee.id}
-                          className="px-2 py-2 flex items-center justify-between text-sm group"
-                          whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
-                        >
-                          <span>{employee.name}</span>
-
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() =>
-                              handleDeleteEmployee(employee.id, employee.name)
-                            }
-                            className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                            disabled={loading.deleteEmployee === employee.id}
-                          >
-                            {loading.deleteEmployee === employee.id ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <X className="w-3.5 h-3.5" />
-                            )}
-                          </motion.button>
-                        </motion.li>
-                      ))
-                    ) : (
-                      <li className="px-2 py-2 text-center text-muted-foreground text-xs">
-                        {loading.fetchEmployees
-                          ? "Загрузка сотрудников..."
-                          : "Нет добавленных сотрудников"}
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              </motion.div>
-
-              <OrganizationsSettings />
-
-              <motion.div
-                className="p-3 sm:p-4 border border-destructive/30 rounded-xl bg-destructive/5"
-                whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                transition={{ duration: 0.2 }}
-              >
-                <h3 className="text-sm sm:text-base font-medium mb-2 text-destructive flex items-center gap-2">
-                  <Trash className="w-4 h-4" />
-                  Управление данными
-                </h3>
-                <p className="text-xs text-muted-foreground mb-3">
-                  Удаление всех данных из базы данных Supabase.
-                  <span className="font-bold text-destructive">
-                    {" "}
-                    Это действие необратимо!
-                  </span>
-                </p>
-
-                <AnimatePresence>
-                  {showConfirmation ? (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="bg-destructive/10 border border-destructive rounded-lg p-3 mb-3"
-                    >
-                      <div className="flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="font-medium text-destructive mb-1 text-sm">
-                            Подтверждение удаления
-                          </h4>
-                          <p className="mb-3 text-xs">
-                            Вы действительно хотите удалить{" "}
-                            <span className="font-bold">
-                              ВСЕ данные из Supabase
-                            </span>
-                            ? Будут удалены: сотрудники, организации, услуги,
-                            записи о мойках и все настройки.
-                          </p>
-                          <div className="flex gap-2">
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => setShowConfirmation(false)}
-                              className="px-2 py-1 rounded-md border border-input hover:bg-secondary/50 transition-colors text-xs"
-                              disabled={loading.clearDatabase}
-                            >
-                              Отмена
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={handleClearDatabase}
-                              className="flex items-center justify-center gap-1 px-2 py-1 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-70 text-xs"
-                              disabled={loading.clearDatabase}
-                            >
-                              {loading.clearDatabase ? (
-                                <>
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                  Удаление...
-                                </>
-                              ) : (
-                                <>
-                                  <Trash className="w-3 h-3" />
-                                  Да, удалить всё из Supabase
-                                </>
-                              )}
-                            </motion.button>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setShowConfirmation(true)}
-                      className="w-full px-3 py-2 bg-destructive text-white rounded-md hover:bg-destructive/90 transition-colors text-xs flex items-center justify-center gap-2"
-                    >
-                      <Trash className="w-4 h-4" />
-                      <span>Удалить все данные из Supabase</span>
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Организации в Итого (теперь внутри SettingsContent, за паролем) */}
-          <div className="mt-4 sm:mt-5 border-t border-border pt-4 sm:pt-5">
-            <OrganizationsInTotalSettings />
-          </div>
-        </motion.div>
-      </AnimatePresence>
+          <Trash className="w-4 h-4" />
+          <span>Удалить все данные</span>
+        </button>
+      )}
     </div>
   );
 };
 
-// Компонент настроек расчета зарплаты
+// Employee Settings Component
+const EmployeeSettings: React.FC = () => {
+  const { state, dispatch } = useAppContext();
+  const [newEmployee, setNewEmployee] = useState("");
+  const [loading, setLoading] = useState({
+    employee: false,
+    fetchEmployees: false,
+    deleteEmployee: null as string | null,
+  });
+
+  const fetchEmployees = async () => {
+    setLoading((prev) => ({ ...prev, fetchEmployees: true }));
+    try {
+      const employees = await employeeService.getAll();
+      dispatch({ type: "SET_EMPLOYEES", payload: employees });
+    } catch (error) {
+      toast.error("Не удалось загрузить список сотрудников");
+    } finally {
+      setLoading((prev) => ({ ...prev, fetchEmployees: false }));
+    }
+  };
+
+  const handleAddEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmployee.trim()) {
+      toast.error("Введите имя сотрудника");
+      return;
+    }
+
+    setLoading((prev) => ({ ...prev, employee: true }));
+    try {
+      const employee: Omit<Employee, "id"> = { name: newEmployee.trim() };
+      const addedEmployee = await employeeService.add(employee);
+      if (addedEmployee) {
+        dispatch({ type: "ADD_EMPLOYEE", payload: addedEmployee });
+        toast.success(`Сотрудник ${addedEmployee.name} добавлен`);
+        setNewEmployee("");
+      } else {
+        throw new Error("Не удалось добавить сотрудника");
+      }
+    } catch (error) {
+      toast.error("Не удалось добавить сотрудника");
+    } finally {
+      setLoading((prev) => ({ ...prev, employee: false }));
+    }
+  };
+
+  const handleDeleteEmployee = async (
+    employeeId: string,
+    employeeName: string,
+  ) => {
+    if (!confirm(`Удалить сотрудника "${employeeName}"?`)) return;
+
+    setLoading((prev) => ({ ...prev, deleteEmployee: employeeId }));
+    try {
+      const success = await employeeService.delete(employeeId);
+      if (success) {
+        dispatch({ type: "REMOVE_EMPLOYEE", payload: employeeId });
+        toast.success(`Сотрудник ${employeeName} удален`);
+      } else {
+        throw new Error("Не удалось удалить сотрудника");
+      }
+    } catch (error) {
+      toast.error("Ошибка при удалении сотрудника");
+    } finally {
+      setLoading((prev) => ({ ...prev, deleteEmployee: null }));
+    }
+  };
+
+  return (
+    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-base font-semibold">Список сотрудников</h3>
+        <button
+          onClick={fetchEmployees}
+          disabled={loading.fetchEmployees}
+          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
+        >
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${loading.fetchEmployees ? "animate-spin" : ""}`}
+          />
+          Обновить
+        </button>
+      </div>
+
+      <form onSubmit={handleAddEmployee} className="mb-5">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={newEmployee}
+            onChange={(e) => setNewEmployee(e.target.value)}
+            placeholder="Имя сотрудника"
+            className="flex-1 px-3 py-2 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
+            disabled={loading.employee}
+          />
+          <button
+            type="submit"
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm font-medium"
+            disabled={loading.employee || !newEmployee.trim()}
+          >
+            {loading.employee ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Plus className="w-4 h-4" />
+            )}
+            <span className="hidden sm:inline">Добавить</span>
+          </button>
+        </div>
+      </form>
+
+      <div className="rounded-xl border border-border/50 bg-background/50 overflow-hidden">
+        {state.employees.length > 0 ? (
+          <ul className="divide-y divide-border/50">
+            {state.employees.map((employee) => (
+              <li
+                key={employee.id}
+                className="px-4 py-3 flex items-center justify-between text-sm group hover:bg-muted/50 transition-colors"
+              >
+                <span className="font-medium">{employee.name}</span>
+                <button
+                  onClick={() =>
+                    handleDeleteEmployee(employee.id, employee.name)
+                  }
+                  className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md"
+                  disabled={loading.deleteEmployee === employee.id}
+                >
+                  {loading.deleteEmployee === employee.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <X className="w-4 h-4" />
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="px-4 py-8 text-center text-muted-foreground text-sm">
+            {loading.fetchEmployees
+              ? "Загрузка..."
+              : "Нет добавленных сотрудников"}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Salary Calculation Settings Component
 const SalaryCalculationSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [savingError, setSavingError] = useState<string | null>(null);
-  const [minimumSettings, setMinimumSettings] =
-    useState<MinimumPaymentSettings>(state.minimumPaymentSettings);
+  const [minimumSettings, setMinimumSettings] = useState<MinimumPaymentSettings>(
+    state.minimumPaymentSettings,
+  );
 
   useEffect(() => {
     const loadSalaryCalculationMethod = async () => {
       try {
         const result = await settingsService.getSalaryCalculationMethod();
-
         if (result) {
           dispatch({
             type: "SET_SALARY_CALCULATION_METHOD",
@@ -1013,52 +540,33 @@ const SalaryCalculationSettings: React.FC = () => {
               date: result.date,
             },
           });
-          console.log(
-            `Загружен метод расчета зарплаты из базы данных: ${result.method}, дата: ${result.date}`,
-          );
         }
       } catch (error) {
-        console.error("Ошибка при загрузке метода расчета зарплаты:", error);
+        // Silent error
       }
     };
-
     loadSalaryCalculationMethod();
   }, [dispatch]);
 
   const handleSalaryMethodChange = async (method: SalaryCalculationMethod) => {
     setLoading(true);
     setSavingError(null);
-
     try {
       const today = format(new Date(), "yyyy-MM-dd");
-
       const success = await settingsService.saveSalaryCalculationMethod(
         method,
         today,
       );
-
       if (success) {
         dispatch({
           type: "SET_SALARY_CALCULATION_METHOD",
-          payload: {
-            method,
-            date: today,
-          },
+          payload: { method, date: today },
         });
-
-        const methodDescription = "Минимальная оплата + процент";
-
-        toast.success(
-          `Метод расчета зарплаты изменен на: ${methodDescription}`,
-        );
+        toast.success("Метод расчета изменен");
       } else {
-        throw new Error(
-          "Не удалось сохранить метод расчета зарплаты в базе данных",
-        );
+        throw new Error("Ошибка сохранения");
       }
     } catch (error) {
-      console.error("Ошибка при изменении метода расчета зарплаты:", error);
-      toast.error("Ошибка при изменении метода расчета зарплаты");
       setSavingError("Не удалось сохранить настройки. Попробуйте еще раз.");
     } finally {
       setLoading(false);
@@ -1068,9 +576,9 @@ const SalaryCalculationSettings: React.FC = () => {
   const handleSaveMinimumSettings = async () => {
     setLoading(true);
     try {
-      const success =
-        await settingsService.saveMinimumPaymentSettings(minimumSettings);
-
+      const success = await settingsService.saveMinimumPaymentSettings(
+        minimumSettings,
+      );
       if (success) {
         dispatch({
           type: "SET_MINIMUM_PAYMENT_SETTINGS",
@@ -1078,88 +586,68 @@ const SalaryCalculationSettings: React.FC = () => {
         });
         toast.success("Настройки минимальной оплаты сохранены");
       } else {
-        throw new Error("Не удалось сохранить настройки в базе данных");
+        throw new Error("Ошибка сохранения");
       }
     } catch (error) {
-      console.error(
-        "Ошибка при сохранении настроек минимальной оплаты:",
-        error,
-      );
-      toast.error("Ошибка при сохранении настроек минимальной оплаты");
+      toast.error("Ошибка при сохранении настроек");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <motion.div
-      className="p-3 sm:p-4 border border-border rounded-xl bg-card"
-      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-      transition={{ duration: 0.2 }}
-    >
-      <h3 className="text-sm sm:text-base font-medium mb-1">Расчет заработной платы</h3>
-      <p className="text-xs text-muted-foreground mb-4">
-        Выберите метод расчета заработной платы. Изменение будет применено ко
-        всем дням начиная с сегодняшнего.
+    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
+      <h3 className="text-base font-semibold mb-1">Расчет заработной платы</h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        Выберите метод расчета. Изменение применяется ко всем сменам с сегодняшнего дня.
       </p>
 
       {savingError && (
-        <div className="mb-3 p-2 bg-destructive/10 text-destructive text-xs rounded-md">
+        <div className="mb-4 p-3 bg-destructive/10 text-destructive text-sm rounded-xl">
           {savingError}
         </div>
       )}
 
-      <div className="flex flex-col gap-3 mb-2">
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
+      <div className="flex flex-col gap-3">
+        <button
           onClick={() => handleSalaryMethodChange("minimumWithPercentage")}
-          className={`p-3 border rounded-lg flex items-start transition-colors ${
+          className={`p-4 border rounded-xl flex items-start text-left transition-colors ${
             state.salaryCalculationMethod === "minimumWithPercentage"
               ? "border-primary bg-primary/5"
-              : "border-border hover:bg-secondary/10"
+              : "border-border/50 hover:bg-muted/50"
           }`}
           disabled={loading}
         >
           <div
-            className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center ${
+            className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center transition-colors ${
               state.salaryCalculationMethod === "minimumWithPercentage"
                 ? "border-primary"
-                : "border-input"
+                : "border-input bg-background"
             }`}
           >
             {state.salaryCalculationMethod === "minimumWithPercentage" && (
-              <div className="w-3 h-3 rounded-full bg-primary"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
             )}
           </div>
           <div className="flex-1">
             <p className="font-medium text-sm">Минимальная оплата + процент</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Мойщик: % от выручки мойки и химчистки (раздельно) или минимальная
-              оплата. Админ: % от кассы + % от лично выполненных услуг (мойка и
-              химчистка раздельно) или минимальная оплата.
+            <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+              Мойщик: % от выручки или мин. оплата. <br />
+              Админ: % от кассы + % от личных услуг или мин. оплата.
             </p>
           </div>
-          {loading && (
-            <Loader2 className="w-4 h-4 animate-spin ml-2 text-primary" />
-          )}
-        </motion.button>
+        </button>
 
         {state.salaryCalculationMethod === "minimumWithPercentage" && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="pl-8 pr-3 py-3 border-l-2 border-primary/30 bg-primary/5 rounded-r-lg"
-          >
-            <h4 className="text-sm font-medium mb-3">
-              Настройки минимальной оплаты
+          <div className="p-4 bg-muted/30 rounded-xl border border-border/30 animate-in fade-in slide-in-from-top-2 duration-300">
+            <h4 className="text-sm font-semibold mb-3">
+              Параметры расчета
             </h4>
 
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
                     Мин. оплата мойщика
                   </label>
                   <input
@@ -1168,18 +656,17 @@ const SalaryCalculationSettings: React.FC = () => {
                     onChange={(e) =>
                       setMinimumSettings({
                         ...minimumSettings,
-                        minimumPaymentWasher:
-                          Number.parseFloat(e.target.value) || 0,
+                        minimumPaymentWasher: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="0"
                     step="0.01"
                     min="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                  <label className="block text-xs text-muted-foreground mb-1">
                     % мойщика - мойка
                   </label>
                   <input
@@ -1188,11 +675,10 @@ const SalaryCalculationSettings: React.FC = () => {
                     onChange={(e) =>
                       setMinimumSettings({
                         ...minimumSettings,
-                        percentageWasher:
-                          Number.parseFloat(e.target.value) || 0,
+                        percentageWasher: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="10"
                     step="0.1"
                     min="0"
@@ -1200,7 +686,7 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                  <label className="block text-xs text-muted-foreground mb-1">
                     % мойщика - химчистка
                   </label>
                   <input
@@ -1213,7 +699,7 @@ const SalaryCalculationSettings: React.FC = () => {
                           Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="15"
                     step="0.1"
                     min="0"
@@ -1222,9 +708,9 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">
                     Мин. оплата админа
                   </label>
                   <input
@@ -1233,22 +719,17 @@ const SalaryCalculationSettings: React.FC = () => {
                     onChange={(e) =>
                       setMinimumSettings({
                         ...minimumSettings,
-                        minimumPaymentAdmin:
-                          Number.parseFloat(e.target.value) || 0,
+                        minimumPaymentAdmin: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="0"
                     step="0.01"
                     min="0"
                   />
                 </div>
-                <div></div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                  <label className="block text-xs text-muted-foreground mb-1">
                     % адм от кассы
                   </label>
                   <input
@@ -1257,11 +738,10 @@ const SalaryCalculationSettings: React.FC = () => {
                     onChange={(e) =>
                       setMinimumSettings({
                         ...minimumSettings,
-                        adminCashPercentage:
-                          Number.parseFloat(e.target.value) || 0,
+                        adminCashPercentage: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="3"
                     step="0.1"
                     min="0"
@@ -1269,7 +749,7 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                  <label className="block text-xs text-muted-foreground mb-1">
                     % адм от мойки
                   </label>
                   <input
@@ -1278,11 +758,10 @@ const SalaryCalculationSettings: React.FC = () => {
                     onChange={(e) =>
                       setMinimumSettings({
                         ...minimumSettings,
-                        adminCarWashPercentage:
-                          Number.parseFloat(e.target.value) || 0,
+                        adminCarWashPercentage: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="2"
                     step="0.1"
                     min="0"
@@ -1290,7 +769,7 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] sm:text-xs text-muted-foreground mb-1">
+                  <label className="block text-xs text-muted-foreground mb-1">
                     % адм от химчистки
                   </label>
                   <input
@@ -1299,11 +778,10 @@ const SalaryCalculationSettings: React.FC = () => {
                     onChange={(e) =>
                       setMinimumSettings({
                         ...minimumSettings,
-                        adminDrycleanPercentage:
-                          Number.parseFloat(e.target.value) || 0,
+                        adminDrycleanPercentage: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 text-sm border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="3"
                     step="0.1"
                     min="0"
@@ -1312,52 +790,244 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={handleSaveMinimumSettings}
                 disabled={loading}
-                className="w-full px-3 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs disabled:opacity-70 flex items-center justify-center gap-1"
+                className="w-full mt-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Сохранение...
-                  </>
-                ) : (
-                  "Сохранить настройки"
-                )}
-              </motion.button>
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Сохранить параметры
+              </button>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
-
-      <div className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border">
-        <p>
-          <span className="font-medium">Текущий метод:</span>{" "}
-          {state.salaryCalculationMethod === "none"
-            ? "Не выбран"
-            : "Минимальная оплата + процент"}
-        </p>
-        <p className="mt-1">
-          <span className="font-medium">Дата изменения:</span> {(() => {
-            try {
-              return format(
-                parseISO(state.salaryCalculationDate),
-                "dd.MM.yyyy",
-              );
-            } catch (error) {
-              return "Неверная дата";
-            }
-          })()}
-        </p>
-      </div>
-    </motion.div>
+    </div>
   );
 };
 
-// Новый компонент для настройки "Организации в Итого"
+// Organizations Settings Component
+const OrganizationsSettings: React.FC = () => {
+  const { state, dispatch } = useAppContext();
+  const [newOrganizationName, setNewOrganizationName] = useState("");
+  const [editingOrganization, setEditingOrganization] = useState<Organization | null>(
+    null,
+  );
+  const [loading, setLoading] = useState({
+    addOrg: false,
+    deleteOrg: null as string | null,
+    updateOrg: null as string | null,
+    fetchOrgs: false,
+  });
+
+  const fetchOrganizations = async () => {
+    setLoading((prev) => ({ ...prev, fetchOrgs: true }));
+    try {
+      const orgs = await organizationService.getAll();
+      dispatch({ type: "SET_ORGANIZATIONS", payload: orgs });
+    } catch (error) {
+      toast.error("Не удалось загрузить организации");
+    } finally {
+      setLoading((prev) => ({ ...prev, fetchOrgs: false }));
+    }
+  };
+
+  const handleAddOrganization = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOrganizationName.trim()) {
+      toast.error("Введите название организации");
+      return;
+    }
+
+    setLoading((prev) => ({ ...prev, addOrg: true }));
+    try {
+      const organization: Omit<Organization, "id"> = {
+        name: newOrganizationName.trim(),
+      };
+      const addedOrg = await organizationService.add(organization);
+      if (addedOrg) {
+        dispatch({ type: "ADD_ORGANIZATION", payload: addedOrg });
+        toast.success("Организация добавлена");
+        setNewOrganizationName("");
+      } else {
+        throw new Error("Не удалось добавить");
+      }
+    } catch (error) {
+      toast.error("Ошибка при добавлении");
+    } finally {
+      setLoading((prev) => ({ ...prev, addOrg: false }));
+    }
+  };
+
+  const handleUpdateOrganization = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingOrganization) return;
+    if (!editingOrganization.name.trim()) return;
+
+    setLoading((prev) => ({ ...prev, updateOrg: editingOrganization.id }));
+    try {
+      const success = await organizationService.update(editingOrganization);
+      if (success) {
+        dispatch({ type: "UPDATE_ORGANIZATION", payload: editingOrganization });
+        toast.success("Организация обновлена");
+        setEditingOrganization(null);
+      } else {
+        throw new Error("Не удалось обновить");
+      }
+    } catch (error) {
+      toast.error("Ошибка при обновлении");
+    } finally {
+      setLoading((prev) => ({ ...prev, updateOrg: null }));
+    }
+  };
+
+  const handleDeleteOrganization = async (orgId: string, orgName: string) => {
+    if (!confirm(`Удалить организацию "${orgName}"?`)) return;
+
+    setLoading((prev) => ({ ...prev, deleteOrg: orgId }));
+    try {
+      const success = await organizationService.delete(orgId);
+      if (success) {
+        dispatch({ type: "REMOVE_ORGANIZATION", payload: orgId });
+        toast.success("Организация удалена");
+        if (editingOrganization?.id === orgId) setEditingOrganization(null);
+      } else {
+        throw new Error("Не удалось удалить");
+      }
+    } catch (error) {
+      toast.error("Ошибка при удалении");
+    } finally {
+      setLoading((prev) => ({ ...prev, deleteOrg: null }));
+    }
+  };
+
+  return (
+    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-base font-semibold">Список партнеров</h3>
+        <button
+          onClick={fetchOrganizations}
+          disabled={loading.fetchOrgs}
+          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
+        >
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${loading.fetchOrgs ? "animate-spin" : ""}`}
+          />
+          Обновить
+        </button>
+      </div>
+
+      <form onSubmit={handleAddOrganization} className="mb-5">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={newOrganizationName}
+            onChange={(e) => setNewOrganizationName(e.target.value)}
+            placeholder="Название организации"
+            className="flex-1 px-3 py-2 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
+            disabled={loading.addOrg}
+          />
+          <button
+            type="submit"
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm font-medium"
+            disabled={loading.addOrg || !newOrganizationName.trim()}
+          >
+            {loading.addOrg ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Plus className="w-4 h-4" />
+            )}
+            <span className="hidden sm:inline">Добавить</span>
+          </button>
+        </div>
+      </form>
+
+      <div className="rounded-xl border border-border/50 bg-background/50 overflow-hidden">
+        {state.organizations.length > 0 ? (
+          <ul className="divide-y divide-border/50">
+            {state.organizations.map((org) => (
+              <li
+                key={org.id}
+                className="px-4 py-2 flex items-center justify-between text-sm group hover:bg-muted/50 transition-colors min-h-[44px]"
+              >
+                {editingOrganization?.id === org.id ? (
+                  <form
+                    onSubmit={handleUpdateOrganization}
+                    className="flex items-center gap-2 w-full"
+                  >
+                    <input
+                      type="text"
+                      value={editingOrganization.name}
+                      onChange={(e) =>
+                        setEditingOrganization({
+                          ...editingOrganization,
+                          name: e.target.value,
+                        })
+                      }
+                      className="flex-1 px-2 py-1 bg-background border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                      autoFocus
+                    />
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setEditingOrganization(null)}
+                        className="text-muted-foreground hover:text-foreground p-1.5"
+                        disabled={loading.updateOrg === org.id}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="submit"
+                        className="text-primary hover:text-primary/80 p-1.5"
+                        disabled={loading.updateOrg === org.id}
+                      >
+                        {loading.updateOrg === org.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Check className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <span className="font-medium">{org.name}</span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => setEditingOrganization({ ...org })}
+                        className="text-muted-foreground hover:text-foreground p-1.5 rounded-md"
+                        disabled={!!editingOrganization}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteOrganization(org.id, org.name)}
+                        className="text-muted-foreground hover:text-destructive p-1.5 rounded-md"
+                        disabled={loading.deleteOrg === org.id || !!editingOrganization}
+                      >
+                        {loading.deleteOrg === org.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="px-4 py-8 text-center text-muted-foreground text-sm">
+            {loading.fetchOrgs ? "Загрузка..." : "Нет организаций"}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Organizations In Total Settings
 const OrganizationsInTotalSettings = () => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
@@ -1381,12 +1051,10 @@ const OrganizationsInTotalSettings = () => {
           type: "SET_ORGANIZATIONS_IN_TOTAL",
           payload: newOrgs,
         });
-        toast.success('Настройки "Организации в Итого" сохранены');
       } else {
-        throw new Error("Ошибка сохранения");
+        throw new Error("Ошибка");
       }
     } catch (error) {
-      console.error(error);
       toast.error("Не удалось сохранить настройки");
     } finally {
       setLoading(false);
@@ -1394,81 +1062,130 @@ const OrganizationsInTotalSettings = () => {
   };
 
   return (
-    <motion.div
-      className="p-3 sm:p-5 border border-border/60 rounded-xl bg-card/80 mt-2 shadow-sm"
-      whileHover={{
-        boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
-        borderColor: "hsl(var(--primary)/0.2)",
-      }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
       <div className="flex items-center gap-2 mb-2">
-        <Building className="w-4 h-4 text-primary" />
         <h3 className="text-base font-semibold">Организации в Итого</h3>
       </div>
-      <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+      <p className="text-sm text-muted-foreground mb-5">
         Выберите организации, суммы которых будут вычитаться из общего безнала и
         отображаться отдельным пунктом в блоке «Итого».
       </p>
 
       {state.organizations.length === 0 ? (
-        <div className="text-xs text-muted-foreground p-3 sm:p-4 border rounded-xl bg-muted/20 text-center">
-          Нет добавленных организаций
+        <div className="p-4 border border-dashed rounded-xl text-center text-muted-foreground text-sm">
+          Сначала добавьте организации в списке партнеров
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {state.organizations.map((org) => {
-            const isSelected = (state.organizationsInTotal || []).includes(
-              org.id,
-            );
+            const isSelected = (state.organizationsInTotal || []).includes(org.id);
             return (
-              <motion.button
+              <button
                 key={org.id}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 onClick={() => toggleOrganization(org.id)}
                 disabled={loading}
-                className={`relative overflow-hidden p-2.5 sm:p-4 rounded-xl flex items-center justify-between transition-all duration-300 text-left border ${
+                className={`p-3.5 rounded-xl flex items-center justify-between transition-colors border text-left ${
                   isSelected
-                    ? "border-primary/50 shadow-md bg-gradient-to-br from-primary/5 to-primary/10"
-                    : "border-border/60 hover:border-primary/30 hover:shadow-sm bg-gradient-to-br from-background to-muted/20"
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border/60 bg-background hover:border-border hover:bg-muted/50"
                 }`}
               >
-                {/* Индикатор выбора сбоку (как в ролях) */}
-                <div
-                  className={`absolute left-0 top-0 bottom-0 w-1 transition-colors duration-300 ${isSelected ? "bg-primary" : "bg-transparent"}`}
-                />
-
                 <span
-                  className={`text-xs sm:text-sm font-medium truncate pr-2 sm:pr-3 transition-colors duration-300 ${isSelected ? "text-primary" : "text-foreground"}`}
+                  className={`text-sm font-medium truncate pr-3 ${
+                    isSelected ? "text-primary" : "text-foreground"
+                  }`}
                 >
                   {org.name}
                 </span>
 
                 <div
-                  className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border flex-shrink-0 flex items-center justify-center transition-all duration-300 ${
+                  className={`w-5 h-5 rounded-md border flex-shrink-0 flex items-center justify-center transition-colors ${
                     isSelected
-                      ? "bg-primary border-primary text-primary-foreground shadow-sm"
-                      : "border-input text-transparent bg-background/50"
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : "border-input bg-background"
                   }`}
                 >
-                  <Check
-                    className={`w-3 h-3 transition-opacity duration-300 ${isSelected ? "opacity-100" : "opacity-0"}`}
-                  />
+                  {isSelected && <Check className="w-3.5 h-3.5" />}
                 </div>
-              </motion.button>
+              </button>
             );
           })}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
 export default function SettingsPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { dispatch } = useAppContext();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      employeeService.getAll().then((employees) => {
+        dispatch({ type: "SET_EMPLOYEES", payload: employees });
+      });
+      organizationService.getAll().then((orgs) => {
+        dispatch({ type: "SET_ORGANIZATIONS", payload: orgs });
+      });
+    }
+  }, [isAuthenticated, dispatch]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-4">
+        <PasswordAuth onSuccess={() => setIsAuthenticated(true)} />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-3 sm:p-4 space-y-3">
-      <SettingsContent />
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500">
+      <div>
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <SettingsIcon className="w-6 h-6 text-primary" />
+          Настройки системы
+        </h2>
+        <p className="text-muted-foreground text-sm mt-1">
+          Управление параметрами, сотрудниками и организациями
+        </p>
+      </div>
+
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="mb-6 w-full sm:w-auto flex sm:inline-flex bg-muted/50 p-1 rounded-xl">
+          <TabsTrigger value="general" className="flex-1 sm:flex-none rounded-lg text-sm px-6 py-2">
+            Общие
+          </TabsTrigger>
+          <TabsTrigger value="employees" className="flex-1 sm:flex-none rounded-lg text-sm px-6 py-2">
+            Сотрудники
+          </TabsTrigger>
+          <TabsTrigger value="organizations" className="flex-1 sm:flex-none rounded-lg text-sm px-6 py-2">
+            Организации
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="general" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ThemeSettings />
+            <DatabaseStatus />
+          </div>
+          <DataManagement />
+        </TabsContent>
+
+        <TabsContent value="employees" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <EmployeeSettings />
+            <SalaryCalculationSettings />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="organizations" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <OrganizationsSettings />
+            <OrganizationsInTotalSettings />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
