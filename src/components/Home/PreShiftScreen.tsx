@@ -2,8 +2,8 @@ import React from "react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
-import { Calendar, ChevronDown, Check, Users, Shield, ArrowRight, Loader2 } from "lucide-react";
-import type { Employee, EmployeeRole } from "@/lib/types";
+import { Calendar, ChevronDown, Check, Users, Shield, ArrowRight, Loader2, Clock } from "lucide-react";
+import type { Employee, EmployeeRole, Appointment } from "@/lib/types";
 
 interface PreShiftScreenProps {
   selectedDate: string;
@@ -20,6 +20,8 @@ interface PreShiftScreenProps {
   setEmployeeRoles: (roles: Record<string, EmployeeRole>) => void;
   startShift: () => void;
   loading: { savingShift: boolean; employees: boolean };
+  upcomingAppointments: Appointment[];
+  totalAppointmentsToday: number;
 }
 
 export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
@@ -37,6 +39,8 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
   setEmployeeRoles,
   startShift,
   loading,
+  upcomingAppointments,
+  totalAppointmentsToday,
 }) => {
   return (
     <div className="min-h-[85dvh] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 animate-in fade-in duration-500 bg-background/50">
@@ -100,8 +104,8 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
       </div>
 
       {/* Main Content Area */}
-      <div className="w-full max-w-2xl grid gap-6">
-        {/* Employees Selection Card */}
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        {/* Left Column - Employees Selection Card */}
         <div
           ref={shiftSectionRef}
           className={`bg-card rounded-2xl border transition-all duration-300 shadow-sm overflow-hidden ${
@@ -163,7 +167,7 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
                         </div>
                         <input
                           type="checkbox"
-                          className="sr-only"
+                          className="hidden"
                           checked={isSelected}
                           onChange={() => handleEmployeeSelection(employee.id)}
                         />
@@ -232,8 +236,49 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
           </div>
         </div>
 
+        {/* Right Column - Upcoming Appointments */}
+        <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden flex flex-col h-full max-h-[500px]">
+          <div className="p-5 sm:p-6 border-b border-border/50 bg-muted/20">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Clock className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">Записи</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">Ближайшие 2 часа</p>
+          </div>
+
+          <div className="p-5 sm:p-6 flex-1 overflow-y-auto">
+            {upcomingAppointments.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground text-sm">Нет записей на ближайшее время</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {upcomingAppointments.map((appointment) => (
+                  <div key={appointment.id} className="p-3 bg-background rounded-xl border border-border/50 flex flex-col gap-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-foreground">{appointment.time}</span>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                        {appointment.service}
+                      </span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">{appointment.clientName}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 border-t border-border/50 bg-muted/10 text-center">
+            <span className="text-sm font-medium text-muted-foreground">
+              Всего записей на день: <span className="text-foreground">{totalAppointmentsToday}</span>
+            </span>
+          </div>
+        </div>
+
         {/* Action Bar */}
-        <div className="flex justify-center mt-4">
+        <div className="lg:col-span-2 flex justify-center mt-4">
           <button
             onClick={startShift}
             disabled={
