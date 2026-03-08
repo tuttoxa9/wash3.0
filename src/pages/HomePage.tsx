@@ -392,6 +392,7 @@ const HomePage: React.FC = () => {
         currentReport,
         state.employees,
         selectedDate,
+        state.minimumPaymentSettings
       );
 
       // Преобразуем в blob

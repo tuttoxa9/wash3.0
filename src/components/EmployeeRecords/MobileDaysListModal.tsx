@@ -27,6 +27,7 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
   groupedRecords,
   sortedDates,
   periodLabel,
+  dailySalaries,
   calculateEmployeeEarnings,
   onDayClick,
   onAnalyticsClick,

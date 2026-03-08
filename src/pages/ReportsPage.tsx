@@ -1096,6 +1096,7 @@ const ReportsPage: React.FC = () => {
             setSelectedEmployeeForModal(null);
           }}
           employee={selectedEmployeeForModal}
+          allRecords={records}
           records={records
             .filter((record) =>
               record.employeeIds.includes(selectedEmployeeForModal.id),

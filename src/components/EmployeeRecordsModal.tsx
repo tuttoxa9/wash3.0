@@ -1,4 +1,6 @@
 import { useAppContext } from "@/lib/context/AppContext";
+import { createSalaryCalculator } from "@/components/SalaryCalculator";
+import { determineEmployeeRole } from "@/lib/utils";
 import type { CarWashRecord, Employee } from "@/lib/types";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -18,6 +20,7 @@ interface EmployeeRecordsModalProps {
   records: CarWashRecord[];
   periodLabel: string;
   dailyRoles?: Record<string, Record<string, string>>;
+  allRecords?: CarWashRecord[];
 }
 
 const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
@@ -27,6 +30,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   records,
   periodLabel,
   dailyRoles = {},
+  allRecords = [],
 }) => {
   const { state } = useAppContext();
   const [showAnalytics, setShowAnalytics] = useState(false);
@@ -116,6 +120,62 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     onClose();
   };
 
+
+  // Рассчитываем точную зарплату за день с учетом всех записей (кассы) и минималки
+  const dailySalaries = useMemo(() => {
+    if (!allRecords || allRecords.length === 0) return {};
+
+    const recordsByDate: Record<string, CarWashRecord[]> = {};
+    allRecords.forEach(rec => {
+      const recDate = typeof rec.date === "string" ? rec.date : format(rec.date, "yyyy-MM-dd");
+      if (!recordsByDate[recDate]) recordsByDate[recDate] = [];
+      recordsByDate[recDate].push(rec);
+    });
+
+    const result: Record<string, number> = {};
+
+    Object.keys(recordsByDate).forEach(dateStr => {
+      const recordsForDay = recordsByDate[dateStr];
+      const dayRoles = dailyRoles[dateStr] || {};
+
+      const employeeRolesForDay: Record<string, "admin" | "washer"> = {};
+      const minimumOverrideForDay: Record<string, boolean> = {};
+
+      // Initialize participants
+      const participantIds = new Set<string>();
+      Object.keys(dayRoles).forEach(key => {
+        if (!key.startsWith("min_")) participantIds.add(key);
+      });
+      recordsForDay.forEach(rec => rec.employeeIds.forEach(id => participantIds.add(id)));
+
+      participantIds.forEach(empId => {
+        employeeRolesForDay[empId] = determineEmployeeRole(empId, dateStr, dayRoles, state.employees);
+        const minKey = `min_${empId}`;
+        minimumOverrideForDay[empId] = dayRoles[minKey] !== false;
+      });
+
+      const salaryCalculator = createSalaryCalculator(
+        state.minimumPaymentSettings,
+        recordsForDay,
+        employeeRolesForDay,
+        state.employees,
+        minimumOverrideForDay
+      );
+
+      const dailyResults = salaryCalculator.calculateSalaries();
+      const empResult = dailyResults.find(r => r.employeeId === employee.id);
+
+      if (empResult) {
+        result[dateStr] = empResult.calculatedSalary;
+      } else {
+        result[dateStr] = 0;
+      }
+    });
+
+    return result;
+  }, [allRecords, dailyRoles, state.employees, state.minimumPaymentSettings, employee.id]);
+
+
   // Функция для расчёта заработка сотрудника от конкретной записи
   const calculateEmployeeEarnings = React.useCallback(
     (record: CarWashRecord, employeeId: string) => {
@@ -197,9 +257,9 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
       return sum + record.price / record.employeeIds.length;
     }, 0);
 
-    const totalEarnings = records.reduce((sum, record) => {
-      return sum + calculateEmployeeEarnings(record, employee.id);
-    }, 0);
+
+    const totalEarnings = Object.values(dailySalaries).reduce((sum, val) => sum + val, 0);
+
 
     // Статистика по способам оплаты
     const paymentStats = records.reduce(
@@ -382,6 +442,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
             sortedDates={sortedDates}
             periodLabel={periodLabel}
             calculateEmployeeEarnings={calculateEmployeeEarnings}
+            dailySalaries={dailySalaries}
             onDayClick={handleDayClick}
             onAnalyticsClick={() => {
               setShowMobileDaysList(false);
@@ -410,6 +471,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
           sortedDates={sortedDates}
           periodLabel={periodLabel}
           calculateEmployeeEarnings={calculateEmployeeEarnings}
+          dailySalaries={dailySalaries}
           onDayClick={handleDayClick}
           selectedDate={selectedDate}
           selectedDateRecords={selectedDateRecords}

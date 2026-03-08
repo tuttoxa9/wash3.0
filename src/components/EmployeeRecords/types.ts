@@ -25,6 +25,7 @@ export interface DailyBreakdownModalProps {
   groupedRecords: Record<string, CarWashRecord[]>;
   sortedDates: string[];
   periodLabel: string;
+  dailySalaries: Record<string, number>;
   calculateEmployeeEarnings: (
     record: CarWashRecord,
     employeeId: string,

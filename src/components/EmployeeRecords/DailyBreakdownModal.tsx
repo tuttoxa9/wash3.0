@@ -14,6 +14,7 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
   groupedRecords,
   sortedDates,
   periodLabel,
+  dailySalaries,
   calculateEmployeeEarnings,
   onDayClick,
   selectedDate,
@@ -55,11 +56,7 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
               <div className="space-y-2">
                 {sortedDates.map((date) => {
                   const dayRecords = groupedRecords[date];
-                  const dayEarnings = dayRecords.reduce(
-                    (sum, record) =>
-                      sum + calculateEmployeeEarnings(record, employee.id),
-                    0,
-                  );
+                  const dayEarnings = dailySalaries[date] || 0;
                   const dayRevenue = dayRecords.reduce(
                     (sum, record) =>
                       sum + record.price / record.employeeIds.length,
