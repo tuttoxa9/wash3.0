@@ -59,6 +59,12 @@ const HomePage: React.FC = () => {
   >({});
   const [isShiftLocked, setIsShiftLocked] = useState(false);
   const [isEditingShift, setIsEditingShift] = useState(false);
+
+  // Состояния для анимации открытия смены
+  const [shiftOpeningStage, setShiftOpeningStage] = useState<
+    "idle" | "loading" | "success" | "expanding" | "done"
+  >("idle");
+
   const [selectedDate, setSelectedDate] = useState(state.currentDate);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -433,61 +439,90 @@ const HomePage: React.FC = () => {
       return;
     }
 
-    try {
-      setLoading((prev) => ({ ...prev, savingShift: true }));
+    // Запускаем процесс анимации открытия
+    setShiftOpeningStage("loading");
 
-      // Сохраняем ежедневные роли в базе данных
-      const success = await dailyRolesService.saveDailyRoles(
-        selectedDate,
-        employeeRoles,
-      );
-      if (!success) {
-        console.warn("Не удалось сохранить ежедневные роли, но продолжаем");
+    // Выполняем сохранение в фоне
+    const savePromise = (async () => {
+      try {
+        setLoading((prev) => ({ ...prev, savingShift: true }));
+
+        // Сохраняем ежедневные роли в базе данных
+        const success = await dailyRolesService.saveDailyRoles(
+          selectedDate,
+          employeeRoles,
+        );
+        if (!success) {
+          console.warn("Не удалось сохранить ежедневные роли, но продолжаем");
+        }
+
+        // Если отчет уже существует, обновляем сотрудников
+        if (currentReport) {
+          const updatedReport = {
+            ...currentReport,
+            employeeIds: shiftEmployees,
+            dailyEmployeeRoles: employeeRoles,
+          };
+
+          // Сохраняем в базе данных
+          await dailyReportService.updateReport(updatedReport);
+
+          return { isNew: false, report: updatedReport };
+        } else {
+          // Создаем новый отчет
+          const newReport: DailyReport = {
+            id: selectedDate,
+            date: selectedDate,
+            employeeIds: shiftEmployees,
+            records: [],
+            totalCash: 0,
+            totalNonCash: 0,
+            dailyEmployeeRoles: employeeRoles,
+          };
+
+          await dailyReportService.updateReport(newReport);
+          return { isNew: true, report: newReport };
+        }
+      } catch (error) {
+        console.error("Ошибка при сохранении состава смены:", error);
+        toast.error("Не удалось сохранить состав смены");
+        setShiftOpeningStage("idle");
+        return null;
+      } finally {
+        setLoading((prev) => ({ ...prev, savingShift: false }));
       }
+    })();
 
-      // Если отчет уже существует, обновляем сотрудников
-      if (currentReport) {
-        const updatedReport = {
-          ...currentReport,
-          employeeIds: shiftEmployees,
-          dailyEmployeeRoles: employeeRoles,
-        };
+    // Искусственная задержка для анимации загрузки (минимум 1.5 секунды)
+    const timerPromise = new Promise(resolve => setTimeout(resolve, 1500));
 
-        // Сохраняем в базе данных
-        await dailyReportService.updateReport(updatedReport);
+    // Ждем и сохранение, и таймер
+    const [savedResult] = await Promise.all([savePromise, timerPromise]);
 
-        // Обновляем состояние
+    if (savedResult) {
+      // Переходим к этапу успешного сохранения (галочка)
+      setShiftOpeningStage("success");
+
+      // Ждем 1.5 секунды с галочкой
+      setTimeout(() => {
+        // Здесь мы ДОЛЖНЫ обновить стейт (shiftStarted станет true),
+        // но мы переопределим рендер, чтобы анимация сработала плавно
         dispatch({
           type: "SET_DAILY_REPORT",
-          payload: { date: selectedDate, report: updatedReport },
+          payload: { date: selectedDate, report: savedResult.report },
         });
-      } else {
-        // Создаем новый отчет
-        const newReport: DailyReport = {
-          id: selectedDate,
-          date: selectedDate,
-          employeeIds: shiftEmployees,
-          records: [],
-          totalCash: 0,
-          totalNonCash: 0,
-          dailyEmployeeRoles: employeeRoles,
-        };
 
-        await dailyReportService.updateReport(newReport);
-        dispatch({
-          type: "SET_DAILY_REPORT",
-          payload: { date: selectedDate, report: newReport },
-        });
-      }
+        setIsShiftLocked(true);
+        setIsEditingShift(false);
 
-      setIsShiftLocked(true);
-      setIsEditingShift(false);
-      toast.success("Состав смены и роли сотрудников сохранены");
-    } catch (error) {
-      console.error("Ошибка при сохранении состава смены:", error);
-      toast.error("Не удалось сохранить состав смены");
-    } finally {
-      setLoading((prev) => ({ ...prev, savingShift: false }));
+        setShiftOpeningStage("expanding");
+
+        // Переход в итоговое состояние после анимации растяжения
+        setTimeout(() => {
+          setShiftOpeningStage("done");
+          toast.success("Состав смены и роли сотрудников сохранены");
+        }, 800); // 800ms на CSS-анимацию
+      }, 1500);
     }
   };
 
@@ -994,9 +1029,185 @@ const HomePage: React.FC = () => {
     );
   }
 
-  // --- ACTIVE SHIFT VIEW ---
+  // --- START SHIFT (PRE-SHIFT) VIEW ---
+  // Мы должны показывать пре-шифт вью, если смены НЕТ,
+  // ИЛИ если смена уже есть в стейте, но анимация еще не дошла до done.
+  const showPreShiftView = !shiftStarted || shiftOpeningStage !== "done";
+
+  const isOpeningLoading = shiftOpeningStage === "loading";
+  const isOpeningSuccess = shiftOpeningStage === "success";
+  const isExpanding = shiftOpeningStage === "expanding";
+
+  // Предстоящие записи (ближайшие 2 часа от текущего времени или от 09:00)
+  const now = new Date();
+  const currentHour = now.getHours();
+  const startHour = Math.max(9, currentHour); // Не раньше 09:00
+  const startMins = startHour === currentHour ? now.getMinutes() : 0;
+
+  const upcomingAppointments = state.appointments
+    .filter(app => {
+      if (app.date !== selectedDate) return false;
+      const [appHour, appMin] = app.time.split(':').map(Number);
+      const appTotalMins = appHour * 60 + appMin;
+      const startTotalMins = startHour * 60 + startMins;
+
+      // В пределах ближайших 2 часов
+      return appTotalMins >= startTotalMins && appTotalMins <= startTotalMins + 120;
+    })
+    .sort((a, b) => a.time.localeCompare(b.time));
+
+  const totalAppointmentsToday = state.appointments.filter(app => app.date === selectedDate).length;
+
   return (
-    <div className="space-y-4">
+    <div className="relative w-full h-full min-h-[80vh]">
+
+      {/* ПРЕ-ШИФТ ВЬЮ (поверх дашборда при анимации) */}
+      {showPreShiftView && (
+        <div
+          className={`absolute inset-0 z-40 flex items-center justify-center p-4 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+            isExpanding ? "opacity-0 scale-[1.05]" : "opacity-100 scale-100"
+          } ${
+            shiftStarted && !isExpanding && shiftOpeningStage !== "success" && shiftOpeningStage !== "loading" ? "hidden" : "" // скрываем если уже смена начата, но нет анимации (просто открыли страницу)
+          }`}
+          style={{
+            pointerEvents: isExpanding ? "none" : "auto"
+          }}
+        >
+          {/* Белый фон, который скрывает дашборд сзади до окончания анимации */}
+          <div className="absolute inset-0 bg-background" />
+
+          <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-8 items-start justify-center relative z-10">
+
+            {/* Главная карточка открытия смены */}
+            <div className={`relative w-full max-w-2xl bg-card border border-border/40 rounded-3xl shadow-xl overflow-hidden z-10 transition-all duration-700 ${
+              isExpanding ? "w-full max-w-full shadow-2xl scale-[1.02] border-transparent" : ""
+            }`}>
+              {/* Оверлей загрузки / успеха */}
+              {(isOpeningLoading || isOpeningSuccess || isExpanding) && (
+                <div className={`absolute inset-0 bg-card z-50 flex flex-col items-center justify-center transition-opacity duration-300 ${
+                  isExpanding ? "opacity-0" : "opacity-100"
+                }`}>
+                  {isOpeningLoading ? (
+                    <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
+                      <Loader2 className="w-16 h-16 text-primary animate-spin" />
+                      <span className="text-xl font-medium text-foreground">Открытие смены...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-4 text-green-500 animate-in fade-in zoom-in duration-300">
+                      <div className="w-20 h-20 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+                        <Check className="w-10 h-10" />
+                      </div>
+                      <span className="text-xl font-medium">Смена открыта</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className={`p-8 sm:p-10 flex flex-col items-center transition-opacity duration-300 ${isOpeningLoading || isOpeningSuccess || isExpanding ? "opacity-0" : "opacity-100"}`}>
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                  <Calendar className="w-8 h-8 text-primary" />
+                </div>
+
+                <h2 className="text-3xl font-bold text-foreground mb-4">Открытие смены</h2>
+
+                <div className="flex items-center gap-3 mb-10 px-4 py-2 rounded-xl bg-muted/50 border border-border/40">
+                  <span className="text-muted-foreground text-sm font-medium">Дата смены:</span>
+                  <span className="text-foreground font-semibold">{format(parseISO(selectedDate), "d MMMM yyyy", { locale: ru })}</span>
+                </div>
+
+                <div className="w-full">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <User className="w-5 h-5 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold">Сотрудники на смене</h3>
+                    </div>
+                    <span className="text-sm text-muted-foreground font-medium">Выбрано: {shiftEmployees.length}</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+                    {state.employees.map((employee) => {
+                      const isSelected = shiftEmployees.includes(employee.id);
+                      return (
+                        <button
+                          key={employee.id}
+                          onClick={() => handleEmployeeSelection(employee.id)}
+                          className={`flex items-center gap-3 p-4 rounded-xl border transition-all duration-200 text-left ${
+                            isSelected
+                              ? "border-primary bg-primary/10 shadow-sm"
+                              : "border-border/40 bg-card hover:border-border hover:bg-muted/20"
+                          }`}
+                        >
+                          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors shrink-0 ${
+                            isSelected ? "bg-primary border-primary text-white" : "border-input bg-background"
+                          }`}>
+                            {isSelected && <Check className="w-3.5 h-3.5" />}
+                          </div>
+                          <span className={`font-medium text-sm sm:text-base ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>
+                            {employee.name}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-6 border-t border-border/40">
+                    <span className="text-sm text-muted-foreground">Выберите хотя бы одного</span>
+                    <button
+                      onClick={startShift}
+                      disabled={shiftEmployees.length === 0}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold shadow-lg hover:bg-primary/90 transition-all duration-200 disabled:opacity-50 disabled:shadow-none"
+                    >
+                      Начать смену
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Правая панель с записями (исчезает первой при расширении) */}
+            <div className={`w-full lg:w-80 flex flex-col gap-4 transition-all duration-500 ${isExpanding ? "opacity-0 translate-x-10" : "opacity-100 translate-x-0"}`}>
+              <div className="bg-card border border-border/40 rounded-3xl p-6 shadow-md">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  Ближайшие записи
+                </h3>
+
+                <div className="space-y-3 mb-6">
+                  {upcomingAppointments.length > 0 ? (
+                    upcomingAppointments.map(app => (
+                      <div key={app.id} className="p-3 rounded-xl bg-muted/30 border border-border/40 flex flex-col gap-1">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-foreground">{app.time}</span>
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">{app.service}</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">{app.clientName} {app.carModel ? `(${app.carModel})` : ""}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6 text-muted-foreground text-sm bg-muted/10 rounded-xl border border-border/20">
+                      На ближайшие 2 часа записей нет
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-border/40 text-center">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Всего на день: <span className="text-foreground font-bold">{totalAppointmentsToday}</span> записей
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ДАШБОРД (подложка, становится видимым когда пред-шифт исчезает) */}
+      {(shiftStarted || isExpanding || shiftOpeningStage === "done") && (
+        <div className={`space-y-4 transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] relative z-0 ${
+          isExpanding ? "opacity-0 scale-95 blur-sm" : "opacity-100 scale-100 blur-0"
+        }`}>
 
       {/* Модальное окно закрытия долга */}
       {isCloseDebtModalOpen && debtToClose && (
@@ -1017,140 +1228,94 @@ const HomePage: React.FC = () => {
         />
       )}
 
-      {/* Заголовок */}
-      <div className="flex flex-col gap-2 md:gap-4">
-        <div className="flex flex-col gap-4 p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl bg-gradient-to-r from-card via-card/80 to-card border border-border/40 shadow-lg">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-              <div className="flex items-center gap-2 sm:gap-3">
+      {/* Верхняя панель: Заголовок и Действия */}
+      <div className="bg-card border border-border/40 rounded-2xl shadow-sm p-4 sm:p-6 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground shrink-0">
+            Главная страница
+          </h2>
 
-                <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
-                  Главная страница
-                </h2>
+          <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-muted/50 border border-border/40 shrink-0">
+            <Calendar className="w-5 h-5 text-primary" />
+            <span className="text-sm font-medium text-muted-foreground hidden lg:inline">Дата:</span>
+
+            <div className="relative" ref={calendarRef}>
+              <div
+                className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
+                onClick={toggleCalendar}
+              >
+                {formattedDate}
+                <ChevronDown className="w-4 h-4 opacity-50" />
               </div>
 
-              {/* Дата */}
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary">
-                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+              {isCalendarOpen && (
+                <div className="absolute top-full left-0 mt-2 z-50 bg-card rounded-xl shadow-xl border border-border/40 p-3 backdrop-blur-sm min-w-[300px]">
+                  <DayPicker
+                    mode="single"
+                    selected={new Date(selectedDate)}
+                    onDayClick={handleDaySelect}
+                    locale={ru}
+                    modifiers={{
+                      today: new Date(),
+                    }}
+                    modifiersStyles={{
+                      today: { fontWeight: "bold", color: "var(--primary)" },
+                    }}
+                    className="bg-card rounded-xl border-none m-0"
+                    classNames={{
+                      day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-bold shadow-md",
+                      day_today: "text-primary font-bold bg-primary/10",
+                    }}
+                  />
                 </div>
-                <span className="text-sm sm:text-base text-muted-foreground font-medium hidden sm:inline">
-                  Дата:
-                </span>
-                <div className="relative" ref={calendarRef}>
-                  <div
-                    className="flex h-9 sm:h-11 items-center rounded-lg sm:rounded-xl border border-border/40 bg-gradient-to-r from-background to-background/90 px-3 sm:px-4 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring cursor-pointer hover:from-secondary/30 hover:to-secondary/20 transition-all duration-200 shadow-sm"
-                    onClick={toggleCalendar}
-                  >
-                    <span className="flex-1 font-semibold text-sm sm:text-base">
-                      {formattedDate}
-                    </span>
-                  </div>
-                  {isCalendarOpen && (
-                    <div className="absolute top-full left-0 mt-2 z-50 bg-card rounded-xl shadow-xl border border-border/40 p-3 backdrop-blur-sm">
-                      <DayPicker
-                        mode="single"
-                        selected={new Date(selectedDate)}
-                        onDayClick={handleDaySelect}
-                        locale={ru}
-                        modifiers={{
-                          today: new Date(),
-                        }}
-                        modifiersStyles={{
-                          today: { fontWeight: "bold", color: "var(--primary)" },
-                        }}
-                        className="bg-card rounded-xl border-none m-0"
-                        classNames={{
-                          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-bold shadow-md",
-                          day_today: "text-primary font-bold bg-primary/10",
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Top actions enhancements */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
-              <button
-                onClick={
-                  shiftStarted
-                    ? openDailyReportModal
-                    : () =>
-                        toast.info(
-                          "Сначала выберите работников и начните смену",
-                        )
-                }
-                disabled={!shiftStarted}
-                className="btn-daily-report inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-lg disabled:opacity-50"
-                title={
-                  shiftStarted
-                    ? undefined
-                    : "Сначала выберите работников и начните смену"
-                }
-              >
-                <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Ежедневная ведомость</span>
-                <span className="sm:hidden">Ведомость</span>
-              </button>
-              <button
-                onClick={(e) => {
-                  if (!shiftStarted) {
-                    toast.info("Сначала выберите работников и начните смену");
-                    return;
-                  }
-                  setAppointmentToConvert(null);
-                  setPreselectedEmployeeId(null);
-                  toggleModal(e);
-                }}
-                disabled={!shiftStarted}
-                className="btn-add-service inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium shadow-lg disabled:opacity-50"
-                title={
-                  shiftStarted
-                    ? undefined
-                    : "Сначала выберите работников и начните смену"
-                }
-              >
-                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Добавить услугу</span>
-                <span className="sm:hidden">Добавить</span>
-              </button>
+              )}
             </div>
           </div>
         </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-end shrink-0">
+          <button
+            onClick={openDailyReportModal}
+            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border/40 hover:bg-muted/50 rounded-xl text-sm font-semibold transition-all shadow-sm"
+          >
+            <Receipt className="w-4 h-4" />
+            <span className="hidden sm:inline">Ежедневная ведомость</span>
+            <span className="sm:hidden">Ведомость</span>
+          </button>
+
+          <button
+            onClick={(e) => {
+              setAppointmentToConvert(null);
+              setPreselectedEmployeeId(null);
+              toggleModal(e);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border/40 hover:bg-muted/50 rounded-xl text-sm font-semibold transition-all shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Добавить услугу
+          </button>
+        </div>
       </div>
 
-      {/* Основная секция с квадратиками работников и виджетами */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-3 lg:gap-4">
-        <div className="space-y-3 md:space-y-4">
-          {/* Квадратики работников */}
-          <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-card border border-border/40 shadow-sm">
-            <div className="flex items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
-              <div className="flex items-center gap-2 sm:gap-3">
+      {/* Основная сетка Dashboard */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 xl:gap-6">
+
+        {/* Левая колонка (2/3 ширины) - Сотрудники */}
+        <div className="xl:col-span-2 space-y-4 md:space-y-6">
+          <div className="bg-card border border-border/40 rounded-2xl shadow-sm p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
                 <User className="w-5 h-5 text-primary" />
-                <h3 className="text-lg sm:text-xl font-bold">Сотрудники</h3>
+                <h3 className="text-xl font-bold">Сотрудники</h3>
               </div>
 
-              {/* Кнопка изменить состав смены */}
-              {shiftStarted && isShiftLocked && (
-                <button
-                  onClick={() => setIsEditingShift(!isEditingShift)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border/40 bg-gradient-to-r from-background to-background/90 hover:from-secondary/30 hover:to-secondary/20 transition-all duration-200 text-sm font-medium shadow-sm"
-                >
-                  {isEditingShift ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      Готово
-                    </>
-                  ) : (
-                    <>
-                      <Edit className="w-4 h-4" />
-                      Изменить состав
-                    </>
-                  )}
-                </button>
-              )}
+              <button
+                onClick={() => setIsEditingShift(!isEditingShift)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border/40"
+              >
+                <Edit className="w-4 h-4" />
+                Изменить состав
+              </button>
             </div>
             {loading.dailyReport ? (
               <div className="flex flex-col items-center justify-center p-16">
@@ -1210,26 +1375,26 @@ const HomePage: React.FC = () => {
                   return (
                     <div
                       key={employee.id}
-                      className={`relative group rounded-xl p-4 cursor-pointer transition-all duration-200 border bg-card hover:bg-accent/5 w-full flex flex-col gap-3 ${
+                      className={`relative group rounded-2xl p-5 cursor-pointer transition-all duration-200 border bg-background/50 flex flex-col gap-4 hover:border-primary/40 hover:shadow-lg hover:bg-card ${
                         loading.dailyReport ? "loading" : ""
                       } ${
                         isManualSalary
-                          ? "border-orange-400/50 shadow-sm"
-                          : "border-border/40 shadow-sm hover:border-primary/30 hover:shadow-md"
+                          ? "border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.1)]"
+                          : "border-border/40 shadow-sm"
                       }`}
                       onClick={() => openEmployeeModal(employee.id)}
                     >
                       {/* Верхняя часть: Имя, Роль, Кнопка + */}
-                      <div className="flex items-start justify-between gap-2 w-full">
+                      <div className="flex items-start justify-between gap-3 w-full">
                         <div className="flex flex-col min-w-0 flex-1">
-                          <h4 className="font-semibold text-sm sm:text-base text-card-foreground truncate" title={employee.name}>
+                          <h4 className="font-bold text-base sm:text-lg text-foreground truncate mb-1.5" title={employee.name}>
                             {employee.name}
                           </h4>
                           <span
-                            className={`mt-1 w-fit px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-medium border ${
+                            className={`w-fit px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
                               role === "admin"
-                                ? "bg-green-500/10 text-green-600 border-green-500/20 dark:text-green-400 dark:border-green-500/30"
-                                : "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400 dark:border-blue-500/30"
+                                ? "bg-green-500/10 text-green-500 border-green-500/20"
+                                : "bg-primary/10 text-primary border-primary/20"
                             }`}
                           >
                             {role === "admin" ? "Админ" : "Мойщик"}
@@ -1237,52 +1402,40 @@ const HomePage: React.FC = () => {
                         </div>
                         <button
                           onClick={(e) => {
-                            if (!shiftStarted) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              toast.info(
-                                "Сначала выберите работников и начните смену",
-                              );
-                              return;
-                            }
+                            e.preventDefault();
+                            e.stopPropagation();
                             openAddRecordModalForEmployee(employee.id, e);
                           }}
-                          disabled={!shiftStarted}
-                          className="shrink-0 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors disabled:opacity-50 text-primary"
-                          title={
-                            shiftStarted
-                              ? "Добавить запись для этого сотрудника"
-                              : "Сначала выберите работников и начните смену"
-                          }
+                          className="shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-sm"
+                          title="Добавить запись для этого сотрудника"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
                       </div>
 
                       {/* Статистика: Машины и Сумма */}
-                      <div className="flex items-center gap-4 mt-1">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                             Машин
                           </span>
-                          <span className="font-semibold text-sm sm:text-base text-card-foreground">
+                          <span className="font-bold text-lg text-foreground">
                             {stats.carCount}
                           </span>
                         </div>
-                        <div className="w-px h-8 bg-border/40" />
-                        <div className="flex flex-col">
-                          <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                        <div className="flex flex-col gap-0.5 text-right">
+                          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                             Сумма
                           </span>
-                          <span className="font-semibold text-sm sm:text-base text-card-foreground">
+                          <span className="font-bold text-lg text-foreground">
                             {stats.totalEarnings.toFixed(0)} BYN
                           </span>
                         </div>
                       </div>
 
                       {/* Зарплата */}
-                      <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between">
-                        <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
+                      <div className="mt-auto pt-4 border-t border-border/40 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground font-medium">
                           {(() => {
                             const now = new Date();
                             const currentHour = now.getHours();
@@ -1292,10 +1445,8 @@ const HomePage: React.FC = () => {
                             const workStartMinutes = 9 * 60;
                             const workEndMinutes = 21 * 60;
 
-                            if (currentTimeInMinutes < workStartMinutes) {
-                              return "ЗП за день";
-                            } else if (currentTimeInMinutes >= workEndMinutes) {
-                              return "ЗП за день";
+                            if (currentTimeInMinutes < workStartMinutes || currentTimeInMinutes >= workEndMinutes) {
+                              return "ЗП за смену";
                             } else {
                               const workedMinutes =
                                 currentTimeInMinutes - workStartMinutes;
@@ -1305,7 +1456,7 @@ const HomePage: React.FC = () => {
                           })()}
                         </span>
                         <span
-                          className={`font-bold text-sm sm:text-base ${
+                          className={`font-black text-lg ${
                             isManualSalary ? "text-orange-500" : "text-primary"
                           }`}
                         >
@@ -1316,20 +1467,10 @@ const HomePage: React.FC = () => {
                   );
                 })}
               </div>
-            ) : (
-              <div className="text-center py-8 md:py-12 flex flex-col items-center justify-center text-muted-foreground">
-                <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                  <User className="w-8 h-8 text-muted-foreground/50" />
-                </div>
-                <h3 className="text-lg font-medium text-foreground mb-1">Смена еще не начата</h3>
-                <p className="text-sm max-w-sm">
-                  Выберите сотрудников ниже и нажмите «Начать смену», чтобы получить доступ к функциям записи.
-                </p>
-              </div>
-            )}
+            ) : null}
 
-            {/* Интерфейс выбора сотрудников для смены */}
-            {(!isShiftLocked || isEditingShift) && (
+            {/* Интерфейс редактирования сотрудников для смены (только в режиме редактирования) */}
+            {(isShiftLocked && isEditingShift) && (
               <div
                 id="employees-section"
                 ref={shiftSectionRef}
@@ -1493,68 +1634,40 @@ const HomePage: React.FC = () => {
 
           {/* Итоги */}
           {currentReport && shiftStarted && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mt-4 md:mt-6">
               {/* Сводка по оплатам */}
-              <div className="p-4 rounded-xl border border-border/40 shadow-sm bg-card flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-4">
-                  <h3 className="text-lg font-bold">Итого</h3>
-                </div>
+              <div className="bg-card border border-border/40 rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col h-full">
+                <h3 className="text-xl font-bold text-foreground mb-6">Итого</h3>
 
-                <div className="grid grid-cols-2 gap-3 mb-4 flex-1">
+                <div className="grid grid-cols-2 gap-4 mb-6 flex-1">
                   {/* Наличные */}
                   <div
-                    className={`flex flex-col justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
-                      paymentFilter === "cash"
-                        ? "bg-primary/10 border-primary/30"
-                        : "bg-muted/30 border-border/40 hover:bg-muted/50"
-                    } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className="flex flex-col p-4 rounded-xl border border-border/40 bg-muted/10 cursor-pointer hover:border-primary/40 hover:bg-muted/20 transition-all"
                     onClick={() => {
-                      if (!shiftStarted) {
-                        toast.info("Сначала выберите работников и начните смену");
-                        return;
-                      }
                       setPaymentFilter("cash");
                       openDailyReportModal();
                     }}
-                    title={
-                      shiftStarted
-                        ? "Нажмите для просмотра ведомости по наличным"
-                        : "Сначала выберите работников и начните смену"
-                    }
                   >
-                    <span className="text-xs text-muted-foreground font-medium mb-1">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Наличные
                     </span>
-                    <span className="font-bold text-sm sm:text-base text-card-foreground">
+                    <span className="font-bold text-xl text-foreground">
                       {currentReport.totalCash.toFixed(2)} BYN
                     </span>
                   </div>
 
                   {/* Карта */}
                   <div
-                    className={`flex flex-col justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
-                      paymentFilter === "card"
-                        ? "bg-primary/10 border-primary/30"
-                        : "bg-muted/30 border-border/40 hover:bg-muted/50"
-                    } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className="flex flex-col p-4 rounded-xl border border-border/40 bg-muted/10 cursor-pointer hover:border-primary/40 hover:bg-muted/20 transition-all"
                     onClick={() => {
-                      if (!shiftStarted) {
-                        toast.info("Сначала выберите работников и начните смену");
-                        return;
-                      }
                       setPaymentFilter("card");
                       openDailyReportModal();
                     }}
-                    title={
-                      shiftStarted
-                        ? "Нажмите для просмотра ведомости по картам"
-                        : "Сначала выберите работников и начните смену"
-                    }
                   >
-                    <span className="text-xs text-muted-foreground font-medium mb-1">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Карта
                     </span>
-                    <span className="font-bold text-sm sm:text-base text-card-foreground">
+                    <span className="font-bold text-xl text-foreground">
                       {(
                         currentReport.records?.reduce(
                           (sum, rec) =>
@@ -1569,29 +1682,16 @@ const HomePage: React.FC = () => {
 
                   {/* Безналичные */}
                   <div
-                    className={`flex flex-col justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
-                      paymentFilter === "organization"
-                        ? "bg-primary/10 border-primary/30"
-                        : "bg-muted/30 border-border/40 hover:bg-muted/50"
-                    } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className="flex flex-col p-4 rounded-xl border border-border/40 bg-muted/10 cursor-pointer hover:border-primary/40 hover:bg-muted/20 transition-all col-span-2 sm:col-span-1"
                     onClick={() => {
-                      if (!shiftStarted) {
-                        toast.info("Сначала выберите работников и начните смену");
-                        return;
-                      }
                       setPaymentFilter("organization");
                       openDailyReportModal();
                     }}
-                    title={
-                      shiftStarted
-                        ? "Нажмите для просмотра ведомости по безналу"
-                        : "Сначала выберите работников и начните смену"
-                    }
                   >
-                    <span className="text-xs text-muted-foreground font-medium mb-1">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Безналичные
                     </span>
-                    <span className="font-bold text-sm sm:text-base text-card-foreground">
+                    <span className="font-bold text-xl text-foreground">
                       {(() => {
                         const orgsInTotal = state.organizationsInTotal || [];
                         const orgSum =
@@ -1628,29 +1728,16 @@ const HomePage: React.FC = () => {
                     return (
                       <div
                         key={`total-org-${orgId}`}
-                        className={`flex flex-col justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
-                          paymentFilter === "organization"
-                            ? "bg-primary/10 border-primary/30"
-                            : "bg-muted/30 border-border/40 hover:bg-muted/50"
-                        } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
+                        className="flex flex-col p-4 rounded-xl border border-border/40 bg-muted/10 cursor-pointer hover:border-primary/40 hover:bg-muted/20 transition-all col-span-2 sm:col-span-1"
                         onClick={() => {
-                          if (!shiftStarted) {
-                            toast.info("Сначала выберите работников и начните смену");
-                            return;
-                          }
                           setPaymentFilter("organization");
                           openDailyReportModal();
                         }}
-                        title={
-                          shiftStarted
-                            ? "Нажмите для просмотра ведомости (входит в безнал)"
-                            : "Сначала выберите работников и начните смену"
-                        }
                       >
-                        <span className="text-xs text-muted-foreground font-medium mb-1 truncate">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 truncate" title={org.name}>
                           {org.name}
                         </span>
-                        <span className="font-bold text-sm sm:text-base text-indigo-500 dark:text-indigo-400">
+                        <span className="font-bold text-xl text-indigo-400">
                           {sumForOrg.toFixed(2)} BYN
                         </span>
                       </div>
@@ -1660,27 +1747,16 @@ const HomePage: React.FC = () => {
 
                 {/* Всего */}
                 <div
-                  className={`mt-auto pt-4 border-t border-border/40 flex justify-between items-center cursor-pointer transition-all duration-200 p-3 rounded-lg border bg-primary/5 hover:bg-primary/10 border-primary/20 ${
-                    !shiftStarted ? "opacity-60 cursor-not-allowed" : ""
-                  }`}
+                  className="mt-auto p-5 rounded-xl border border-primary/20 bg-primary/5 flex justify-between items-center cursor-pointer hover:bg-primary/10 transition-all"
                   onClick={() => {
-                    if (!shiftStarted) {
-                      toast.info("Сначала выберите работников и начните смену");
-                      return;
-                    }
                     setPaymentFilter("all");
                     openDailyReportModal();
                   }}
-                  title={
-                    shiftStarted
-                      ? "Нажмите для просмотра полной ведомости"
-                      : "Сначала выберите работников и начните смену"
-                  }
                 >
-                  <span className="font-bold text-base sm:text-lg">
-                    Всего
+                  <span className="font-bold text-lg text-foreground">
+                    Всего выручка
                   </span>
-                  <span className="font-bold text-lg sm:text-xl text-primary text-right">
+                  <span className="font-black text-2xl text-primary">
                     {(() => {
                       const totalRevenue =
                         currentReport.records?.reduce((sum, record) => {
@@ -1693,22 +1769,22 @@ const HomePage: React.FC = () => {
               </div>
 
               {/* Заработок сотрудников */}
-              <div className="p-4 rounded-xl border border-border/40 shadow-sm bg-card flex flex-col h-full">
-                <div className="flex items-center gap-2 mb-4">
-                  <h3 className="text-lg font-bold flex items-center">
+              <div className="bg-card border border-border/40 rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col h-full">
+                <div className="flex items-center gap-3 mb-6">
+                  <h3 className="text-xl font-bold text-foreground">
                     Заработок
-                    <span className="inline-flex items-center relative group ml-2 sm:ml-4">
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] sm:text-xs cursor-help font-bold">
-                        i
-                      </div>
-                      <div className="absolute bottom-full left-0 mb-3 w-48 sm:w-64 p-2 sm:p-3 bg-popover text-popover-foreground rounded-lg sm:rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-border/40 z-50">
-                        <p className="text-xs sm:text-sm font-medium">
-                          Расчет ЗП: минимальная оплата + процент с учетом ролей
-                        </p>
-                        <div className="absolute top-full left-6 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-popover" />
-                      </div>
-                    </span>
                   </h3>
+                  <div className="relative group">
+                    <div className="w-5 h-5 flex items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary text-xs cursor-help font-bold">
+                      i
+                    </div>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 sm:w-64 p-3 bg-popover text-popover-foreground rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-border/40 z-50">
+                      <p className="text-sm font-medium">
+                        Расчет ЗП: минимальная оплата + процент с учетом ролей
+                      </p>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-popover" />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex-1 flex flex-col space-y-4">
@@ -1802,18 +1878,18 @@ const HomePage: React.FC = () => {
                                   return (
                                     <div
                                       key={result.employeeId}
-                                      className="flex justify-between items-center text-sm"
+                                      className="flex justify-between items-center text-sm py-2"
                                     >
                                       <div className="flex flex-col min-w-0 pr-2">
                                         <span
-                                          className={`font-medium truncate ${
+                                          className={`font-semibold truncate ${
                                             result.isManual
                                               ? "text-orange-500"
-                                              : "text-card-foreground"
+                                              : "text-foreground"
                                           }`}
                                         >
                                           {result.employeeName}
-                                          <span className="text-xs text-muted-foreground font-normal ml-1">
+                                          <span className="text-xs text-muted-foreground font-normal ml-1.5">
                                             ({result.role === "admin" ? "Админ" : "Мойщик"})
                                           </span>
                                           {result.isManual && " *"}
@@ -1869,11 +1945,11 @@ const HomePage: React.FC = () => {
                             </div>
                           )}
 
-                          <div className="mt-auto pt-4 border-t border-border/40 flex justify-between items-center bg-accent/5 p-3 rounded-lg border border-border/40">
-                            <span className="font-bold text-base sm:text-lg">
+                          <div className="mt-auto p-5 rounded-xl border border-border/40 bg-muted/10 flex justify-between items-center">
+                            <span className="font-bold text-lg text-foreground">
                               Общая сумма
                             </span>
-                            <span className="font-bold text-lg sm:text-xl text-primary">
+                            <span className="font-black text-2xl text-primary">
                               {totalSalarySum.toFixed(2)} BYN
                             </span>
                           </div>
@@ -1883,17 +1959,17 @@ const HomePage: React.FC = () => {
 
                     if (methodToUse === "none") {
                       return (
-                        <div className="flex justify-between p-3 bg-muted/20 rounded-lg">
+                        <div className="flex justify-between p-4 bg-muted/10 rounded-xl border border-border/40">
                           <span className="text-sm text-muted-foreground">Выберите метод расчета в настройках</span>
-                          <span className="font-medium">0.00 BYN</span>
+                          <span className="font-bold text-foreground">0.00 BYN</span>
                         </div>
                       );
                     }
 
                     return (
-                      <div className="flex justify-between p-3 bg-muted/20 rounded-lg">
+                      <div className="flex justify-between p-4 bg-muted/10 rounded-xl border border-border/40">
                         <span className="text-sm text-muted-foreground">Нет данных для расчета</span>
-                        <span className="font-medium">0.00 BYN</span>
+                        <span className="font-bold text-foreground">0.00 BYN</span>
                       </div>
                     );
                   })()}
@@ -1902,55 +1978,17 @@ const HomePage: React.FC = () => {
             </div>
           )}
 
-          {/* Модальное окно для добавления записи */}
-          {isModalOpen && (
-            <AddCarWashModal
-              onClose={toggleModal}
-              selectedDate={selectedDate}
-              prefilledData={appointmentToConvert}
-              clickPosition={clickPosition}
-              employeeRoles={employeeRoles}
-              preselectedEmployeeId={preselectedEmployeeId}
-            />
-          )}
-
-          {/* Модальное окно детальной таблицы работника */}
-          {employeeModalOpen && selectedEmployeeId && (
-            <EmployeeDetailModal
-              employeeId={selectedEmployeeId}
-              onClose={() => {
-                setEmployeeModalOpen(false);
-                setSelectedEmployeeId(null);
-              }}
-              currentReport={currentReport}
-              employees={state.employees}
-              organizations={state.organizations}
-            />
-          )}
-
-          {/* Модальное окно ежедневной ведомости */}
-          {dailyReportModalOpen && shiftStarted && (
-            <DailyReportModal
-              onClose={() => setDailyReportModalOpen(false)}
-              currentReport={currentReport}
-              employees={state.employees}
-              organizations={state.organizations}
-              selectedDate={selectedDate}
-              onExport={exportToWord}
-              isExporting={loading.exporting}
-              paymentFilter={paymentFilter}
-              onPaymentFilterChange={setPaymentFilter}
-            />
-          )}
         </div>
 
         {/* Правая колонка с виджетами */}
-        <div className="space-y-3 md:space-y-4">
+        <div className="space-y-4 md:space-y-6">
           {/* Виджет "Записи на мойку" */}
-          <AppointmentsWidget
-            onStartAppointment={handleAppointmentConversion}
-            canCreateRecords={shiftStarted}
-          />
+          <div className="bg-card border border-border/40 rounded-2xl shadow-sm overflow-hidden">
+            <AppointmentsWidget
+              onStartAppointment={handleAppointmentConversion}
+              canCreateRecords={shiftStarted}
+            />
+          </div>
 
           {/* Активные долги */}
           {activeDebts.length > 0 && (
@@ -2013,6 +2051,51 @@ const HomePage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Модальные окна (перенесены вниз чтобы не ломать верстку) */}
+      {/* Модальное окно для добавления записи */}
+      {isModalOpen && (
+        <AddCarWashModal
+          onClose={toggleModal}
+          selectedDate={selectedDate}
+          prefilledData={appointmentToConvert}
+          clickPosition={clickPosition}
+          employeeRoles={employeeRoles}
+          preselectedEmployeeId={preselectedEmployeeId}
+        />
+      )}
+
+      {/* Модальное окно детальной таблицы работника */}
+      {employeeModalOpen && selectedEmployeeId && (
+        <EmployeeDetailModal
+          employeeId={selectedEmployeeId}
+          onClose={() => {
+            setEmployeeModalOpen(false);
+            setSelectedEmployeeId(null);
+          }}
+          currentReport={currentReport}
+          employees={state.employees}
+          organizations={state.organizations}
+        />
+      )}
+
+      {/* Модальное окно ежедневной ведомости */}
+      {dailyReportModalOpen && shiftStarted && (
+        <DailyReportModal
+          onClose={() => setDailyReportModalOpen(false)}
+          currentReport={currentReport}
+          employees={state.employees}
+          organizations={state.organizations}
+          selectedDate={selectedDate}
+          onExport={exportToWord}
+          isExporting={loading.exporting}
+          paymentFilter={paymentFilter}
+          onPaymentFilterChange={setPaymentFilter}
+        />
+      )}
+
+        </div>
+      )}
     </div>
   );
 };
