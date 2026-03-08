@@ -442,13 +442,13 @@ const EmployeeSettings: React.FC = () => {
   };
 
   return (
-    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-base font-semibold">Список сотрудников</h3>
+    <div className="p-6 sm:p-7 border border-border/50 rounded-[24px] bg-card shadow-md flex flex-col h-full">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-bold text-foreground">Список сотрудников</h3>
         <button
           onClick={fetchEmployees}
           disabled={loading.fetchEmployees}
-          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
+          className="text-xs px-3 py-1.5 rounded-lg border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center gap-1.5 transition-all"
         >
           <RefreshCw
             className={`w-3.5 h-3.5 ${loading.fetchEmployees ? "animate-spin" : ""}`}
@@ -457,19 +457,19 @@ const EmployeeSettings: React.FC = () => {
         </button>
       </div>
 
-      <form onSubmit={handleAddEmployee} className="mb-5">
-        <div className="flex items-center gap-2">
+      <form onSubmit={handleAddEmployee} className="mb-6">
+        <div className="flex items-center gap-3">
           <input
             type="text"
             value={newEmployee}
             onChange={(e) => setNewEmployee(e.target.value)}
             placeholder="Имя сотрудника"
-            className="flex-1 px-3 py-2 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
+            className="flex-1 px-4 py-3 bg-muted/50 border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary/50 text-sm transition-colors text-foreground placeholder:text-muted-foreground/50"
             disabled={loading.employee}
           />
           <button
             type="submit"
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm font-medium"
+            className="flex items-center gap-1.5 px-6 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm font-medium shadow-sm"
             disabled={loading.employee || !newEmployee.trim()}
           >
             {loading.employee ? (
@@ -477,31 +477,31 @@ const EmployeeSettings: React.FC = () => {
             ) : (
               <Plus className="w-4 h-4" />
             )}
-            <span className="hidden sm:inline">Добавить</span>
+            <span>Добавить</span>
           </button>
         </div>
       </form>
 
-      <div className="rounded-xl border border-border/50 bg-background/50 overflow-hidden">
+      <div className="rounded-[16px] border border-border/50 bg-background/50 overflow-hidden flex-1">
         {state.employees.length > 0 ? (
           <ul className="divide-y divide-border/50">
             {state.employees.map((employee) => (
               <li
                 key={employee.id}
-                className="px-4 py-3 flex items-center justify-between text-sm group hover:bg-muted/50 transition-colors"
+                className="px-5 py-4 flex items-center justify-between text-sm group hover:bg-muted/50 transition-colors"
               >
-                <span className="font-medium">{employee.name}</span>
+                <span className="font-semibold text-[15px]">{employee.name}</span>
                 <button
                   onClick={() =>
                     handleDeleteEmployee(employee.id, employee.name)
                   }
-                  className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md"
+                  className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-destructive/10"
                   disabled={loading.deleteEmployee === employee.id}
                 >
                   {loading.deleteEmployee === employee.id ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <X className="w-4 h-4" />
+                    <Trash className="w-4 h-4" />
                   )}
                 </button>
               </li>
@@ -596,9 +596,9 @@ const SalaryCalculationSettings: React.FC = () => {
   };
 
   return (
-    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
-      <h3 className="text-base font-semibold mb-1">Расчет заработной платы</h3>
-      <p className="text-sm text-muted-foreground mb-4">
+    <div className="p-6 sm:p-7 border border-border/50 rounded-[24px] bg-card shadow-md flex flex-col h-full">
+      <h3 className="text-lg font-bold text-foreground mb-2">Расчет заработной платы</h3>
+      <p className="text-[13px] text-muted-foreground mb-6">
         Выберите метод расчета. Изменение применяется ко всем сменам с сегодняшнего дня.
       </p>
 
@@ -608,30 +608,30 @@ const SalaryCalculationSettings: React.FC = () => {
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <button
           onClick={() => handleSalaryMethodChange("minimumWithPercentage")}
-          className={`p-4 border rounded-xl flex items-start text-left transition-colors ${
+          className={`p-5 rounded-[16px] flex items-start text-left transition-colors border ${
             state.salaryCalculationMethod === "minimumWithPercentage"
-              ? "border-primary bg-primary/5"
-              : "border-border/50 hover:bg-muted/50"
+              ? "bg-primary/5 border-primary/30 shadow-sm"
+              : "bg-background/50 border-border/50 hover:bg-muted/50"
           }`}
           disabled={loading}
         >
           <div
-            className={`w-5 h-5 rounded-full border flex-shrink-0 mt-0.5 mr-3 flex items-center justify-center transition-colors ${
+            className={`w-[22px] h-[22px] rounded-full border flex-shrink-0 mt-0.5 mr-4 flex items-center justify-center transition-colors ${
               state.salaryCalculationMethod === "minimumWithPercentage"
-                ? "border-primary"
+                ? "border-primary bg-primary/10"
                 : "border-input bg-background"
             }`}
           >
             {state.salaryCalculationMethod === "minimumWithPercentage" && (
-              <div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
+              <div className="w-[10px] h-[10px] rounded-full bg-primary shadow-sm"></div>
             )}
           </div>
           <div className="flex-1">
-            <p className="font-medium text-sm">Минимальная оплата + процент</p>
-            <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+            <p className="font-semibold text-[15px] mb-1.5 text-foreground">Минимальная оплата + процент</p>
+            <p className="text-[13px] text-muted-foreground leading-relaxed">
               Мойщик: % от выручки или мин. оплата. <br />
               Админ: % от кассы + % от личных услуг или мин. оплата.
             </p>
@@ -639,15 +639,15 @@ const SalaryCalculationSettings: React.FC = () => {
         </button>
 
         {state.salaryCalculationMethod === "minimumWithPercentage" && (
-          <div className="p-4 bg-muted/30 rounded-xl border border-border/30 animate-in fade-in slide-in-from-top-2 duration-300">
-            <h4 className="text-sm font-semibold mb-3">
+          <div className="p-5 bg-background/30 rounded-[16px] border border-border/50 mt-2 animate-in fade-in duration-300">
+            <h4 className="text-[15px] font-bold mb-5 text-foreground">
               Параметры расчета
             </h4>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
+                  <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
                     Мин. оплата мойщика
                   </label>
                   <input
@@ -659,14 +659,14 @@ const SalaryCalculationSettings: React.FC = () => {
                         minimumPaymentWasher: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
                     placeholder="0"
                     step="0.01"
                     min="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
+                  <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
                     % мойщика - мойка
                   </label>
                   <input
@@ -678,7 +678,7 @@ const SalaryCalculationSettings: React.FC = () => {
                         percentageWasher: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
                     placeholder="10"
                     step="0.1"
                     min="0"
@@ -686,7 +686,7 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
+                  <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
                     % мойщика - химчистка
                   </label>
                   <input
@@ -699,7 +699,7 @@ const SalaryCalculationSettings: React.FC = () => {
                           Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
                     placeholder="15"
                     step="0.1"
                     min="0"
@@ -708,9 +708,9 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
+                  <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
                     Мин. оплата админа
                   </label>
                   <input
@@ -722,14 +722,14 @@ const SalaryCalculationSettings: React.FC = () => {
                         minimumPaymentAdmin: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
                     placeholder="0"
                     step="0.01"
                     min="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
+                  <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
                     % адм от кассы
                   </label>
                   <input
@@ -741,7 +741,7 @@ const SalaryCalculationSettings: React.FC = () => {
                         adminCashPercentage: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
                     placeholder="3"
                     step="0.1"
                     min="0"
@@ -749,7 +749,7 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
+                  <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
                     % адм от мойки
                   </label>
                   <input
@@ -761,7 +761,7 @@ const SalaryCalculationSettings: React.FC = () => {
                         adminCarWashPercentage: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
                     placeholder="2"
                     step="0.1"
                     min="0"
@@ -769,7 +769,7 @@ const SalaryCalculationSettings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">
+                  <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
                     % адм от химчистки
                   </label>
                   <input
@@ -781,7 +781,7 @@ const SalaryCalculationSettings: React.FC = () => {
                         adminDrycleanPercentage: Number.parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="w-full px-3 py-2 bg-background text-sm border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
                     placeholder="3"
                     step="0.1"
                     min="0"
@@ -790,14 +790,16 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                onClick={handleSaveMinimumSettings}
-                disabled={loading}
-                className="w-full mt-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                Сохранить параметры
-              </button>
+              <div className="pt-2">
+                <button
+                  onClick={handleSaveMinimumSettings}
+                  disabled={loading}
+                  className="w-full px-4 py-3.5 bg-primary text-primary-foreground rounded-[12px] hover:bg-primary/90 transition-colors text-[15px] font-medium disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  Сохранить параметры
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -1151,15 +1153,15 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="general" className="w-full">
-        <TabsList className="mb-6 w-full sm:w-auto flex sm:inline-flex bg-muted/50 p-1 rounded-xl">
-          <TabsTrigger value="general" className="flex-1 sm:flex-none rounded-lg text-sm px-6 py-2">
+      <Tabs defaultValue="employees" className="w-full">
+        <TabsList className="mb-6 w-full sm:w-auto flex sm:inline-flex bg-muted/60 p-1.5 rounded-2xl border border-border/10">
+          <TabsTrigger value="general" className="flex-1 sm:flex-none rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Общие
           </TabsTrigger>
-          <TabsTrigger value="employees" className="flex-1 sm:flex-none rounded-lg text-sm px-6 py-2">
+          <TabsTrigger value="employees" className="flex-1 sm:flex-none rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Сотрудники
           </TabsTrigger>
-          <TabsTrigger value="organizations" className="flex-1 sm:flex-none rounded-lg text-sm px-6 py-2">
+          <TabsTrigger value="organizations" className="flex-1 sm:flex-none rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Организации
           </TabsTrigger>
         </TabsList>
