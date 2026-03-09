@@ -9,15 +9,15 @@ interface ChangelogModalProps {
 
 const getBadgeStyle = (type: ChangeType) => {
   switch (type) {
-    case "FEAT":
+    case "НОВОЕ":
       return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
-    case "FIX":
+    case "ИСПРАВЛЕНО":
       return "text-rose-500 bg-rose-500/10 border-rose-500/20";
-    case "UI":
+    case "ИНТЕРФЕЙС":
       return "text-sky-500 bg-sky-500/10 border-sky-500/20";
-    case "PERF":
+    case "ОПТИМИЗАЦИЯ":
       return "text-amber-500 bg-amber-500/10 border-amber-500/20";
-    case "REFACTOR":
+    case "РЕФАКТОРИНГ":
       return "text-purple-500 bg-purple-500/10 border-purple-500/20";
     default:
       return "text-muted-foreground bg-muted border-border";
@@ -28,7 +28,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Release History">
+    <Modal isOpen={isOpen} onClose={onClose} title="История обновлений">
       <div className="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1 sm:pr-3 pb-4">
         {changelog.map((release, idx) => (
           <div
@@ -43,7 +43,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                 </span>
                 {idx === 0 && (
                   <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
-                    LATEST
+                    АКТУАЛЬНАЯ
                   </span>
                 )}
               </div>
@@ -64,7 +64,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                       <span
                         className={`font-mono text-[10px] font-semibold tracking-wider px-1.5 py-0.5 rounded border ${getBadgeStyle(
                           change.type
-                        )} flex justify-center w-fit sm:min-w-[70px]`}
+                        )} flex justify-center w-fit sm:min-w-[90px]`}
                       >
                         {change.type}
                       </span>
