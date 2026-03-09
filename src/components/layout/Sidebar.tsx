@@ -9,6 +9,7 @@ import {
   BarChart3,
   Clipboard,
   Download,
+  History,
   Home,
   LayoutDashboard,
   LogOut,
@@ -23,6 +24,8 @@ import {
 import type React from "react";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import ChangelogModal from "../ui/ChangelogModal";
+import { CURRENT_VERSION } from "@/lib/changelog";
 import { toast } from "sonner";
 
 interface SidebarProps {
@@ -38,6 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const { logout } = useAuth();
 
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [isChangelogModalOpen, setIsChangelogModalOpen] = useState(false);
   const [newNoteText, setNewNoteText] = useState("");
 
   const currentReport = state.dailyReports[state.currentDate];
@@ -384,7 +388,14 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
             <div>
               <p>© {new Date().getFullYear()} Detail Lab</p>
-              <p className="mt-0.5">0.9a</p>
+              <button
+                onClick={() => setIsChangelogModalOpen(true)}
+                className="mt-0.5 flex items-center gap-1.5 hover:text-foreground transition-colors group cursor-pointer text-left"
+                title="Посмотреть историю обновлений"
+              >
+                <span>{CURRENT_VERSION}</span>
+                <History className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
+              </button>
             </div>
 
             <button
@@ -479,6 +490,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </Modal>
       )}
+
+      <ChangelogModal
+        isOpen={isChangelogModalOpen}
+        onClose={() => setIsChangelogModalOpen(false)}
+      />
     </>
   );
 };
