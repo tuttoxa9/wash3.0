@@ -21,6 +21,7 @@ import type {
   EmployeeRole,
 } from "@/lib/types";
 import { generateDailyReportDocx, generateDailyReportCsv } from "@/lib/utils";
+import type { PaymentMethod, Organization } from "@/lib/types";
 import { Packer } from "docx";
 import { saveAs } from "file-saver";
 import {
