@@ -1,5 +1,5 @@
 import React from "react";
-import Modal from "./Modal";
+import Modal from "./modal";
 import { changelog } from "@/lib/changelog";
 
 interface ChangelogModalProps {
