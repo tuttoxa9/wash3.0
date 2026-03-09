@@ -49,6 +49,17 @@ export const employeeService = {
       role: data.role,
     };
   },
+  async update(employee: Employee): Promise<boolean> {
+    const { error } = await supabase
+      .from("employees")
+      .update({ name: employee.name })
+      .eq("id", employee.id);
+    if (error) {
+      logSupabaseError("employees.update", error);
+      return false;
+    }
+    return true;
+  },
   async delete(id: string): Promise<boolean> {
     const { error } = await supabase.from("employees").delete().eq("id", id);
     if (error) {
