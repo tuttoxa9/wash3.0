@@ -233,6 +233,14 @@ const applyThemeToDocument = (theme: ThemeMode) => {
   root.classList.add(theme);
 };
 
+import { useRealtimeSync } from "@/lib/hooks/useRealtimeSync";
+
+// Вспомогательный компонент для включения хуков после создания провайдера
+function RealtimeSyncWrapper() {
+  useRealtimeSync();
+  return null;
+}
+
 // Провайдер контекста
 export function AppProvider({ children }: { children: ReactNode }) {
   // Инициализируем начальное состояние с темой из localStorage, если есть
@@ -443,6 +451,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{ state, dispatch, fetchDataForPeriod }}>
+      <RealtimeSyncWrapper />
       {children}
     </AppContext.Provider>
   );
