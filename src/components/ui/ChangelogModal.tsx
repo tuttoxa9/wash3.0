@@ -1,85 +1,80 @@
 import React from "react";
 import Modal from "./modal";
-import { changelog } from "@/lib/changelog";
+import { changelog, type ChangeType } from "@/lib/changelog";
 
 interface ChangelogModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const getBadgeStyle = (type: ChangeType) => {
+  switch (type) {
+    case "FEAT":
+      return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
+    case "FIX":
+      return "text-rose-500 bg-rose-500/10 border-rose-500/20";
+    case "UI":
+      return "text-sky-500 bg-sky-500/10 border-sky-500/20";
+    case "PERF":
+      return "text-amber-500 bg-amber-500/10 border-amber-500/20";
+    case "REFACTOR":
+      return "text-purple-500 bg-purple-500/10 border-purple-500/20";
+    default:
+      return "text-muted-foreground bg-muted border-border";
+  }
+};
+
 const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="История обновлений">
-      <div className="space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2 pb-4">
+    <Modal isOpen={isOpen} onClose={onClose} title="Release History">
+      <div className="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1 sm:pr-3 pb-4">
         {changelog.map((release, idx) => (
           <div
             key={release.version}
-            className={`relative pl-6 pb-6 border-l-2 ${
-              idx === 0 ? "border-primary" : "border-border/50"
-            } ${idx === changelog.length - 1 ? "pb-0 border-transparent" : ""}`}
+            className="group relative bg-background/50 border border-border/40 rounded-xl overflow-hidden hover:border-border transition-colors duration-200"
           >
-            {/* Timeline dot */}
-            <div
-              className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-background ${
-                idx === 0 ? "bg-primary" : "bg-muted-foreground/30"
-              }`}
-            />
-
-            <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-lg font-bold text-foreground">
-                {release.version}
-              </h3>
-              <span className="text-sm text-muted-foreground px-2 py-0.5 bg-muted rounded-md">
+            {/* Header / Meta */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 sm:p-4 bg-muted/20 border-b border-border/40">
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-base font-bold text-foreground tracking-tight">
+                  {release.version}
+                </span>
+                {idx === 0 && (
+                  <span className="font-mono text-[10px] uppercase font-bold tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                    LATEST
+                  </span>
+                )}
+              </div>
+              <span className="font-mono text-xs text-muted-foreground/80">
                 {release.date}
               </span>
-              {idx === 0 && (
-                <span className="text-[10px] uppercase font-bold tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                  Актуальная
-                </span>
-              )}
             </div>
 
-            <div className="space-y-4">
-              {release.features && release.features.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1.5">
-                    ✨ Новое
-                  </h4>
-                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                    {release.features.map((feature, fIdx) => (
-                      <li key={`feature-${fIdx}`}>{feature}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {release.design && release.design.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1.5">
-                    🎨 Дизайн
-                  </h4>
-                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                    {release.design.map((item, dIdx) => (
-                      <li key={`design-${dIdx}`}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {release.fixes && release.fixes.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1.5">
-                    🛠 Исправления и Оптимизации
-                  </h4>
-                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                    {release.fixes.map((fix, fxIdx) => (
-                      <li key={`fix-${fxIdx}`}>{fix}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+            {/* Changes List */}
+            <div className="p-3 sm:p-4">
+              <ul className="space-y-3">
+                {release.changes.map((change, cIdx) => (
+                  <li
+                    key={cIdx}
+                    className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4"
+                  >
+                    <div className="shrink-0 pt-[2px]">
+                      <span
+                        className={`font-mono text-[10px] font-semibold tracking-wider px-1.5 py-0.5 rounded border ${getBadgeStyle(
+                          change.type
+                        )} flex justify-center w-fit sm:min-w-[70px]`}
+                      >
+                        {change.type}
+                      </span>
+                    </div>
+                    <p className="text-[13px] text-muted-foreground leading-relaxed flex-1">
+                      {change.text}
+                    </p>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         ))}
