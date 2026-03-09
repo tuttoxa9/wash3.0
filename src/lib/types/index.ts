@@ -110,6 +110,7 @@ export interface AppState {
 export type AppAction =
   | { type: "SET_EMPLOYEES"; payload: Employee[] }
   | { type: "ADD_EMPLOYEE"; payload: Employee }
+  | { type: "UPDATE_EMPLOYEE"; payload: Employee }
   | { type: "REMOVE_EMPLOYEE"; payload: string } // payload - id сотрудника
   | { type: "SET_ORGANIZATIONS"; payload: Organization[] } // Добавляем действия для организаций
   | { type: "ADD_ORGANIZATION"; payload: Organization }

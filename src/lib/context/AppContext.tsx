@@ -69,6 +69,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, employees: action.payload };
     case "ADD_EMPLOYEE":
       return { ...state, employees: [...state.employees, action.payload] };
+    case "UPDATE_EMPLOYEE": {
+      const updatedEmployees = state.employees.map((emp) =>
+        emp.id === action.payload.id ? action.payload : emp,
+      );
+      return { ...state, employees: updatedEmployees };
+    }
     case "REMOVE_EMPLOYEE":
       return {
         ...state,

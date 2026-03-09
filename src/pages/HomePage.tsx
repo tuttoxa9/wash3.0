@@ -2058,6 +2058,9 @@ const HomePage: React.FC = () => {
           clickPosition={clickPosition}
           employeeRoles={employeeRoles}
           preselectedEmployeeId={preselectedEmployeeId}
+          onSuccess={() => {
+            loadActiveDebts();
+          }}
         />
       )}
 
@@ -2318,6 +2321,7 @@ interface AddCarWashModalProps {
   clickPosition?: { x: number; y: number } | null;
   employeeRoles: Record<string, EmployeeRole>;
   preselectedEmployeeId?: string | null;
+  onSuccess?: () => void;
 }
 
 const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
@@ -2327,6 +2331,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
   clickPosition,
   employeeRoles,
   preselectedEmployeeId,
+  onSuccess,
 }) => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
@@ -2551,11 +2556,9 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
             toast.success("Запись о мойке успешно добавлена");
           }
 
-          // Если создан долг, обновляем список долгов после небольшой задержки
-          if (paymentMethod.type === "debt") {
-            setTimeout(() => {
-              loadActiveDebts();
-            }, 500);
+          // Вызываем коллбек об успешном добавлении, чтобы обновить списки в родительском компоненте
+          if (onSuccess) {
+            onSuccess();
           }
 
           // Закрываем модальное окно
