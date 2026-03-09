@@ -1,47 +1,44 @@
-export type ChangelogItem = {
+export type ChangeType = "FEAT" | "FIX" | "UI" | "PERF" | "REFACTOR";
+
+export interface ChangeItem {
+  type: ChangeType;
+  text: string;
+}
+
+export interface ChangelogRelease {
   version: string;
   date: string;
-  features?: string[];
-  fixes?: string[];
-  design?: string[];
-};
+  changes: ChangeItem[];
+}
 
-export const changelog: ChangelogItem[] = [
+export const changelog: ChangelogRelease[] = [
   {
     version: "v1.0.0",
-    date: "09.03.2025",
-    features: [
-      "Точный подсчет кассы (Наличные, Терминал, Долг, Организации) при генерации DOCX-отчетов."
-    ],
-    design: [
-      "Полный редизайн страницы Настроек (Settings) в строгом Meta-стиле. Разделение на вкладки (Основные, Сотрудники, Организации).",
-      "Глобальное внедрение корпоративного шрифта 'Onest' вместо старых шрифтов."
+    date: "2025-03-09",
+    changes: [
+      { type: "UI", text: "Global transition to Meta-style UI with semantic tabbed layouts." },
+      { type: "UI", text: "Integrated corporate 'Onest' font across all application layers." },
+      { type: "FIX", text: "Corrected precision logic for cash, terminal, debt, and organization totals in DOCX generation." },
+      { type: "REFACTOR", text: "Separated role determination engine from state derivation in historical reporting." }
     ]
   },
   {
     version: "v0.9.5",
-    date: "08.03.2025",
-    features: [
-      "Внедрено 'Утреннее лобби' (Pre-shift screen) с чистым интерфейсом до начала смены."
-    ],
-    fixes: [
-      "Разделение монолитной Главной страницы на мелкие изолированные компоненты (Архитектурный рефакторинг).",
-      "Улучшены анимации и интерфейс модального окна редактирования смен."
+    date: "2025-03-08",
+    changes: [
+      { type: "FEAT", text: "Introduced isolated 'Morning Lobby' (Pre-shift screen) architecture." },
+      { type: "REFACTOR", text: "Decoupled monolithic Dashboard into modular, feature-specific components." },
+      { type: "UI", text: "Refined strict CSS-only transitions for shift editing modals, replacing heavy framer-motion loops." }
     ]
   },
   {
     version: "v0.9.0",
-    date: "06.03.2025",
-    features: [
-      "Добавлен функционал 'Заметки смены' (Shift notes) с отображением в боковом меню.",
-      "Добавлена настройка включения/исключения 'Организаций' из общей кассы."
-    ],
-    design: [
-      "Полный редизайн 'Общего отчета по выручке' (General Revenue Report)."
-    ],
-    fixes: [
-      "Улучшена мобильная адаптация таблиц в зарплатах и отчетах, переработано мобильное меню.",
-      "Ускорен расчет статистики записей за счет оптимизации `.reduce()`."
+    date: "2025-03-06",
+    changes: [
+      { type: "FEAT", text: "Implemented real-time 'Shift notes' synchronization within Sidebar drawer." },
+      { type: "FEAT", text: "Added administrative toggle for including/excluding organizations from net revenue calculation." },
+      { type: "UI", text: "Engineered General Revenue Report utilizing dense data-table structure with optimized mobile overflow." },
+      { type: "PERF", text: "Reduced Big O complexity in appointment aggregation from O(N*M) to O(N) using isolated reduce passes." }
     ]
   }
 ];
