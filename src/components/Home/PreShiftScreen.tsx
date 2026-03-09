@@ -24,6 +24,8 @@ interface PreShiftScreenProps {
   totalAppointmentsToday: number;
 }
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
   selectedDate,
   isCalendarOpen,
@@ -128,8 +130,10 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
 
           <div className="p-5 sm:p-6">
             {loading.employees ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={i} className="h-[72px] w-full rounded-xl bg-muted/60" />
+                ))}
               </div>
             ) : employees.length === 0 ? (
               <div className="text-center py-10 bg-accent/30 rounded-xl border border-dashed border-border">

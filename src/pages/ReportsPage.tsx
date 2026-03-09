@@ -26,6 +26,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { ru } from "date-fns/locale";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Building,
   Calendar as CalendarIcon,
@@ -38,6 +39,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 type PeriodType = "day" | "week" | "month" | "custom";
 
@@ -57,13 +59,26 @@ interface EarningsReport {
 const ReportsPage: React.FC = () => {
   const { state } = useAppContext();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [periodType, setPeriodType] = useState<PeriodType>("day");
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+
+  const initialPeriodType = (searchParams.get("period") as PeriodType) || "day";
+  const [periodType, setPeriodType] = useState<PeriodType>(initialPeriodType);
+
+  const initialDateStr = searchParams.get("date");
+  const initialDate = initialDateStr ? parseISO(initialDateStr) : new Date();
+  const [selectedDate, setSelectedDate] = useState(initialDate);
+
+  const initialStartDateStr = searchParams.get("startDate");
+  const initialStartDate = initialStartDateStr ? parseISO(initialStartDateStr) : new Date();
+  const [startDate, setStartDate] = useState(initialStartDate);
+
+  const initialEndDateStr = searchParams.get("endDate");
+  const initialEndDate = initialEndDateStr ? parseISO(initialEndDateStr) : new Date();
+  const [endDate, setEndDate] = useState(initialEndDate);
+
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
-    null,
+    searchParams.get("employee") || null,
   );
   const [records, setRecords] = useState<CarWashRecord[]>([]);
   const [earningsReport, setEarningsReport] = useState<EarningsReport[]>([]);
@@ -115,6 +130,21 @@ const ReportsPage: React.FC = () => {
     startDatePickerRef,
     endDatePickerRef,
   ]);
+
+  // Sync URL params
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("period", periodType);
+    params.set("date", format(selectedDate, "yyyy-MM-dd"));
+    if (periodType === "custom") {
+      params.set("startDate", format(startDate, "yyyy-MM-dd"));
+      params.set("endDate", format(endDate, "yyyy-MM-dd"));
+    }
+    if (selectedEmployeeId) {
+      params.set("employee", selectedEmployeeId);
+    }
+    setSearchParams(params, { replace: true });
+  }, [periodType, selectedDate, startDate, endDate, selectedEmployeeId, setSearchParams]);
 
   // Calculate date range based on period type
   useEffect(() => {
@@ -938,7 +968,21 @@ const ReportsPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {earningsReport.map((report) => {
+                  {loading ? (
+                    <>
+                      {[...Array(5)].map((_, i) => (
+                        <tr key={i} className="border-b">
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
+                        </tr>
+                      ))}
+                    </>
+                  ) : earningsReport.map((report) => {
                     const totalRevenueEmp =
                       report.totalCash +
                       report.totalNonCash +
@@ -1040,7 +1084,7 @@ const ReportsPage: React.FC = () => {
                       </tr>
                     );
                   })}
-                  {earningsReport.length === 0 && (
+                  {!loading && earningsReport.length === 0 && (
                     <tr>
                       <td colSpan={7} className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
                         Нет данных для выбранного периода и фильтра
