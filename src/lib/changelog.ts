@@ -1,4 +1,4 @@
-export type ChangeType = "FEAT" | "FIX" | "UI" | "PERF" | "REFACTOR";
+export type ChangeType = "НОВОЕ" | "ИСПРАВЛЕНО" | "ИНТЕРФЕЙС" | "ОПТИМИЗАЦИЯ" | "РЕФАКТОРИНГ";
 
 export interface ChangeItem {
   type: ChangeType;
@@ -14,31 +14,31 @@ export interface ChangelogRelease {
 export const changelog: ChangelogRelease[] = [
   {
     version: "v1.0.0",
-    date: "2025-03-09",
+    date: "09.03.2025",
     changes: [
-      { type: "UI", text: "Global transition to Meta-style UI with semantic tabbed layouts." },
-      { type: "UI", text: "Integrated corporate 'Onest' font across all application layers." },
-      { type: "FIX", text: "Corrected precision logic for cash, terminal, debt, and organization totals in DOCX generation." },
-      { type: "REFACTOR", text: "Separated role determination engine from state derivation in historical reporting." }
+      { type: "ИНТЕРФЕЙС", text: "Глобальный переход на корпоративный Meta-стиль: вкладки, строгие карточки, отсутствие лишних теней." },
+      { type: "ИНТЕРФЕЙС", text: "Внедрение строгих моноширинных и гротеск-шрифтов (Onest) по всему приложению." },
+      { type: "ИСПРАВЛЕНО", text: "Скорректирована логика точного подсчета наличных, терминала, долгов и организаций при генерации DOCX-документов." },
+      { type: "РЕФАКТОРИНГ", text: "Изолирована логика определения ролей сотрудников от текущего состояния профиля для исторических отчетов." }
     ]
   },
   {
     version: "v0.9.5",
-    date: "2025-03-08",
+    date: "08.03.2025",
     changes: [
-      { type: "FEAT", text: "Introduced isolated 'Morning Lobby' (Pre-shift screen) architecture." },
-      { type: "REFACTOR", text: "Decoupled monolithic Dashboard into modular, feature-specific components." },
-      { type: "UI", text: "Refined strict CSS-only transitions for shift editing modals, replacing heavy framer-motion loops." }
+      { type: "НОВОЕ", text: "Внедрена архитектура 'Утреннего лобби' (Pre-shift screen) с чистым интерфейсом до начала смены." },
+      { type: "РЕФАКТОРИНГ", text: "Монолитный дашборд разделен на независимые модульные компоненты." },
+      { type: "ИНТЕРФЕЙС", text: "Переписаны анимации: отказ от тяжелых библиотек в пользу строгих CSS-транзакций." }
     ]
   },
   {
     version: "v0.9.0",
-    date: "2025-03-06",
+    date: "06.03.2025",
     changes: [
-      { type: "FEAT", text: "Implemented real-time 'Shift notes' synchronization within Sidebar drawer." },
-      { type: "FEAT", text: "Added administrative toggle for including/excluding organizations from net revenue calculation." },
-      { type: "UI", text: "Engineered General Revenue Report utilizing dense data-table structure with optimized mobile overflow." },
-      { type: "PERF", text: "Reduced Big O complexity in appointment aggregation from O(N*M) to O(N) using isolated reduce passes." }
+      { type: "НОВОЕ", text: "Реализована синхронизация 'Заметок смены' (Shift notes) в боковом меню." },
+      { type: "НОВОЕ", text: "Добавлено переключение учета организаций в общей выручке кассы." },
+      { type: "ИНТЕРФЕЙС", text: "Разработан 'Общий отчет по выручке' в виде плотной таблицы данных, оптимизированной для мобильных устройств." },
+      { type: "ОПТИМИЗАЦИЯ", text: "Снижена алгоритмическая сложность подсчета записей с O(N*M) до O(N) за счет объединения проходов reduce." }
     ]
   }
 ];
