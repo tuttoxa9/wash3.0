@@ -28,9 +28,11 @@ import {
   Settings as SettingsIcon,
   Sun,
   Trash,
+  Trash2,
   Users,
   X,
 } from "lucide-react";
+import { dailyReportService, carWashService } from "@/lib/services/supabaseService";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -1118,6 +1120,190 @@ const OrganizationsInTotalSettings = () => {
   );
 };
 
+// Debts Management Component
+const DebtsManagement: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
+  const [activeDebts, setActiveDebts] = useState<
+    Array<{
+      reportId: string;
+      record: any;
+    }>
+  >([]);
+
+  const loadDebts = async () => {
+    setLoading(true);
+    try {
+      const reports = await dailyReportService.getActiveDebts();
+      const debts: Array<{
+        reportId: string;
+        record: any;
+      }> = [];
+
+      reports.forEach((report) => {
+        report.records.forEach((record) => {
+          if (record.paymentMethod.type === "debt") {
+            debts.push({
+              reportId: report.id,
+              record,
+            });
+          }
+        });
+      });
+
+      // Сортировка по дате (по убыванию)
+      debts.sort((a, b) => new Date(b.reportId).getTime() - new Date(a.reportId).getTime());
+
+      setActiveDebts(debts);
+    } catch (error) {
+      toast.error("Ошибка при загрузке долгов");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDebts();
+  }, []);
+
+  const handleDeleteDebt = async (reportId: string, recordId: string) => {
+    if (!confirm("Вы уверены, что хотите ПОЛНОСТЬЮ удалить эту запись о долге? Это действие нельзя отменить.")) {
+      return;
+    }
+
+    setDeleteLoadingId(recordId);
+    try {
+      // 1. Удаляем из таблицы car_wash_records
+      const successDB = await carWashService.delete(recordId);
+
+      if (successDB) {
+        // 2. Получаем оригинальный отчет, чтобы пересчитать суммы
+        const report = await dailyReportService.getByDate(reportId);
+        if (report) {
+          const updatedRecords = report.records.filter((rec) => rec.id !== recordId);
+
+          // Пересчитываем итоги
+          const totalCash = updatedRecords.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === "cash" ? rec.price : 0),
+            0,
+          );
+
+          const totalNonCash = updatedRecords.reduce(
+            (sum, rec) =>
+              sum +
+              (rec.paymentMethod.type === "card" ||
+              rec.paymentMethod.type === "organization"
+                ? rec.price
+                : 0),
+            0,
+          );
+
+          const updatedReport = {
+            ...report,
+            records: updatedRecords,
+            totalCash,
+            totalNonCash,
+          };
+
+          // Обновляем отчет в базе
+          await dailyReportService.updateReport(updatedReport);
+        }
+
+        toast.success("Долг успешно удален");
+        // Обновляем список долгов
+        loadDebts();
+      } else {
+        throw new Error("Не удалось удалить запись");
+      }
+    } catch (error) {
+      console.error("Error deleting debt:", error);
+      toast.error("Произошла ошибка при удалении долга");
+    } finally {
+      setDeleteLoadingId(null);
+    }
+  };
+
+  return (
+    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col h-full">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h3 className="text-lg font-bold">Управление долгами</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Здесь отображаются все не закрытые долги. Вы можете безвозвратно удалить ошибочные записи.
+          </p>
+        </div>
+        <button
+          onClick={loadDebts}
+          disabled={loading}
+          className="text-xs px-3 py-1.5 rounded-lg border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center gap-1.5 transition-all shrink-0"
+        >
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+          />
+          Обновить
+        </button>
+      </div>
+
+      <div className="rounded-xl border border-border/50 bg-background/50 overflow-hidden">
+        {loading && activeDebts.length === 0 ? (
+          <div className="p-8 flex justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : activeDebts.length > 0 ? (
+          <ul className="divide-y divide-border/50">
+            {activeDebts.map(({ reportId, record }) => (
+              <li
+                key={record.id}
+                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-red-500 text-sm border border-red-500/20 bg-red-500/10 px-2 py-0.5 rounded">
+                      {format(parseISO(reportId), "dd.MM.yyyy")}
+                    </span>
+                    <span className="font-semibold text-foreground text-base truncate">
+                      {record.carInfo}
+                    </span>
+                  </div>
+                  <div className="text-sm text-muted-foreground truncate mb-1.5">
+                    {record.service} •{" "}
+                    <span className="font-bold text-foreground">
+                      {record.price.toFixed(0)} BYN
+                    </span>
+                  </div>
+                  {record.paymentMethod.comment && (
+                    <div className="text-xs text-red-500 font-medium italic truncate">
+                      "{record.paymentMethod.comment}"
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => handleDeleteDebt(reportId, record.id)}
+                  disabled={deleteLoadingId === record.id}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors text-xs font-semibold shrink-0"
+                >
+                  {deleteLoadingId === record.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  Удалить
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="px-4 py-8 text-center text-muted-foreground text-sm flex flex-col items-center">
+            <Check className="w-10 h-10 text-green-500/50 mb-2" />
+            <p>Нет активных долгов</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function SettingsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { dispatch } = useAppContext();
@@ -1154,15 +1340,18 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="employees" className="w-full">
-        <TabsList className="mb-6 w-full sm:w-auto flex sm:inline-flex bg-muted/60 p-1.5 rounded-2xl border border-border/10">
-          <TabsTrigger value="general" className="flex-1 sm:flex-none rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+        <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:flex bg-muted/60 p-1.5 rounded-2xl border border-border/10">
+          <TabsTrigger value="general" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Общие
           </TabsTrigger>
-          <TabsTrigger value="employees" className="flex-1 sm:flex-none rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+          <TabsTrigger value="employees" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Сотрудники
           </TabsTrigger>
-          <TabsTrigger value="organizations" className="flex-1 sm:flex-none rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+          <TabsTrigger value="organizations" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Организации
+          </TabsTrigger>
+          <TabsTrigger value="debts" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+            Долги
           </TabsTrigger>
         </TabsList>
 
@@ -1185,6 +1374,12 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <OrganizationsSettings />
             <OrganizationsInTotalSettings />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="debts" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 gap-4">
+            <DebtsManagement />
           </div>
         </TabsContent>
       </Tabs>
