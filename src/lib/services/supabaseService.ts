@@ -801,6 +801,34 @@ export const databaseService = {
       return false;
     }
   },
+    async clearDataByDate(date: string): Promise<boolean> {
+    try {
+      const tables = [
+        "appointments",
+        "car_wash_records",
+        "daily_reports",
+        "daily_roles",
+      ];
+
+      for (const t of tables) {
+        // daily_reports uses "id" as the date field
+        const column = t === "daily_reports" ? "id" : "date";
+        const { error } = await supabaseAdmin
+          .from(t)
+          .delete()
+          .eq(column, date);
+
+        if (error) {
+          logSupabaseError(`database.clearDataByDate - table ${t}`, error);
+          return false;
+        }
+      }
+      return true;
+    } catch (e) {
+      logSupabaseError("database.clearDataByDate", e);
+      return false;
+    }
+  },
   async clearAllData(): Promise<boolean> {
     try {
       // Use admin client to clear all data (bypasses RLS)
