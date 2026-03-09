@@ -562,10 +562,12 @@ const DataManagement: React.FC = () => {
 const EmployeeSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
   const [newEmployee, setNewEmployee] = useState("");
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState({
     employee: false,
     fetchEmployees: false,
     deleteEmployee: null as string | null,
+    updateEmployee: null as string | null,
   });
 
   const fetchEmployees = async () => {
@@ -605,6 +607,28 @@ const EmployeeSettings: React.FC = () => {
     }
   };
 
+  const handleUpdateEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEmployee) return;
+    if (!editingEmployee.name.trim()) return;
+
+    setLoading((prev) => ({ ...prev, updateEmployee: editingEmployee.id }));
+    try {
+      const success = await employeeService.update(editingEmployee);
+      if (success) {
+        dispatch({ type: "UPDATE_EMPLOYEE", payload: editingEmployee });
+        toast.success("Данные сотрудника обновлены");
+        setEditingEmployee(null);
+      } else {
+        throw new Error("Не удалось обновить");
+      }
+    } catch (error) {
+      toast.error("Ошибка при обновлении данных сотрудника");
+    } finally {
+      setLoading((prev) => ({ ...prev, updateEmployee: null }));
+    }
+  };
+
   const handleDeleteEmployee = async (
     employeeId: string,
     employeeName: string,
@@ -617,6 +641,7 @@ const EmployeeSettings: React.FC = () => {
       if (success) {
         dispatch({ type: "REMOVE_EMPLOYEE", payload: employeeId });
         toast.success(`Сотрудник ${employeeName} удален`);
+        if (editingEmployee?.id === employeeId) setEditingEmployee(null);
       } else {
         throw new Error("Не удалось удалить сотрудника");
       }
@@ -674,22 +699,76 @@ const EmployeeSettings: React.FC = () => {
             {state.employees.map((employee) => (
               <li
                 key={employee.id}
-                className="px-5 py-4 flex items-center justify-between text-sm group hover:bg-muted/50 transition-colors"
+                className="px-5 py-4 flex items-center justify-between text-sm group hover:bg-muted/50 transition-colors min-h-[56px]"
               >
-                <span className="font-semibold text-[15px]">{employee.name}</span>
-                <button
-                  onClick={() =>
-                    handleDeleteEmployee(employee.id, employee.name)
-                  }
-                  className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-destructive/10"
-                  disabled={loading.deleteEmployee === employee.id}
-                >
-                  {loading.deleteEmployee === employee.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Trash className="w-4 h-4" />
-                  )}
-                </button>
+                {editingEmployee?.id === employee.id ? (
+                  <form
+                    onSubmit={handleUpdateEmployee}
+                    className="flex items-center gap-2 w-full"
+                  >
+                    <input
+                      type="text"
+                      value={editingEmployee.name}
+                      onChange={(e) =>
+                        setEditingEmployee({
+                          ...editingEmployee,
+                          name: e.target.value,
+                        })
+                      }
+                      className="flex-1 px-3 py-1.5 bg-background border border-input rounded-md focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                      autoFocus
+                    />
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setEditingEmployee(null)}
+                        className="text-muted-foreground hover:text-foreground p-1.5"
+                        disabled={loading.updateEmployee === employee.id}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="submit"
+                        className="text-primary hover:text-primary/80 p-1.5"
+                        disabled={loading.updateEmployee === employee.id}
+                      >
+                        {loading.updateEmployee === employee.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Check className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <span className="font-semibold text-[15px]">{employee.name}</span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => setEditingEmployee({ ...employee })}
+                        className="text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-muted"
+                        disabled={!!editingEmployee}
+                        title="Редактировать"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDeleteEmployee(employee.id, employee.name)
+                        }
+                        className="text-muted-foreground hover:text-destructive p-1.5 rounded-md hover:bg-destructive/10"
+                        disabled={loading.deleteEmployee === employee.id || !!editingEmployee}
+                        title="Удалить"
+                      >
+                        {loading.deleteEmployee === employee.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>
