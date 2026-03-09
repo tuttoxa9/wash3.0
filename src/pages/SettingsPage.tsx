@@ -1304,6 +1304,67 @@ const DebtsManagement: React.FC = () => {
   );
 };
 
+// Настройки синхронизации в реальном времени
+const RealtimeSettings: React.FC = () => {
+  const { state, dispatch } = useAppContext();
+  const [loading, setLoading] = useState(false);
+
+  const toggleRealtime = async () => {
+    const newValue = !state.isRealtimeEnabled;
+    setLoading(true);
+    try {
+      const success = await settingsService.saveRealtimeEnabled(newValue);
+      if (success) {
+        dispatch({ type: "SET_REALTIME_ENABLED", payload: newValue });
+        toast.success(
+          newValue
+            ? "Синхронизация в реальном времени включена для всех"
+            : "Синхронизация в реальном времени отключена для всех"
+        );
+      } else {
+        throw new Error("Не удалось сохранить");
+      }
+    } catch (error) {
+      toast.error("Ошибка при сохранении настроек");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm mt-4">
+      <div className="flex justify-between items-start gap-4">
+        <div>
+          <h3 className="text-base font-semibold mb-1">Глобальная синхронизация данных</h3>
+          <p className="text-sm text-muted-foreground">
+            {state.isRealtimeEnabled
+              ? "Устройства моментально получают новые долги и записи без перезагрузки."
+              : "Синхронизация отключена. Устройства обновят данные только после перезагрузки страницы."}
+          </p>
+        </div>
+
+        <button
+          onClick={toggleRealtime}
+          disabled={loading}
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+            state.isRealtimeEnabled ? "bg-primary" : "bg-muted"
+          } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
+          <span
+            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              state.isRealtimeEnabled ? "translate-x-5" : "translate-x-0"
+            }`}
+          />
+        </button>
+      </div>
+
+      <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-600 dark:text-blue-400">
+        <strong>Обратите внимание:</strong> Эта настройка применяется мгновенно ко всем авторизованным устройствам. Для работы синхронизации в Supabase должно быть включено свойство Realtime для нужных таблиц (см. файл <code>supabase_realtime_setup.sql</code>).
+      </div>
+    </div>
+  );
+};
+
 export default function SettingsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { dispatch } = useAppContext();
@@ -1360,6 +1421,7 @@ export default function SettingsPage() {
             <ThemeSettings />
             <DatabaseStatus />
           </div>
+          <RealtimeSettings />
           <DataManagement />
         </TabsContent>
 

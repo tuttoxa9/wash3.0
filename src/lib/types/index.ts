@@ -103,6 +103,7 @@ export interface AppState {
   salaryCalculationDate: string; // Дата изменения метода расчета зарплаты в формате YYYY-MM-DD
   minimumPaymentSettings: MinimumPaymentSettings; // Настройки минимальной оплаты
   organizationsInTotal: string[]; // ID организаций, которые считаются в Итого
+  isRealtimeEnabled: boolean; // Включена ли синхронизация в реальном времени
 }
 
 // Типы действий для редьюсера
@@ -133,4 +134,5 @@ export type AppAction =
       payload: { method: SalaryCalculationMethod; date: string };
     }
   | { type: "SET_MINIMUM_PAYMENT_SETTINGS"; payload: MinimumPaymentSettings }
-  | { type: "SET_ORGANIZATIONS_IN_TOTAL"; payload: string[] };
+  | { type: "SET_ORGANIZATIONS_IN_TOTAL"; payload: string[] }
+  | { type: "SET_REALTIME_ENABLED"; payload: boolean };

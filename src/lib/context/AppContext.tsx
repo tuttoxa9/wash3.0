@@ -48,6 +48,7 @@ const initialState: AppState = {
     adminDrycleanPercentage: 3,
   },
   organizationsInTotal: [],
+  isRealtimeEnabled: true,
 };
 
 // Создаем контекст
@@ -221,6 +222,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         organizationsInTotal: action.payload,
       };
+    case "SET_REALTIME_ENABLED":
+      return {
+        ...state,
+        isRealtimeEnabled: action.payload,
+      };
     default:
       return state;
   }
@@ -232,6 +238,14 @@ const applyThemeToDocument = (theme: ThemeMode) => {
   root.classList.remove("light", "dark", "black");
   root.classList.add(theme);
 };
+
+import { useRealtimeSync } from "@/lib/hooks/useRealtimeSync";
+
+// Вспомогательный компонент для включения хуков после создания провайдера
+function RealtimeSyncWrapper() {
+  useRealtimeSync();
+  return null;
+}
 
 // Провайдер контекста
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -428,6 +442,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             orgsInTotal,
           );
         }
+
+        const realtimeEnabled = await settingsService.getRealtimeEnabled();
+        dispatch({ type: "SET_REALTIME_ENABLED", payload: realtimeEnabled });
       } catch (error) {
         console.error("Ошибка при загрузке данных при запуске:", error);
       }
@@ -443,6 +460,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{ state, dispatch, fetchDataForPeriod }}>
+      <RealtimeSyncWrapper />
       {children}
     </AppContext.Provider>
   );

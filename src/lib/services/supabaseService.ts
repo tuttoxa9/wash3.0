@@ -697,6 +697,32 @@ export const settingsService = {
     }
     return (data as any)?.data ?? null;
   },
+  async saveRealtimeEnabled(isEnabled: boolean): Promise<boolean> {
+    const { error } = await supabase
+      .from("settings")
+      .upsert(
+        { key: "realtimeEnabled", data: { isEnabled } },
+        { onConflict: "key" },
+      );
+    if (error) {
+      logSupabaseError("settings.saveRealtimeEnabled", error);
+      return false;
+    }
+    return true;
+  },
+  async getRealtimeEnabled(): Promise<boolean> {
+    const { data, error } = await supabase
+      .from("settings")
+      .select("data")
+      .eq("key", "realtimeEnabled")
+      .single();
+    if (error) {
+      if ((error as any).code === "PGRST116") return true; // по умолчанию включено
+      logSupabaseError("settings.getRealtimeEnabled", error);
+      return true;
+    }
+    return (data as any)?.data?.isEnabled ?? true;
+  },
 };
 
 // daily roles
