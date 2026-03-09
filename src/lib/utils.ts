@@ -20,10 +20,85 @@ import {
   TableRow,
   TextRun,
 } from "docx";
-import { twMerge } from "tailwind-merge";
+import type { DailyReport, Employee, Organization } from "./types";
+import { format, parseISO } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+// Генерация CSV из DailyReport
+export function generateDailyReportCsv(
+  report: DailyReport,
+  employees: Employee[],
+  organizations: Organization[] = [],
+  date: string,
+): string {
+  if (!report || !report.records) return "";
+
+  const BOM = "\uFEFF";
+  let csvContent = BOM;
+
+  // Заголовок
+  csvContent += `Ведомость за ${format(new Date(date), "dd.MM.yyyy")}\n\n`;
+
+  // Заголовки таблицы
+  csvContent += "Время;Авто;Услуга;Тип;Сумма;Оплата;Сотрудники\n";
+
+  // Функция для получения названия организации
+  const getOrgName = (id?: string) => {
+    if (!id) return "Организация";
+    const org = organizations.find((o) => o.id === id);
+    return org ? org.name : "Организация";
+  };
+
+  // Экранирование для CSV
+  const escapeCsv = (str: string) => {
+    let result = str.replace(/;/g, ",");
+    // Защита от CSV Injection
+    if (/^[=+\-@]/.test(result)) {
+      result = "'" + result;
+    }
+    return result;
+  };
+
+  // Строки таблицы
+  report.records.forEach((record) => {
+    const time = escapeCsv(record.time);
+    const car = escapeCsv(record.carInfo);
+    const service = escapeCsv(record.service);
+    const type = record.serviceType === "dryclean" ? "Химчистка" : "Мойка";
+    const price = record.price.toFixed(2);
+
+    let paymentStr = "Наличные";
+    if (record.paymentMethod.type === "card") paymentStr = "Карта";
+    else if (record.paymentMethod.type === "organization") paymentStr = escapeCsv(getOrgName(record.paymentMethod.organizationId));
+    else if (record.paymentMethod.type === "debt") paymentStr = escapeCsv(`Долг ${record.paymentMethod.comment || ""}`.trim());
+
+    const emps = escapeCsv(record.employeeIds
+      .map((id) => employees.find((e) => e.id === id)?.name || "Неизвестный")
+      .join(", "));
+
+    csvContent += `${time};${car};${service};${type};${price};${paymentStr};${emps}\n`;
+  });
+
+  // Итоги
+  csvContent += "\nИтоги:\n";
+  csvContent += `Всего Наличные:;${report.totalCash.toFixed(2)}\n`;
+  csvContent += `Всего Безнал (Карта+Орг):;${report.totalNonCash.toFixed(2)}\n`;
+
+  const totalDebt = report.records.reduce(
+    (sum, r) => sum + (r.paymentMethod.type === "debt" ? r.price : 0),
+    0
+  );
+  if (totalDebt > 0) {
+    csvContent += `Всего Долги:;${totalDebt.toFixed(2)}\n`;
+  }
+
+  const totalRevenue = report.records.reduce((sum, r) => sum + r.price, 0);
+  csvContent += `ОБЩАЯ СУММА:;${totalRevenue.toFixed(2)}\n`;
+
+  return csvContent;
 }
 
 /**

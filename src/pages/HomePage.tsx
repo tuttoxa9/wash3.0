@@ -20,7 +20,7 @@ import type {
   Employee,
   EmployeeRole,
 } from "@/lib/types";
-import { generateDailyReportDocx } from "@/lib/utils";
+import { generateDailyReportDocx, generateDailyReportCsv } from "@/lib/utils";
 import { Packer } from "docx";
 import { saveAs } from "file-saver";
 import {
@@ -52,6 +52,7 @@ import DailyReportModal from "@/components/Home/DailyReportModal";
 import EmployeeDetailModal from "@/components/Home/EmployeeDetailModal";
 import { PreShiftScreen } from "@/components/Home/PreShiftScreen";
 import { motion, AnimatePresence } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const HomePage: React.FC = () => {
   const { state, dispatch } = useAppContext();
@@ -405,6 +406,33 @@ const HomePage: React.FC = () => {
     } catch (error) {
       console.error("Ошибка при экспорте документа:", error);
       toast.error("Ошибка при экспорте документа");
+    } finally {
+      setLoading((prev) => ({ ...prev, exporting: false }));
+    }
+  };
+
+  const exportToCsv = () => {
+    if (!currentReport) {
+      toast.error("Нет данных для экспорта");
+      return;
+    }
+
+    try {
+      setLoading((prev) => ({ ...prev, exporting: true }));
+      const csvString = generateDailyReportCsv(
+        currentReport,
+        state.employees,
+        state.organizations,
+        selectedDate
+      );
+
+      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+      const fileName = `Ведомость_${format(new Date(selectedDate), "dd-MM-yyyy")}.csv`;
+      saveAs(blob, fileName);
+      toast.success("CSV успешно экспортирован");
+    } catch (error) {
+      console.error("Ошибка при экспорте CSV:", error);
+      toast.error("Ошибка при экспорте CSV");
     } finally {
       setLoading((prev) => ({ ...prev, exporting: false }));
     }
@@ -1183,14 +1211,10 @@ const HomePage: React.FC = () => {
               )}
             </div>
             {loading.dailyReport ? (
-              <div className="flex flex-col items-center justify-center p-16">
-                <div className="relative">
-                  <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                  <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-r-accent rounded-full animate-spin animation-delay-150" />
-                </div>
-                <p className="text-muted-foreground mt-4 font-medium">
-                  Загрузка данных...
-                </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-[142px] w-full rounded-xl bg-muted/60" />
+                ))}
               </div>
             ) : workingEmployees.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
@@ -2057,6 +2081,7 @@ const HomePage: React.FC = () => {
           organizations={state.organizations}
           selectedDate={selectedDate}
           onExport={exportToWord}
+          onExportCsv={exportToCsv}
           isExporting={loading.exporting}
           paymentFilter={paymentFilter}
           onPaymentFilterChange={setPaymentFilter}
@@ -3391,6 +3416,7 @@ interface DailyReportModalProps {
   organizations: Organization[];
   selectedDate: string;
   onExport: () => void;
+  onExportCsv: () => void;
   isExporting: boolean;
   paymentFilter: "all" | "cash" | "card" | "organization" | "debt";
   onPaymentFilterChange: (
@@ -3405,6 +3431,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
   organizations,
   selectedDate,
   onExport,
+  onExportCsv,
   isExporting,
   paymentFilter,
   onPaymentFilterChange,
@@ -3679,25 +3706,42 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
               {format(new Date(selectedDate), "dd.MM.yyyy")}
             </h3>
             <div className="flex gap-2 sm:gap-3">
-              <button
-                onClick={onExport}
-                disabled={isExporting || !currentReport}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary text-secondary-foreground rounded-lg sm:rounded-xl hover:bg-secondary/90 transition-colors disabled:opacity-50 text-xs sm:text-sm"
-              >
-                {isExporting ? (
-                  <>
+              <div className="flex gap-2 bg-secondary text-secondary-foreground rounded-lg sm:rounded-xl overflow-hidden">
+                <button
+                  onClick={onExport}
+                  disabled={isExporting || !currentReport}
+                  className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 hover:bg-secondary/80 transition-colors disabled:opacity-50 text-xs sm:text-sm border-r border-background/20"
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                      <span className="hidden sm:inline">Экспорт...</span>
+                      <span className="sm:hidden">...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">Word</span>
+                      <span className="sm:hidden">Word</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={onExportCsv}
+                  disabled={isExporting || !currentReport}
+                  className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 hover:bg-secondary/80 transition-colors disabled:opacity-50 text-xs sm:text-sm"
+                >
+                  {isExporting ? (
                     <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
-                    <span className="hidden sm:inline">Экспорт...</span>
-                    <span className="sm:hidden">...</span>
-                  </>
-                ) : (
-                  <>
-                    <FileDown className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Экспорт в Word</span>
-                    <span className="sm:hidden">Word</span>
-                  </>
-                )}
-              </button>
+                  ) : (
+                    <>
+                      <FileDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">CSV</span>
+                      <span className="sm:hidden">CSV</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <button
                 onClick={onClose}
                 className="p-1.5 sm:p-2 hover:bg-muted rounded-md sm:rounded-lg transition-colors"
