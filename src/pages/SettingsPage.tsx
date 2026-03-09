@@ -273,6 +273,43 @@ const DataManagement: React.FC = () => {
   const [clearDateError, setClearDateError] = useState("");
   const [clearDateLoading, setClearDateLoading] = useState(false);
 
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [daySummary, setDaySummary] = useState<{ recordsCount: number; totalRevenue: number } | null>(null);
+
+  useEffect(() => {
+    if (!showClearByDate || !dateToClear) {
+      setDaySummary(null);
+      return;
+    }
+
+    let isMounted = true;
+
+    const fetchSummary = async () => {
+      setSummaryLoading(true);
+      try {
+        const report = await dailyReportService.getByDate(dateToClear);
+        if (isMounted) {
+          if (report) {
+            setDaySummary({
+              recordsCount: report.records.length,
+              totalRevenue: report.totalCash + report.totalNonCash,
+            });
+          } else {
+            setDaySummary(null);
+          }
+        }
+      } catch (error) {
+        // error handling
+      } finally {
+        if (isMounted) setSummaryLoading(false);
+      }
+    };
+
+    fetchSummary();
+
+    return () => { isMounted = false; };
+  }, [dateToClear, showClearByDate]);
+
   const handleClearDatabase = async () => {
     setLoading(true);
     try {
@@ -407,6 +444,35 @@ const DataManagement: React.FC = () => {
                 />
               </div>
 
+              {/* Day Summary Block */}
+              {summaryLoading ? (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 bg-muted/30 rounded-xl border border-border/50">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Загрузка данных о смене...
+                </div>
+              ) : daySummary ? (
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs text-destructive font-medium mb-1">
+                        Найдены данные за {format(parseISO(dateToClear), "dd.MM.yyyy")}:
+                      </p>
+                      <ul className="text-xs text-destructive/80 space-y-0.5 list-disc list-inside">
+                        <li>Количество машин: <span className="font-semibold">{daySummary.recordsCount}</span></li>
+                        <li>Общая выручка: <span className="font-semibold">{daySummary.totalRevenue} BYN</span></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-muted/50 border border-border/50 rounded-xl">
+                  <p className="text-xs text-muted-foreground">
+                    Нет данных о машинах и выручке за {dateToClear ? format(parseISO(dateToClear), "dd.MM.yyyy") : "этот день"}.
+                  </p>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5">Пароль от настроек</label>
                 <input
@@ -414,6 +480,7 @@ const DataManagement: React.FC = () => {
                   value={clearDatePassword}
                   onChange={(e) => setClearDatePassword(e.target.value)}
                   placeholder="Введите пароль для подтверждения"
+                  autoComplete="new-password"
                   className="w-full px-3 py-2 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-destructive text-sm"
                   required
                 />
