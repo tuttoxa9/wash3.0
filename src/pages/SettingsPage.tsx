@@ -1307,61 +1307,95 @@ const DebtsManagement: React.FC = () => {
 // Настройки синхронизации в реальном времени
 const RealtimeSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
-  const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "checking" | "success">("idle");
 
   const toggleRealtime = async () => {
+    // Если мы уже в процессе проверки, игнорируем клики
+    if (phase !== "idle") return;
+
     const newValue = !state.isRealtimeEnabled;
-    setLoading(true);
-    try {
-      const success = await settingsService.saveRealtimeEnabled(newValue);
-      if (success) {
-        dispatch({ type: "SET_REALTIME_ENABLED", payload: newValue });
-        toast.success(
-          newValue
-            ? "Синхронизация в реальном времени включена для всех"
-            : "Синхронизация в реальном времени отключена для всех"
-        );
-      } else {
-        throw new Error("Не удалось сохранить");
+
+    if (newValue) {
+      // Пользователь ВКЛЮЧАЕТ синхронизацию - запускаем анимацию проверки
+      setPhase("checking");
+
+      try {
+        const success = await settingsService.saveRealtimeEnabled(true);
+        if (success) {
+          dispatch({ type: "SET_REALTIME_ENABLED", payload: true });
+
+          // Крутим лоадер 1.5 секунды
+          setTimeout(() => {
+            setPhase("success");
+
+            // Показываем галочку успеха 1.5 секунды
+            setTimeout(() => {
+              setPhase("idle");
+              toast.success("Синхронизация успешно включена");
+            }, 1500);
+
+          }, 1500);
+
+        } else {
+          throw new Error("Не удалось сохранить");
+        }
+      } catch (error) {
+        setPhase("idle");
+        toast.error("Ошибка при сохранении настроек");
       }
-    } catch (error) {
-      toast.error("Ошибка при сохранении настроек");
-    } finally {
-      setLoading(false);
+    } else {
+      // Пользователь ВЫКЛЮЧАЕТ синхронизацию - без анимации (просто выключили)
+      try {
+        const success = await settingsService.saveRealtimeEnabled(false);
+        if (success) {
+          dispatch({ type: "SET_REALTIME_ENABLED", payload: false });
+          toast.success("Синхронизация отключена");
+        } else {
+          throw new Error("Не удалось сохранить");
+        }
+      } catch (error) {
+        toast.error("Ошибка при сохранении настроек");
+      }
     }
   };
 
   return (
-    <div className="p-5 sm:p-6 border border-border/50 rounded-2xl bg-card shadow-sm mt-4">
-      <div className="flex justify-between items-start gap-4">
-        <div>
-          <h3 className="text-base font-semibold mb-1">Глобальная синхронизация данных</h3>
-          <p className="text-sm text-muted-foreground">
-            {state.isRealtimeEnabled
-              ? "Устройства моментально получают новые долги и записи без перезагрузки."
-              : "Синхронизация отключена. Устройства обновят данные только после перезагрузки страницы."}
-          </p>
-        </div>
-
-        <button
-          onClick={toggleRealtime}
-          disabled={loading}
-          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            state.isRealtimeEnabled ? "bg-primary" : "bg-muted"
-          } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-        >
-          <span
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-              state.isRealtimeEnabled ? "translate-x-5" : "translate-x-0"
-            }`}
-          />
-        </button>
+    <button
+      onClick={toggleRealtime}
+      disabled={phase !== "idle"}
+      className={`w-full p-5 sm:p-6 rounded-2xl flex items-center justify-between transition-colors border text-left mt-4 ${
+        state.isRealtimeEnabled && phase === "idle"
+          ? "border-primary bg-primary/5 shadow-sm"
+          : "border-border/60 bg-background hover:border-border hover:bg-muted/50"
+      }`}
+    >
+      <div className="flex-1 pr-4">
+        <h3 className={`text-base font-semibold mb-1 ${
+          state.isRealtimeEnabled && phase === "idle" ? "text-primary" : "text-foreground"
+        }`}>
+          Глобальная синхронизация данных
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Устройства моментально получают новые долги и записи без перезагрузки.
+        </p>
       </div>
 
-      <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-600 dark:text-blue-400">
-        <strong>Обратите внимание:</strong> Эта настройка применяется мгновенно ко всем авторизованным устройствам. Для работы синхронизации в Supabase должно быть включено свойство Realtime для нужных таблиц (см. файл <code>supabase_realtime_setup.sql</code>).
+      <div
+        className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md border flex-shrink-0 flex items-center justify-center transition-all ${
+          phase === "checking"
+            ? "border-transparent bg-transparent"
+            : phase === "success"
+              ? "bg-green-500 border-green-500 text-white shadow-sm"
+              : state.isRealtimeEnabled
+                ? "bg-primary border-primary text-primary-foreground shadow-sm"
+                : "border-input bg-background"
+        }`}
+      >
+        {phase === "checking" && <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-muted-foreground" />}
+        {phase === "success" && <Check className="w-4 h-4 sm:w-5 sm:h-5 animate-in zoom-in duration-200" />}
+        {phase === "idle" && state.isRealtimeEnabled && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-in zoom-in duration-200" />}
       </div>
-    </div>
+    </button>
   );
 };
 
