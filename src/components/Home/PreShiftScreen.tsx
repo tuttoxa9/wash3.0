@@ -230,25 +230,31 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
                           </div>
 
                           {/* Min Payment Toggle */}
-                          <label className="flex items-center justify-between px-1 py-0.5 cursor-pointer group">
+                          <label className="flex items-center gap-2 px-1 py-0.5 cursor-pointer group w-fit">
+                            <div
+                              className={`flex-shrink-0 w-3.5 h-3.5 rounded-[4px] border flex items-center justify-center transition-colors ${
+                                (employeeRoles as any)?.[`min_${employee.id}`] !== false
+                                  ? "bg-primary border-primary text-primary-foreground"
+                                  : "border-input bg-background"
+                              }`}
+                            >
+                              {(employeeRoles as any)?.[`min_${employee.id}`] !== false && <Check className="w-2.5 h-2.5" />}
+                            </div>
+                            <input
+                              type="checkbox"
+                              className="hidden"
+                              checked={(employeeRoles as any)?.[`min_${employee.id}`] !== false}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                setEmployeeRoles({
+                                  ...employeeRoles,
+                                  [`min_${employee.id}`]: e.target.checked ? true : false,
+                                } as any);
+                              }}
+                            />
                             <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors select-none">
                               Учитывать минималку
                             </span>
-                            <div className="relative inline-flex items-center h-4 rounded-full w-7 transition-colors border border-border/50">
-                              <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={(employeeRoles as any)?.[`min_${employee.id}`] !== false}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  setEmployeeRoles({
-                                    ...employeeRoles,
-                                    [`min_${employee.id}`]: e.target.checked ? true : false,
-                                  } as any);
-                                }}
-                              />
-                              <div className="w-7 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary border border-border/50"></div>
-                            </div>
                           </label>
                         </div>
                       </div>
