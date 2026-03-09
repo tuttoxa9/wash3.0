@@ -1435,44 +1435,68 @@ const HomePage: React.FC = () => {
                           <div
                             className={`overflow-hidden transition-all duration-300 ease-in-out ${
                               isSelected
-                                ? "max-h-12 opacity-100 mt-3"
+                                ? "max-h-24 opacity-100 mt-3"
                                 : "max-h-0 opacity-0 mt-0"
                             }`}
                           >
-                            <div className="flex items-center bg-background rounded-lg border border-border/50 p-1">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEmployeeRoles({
-                                    ...employeeRoles,
-                                    [employee.id]: "washer",
-                                  });
-                                }}
-                                className={`flex-1 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
-                                  currentRole === "washer"
-                                    ? "bg-primary text-primary-foreground shadow-sm"
-                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                                }`}
-                              >
-                                Мойщик
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEmployeeRoles({
-                                    ...employeeRoles,
-                                    [employee.id]: "admin",
-                                  });
-                                }}
-                                className={`flex-1 flex items-center justify-center gap-1.5 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
-                                  currentRole === "admin"
-                                    ? "bg-amber-500 text-white shadow-sm"
-                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                                }`}
-                              >
-                                <Shield className="w-3 h-3" />
-                                Админ
-                              </button>
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center bg-background rounded-lg border border-border/50 p-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEmployeeRoles({
+                                      ...employeeRoles,
+                                      [employee.id]: "washer",
+                                    });
+                                  }}
+                                  className={`flex-1 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                                    currentRole === "washer"
+                                      ? "bg-primary text-primary-foreground shadow-sm"
+                                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                  }`}
+                                >
+                                  Мойщик
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEmployeeRoles({
+                                      ...employeeRoles,
+                                      [employee.id]: "admin",
+                                    });
+                                  }}
+                                  className={`flex-1 flex items-center justify-center gap-1.5 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                                    currentRole === "admin"
+                                      ? "bg-amber-500 text-white shadow-sm"
+                                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                  }`}
+                                >
+                                  <Shield className="w-3 h-3" />
+                                  Админ
+                                </button>
+                              </div>
+
+                              {/* Min Payment Toggle */}
+                              <label className="flex items-center justify-between px-1 py-0.5 cursor-pointer group">
+                                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors select-none">
+                                  Учитывать минималку
+                                </span>
+                                <div className="relative inline-flex items-center h-4 rounded-full w-7 transition-colors border border-border/50">
+                                  <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={(employeeRoles as any)?.[`min_${employee.id}`] !== false}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      setEmployeeRoles({
+                                        ...employeeRoles,
+                                        [`min_${employee.id}`]: e.target.checked ? true : false,
+                                      } as any);
+                                    }}
+                                  />
+                                  <div className="w-7 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary border border-border/50"></div>
+                                </div>
+                              </label>
                             </div>
                           </div>
                         </div>
