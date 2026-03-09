@@ -1,3 +1,4 @@
+-- 7. Добавляем настройки в публикацию Realtime
 -- Включаем Realtime публикацию для таблиц, которые важны для мгновенного обновления на клиентах
 -- Этот скрипт необходимо выполнить в SQL Editor в панели управления Supabase
 
@@ -16,5 +17,5 @@ ALTER PUBLICATION supabase_realtime ADD TABLE employees;
 -- 5. Таблица организаций (Organizations)
 ALTER PUBLICATION supabase_realtime ADD TABLE organizations;
 
--- 6. Если в будущем добавится таблица заметок, ее тоже нужно будет включить
--- ALTER PUBLICATION supabase_realtime ADD TABLE notes;
+-- 6. Таблица настроек для глобального отключения синхронизации (Settings)
+ALTER PUBLICATION supabase_realtime ADD TABLE settings;

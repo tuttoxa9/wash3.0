@@ -48,6 +48,7 @@ const initialState: AppState = {
     adminDrycleanPercentage: 3,
   },
   organizationsInTotal: [],
+  isRealtimeEnabled: true,
 };
 
 // Создаем контекст
@@ -220,6 +221,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         organizationsInTotal: action.payload,
+      };
+    case "SET_REALTIME_ENABLED":
+      return {
+        ...state,
+        isRealtimeEnabled: action.payload,
       };
     default:
       return state;
@@ -436,6 +442,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             orgsInTotal,
           );
         }
+
+        const realtimeEnabled = await settingsService.getRealtimeEnabled();
+        dispatch({ type: "SET_REALTIME_ENABLED", payload: realtimeEnabled });
       } catch (error) {
         console.error("Ошибка при загрузке данных при запуске:", error);
       }

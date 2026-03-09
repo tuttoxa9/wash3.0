@@ -16,6 +16,27 @@ export function useRealtimeSync() {
   const { state, dispatch } = useAppContext();
 
   useEffect(() => {
+    // Специальная подписка на саму таблицу settings, чтобы моментально узнавать об отключении/включении Realtime
+    const settingsSubscription = supabase
+      .channel("settings_realtime_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "settings", filter: "key=eq.realtimeEnabled" },
+        (payload) => {
+          if (payload.new && "data" in payload.new) {
+            const isEnabled = (payload.new as any).data?.isEnabled ?? true;
+            dispatch({ type: "SET_REALTIME_ENABLED", payload: isEnabled });
+          }
+        }
+      )
+      .subscribe();
+
+    if (!state.isRealtimeEnabled) {
+      return () => {
+        supabase.removeChannel(settingsSubscription);
+      };
+    }
+
     // 1. Подписка на изменения в таблице записей (Appointments)
     const appointmentsSubscription = supabase
       .channel("appointments_changes")
@@ -116,11 +137,12 @@ export function useRealtimeSync() {
       )
       .subscribe();
 
-    // Очистка подписок при размонтировании
+    // Очистка подписок при размонтировании или выключении рубильника
     return () => {
+      supabase.removeChannel(settingsSubscription);
       supabase.removeChannel(appointmentsSubscription);
       supabase.removeChannel(dailyReportsSubscription);
       supabase.removeChannel(carWashRecordsSubscription);
     };
-  }, [dispatch, state.currentDate]);
+  }, [dispatch, state.currentDate, state.isRealtimeEnabled]);
 }
