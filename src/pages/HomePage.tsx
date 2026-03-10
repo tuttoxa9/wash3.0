@@ -52,6 +52,7 @@ import CloseDebtModal from "@/components/Home/CloseDebtModal";
 import DailyReportModal from "@/components/Home/DailyReportModal";
 import EmployeeDetailModal from "@/components/Home/EmployeeDetailModal";
 import CashModificationsModal from "@/components/Home/CashModificationsModal";
+import CertificatesWidget from "@/components/Home/CertificatesWidget";
 import { PreShiftScreen } from "@/components/Home/PreShiftScreen";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -121,6 +122,9 @@ const HomePage: React.FC = () => {
   const [appointmentToConvert, setAppointmentToConvert] =
     useState<Appointment | null>(null);
   const [preselectedEmployeeId, setPreselectedEmployeeId] = useState<
+    string | null
+  >(null);
+  const [preselectedCertificateId, setPreselectedCertificateId] = useState<
     string | null
   >(null);
 
@@ -228,11 +232,19 @@ const HomePage: React.FC = () => {
       setAppointmentToConvert(null);
       setClickPosition(null);
       setPreselectedEmployeeId(null);
+      setPreselectedCertificateId(null);
     } else if (event) {
       // Сохраняем позицию клика для анимации
       setClickPosition({ x: event.clientX, y: event.clientY });
     }
     setIsModalOpen(!isModalOpen);
+  };
+
+  // Функция для обработки использования сертификата
+  const handleUseCertificate = (certificate: any, event: React.MouseEvent) => {
+    setPreselectedCertificateId(certificate.id);
+    setClickPosition({ x: event.clientX, y: event.clientY });
+    setIsModalOpen(true);
   };
 
   // Функция для открытия модального окна добавления записи с предвыбранным сотрудником
@@ -1180,6 +1192,7 @@ const HomePage: React.FC = () => {
               }
               setAppointmentToConvert(null);
               setPreselectedEmployeeId(null);
+              setPreselectedCertificateId(null);
               toggleModal(e);
             }}
             disabled={!shiftStarted}
@@ -1612,17 +1625,19 @@ const HomePage: React.FC = () => {
                       {(() => {
                         const actualCash =
                           currentReport.totalCash +
-                          (currentReport.cashModifications || []).reduce(
-                            (sum, mod) => sum + mod.amount,
-                            0,
-                          );
+                          (currentReport.cashModifications || [])
+                            .filter(m => !m.method || m.method === "cash")
+                            .reduce(
+                              (sum, mod) => sum + mod.amount,
+                              0,
+                            );
                         return actualCash.toFixed(2);
                       })()}{" "}
                       <span className="text-sm font-semibold opacity-80 text-muted-foreground">
                         BYN
                       </span>
                     </span>
-                    {currentReport.cashModifications && currentReport.cashModifications.length > 0 && (
+                    {currentReport.cashModifications && currentReport.cashModifications.filter(m => !m.method || m.method === "cash").length > 0 && (
                       <span className="text-[10px] text-muted-foreground mt-0.5">
                         По услугам: {currentReport.totalCash.toFixed(2)} BYN
                       </span>
@@ -1631,7 +1646,7 @@ const HomePage: React.FC = () => {
 
                   {/* Карта */}
                   <div
-                    className={`flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
+                    className={`relative flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
                       paymentFilter === "card"
                         ? "bg-primary/5 border-primary/30"
                         : "bg-muted/20 border-border/50 hover:bg-accent/30"
@@ -1650,20 +1665,29 @@ const HomePage: React.FC = () => {
                         : "Сначала выберите работников и начните смену"
                     }
                   >
+                    {currentReport.cashModifications && currentReport.cashModifications.filter(m => m.method === "card").length > 0 && (
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600">
+                          {currentReport.cashModifications.filter(m => m.method === "card").length}
+                        </span>
+                      </div>
+                    )}
                     <span className="text-sm text-muted-foreground font-medium mb-1.5">
                       Карта
                     </span>
                     <span className="font-bold text-lg text-foreground">
-                      {(
-                        currentReport.records?.reduce(
-                          (sum, rec) =>
-                            sum +
-                            (rec.paymentMethod.type === "card" ? rec.price : 0),
-                          0,
-                        ) || 0
-                      ).toFixed(2)}{" "}
+                      {(() => {
+                        const totalCardServices = currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0;
+                        const cardMods = (currentReport.cashModifications || []).filter(m => m.method === "card").reduce((sum, mod) => sum + mod.amount, 0);
+                        return (totalCardServices + cardMods).toFixed(2);
+                      })()}{" "}
                       <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
                     </span>
+                    {currentReport.cashModifications && currentReport.cashModifications.filter(m => m.method === "card").length > 0 && (
+                      <span className="text-[10px] text-muted-foreground mt-0.5">
+                        По услугам: {(currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0).toFixed(2)} BYN
+                      </span>
+                    )}
                   </div>
 
                   {/* Безналичные */}
@@ -2109,6 +2133,13 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Виджет сертификатов */}
+            <CertificatesWidget
+              canCreateRecords={shiftStarted}
+              selectedDate={selectedDate}
+              onUseCertificate={handleUseCertificate}
+            />
           </div>
         </div>
       </div>
@@ -2122,6 +2153,7 @@ const HomePage: React.FC = () => {
           clickPosition={clickPosition}
           employeeRoles={employeeRoles}
           preselectedEmployeeId={preselectedEmployeeId}
+          preselectedCertificateId={preselectedCertificateId}
           onSuccess={() => {
             loadActiveDebts();
           }}
@@ -2552,6 +2584,17 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
           type: "debt",
           comment: paymentMethod.comment,
         };
+      } else if (paymentMethod.type === "certificate") {
+        // Проверяем, выбран ли конкретный сертификат (через comment)
+        if (!paymentMethod.comment) {
+          toast.error("Выберите сертификат из списка");
+          setLoading(false);
+          return;
+        }
+        paymentMethod = {
+          type: "certificate",
+          comment: paymentMethod.comment, // Здесь храним ID сертификата
+        };
       }
 
       // Проверка необходимых данных для способа оплаты "organization"
@@ -2582,6 +2625,19 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
       const addedRecord = await carWashService.add(newRecord);
 
       if (addedRecord) {
+        // Если это оплата сертификатом, помечаем его как использованный
+        if (paymentMethod.type === "certificate" && paymentMethod.comment) {
+          const certId = paymentMethod.comment;
+          try {
+            const certSuccess = await certificateService.redeem(certId);
+            if (certSuccess) {
+              dispatch({ type: "REMOVE_CERTIFICATE", payload: certId });
+            }
+          } catch (e) {
+            console.error("Ошибка при погашении сертификата:", e);
+          }
+        }
+
         // Добавляем запись в отчет
         const success = await dailyReportService.addRecord(
           selectedDate,
@@ -2850,6 +2906,42 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                   Сертификат
                 </button>
               </div>
+
+              {/* Выбор сертификата */}
+              {formData.paymentMethod.type === "certificate" && (
+                <div className="mt-2 p-3 bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 rounded-xl">
+                  <label htmlFor="certificateId" className="block text-sm font-medium mb-1 text-purple-800 dark:text-purple-300">
+                    Выберите активный сертификат
+                  </label>
+                  <select
+                    id="certificateId"
+                    value={formData.paymentMethod.comment || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        paymentMethod: {
+                          ...formData.paymentMethod,
+                          comment: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-purple-200 dark:border-purple-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 bg-background"
+                    required={formData.paymentMethod.type === "certificate"}
+                  >
+                    <option value="" disabled>-- Выберите сертификат --</option>
+                    {(state.certificates || []).map((cert) => (
+                      <option key={cert.id} value={cert.id}>
+                        {cert.service} ({cert.amount} BYN) - {format(parseISO(cert.date), "dd.MM.yy")}
+                      </option>
+                    ))}
+                  </select>
+                  {(!state.certificates || state.certificates.length === 0) && (
+                    <p className="text-xs text-red-500 mt-2 font-medium">
+                      Нет активных сертификатов. Сначала продайте сертификат.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Комментарий для долга */}
               {formData.paymentMethod.type === "debt" && (

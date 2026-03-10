@@ -60,7 +60,20 @@ export interface DailyReport {
     amount: number; // Отрицательное значение для изъятия, положительное для внесения
     reason: string; // Комментарий (причина изменения)
     createdAt: string; // Время создания
-  }[]; // Изменения суммы наличных (изъятия/внесения)
+    method?: "cash" | "card"; // Тип оплаты (наличные или карта). По умолчанию "cash" для старых записей
+  }[]; // Изменения суммы наличных/безнала (изъятия/внесения)
+}
+
+// Тип для проданного сертификата
+export interface Certificate {
+  id: string;
+  date: string; // Дата продажи
+  amount: number; // Стоимость
+  service: string; // Название услуги (или комментарий)
+  paymentMethod: "cash" | "card"; // Способ оплаты
+  status: "active" | "redeemed"; // Статус сертификата
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Тип для записи на мойку (предварительная запись)
@@ -103,6 +116,7 @@ export interface AppState {
   services: Service[];
   dailyReports: Record<string, DailyReport>; // Ключ - дата в формате YYYY-MM-DD
   appointments: Appointment[]; // Добавляем записи на мойку
+  certificates?: Certificate[]; // Добавляем проданные сертификаты
   currentDate: string; // Текущая выбранная дата в формате YYYY-MM-DD
   theme: ThemeMode; // Текущая тема приложения
   salaryCalculationMethod: SalaryCalculationMethod; // Метод расчета зарплаты
@@ -136,6 +150,10 @@ export type AppAction =
   | { type: "ADD_APPOINTMENT"; payload: Appointment }
   | { type: "UPDATE_APPOINTMENT"; payload: Appointment }
   | { type: "REMOVE_APPOINTMENT"; payload: string } // payload - id записи
+  | { type: "SET_CERTIFICATES"; payload: Certificate[] }
+  | { type: "ADD_CERTIFICATE"; payload: Certificate }
+  | { type: "UPDATE_CERTIFICATE"; payload: Certificate }
+  | { type: "REMOVE_CERTIFICATE"; payload: string } // payload - id сертификата
   | {
       type: "SET_SALARY_CALCULATION_METHOD";
       payload: { method: SalaryCalculationMethod; date: string };

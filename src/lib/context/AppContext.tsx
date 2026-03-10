@@ -233,6 +233,22 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         isRealtimeEnabled: action.payload,
       };
+    case "SET_CERTIFICATES":
+      return { ...state, certificates: action.payload };
+    case "ADD_CERTIFICATE":
+      return { ...state, certificates: [...(state.certificates || []), action.payload] };
+    case "UPDATE_CERTIFICATE":
+      return {
+        ...state,
+        certificates: (state.certificates || []).map((c) =>
+          c.id === action.payload.id ? action.payload : c,
+        ),
+      };
+    case "REMOVE_CERTIFICATE":
+      return {
+        ...state,
+        certificates: (state.certificates || []).filter((c) => c.id !== action.payload),
+      };
     default:
       return state;
   }
@@ -246,6 +262,7 @@ const applyThemeToDocument = (theme: ThemeMode) => {
 };
 
 import { useRealtimeSync } from "@/lib/hooks/useRealtimeSync";
+import { certificateService } from "@/lib/services/supabaseService";
 
 // Вспомогательный компонент для включения хуков после создания провайдера
 function RealtimeSyncWrapper() {
@@ -381,6 +398,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         console.log(
           "Услуги загружены при запуске приложения:",
           services.length,
+        );
+
+        // Загружаем сертификаты
+        const certificates = await certificateService.getAllActive();
+        dispatch({ type: "SET_CERTIFICATES", payload: certificates });
+        console.log(
+          "Сертификаты загружены при запуске приложения:",
+          certificates.length,
         );
 
         // Загружаем записи на мойку только за текущий месяц

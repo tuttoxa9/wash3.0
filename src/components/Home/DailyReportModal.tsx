@@ -931,10 +931,12 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   </div>
                   <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words flex flex-col items-center">
                     {(() => {
-                      const actualCash = currentReport.totalCash + (currentReport.cashModifications || []).reduce((sum, mod) => sum + mod.amount, 0);
+                      const actualCash = currentReport.totalCash + (currentReport.cashModifications || [])
+                        .filter(m => !m.method || m.method === "cash")
+                        .reduce((sum, mod) => sum + mod.amount, 0);
                       return actualCash.toFixed(2);
                     })()} BYN
-                    {currentReport.cashModifications && currentReport.cashModifications.length > 0 && (
+                    {currentReport.cashModifications && currentReport.cashModifications.filter(m => !m.method || m.method === "cash").length > 0 && (
                        <span className="text-[9px] font-normal text-muted-foreground mt-0.5">по услугам {currentReport.totalCash.toFixed(2)}</span>
                     )}
                   </div>
@@ -955,16 +957,15 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">
                     Карта
                   </div>
-                  <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words">
-                    {(
-                      currentReport.records?.reduce(
-                        (sum, rec) =>
-                          sum +
-                          (rec.paymentMethod.type === "card" ? rec.price : 0),
-                        0,
-                      ) || 0
-                    ).toFixed(2)}{" "}
-                    BYN
+                  <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words flex flex-col items-center">
+                    {(() => {
+                      const totalCardServices = currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0;
+                      const cardMods = (currentReport.cashModifications || []).filter(m => m.method === "card").reduce((sum, mod) => sum + mod.amount, 0);
+                      return (totalCardServices + cardMods).toFixed(2);
+                    })()} BYN
+                    {currentReport.cashModifications && currentReport.cashModifications.filter(m => m.method === "card").length > 0 && (
+                       <span className="text-[9px] font-normal text-muted-foreground mt-0.5">по услугам {(currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0).toFixed(2)}</span>
+                    )}
                   </div>
                 </div>
                 <div
