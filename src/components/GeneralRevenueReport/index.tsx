@@ -73,6 +73,7 @@ const GeneralRevenueReport: React.FC = () => {
     totalCard: number;
     totalOrganizations: number;
     totalDebt: number;
+    totalCertificate: number;
     totalRevenue: number;
     totalSalaries: number;
     organizationBreakdown: { name: string; amount: number }[];
@@ -82,6 +83,7 @@ const GeneralRevenueReport: React.FC = () => {
       card: number;
       organizations: number;
       debt: number;
+      certificate: number;
       total: number;
       recordsCount: number;
     }[];
@@ -127,6 +129,7 @@ const GeneralRevenueReport: React.FC = () => {
       let totalCard = 0;
       let totalOrganizations = 0;
       let totalDebt = 0;
+      let totalCertificate = 0;
       const organizationBreakdown: Record<string, number> = {};
       const dailyBreakdown: Record<
         string,
@@ -135,6 +138,7 @@ const GeneralRevenueReport: React.FC = () => {
           card: number;
           organizations: number;
           debt: number;
+          certificate: number;
           recordsCount: number;
         }
       > = {};
@@ -157,6 +161,7 @@ const GeneralRevenueReport: React.FC = () => {
             card: 0,
             organizations: 0,
             debt: 0,
+            certificate: 0,
             recordsCount: 0,
           };
         }
@@ -183,11 +188,14 @@ const GeneralRevenueReport: React.FC = () => {
         } else if (record.paymentMethod.type === "debt") {
           totalDebt += record.price;
           dailyBreakdown[recordDate].debt += record.price;
+        } else if (record.paymentMethod.type === "certificate") {
+          totalCertificate += record.price;
+          dailyBreakdown[recordDate].certificate += record.price;
         }
       });
 
       const totalRevenue =
-        totalCash + totalCard + totalOrganizations + totalDebt;
+        totalCash + totalCard + totalOrganizations + totalDebt + totalCertificate;
 
       const dailyData = dateRange.map((date) => {
         const dayData = dailyBreakdown[date] || {
@@ -195,16 +203,18 @@ const GeneralRevenueReport: React.FC = () => {
           card: 0,
           organizations: 0,
           debt: 0,
+          certificate: 0,
           recordsCount: 0,
         };
         const total =
-          dayData.cash + dayData.card + dayData.organizations + dayData.debt;
+          dayData.cash + dayData.card + dayData.organizations + dayData.debt + dayData.certificate;
         return {
           date: format(parseISO(date), "dd.MM"),
           cash: dayData.cash,
           card: dayData.card,
           organizations: dayData.organizations,
           debt: dayData.debt,
+          certificate: dayData.certificate,
           total,
           recordsCount: dayData.recordsCount,
         };
@@ -303,6 +313,7 @@ const GeneralRevenueReport: React.FC = () => {
         totalCard,
         totalOrganizations,
         totalDebt,
+        totalCertificate,
         totalRevenue,
         totalSalaries,
         organizationBreakdown: Object.entries(organizationBreakdown).map(
@@ -406,6 +417,23 @@ const GeneralRevenueReport: React.FC = () => {
             }),
           ],
         }),
+        ...(generalReportData.totalCertificate > 0
+          ? [
+              new TableRow({
+                children: [
+                  new TableCell({ children: [new Paragraph({ text: "Сертификат" })] }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        text: generalReportData.totalCertificate.toFixed(2),
+                        alignment: AlignmentType.RIGHT,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ]
+          : []),
         new TableRow({
           children: [
             new TableCell({
@@ -937,6 +965,33 @@ const GeneralRevenueReport: React.FC = () => {
                   % доли
                 </div>
               </motion.div>
+
+              {generalReportData.totalCertificate > 0 && (
+                <motion.div
+                  variants={fadeInUp}
+                  className="bg-card border border-border/60 hover:border-yellow-500/30 transition-colors rounded-2xl p-5 shadow-sm"
+                >
+                  <div className="flex items-center gap-2 text-yellow-500 mb-3">
+                    <Receipt className="w-5 h-5" />{" "}
+                    <span className="font-medium text-sm">Сертификат</span>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {generalReportData.totalCertificate.toFixed(0)}{" "}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      BYN
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {(
+                      (generalReportData.totalCertificate /
+                        generalReportData.totalRevenue) *
+                      100
+                    ).toFixed(1)}
+                    % доли
+                  </div>
+                </motion.div>
+              )}
+
               <motion.div
                 variants={fadeInUp}
                 className="bg-card border border-border/60 hover:border-green-500/30 transition-colors rounded-2xl p-5 shadow-sm"

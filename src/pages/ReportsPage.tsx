@@ -284,8 +284,9 @@ const ReportsPage: React.FC = () => {
             totalNonCash: 0,
             totalOrganizations: 0,
             totalDebt: 0,
+            totalCertificate: 0,
             recordsCount: 0,
-          });
+          } as any);
         }
       } else {
         // All employees involved in the records - только те, которые есть в списке сотрудников
@@ -299,8 +300,9 @@ const ReportsPage: React.FC = () => {
               totalNonCash: 0,
               totalOrganizations: 0,
               totalDebt: 0,
+              totalCertificate: 0,
               recordsCount: 0,
-            });
+            } as any);
           }
         });
 
@@ -317,8 +319,9 @@ const ReportsPage: React.FC = () => {
                   totalNonCash: 0,
                   totalOrganizations: 0,
                   totalDebt: 0,
+                  totalCertificate: 0,
                   recordsCount: 0,
-                });
+                } as any);
               }
             }
           });
@@ -348,6 +351,8 @@ const ReportsPage: React.FC = () => {
               empData.totalOrganizations += valuePerEmployee;
             } else if (record.paymentMethod.type === "debt") {
               empData.totalDebt += valuePerEmployee;
+            } else if (record.paymentMethod.type === "certificate") {
+              (empData as any).totalCertificate = ((empData as any).totalCertificate || 0) + valuePerEmployee;
             }
             empData.recordsCount++;
           }
@@ -359,28 +364,33 @@ const ReportsPage: React.FC = () => {
       let totalNonCashAll = 0;
       let totalOrganizationsAll = 0;
       let totalDebtAll = 0;
+      let totalCertificateAll = 0;
 
       for (const [_, employee] of employeeMap.entries()) {
+        const certAmount = (employee as any).totalCertificate || 0;
         const totalVolume =
           employee.totalCash +
           employee.totalNonCash +
           employee.totalOrganizations +
-          employee.totalDebt;
+          employee.totalDebt +
+          certAmount;
         totalCashAll += employee.totalCash;
         totalNonCashAll += employee.totalNonCash;
         totalOrganizationsAll += employee.totalOrganizations;
         totalDebtAll += employee.totalDebt;
+        totalCertificateAll += certAmount;
 
         results.push({
           employeeId: employee.id,
           employeeName: employee.name,
           totalServiceValue: totalVolume,
           calculatedEarnings: 0, // will calculate below
-          totalCash: employee.totalCash,
-          totalNonCash: employee.totalNonCash,
-          totalOrganizations: employee.totalOrganizations,
-          totalDebt: employee.totalDebt,
-          recordsCount: employee.recordsCount,
+          totalCash: employee.totalCash || 0,
+          totalNonCash: employee.totalNonCash || 0,
+          totalOrganizations: employee.totalOrganizations || 0,
+          totalDebt: employee.totalDebt || 0,
+          totalCertificate: (employee as any).totalCertificate || 0,
+          recordsCount: employee.recordsCount || 0,
         });
       }
 
@@ -987,12 +997,13 @@ const ReportsPage: React.FC = () => {
                       ))}
                     </>
                   ) : earningsReport.map((report) => {
+                    const certSum = report.totalCertificate || 0;
                     const totalRevenueEmp =
                       report.totalCash +
                       report.totalNonCash +
                       report.totalOrganizations +
                       report.totalDebt +
-                      report.totalCertificate;
+                      certSum;
 
                     // Рассчитываем зарплату сотрудника с учетом роли
                     const reportDate = startDate.toISOString().split("T")[0];
@@ -1057,7 +1068,7 @@ const ReportsPage: React.FC = () => {
                           {report.totalDebt.toFixed(2)}
                         </td>
                         <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm text-yellow-600">
-                          {report.totalCertificate.toFixed(2)}
+                          {(report.totalCertificate || 0).toFixed(2)}
                         </td>
                         <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
                           {totalRevenueEmp.toFixed(2)}

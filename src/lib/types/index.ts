@@ -24,7 +24,7 @@ export interface Service {
 
 // Тип для способа оплаты
 export interface PaymentMethod {
-  type: "cash" | "card" | "organization" | "debt";
+  type: "cash" | "card" | "organization" | "debt" | "certificate";
   organizationId?: string; // ID организации (если type === 'organization')
   organizationName?: string; // Имя организации (для удобства отображения)
   comment?: string; // Комментарий (например, кто должен денег)

@@ -457,6 +457,7 @@ export function generateDailyReportDocx(
   let totalCard = 0;
   let totalOrganizations = 0;
   let totalDebt = 0;
+  let totalCertificate = 0;
   if (report.records) {
     report.records.forEach((record) => {
       if (record.paymentMethod.type === "cash") {
@@ -467,10 +468,12 @@ export function generateDailyReportDocx(
         totalOrganizations += record.price;
       } else if (record.paymentMethod.type === "debt") {
         totalDebt += record.price;
+      } else if (record.paymentMethod.type === "certificate") {
+        totalCertificate += record.price;
       }
     });
   }
-  const totalRevenue = totalCash + totalCard + totalOrganizations + totalDebt;
+  const totalRevenue = totalCash + totalCard + totalOrganizations + totalDebt + totalCertificate;
   const totalSalary = salaryResults.reduce(
     (sum, result) => sum + result.calculatedSalary,
     0,
@@ -521,6 +524,25 @@ export function generateDailyReportDocx(
 
       new Table({
         rows: [
+          ...(totalCertificate > 0
+            ? [
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ text: "Сертификат" })],
+                    }),
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          text: totalCertificate.toFixed(2),
+                          alignment: AlignmentType.RIGHT,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ]
+            : []),
           new TableRow({
             children: [
               new TableCell({
