@@ -74,6 +74,7 @@ export function generateDailyReportCsv(
     if (record.paymentMethod.type === "card") paymentStr = "Карта";
     else if (record.paymentMethod.type === "organization") paymentStr = escapeCsv(getOrgName(record.paymentMethod.organizationId));
     else if (record.paymentMethod.type === "debt") paymentStr = escapeCsv(`Долг ${record.paymentMethod.comment || ""}`.trim());
+    else if (record.paymentMethod.type === "certificate") paymentStr = "Сертификат";
 
     const emps = escapeCsv(record.employeeIds
       .map((id) => employees.find((e) => e.id === id)?.name || "Неизвестный")
@@ -93,6 +94,14 @@ export function generateDailyReportCsv(
   );
   if (totalDebt > 0) {
     csvContent += `Всего Долги:;${totalDebt.toFixed(2)}\n`;
+  }
+
+  const totalCertificate = report.records.reduce(
+    (sum, r) => sum + (r.paymentMethod.type === "certificate" ? r.price : 0),
+    0
+  );
+  if (totalCertificate > 0) {
+    csvContent += `Всего Сертификаты:;${totalCertificate.toFixed(2)}\n`;
   }
 
   const totalRevenue = report.records.reduce((sum, r) => sum + r.price, 0);
@@ -457,6 +466,7 @@ export function generateDailyReportDocx(
   let totalCard = 0;
   let totalOrganizations = 0;
   let totalDebt = 0;
+  let totalCertificate = 0;
   if (report.records) {
     report.records.forEach((record) => {
       if (record.paymentMethod.type === "cash") {
@@ -467,10 +477,12 @@ export function generateDailyReportDocx(
         totalOrganizations += record.price;
       } else if (record.paymentMethod.type === "debt") {
         totalDebt += record.price;
+      } else if (record.paymentMethod.type === "certificate") {
+        totalCertificate += record.price;
       }
     });
   }
-  const totalRevenue = totalCash + totalCard + totalOrganizations + totalDebt;
+  const totalRevenue = totalCash + totalCard + totalOrganizations + totalDebt + totalCertificate;
   const totalSalary = salaryResults.reduce(
     (sum, result) => sum + result.calculatedSalary,
     0,
@@ -521,6 +533,23 @@ export function generateDailyReportDocx(
 
       new Table({
         rows: [
+          ...(totalCertificate > 0 ? [
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: [new Paragraph({ text: "Сертификат" })],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      text: totalCertificate.toFixed(2),
+                      alignment: AlignmentType.RIGHT,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ] : []),
           new TableRow({
             children: [
               new TableCell({
@@ -772,6 +801,7 @@ export function generateDailyReportDocx(
     let empCard = 0;
     let empOrganizations = 0;
     let empDebt = 0;
+    let empCertificate = 0;
 
     employeeRecords.forEach((record) => {
       const share = record.price / record.employeeIds.length;
@@ -783,10 +813,12 @@ export function generateDailyReportDocx(
         empOrganizations += share;
       } else if (record.paymentMethod.type === "debt") {
         empDebt += share;
+      } else if (record.paymentMethod.type === "certificate") {
+        empCertificate += share;
       }
     });
 
-    const empTotal = empCash + empCard + empOrganizations + empDebt;
+    const empTotal = empCash + empCard + empOrganizations + empDebt + empCertificate;
     const empSalary =
       salaryResults.find((r) => r.employeeId === employee.id)
         ?.calculatedSalary || 0;
@@ -862,6 +894,8 @@ export function generateDailyReportDocx(
             record.paymentMethod.organizationName || "Организация";
         } else if (record.paymentMethod.type === "debt") {
           paymentMethod = "Долг";
+        } else if (record.paymentMethod.type === "certificate") {
+          paymentMethod = "Сертификат";
         }
 
         const share = record.price / record.employeeIds.length;
@@ -997,6 +1031,23 @@ export function generateDailyReportDocx(
 
         new Table({
           rows: [
+            ...(empCertificate > 0 ? [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [new Paragraph({ text: "Сертификат" })],
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        text: empCertificate.toFixed(2),
+                        alignment: AlignmentType.RIGHT,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ] : []),
             new TableRow({
               children: [
                 new TableCell({

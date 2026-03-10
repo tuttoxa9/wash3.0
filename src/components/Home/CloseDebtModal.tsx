@@ -70,7 +70,7 @@ const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
           <label className="block text-sm font-medium text-foreground mb-3">
             Способ оплаты долга
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <label
               className={`flex flex-col items-center justify-center p-4 border rounded-xl cursor-pointer transition-all ${
                 paymentType === "cash"
@@ -124,6 +124,24 @@ const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
               />
               <span className="text-2xl mb-2">🏢</span>
               <span className="text-sm font-medium">Организация</span>
+            </label>
+            <label
+              className={`col-span-2 sm:col-span-1 flex flex-col items-center justify-center p-4 border rounded-xl cursor-pointer transition-all ${
+                paymentType === "certificate"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-input bg-card hover:bg-accent hover:text-accent-foreground"
+              }`}
+            >
+              <input
+                type="radio"
+                name="payment_type"
+                value="certificate"
+                className="sr-only"
+                checked={paymentType === "certificate"}
+                onChange={() => setPaymentType("certificate")}
+              />
+              <span className="text-2xl mb-2">🎫</span>
+              <span className="text-sm font-medium">Сертификат</span>
             </label>
           </div>
         </div>

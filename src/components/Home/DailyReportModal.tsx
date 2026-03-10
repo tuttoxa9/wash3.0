@@ -17,9 +17,9 @@ interface DailyReportModalProps {
   selectedDate: string;
   onExport: () => void;
   isExporting: boolean;
-  paymentFilter: "all" | "cash" | "card" | "organization" | "debt";
+  paymentFilter: "all" | "cash" | "card" | "organization" | "debt" | "certificate";
   onPaymentFilterChange: (
-    filter: "all" | "cash" | "card" | "organization" | "debt",
+    filter: "all" | "cash" | "card" | "organization" | "debt" | "certificate",
   ) => void;
 }
 
@@ -92,7 +92,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
 
   // Обработчик изменения способа оплаты при редактировании
   const handleEditPaymentTypeChange = (
-    type: "cash" | "card" | "organization" | "debt",
+    type: "cash" | "card" | "organization" | "debt" | "certificate",
   ) => {
     setEditFormData((prev) => {
       if (!prev) return prev;
@@ -363,6 +363,12 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
               className={paymentFilter === "debt" ? "active" : ""}
             >
               Долги
+            </button>
+            <button
+              onClick={() => onPaymentFilterChange("certificate")}
+              className={paymentFilter === "certificate" ? "active" : ""}
+            >
+              Сертификаты
             </button>
           </div>
 
@@ -1017,6 +1023,33 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                     })()} BYN
                   </div>
                 </div>
+                {/* Сертификаты */}
+                {(() => {
+                  const totalCertificate = currentReport.records?.reduce((sum, record) => sum + (record.paymentMethod.type === "certificate" ? record.price : 0), 0) || 0;
+                  if (totalCertificate <= 0) return null;
+                  return (
+                    <div
+                      className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors ${
+                        paymentFilter === "certificate"
+                          ? "bg-primary/10 border border-primary"
+                          : "bg-muted/30 hover:bg-muted/50"
+                      }`}
+                      onClick={() =>
+                        onPaymentFilterChange(
+                          paymentFilter === "certificate" ? "all" : "certificate",
+                        )
+                      }
+                      title="Нажмите для фильтрации по сертификатам"
+                    >
+                      <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">
+                        Сертификаты
+                      </div>
+                      <div className="text-xs sm:text-sm md:text-base font-bold text-purple-500 leading-tight break-words">
+                        {totalCertificate.toFixed(2)} BYN
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div
                   className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors col-span-2 lg:col-span-1 ${
                     paymentFilter === "all"
