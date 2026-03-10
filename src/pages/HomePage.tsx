@@ -136,7 +136,7 @@ const HomePage: React.FC = () => {
 
   // Добавляем состояние для фильтрации по методу оплаты
   const [paymentFilter, setPaymentFilter] = useState<
-    "all" | "cash" | "card" | "organization" | "debt"
+    "all" | "cash" | "card" | "organization" | "debt" | "certificate"
   >("all");
 
   // Состояние для долгов
@@ -183,6 +183,7 @@ const HomePage: React.FC = () => {
   ): string => {
     if (type === "cash") return "Наличные";
     if (type === "card") return "Карта";
+    if (type === "certificate") return "Сертификат";
     if (type === "organization" && organizationId)
       return getOrganizationName(organizationId);
     return "Неизвестный";
@@ -646,7 +647,7 @@ const HomePage: React.FC = () => {
 
   // Обработчик изменения способа оплаты при редактировании
   const handleEditPaymentTypeChange = (
-    type: "cash" | "card" | "organization",
+    type: "cash" | "card" | "organization" | "debt" | "certificate",
   ) => {
     setEditFormData((prev) => {
       if (!prev) return prev;
@@ -1735,6 +1736,49 @@ const HomePage: React.FC = () => {
                     );
                   })}
                 </div>
+
+                  {/* Сертификаты (только если есть) */}
+                  {(() => {
+                    const totalCertificate =
+                      currentReport.records?.reduce(
+                        (sum, rec) =>
+                          sum +
+                          (rec.paymentMethod.type === "certificate" ? rec.price : 0),
+                        0,
+                      ) || 0;
+
+                    if (totalCertificate <= 0) return null;
+
+                    return (
+                      <div
+                        className={`flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
+                          paymentFilter === "certificate"
+                            ? "bg-purple-500/10 border-purple-500/30"
+                            : "bg-muted/20 border-border/50 hover:bg-accent/30"
+                        } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
+                        onClick={() => {
+                          if (!shiftStarted) {
+                            toast.info("Сначала выберите работников и начните смену");
+                            return;
+                          }
+                          setPaymentFilter("certificate");
+                          openDailyReportModal();
+                        }}
+                        title={
+                          shiftStarted
+                            ? "Нажмите для просмотра ведомости по сертификатам"
+                            : "Сначала выберите работников и начните смену"
+                        }
+                      >
+                        <span className="text-sm text-muted-foreground font-medium mb-1.5 truncate">
+                          Сертификат
+                        </span>
+                        <span className="font-bold text-lg text-purple-500">
+                          {totalCertificate.toFixed(2)} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                        </span>
+                      </div>
+                    );
+                  })()}
 
                 {/* Всего */}
                 <div
@@ -3246,6 +3290,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   ): string => {
     if (type === "cash") return "Наличные";
     if (type === "card") return "Карта";
+    if (type === "certificate") return "Сертификат";
     if (type === "organization" && organizationId)
       return getOrganizationName(organizationId);
     return "Неизвестный";
@@ -3422,9 +3467,9 @@ interface DailyReportModalProps {
   onExport: () => void;
   onExportCsv: () => void;
   isExporting: boolean;
-  paymentFilter: "all" | "cash" | "card" | "organization" | "debt";
+  paymentFilter: "all" | "cash" | "card" | "organization" | "debt" | "certificate";
   onPaymentFilterChange: (
-    filter: "all" | "cash" | "card" | "organization" | "debt",
+    filter: "all" | "cash" | "card" | "organization" | "debt" | "certificate",
   ) => void;
 }
 
@@ -3458,6 +3503,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
   ): string => {
     if (type === "cash") return "Наличные";
     if (type === "card") return "Карта";
+    if (type === "certificate") return "Сертификат";
     if (type === "organization" && organizationId)
       return getOrganizationName(organizationId);
     return "Неизвестный";
@@ -3498,7 +3544,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
 
   // Обработчик изменения способа оплаты при редактировании
   const handleEditPaymentTypeChange = (
-    type: "cash" | "card" | "organization" | "debt",
+    type: "cash" | "card" | "organization" | "debt" | "certificate",
   ) => {
     setEditFormData((prev) => {
       if (!prev) return prev;
@@ -3967,6 +4013,19 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                                   }`}
                                 >
                                   Долг
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleEditPaymentTypeChange("certificate")
+                                  }
+                                  className={`px-2 py-1 text-xs rounded ${
+                                    editFormData.paymentMethod?.type === "certificate"
+                                      ? "bg-primary text-white"
+                                      : "bg-secondary"
+                                  }`}
+                                >
+                                  Серт
                                 </button>
                               </div>
                               {editFormData.paymentMethod?.type === "debt" && (
