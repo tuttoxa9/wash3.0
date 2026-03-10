@@ -83,9 +83,25 @@ export function generateDailyReportCsv(
     csvContent += `${time};${car};${service};${type};${price};${paymentStr};${emps}\n`;
   });
 
+  // Движение наличных
+  const modifications = report.cashModifications || [];
+  if (modifications.length > 0) {
+    csvContent += "\nДвижение наличных:\nВремя;Сумма;Комментарий\n";
+    modifications.forEach((mod) => {
+      const timeStr = format(new Date(mod.createdAt), "HH:mm");
+      csvContent += `${timeStr};${mod.amount.toFixed(2)};${escapeCsv(mod.reason)}\n`;
+    });
+  }
+
   // Итоги
   csvContent += "\nИтоги:\n";
-  csvContent += `Всего Наличные:;${report.totalCash.toFixed(2)}\n`;
+  const actualCash = report.totalCash + modifications.reduce((sum, mod) => sum + mod.amount, 0);
+  csvContent += `Наличные по услугам:;${report.totalCash.toFixed(2)}\n`;
+  if (modifications.length > 0) {
+    csvContent += `Наличные в кассе (факт):;${actualCash.toFixed(2)}\n`;
+  } else {
+    csvContent += `Всего Наличные:;${report.totalCash.toFixed(2)}\n`;
+  }
   csvContent += `Всего Безнал (Карта+Орг):;${report.totalNonCash.toFixed(2)}\n`;
 
   const totalDebt = report.records.reduce(
@@ -467,6 +483,10 @@ export function generateDailyReportDocx(
   let totalOrganizations = 0;
   let totalDebt = 0;
   let totalCertificate = 0;
+
+  const modifications = report.cashModifications || [];
+  const totalModifications = modifications.reduce((sum, mod) => sum + mod.amount, 0);
+
   if (report.records) {
     report.records.forEach((record) => {
       if (record.paymentMethod.type === "cash") {
@@ -576,7 +596,7 @@ export function generateDailyReportDocx(
           new TableRow({
             children: [
               new TableCell({
-                children: [new Paragraph({ text: "Наличные" })],
+                children: [new Paragraph({ text: "Наличные (по услугам)" })],
               }),
               new TableCell({
                 children: [
@@ -588,6 +608,23 @@ export function generateDailyReportDocx(
               }),
             ],
           }),
+          ...(modifications.length > 0 ? [
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: [new Paragraph({ text: "Наличные (в кассе фактические)" })],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      text: (totalCash + totalModifications).toFixed(2),
+                      alignment: AlignmentType.RIGHT,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ] : []),
           new TableRow({
             children: [
               new TableCell({ children: [new Paragraph({ text: "Карта" })] }),
@@ -773,6 +810,42 @@ export function generateDailyReportDocx(
           },
         },
       }),
+
+      ...(modifications.length > 0 ? [
+        new Paragraph({
+          text: "ДВИЖЕНИЕ НАЛИЧНЫХ",
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 200, after: 100 },
+        }),
+        new Table({
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({ children: [new Paragraph({ text: "Время", alignment: AlignmentType.CENTER })], width: { size: 1500, type: "dxa" } }),
+                new TableCell({ children: [new Paragraph({ text: "Комментарий", alignment: AlignmentType.CENTER })], width: { size: 3000, type: "dxa" } }),
+                new TableCell({ children: [new Paragraph({ text: "Сумма (BYN)", alignment: AlignmentType.CENTER })], width: { size: 1500, type: "dxa" } }),
+              ],
+              tableHeader: true,
+            }),
+            ...modifications.map(mod => new TableRow({
+              children: [
+                new TableCell({ children: [new Paragraph({ text: format(new Date(mod.createdAt), "HH:mm"), alignment: AlignmentType.CENTER })] }),
+                new TableCell({ children: [new Paragraph({ text: mod.reason })] }),
+                new TableCell({ children: [new Paragraph({ text: `${mod.amount > 0 ? '+' : ''}${mod.amount.toFixed(2)}`, alignment: AlignmentType.RIGHT })] }),
+              ],
+            }))
+          ],
+          width: { size: 6000, type: "dxa" },
+          borders: {
+            top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+            bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+            left: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+            right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+            insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+            insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
+          },
+        }),
+      ] : []),
 
       // Место для подписи
       new Paragraph({

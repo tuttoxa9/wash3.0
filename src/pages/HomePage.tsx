@@ -51,6 +51,7 @@ import AppointmentsWidget from "@/components/Home/AppointmentsWidget";
 import CloseDebtModal from "@/components/Home/CloseDebtModal";
 import DailyReportModal from "@/components/Home/DailyReportModal";
 import EmployeeDetailModal from "@/components/Home/EmployeeDetailModal";
+import CashModificationsModal from "@/components/Home/CashModificationsModal";
 import { PreShiftScreen } from "@/components/Home/PreShiftScreen";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -151,6 +152,7 @@ const HomePage: React.FC = () => {
 
   // Состояния для закрытия долга
   const [isCloseDebtModalOpen, setIsCloseDebtModalOpen] = useState(false);
+  const [isCashModificationsModalOpen, setIsCashModificationsModalOpen] = useState(false);
   const [debtToClose, setDebtToClose] = useState<{
     reportId: string;
     recordId: string;
@@ -1581,32 +1583,50 @@ const HomePage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3 mb-5 flex-1">
                   {/* Наличные */}
                   <div
-                    className={`flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
-                      paymentFilter === "cash"
-                        ? "bg-primary/5 border-primary/30"
-                        : "bg-muted/20 border-border/50 hover:bg-accent/30"
-                    } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
-                    onClick={() => {
+                    className={`relative flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border bg-muted/20 border-border/50 hover:bg-accent/30 ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
+                    onClick={(e) => {
                       if (!shiftStarted) {
                         toast.info("Сначала выберите работников и начните смену");
                         return;
                       }
-                      setPaymentFilter("cash");
-                      openDailyReportModal();
+                      // Не открываем DailyReportModal, а открываем модалку с движением наличных
+                      setIsCashModificationsModalOpen(true);
                     }}
                     title={
                       shiftStarted
-                        ? "Нажмите для просмотра ведомости по наличным"
+                        ? "Нажмите для редактирования наличных (изъятия/внесения)"
                         : "Сначала выберите работников и начните смену"
                     }
                   >
+                    {currentReport.cashModifications && currentReport.cashModifications.length > 0 && (
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-[10px] font-bold text-amber-600">
+                          {currentReport.cashModifications.length}
+                        </span>
+                      </div>
+                    )}
                     <span className="text-sm text-muted-foreground font-medium mb-1.5">
                       Наличные
                     </span>
                     <span className="font-bold text-lg text-foreground">
-                      {currentReport.totalCash.toFixed(2)}{" "}
-                      <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                      {(() => {
+                        const actualCash =
+                          currentReport.totalCash +
+                          (currentReport.cashModifications || []).reduce(
+                            (sum, mod) => sum + mod.amount,
+                            0,
+                          );
+                        return actualCash.toFixed(2);
+                      })()}{" "}
+                      <span className="text-sm font-semibold opacity-80 text-muted-foreground">
+                        BYN
+                      </span>
                     </span>
+                    {currentReport.cashModifications && currentReport.cashModifications.length > 0 && (
+                      <span className="text-[10px] text-muted-foreground mt-0.5">
+                        По услугам: {currentReport.totalCash.toFixed(2)} BYN
+                      </span>
+                    )}
                   </div>
 
                   {/* Карта */}
@@ -2118,6 +2138,14 @@ const HomePage: React.FC = () => {
           currentReport={currentReport}
           employees={state.employees}
           organizations={state.organizations}
+        />
+      )}
+
+      {isCashModificationsModalOpen && shiftStarted && currentReport && (
+        <CashModificationsModal
+          onClose={() => setIsCashModificationsModalOpen(false)}
+          currentReport={currentReport}
+          selectedDate={selectedDate}
         />
       )}
 

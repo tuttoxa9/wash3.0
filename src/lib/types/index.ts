@@ -55,6 +55,12 @@ export interface DailyReport {
   dailyEmployeeRoles?: Record<string, EmployeeRole>; // Ежедневные роли сотрудников (employeeId -> role)
   manualSalaries?: Record<string, number>; // Ручные изменения зарплат (employeeId -> amount)
   notes?: { id: string; text: string; createdAt: string }[]; // Заметки по смене
+  cashModifications?: {
+    id: string;
+    amount: number; // Отрицательное значение для изъятия, положительное для внесения
+    reason: string; // Комментарий (причина изменения)
+    createdAt: string; // Время создания
+  }[]; // Изменения суммы наличных (изъятия/внесения)
 }
 
 // Тип для записи на мойку (предварительная запись)
