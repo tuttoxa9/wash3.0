@@ -646,7 +646,7 @@ const HomePage: React.FC = () => {
 
   // Обработчик изменения способа оплаты при редактировании
   const handleEditPaymentTypeChange = (
-    type: "cash" | "card" | "organization",
+    type: "cash" | "card" | "organization" | "certificate",
   ) => {
     setEditFormData((prev) => {
       if (!prev) return prev;
@@ -2380,7 +2380,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
 
   // Обработка изменения способа оплаты
   const handlePaymentTypeChange = (
-    type: "cash" | "card" | "organization" | "debt",
+    type: "cash" | "card" | "organization" | "debt" | "certificate",
   ) => {
     setFormData({
       ...formData,
@@ -2760,6 +2760,15 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                   }
                 >
                   Долг
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePaymentTypeChange("certificate")}
+                  className={
+                    formData.paymentMethod.type === "certificate" ? "active" : ""
+                  }
+                >
+                  Сертификат
                 </button>
               </div>
 
@@ -3498,7 +3507,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
 
   // Обработчик изменения способа оплаты при редактировании
   const handleEditPaymentTypeChange = (
-    type: "cash" | "card" | "organization" | "debt",
+    type: "cash" | "card" | "organization" | "debt" | "certificate",
   ) => {
     setEditFormData((prev) => {
       if (!prev) return prev;
@@ -3967,6 +3976,19 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                                   }`}
                                 >
                                   Долг
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleEditPaymentTypeChange("certificate")
+                                  }
+                                  className={`px-2 py-1 text-xs rounded ${
+                                    editFormData.paymentMethod?.type === "certificate"
+                                      ? "bg-primary text-white"
+                                      : "bg-secondary"
+                                  }`}
+                                >
+                                  Серт.
                                 </button>
                               </div>
                               {editFormData.paymentMethod?.type === "debt" && (

@@ -72,7 +72,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
 
   // Обработка изменения способа оплаты
   const handlePaymentTypeChange = (
-    type: "cash" | "card" | "organization" | "debt",
+    type: "cash" | "card" | "organization" | "debt" | "certificate",
   ) => {
     setFormData({
       ...formData,
@@ -452,6 +452,15 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                   }
                 >
                   Долг
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePaymentTypeChange("certificate")}
+                  className={
+                    formData.paymentMethod.type === "certificate" ? "active" : ""
+                  }
+                >
+                  Сертификат
                 </button>
               </div>
 
