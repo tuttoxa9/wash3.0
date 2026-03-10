@@ -3,6 +3,7 @@ import { supabase, supabaseAdmin } from "@/lib/supabase";
 import type {
   Appointment,
   CarWashRecord,
+  Certificate,
   DailyReport,
   Employee,
   Organization,
@@ -629,6 +630,91 @@ export const appointmentService = {
   },
 };
 
+// certificates
+export const certificateService = {
+  async getAllActive(): Promise<Certificate[]> {
+    const { data, error } = await supabase
+      .from("certificates")
+      .select("*")
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      logSupabaseError("certificates.getAllActive", error);
+      return [];
+    }
+
+    return (data || []).map((r: any) => ({
+      id: String(r.id),
+      date: r.date,
+      amount: r.amount,
+      service: r.service,
+      paymentMethod: r.payment_method,
+      status: r.status,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    }));
+  },
+
+  async add(certificate: Omit<Certificate, "id" | "createdAt" | "updatedAt">): Promise<Certificate | null> {
+    const payload = {
+      date: certificate.date,
+      amount: certificate.amount,
+      service: certificate.service,
+      payment_method: certificate.paymentMethod,
+      status: certificate.status,
+    };
+
+    const { data, error } = await supabase
+      .from("certificates")
+      .insert(payload)
+      .select("*")
+      .single();
+
+    if (error) {
+      logSupabaseError("certificates.add", error);
+      return null;
+    }
+
+    return {
+      id: String(data.id),
+      date: data.date,
+      amount: data.amount,
+      service: data.service,
+      paymentMethod: data.payment_method,
+      status: data.status,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  },
+
+  async redeem(id: string): Promise<boolean> {
+    const { error } = await supabase
+      .from("certificates")
+      .update({ status: "redeemed", updated_at: new Date().toISOString() })
+      .eq("id", id);
+
+    if (error) {
+      logSupabaseError("certificates.redeem", error);
+      return false;
+    }
+    return true;
+  },
+
+  async delete(id: string): Promise<boolean> {
+    const { error } = await supabase
+      .from("certificates")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      logSupabaseError("certificates.delete", error);
+      return false;
+    }
+    return true;
+  },
+};
+
 // settings
 export const settingsService = {
   async saveSalaryCalculationMethod(
@@ -856,6 +942,7 @@ export const databaseService = {
         "organizations",
         "employees",
         "settings",
+        "certificates",
       ];
 
       for (const t of tables) {

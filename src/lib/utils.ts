@@ -83,26 +83,42 @@ export function generateDailyReportCsv(
     csvContent += `${time};${car};${service};${type};${price};${paymentStr};${emps}\n`;
   });
 
-  // Движение наличных
+  // Движение средств
   const modifications = report.cashModifications || [];
+  const cashModifications = modifications.filter(m => !m.method || m.method === "cash");
+  const cardModifications = modifications.filter(m => m.method === "card");
+
   if (modifications.length > 0) {
-    csvContent += "\nДвижение наличных:\nВремя;Сумма;Комментарий\n";
+    csvContent += "\nДвижение средств:\nВремя;Тип;Сумма;Комментарий\n";
     modifications.forEach((mod) => {
       const timeStr = format(new Date(mod.createdAt), "HH:mm");
-      csvContent += `${timeStr};${mod.amount.toFixed(2)};${escapeCsv(mod.reason)}\n`;
+      const methodStr = (!mod.method || mod.method === 'cash') ? 'Нал' : 'Карта';
+      csvContent += `${timeStr};${methodStr};${mod.amount.toFixed(2)};${escapeCsv(mod.reason)}\n`;
     });
   }
 
   // Итоги
   csvContent += "\nИтоги:\n";
-  const actualCash = report.totalCash + modifications.reduce((sum, mod) => sum + mod.amount, 0);
+
+  const totalCashModifications = cashModifications.reduce((sum, mod) => sum + mod.amount, 0);
+  const actualCash = report.totalCash + totalCashModifications;
   csvContent += `Наличные по услугам:;${report.totalCash.toFixed(2)}\n`;
-  if (modifications.length > 0) {
+  if (cashModifications.length > 0) {
     csvContent += `Наличные в кассе (факт):;${actualCash.toFixed(2)}\n`;
   } else {
     csvContent += `Всего Наличные:;${report.totalCash.toFixed(2)}\n`;
   }
-  csvContent += `Всего Безнал (Карта+Орг):;${report.totalNonCash.toFixed(2)}\n`;
+
+  const totalCardServices = report.records.reduce((sum, r) => sum + (r.paymentMethod.type === "card" ? r.price : 0), 0);
+  const actualCard = totalCardServices + cardModifications.reduce((sum, mod) => sum + mod.amount, 0);
+  csvContent += `Карта по услугам:;${totalCardServices.toFixed(2)}\n`;
+  if (cardModifications.length > 0) {
+    csvContent += `Карта (факт):;${actualCard.toFixed(2)}\n`;
+  }
+
+  // Только Орг для безнала
+  const totalOrg = report.records.reduce((sum, r) => sum + (r.paymentMethod.type === "organization" ? r.price : 0), 0);
+  csvContent += `Всего Безнал (Орг):;${totalOrg.toFixed(2)}\n`;
 
   const totalDebt = report.records.reduce(
     (sum, r) => sum + (r.paymentMethod.type === "debt" ? r.price : 0),
@@ -485,7 +501,11 @@ export function generateDailyReportDocx(
   let totalCertificate = 0;
 
   const modifications = report.cashModifications || [];
-  const totalModifications = modifications.reduce((sum, mod) => sum + mod.amount, 0);
+  const cashModifications = modifications.filter(m => !m.method || m.method === "cash");
+  const cardModifications = modifications.filter(m => m.method === "card");
+
+  const totalCashModifications = cashModifications.reduce((sum, mod) => sum + mod.amount, 0);
+  const totalCardModifications = cardModifications.reduce((sum, mod) => sum + mod.amount, 0);
 
   if (report.records) {
     report.records.forEach((record) => {
@@ -608,7 +628,7 @@ export function generateDailyReportDocx(
               }),
             ],
           }),
-          ...(modifications.length > 0 ? [
+          ...(cashModifications.length > 0 ? [
             new TableRow({
               children: [
                 new TableCell({
@@ -617,7 +637,7 @@ export function generateDailyReportDocx(
                 new TableCell({
                   children: [
                     new Paragraph({
-                      text: (totalCash + totalModifications).toFixed(2),
+                      text: (totalCash + totalCashModifications).toFixed(2),
                       alignment: AlignmentType.RIGHT,
                     }),
                   ],
@@ -627,7 +647,7 @@ export function generateDailyReportDocx(
           ] : []),
           new TableRow({
             children: [
-              new TableCell({ children: [new Paragraph({ text: "Карта" })] }),
+              new TableCell({ children: [new Paragraph({ text: cardModifications.length > 0 ? "Карта (по услугам)" : "Карта" })] }),
               new TableCell({
                 children: [
                   new Paragraph({
@@ -638,6 +658,23 @@ export function generateDailyReportDocx(
               }),
             ],
           }),
+          ...(cardModifications.length > 0 ? [
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: [new Paragraph({ text: "Карта (фактически)" })],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      text: (totalCard + totalCardModifications).toFixed(2),
+                      alignment: AlignmentType.RIGHT,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ] : []),
           new TableRow({
             children: [
               new TableCell({
@@ -653,6 +690,21 @@ export function generateDailyReportDocx(
               }),
             ],
           }),
+          ...(totalCertificate > 0 ? [
+            new TableRow({
+              children: [
+                new TableCell({ children: [new Paragraph({ text: "Сертификат (использовано)" })] }),
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      text: totalCertificate.toFixed(2),
+                      alignment: AlignmentType.RIGHT,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ] : []),
           new TableRow({
             children: [
               new TableCell({
@@ -813,7 +865,7 @@ export function generateDailyReportDocx(
 
       ...(modifications.length > 0 ? [
         new Paragraph({
-          text: "ДВИЖЕНИЕ НАЛИЧНЫХ",
+          text: "ДВИЖЕНИЕ СРЕДСТВ",
           heading: HeadingLevel.HEADING_2,
           spacing: { before: 200, after: 100 },
         }),
@@ -821,8 +873,9 @@ export function generateDailyReportDocx(
           rows: [
             new TableRow({
               children: [
-                new TableCell({ children: [new Paragraph({ text: "Время", alignment: AlignmentType.CENTER })], width: { size: 1500, type: "dxa" } }),
-                new TableCell({ children: [new Paragraph({ text: "Комментарий", alignment: AlignmentType.CENTER })], width: { size: 3000, type: "dxa" } }),
+                new TableCell({ children: [new Paragraph({ text: "Время", alignment: AlignmentType.CENTER })], width: { size: 1000, type: "dxa" } }),
+                new TableCell({ children: [new Paragraph({ text: "Тип", alignment: AlignmentType.CENTER })], width: { size: 1000, type: "dxa" } }),
+                new TableCell({ children: [new Paragraph({ text: "Комментарий", alignment: AlignmentType.CENTER })], width: { size: 2500, type: "dxa" } }),
                 new TableCell({ children: [new Paragraph({ text: "Сумма (BYN)", alignment: AlignmentType.CENTER })], width: { size: 1500, type: "dxa" } }),
               ],
               tableHeader: true,
@@ -830,6 +883,7 @@ export function generateDailyReportDocx(
             ...modifications.map(mod => new TableRow({
               children: [
                 new TableCell({ children: [new Paragraph({ text: format(new Date(mod.createdAt), "HH:mm"), alignment: AlignmentType.CENTER })] }),
+                new TableCell({ children: [new Paragraph({ text: (!mod.method || mod.method === 'cash') ? 'Нал' : 'Карта', alignment: AlignmentType.CENTER })] }),
                 new TableCell({ children: [new Paragraph({ text: mod.reason })] }),
                 new TableCell({ children: [new Paragraph({ text: `${mod.amount > 0 ? '+' : ''}${mod.amount.toFixed(2)}`, alignment: AlignmentType.RIGHT })] }),
               ],

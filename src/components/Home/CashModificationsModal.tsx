@@ -25,6 +25,7 @@ const CashModificationsModal: React.FC<CashModificationsModalProps> = ({
     type: "expense", // 'expense' (изъятие) или 'income' (внесение)
     amount: "",
     reason: "",
+    method: "cash" as "cash" | "card",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -54,6 +55,7 @@ const CashModificationsModal: React.FC<CashModificationsModalProps> = ({
         amount: formData.type === "expense" ? -amountValue : amountValue,
         reason: formData.reason.trim(),
         createdAt: new Date().toISOString(),
+        method: formData.method,
       };
 
       const updatedModifications = [...(currentReport.cashModifications || []), modification];
@@ -66,9 +68,9 @@ const CashModificationsModal: React.FC<CashModificationsModalProps> = ({
           type: "SET_DAILY_REPORT",
           payload: { date: selectedDate, report: updatedReport },
         });
-        toast.success("Изменение кассы добавлено");
+        toast.success("Изменение добавлено");
         setShowAddForm(false);
-        setFormData({ type: "expense", amount: "", reason: "" });
+        setFormData({ type: "expense", amount: "", reason: "", method: "cash" });
       } else {
         toast.error("Ошибка при сохранении");
       }
@@ -108,34 +110,42 @@ const CashModificationsModal: React.FC<CashModificationsModalProps> = ({
   };
 
   const modifications = currentReport.cashModifications || [];
-  const totalModifications = modifications.reduce((sum, mod) => sum + mod.amount, 0);
-  const actualCash = currentReport.totalCash + totalModifications;
+
+  // Разделяем нал и безнал
+  const cashModifications = modifications.filter(m => !m.method || m.method === "cash");
+  const cardModifications = modifications.filter(m => m.method === "card");
+
+  const totalCashModifications = cashModifications.reduce((sum, mod) => sum + mod.amount, 0);
+  const totalCardModifications = cardModifications.reduce((sum, mod) => sum + mod.amount, 0);
+
+  const actualCash = currentReport.totalCash + totalCashModifications;
+
+  const totalCardServices = currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0;
+  const actualCard = totalCardServices + totalCardModifications;
 
   return (
     <Modal isOpen={true} onClose={onClose} className="max-w-md">
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-foreground">Движение наличных</h3>
+          <h3 className="text-xl font-bold text-foreground">Движение средств</h3>
           <button onClick={onClose} className="p-2 hover:bg-accent rounded-full transition-colors">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
         {/* Сводка */}
-        <div className="bg-muted/30 rounded-xl p-4 mb-6 border border-border/50">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-muted-foreground">Наличные по услугам:</span>
-            <span className="font-semibold text-foreground">{currentReport.totalCash.toFixed(2)} BYN</span>
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="bg-muted/30 rounded-xl p-3 border border-border/50">
+            <div className="text-xs text-muted-foreground mb-1">Наличные (услуги)</div>
+            <div className="font-semibold text-sm mb-2">{currentReport.totalCash.toFixed(2)} BYN</div>
+            <div className="text-xs text-muted-foreground mb-1">Фактически</div>
+            <div className="font-bold text-base text-primary">{actualCash.toFixed(2)} BYN</div>
           </div>
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-muted-foreground">Изменения:</span>
-            <span className={`font-semibold ${totalModifications < 0 ? "text-red-500" : totalModifications > 0 ? "text-green-500" : "text-foreground"}`}>
-              {totalModifications > 0 ? "+" : ""}{totalModifications.toFixed(2)} BYN
-            </span>
-          </div>
-          <div className="flex justify-between items-center pt-2 border-t border-border/50">
-            <span className="text-sm font-bold text-foreground">Итого в кассе:</span>
-            <span className="font-bold text-lg text-primary">{actualCash.toFixed(2)} BYN</span>
+          <div className="bg-muted/30 rounded-xl p-3 border border-border/50">
+            <div className="text-xs text-muted-foreground mb-1">Карта (услуги)</div>
+            <div className="font-semibold text-sm mb-2">{totalCardServices.toFixed(2)} BYN</div>
+            <div className="text-xs text-muted-foreground mb-1">Фактически</div>
+            <div className="font-bold text-base text-primary">{actualCard.toFixed(2)} BYN</div>
           </div>
         </div>
 
@@ -156,14 +166,19 @@ const CashModificationsModal: React.FC<CashModificationsModalProps> = ({
 
           {modifications.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground text-sm bg-accent/20 rounded-xl border border-border/30">
-              Нет записей об изменениях наличных
+              Нет записей об изменениях
             </div>
           ) : (
             <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
               {modifications.map((mod) => (
                 <div key={mod.id} className="flex justify-between items-center p-3 rounded-lg border border-border/50 bg-background hover:bg-accent/10 transition-colors">
                   <div className="flex-1 min-w-0 pr-3">
-                    <div className="font-medium text-sm text-foreground truncate">{mod.reason}</div>
+                    <div className="font-medium text-sm text-foreground truncate flex items-center gap-2">
+                      {mod.reason}
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${(!mod.method || mod.method === 'cash') ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
+                        {(!mod.method || mod.method === 'cash') ? 'Нал' : 'Карта'}
+                      </span>
+                    </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
                       {format(new Date(mod.createdAt), "HH:mm")}
                     </div>
@@ -210,6 +225,26 @@ const CashModificationsModal: React.FC<CashModificationsModalProps> = ({
             </div>
 
             <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Способ оплаты</label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className={`flex-1 py-1.5 text-sm rounded-lg border ${formData.method === 'cash' ? 'bg-amber-100 border-amber-300 text-amber-800 font-medium' : 'bg-background border-border text-muted-foreground'}`}
+                    onClick={() => setFormData({ ...formData, method: "cash" })}
+                  >
+                    Наличные
+                  </button>
+                  <button
+                    type="button"
+                    className={`flex-1 py-1.5 text-sm rounded-lg border ${formData.method === 'card' ? 'bg-blue-100 border-blue-300 text-blue-800 font-medium' : 'bg-background border-border text-muted-foreground'}`}
+                    onClick={() => setFormData({ ...formData, method: "card" })}
+                  >
+                    Карта
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Сумма (BYN)</label>
                 <input

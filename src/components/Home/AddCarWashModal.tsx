@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { Plus, X, Loader2, Check, CreditCard, Save } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { useAppContext } from "@/lib/context/AppContext";
-import { carWashService, appointmentService } from "@/lib/services/supabaseService";
-import type { Appointment, EmployeeRole, PaymentMethod } from "@/lib/types";
+import { carWashService, appointmentService, dailyReportService, certificateService } from "@/lib/services/supabaseService";
+import type { Appointment, EmployeeRole, PaymentMethod, CarWashRecord } from "@/lib/types";
 import { toast } from "sonner";
+import { format, parseISO } from "date-fns";
 
 interface AddCarWashModalProps {
   onClose: () => void;
@@ -13,6 +14,7 @@ interface AddCarWashModalProps {
   clickPosition?: { x: number; y: number } | null;
   employeeRoles: Record<string, EmployeeRole>;
   preselectedEmployeeId?: string | null;
+  preselectedCertificateId?: string | null;
   onSuccess?: () => void;
 }
 
@@ -23,6 +25,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
   clickPosition,
   employeeRoles,
   preselectedEmployeeId,
+  preselectedCertificateId,
   onSuccess,
 }) => {
   const { state, dispatch } = useAppContext();
@@ -52,7 +55,9 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
       service: "",
       serviceType: "wash" as "wash" | "dryclean",
       price: 0,
-      paymentMethod: { type: "cash" } as PaymentMethod,
+      paymentMethod: preselectedCertificateId
+        ? { type: "certificate", comment: preselectedCertificateId } as PaymentMethod
+        : { type: "cash" } as PaymentMethod,
       employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : [],
     };
   });
