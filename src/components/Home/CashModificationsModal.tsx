@@ -6,7 +6,6 @@ import { dailyReportService } from "@/lib/services/supabaseService";
 import type { DailyReport } from "@/lib/types";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { v4 as uuidv4 } from "uuid";
 
 interface CashModificationsModalProps {
   onClose: () => void;
@@ -51,7 +50,7 @@ const CashModificationsModal: React.FC<CashModificationsModalProps> = ({
     try {
       const amountValue = Number(formData.amount);
       const modification = {
-        id: uuidv4(),
+        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substring(2),
         amount: formData.type === "expense" ? -amountValue : amountValue,
         reason: formData.reason.trim(),
         createdAt: new Date().toISOString(),
