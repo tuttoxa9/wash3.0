@@ -328,6 +328,7 @@ export const dailyReportService = {
       dailyEmployeeRoles: data.daily_employee_roles || undefined,
       manualSalaries: data.manual_salaries || {},
       notes: data.notes || [],
+      cashModifications: data.cash_modifications || [],
     };
   },
   async getByDateRange(
@@ -354,6 +355,7 @@ export const dailyReportService = {
       dailyEmployeeRoles: r.daily_employee_roles || undefined,
       manualSalaries: r.manual_salaries || {},
       notes: r.notes || [],
+      cashModifications: r.cash_modifications || [],
     }));
   },
   async updateReport(report: DailyReport): Promise<boolean> {
@@ -370,6 +372,7 @@ export const dailyReportService = {
       daily_employee_roles: report.dailyEmployeeRoles ?? null,
       manual_salaries: report.manualSalaries ?? {},
       notes: report.notes ?? [],
+      cash_modifications: report.cashModifications ?? [],
       updated_at: new Date().toISOString(),
     };
     const { error } = await supabase
@@ -402,6 +405,7 @@ export const dailyReportService = {
       totalNonCash: r.total_non_cash || 0,
       dailyEmployeeRoles: r.daily_employee_roles || undefined,
       manualSalaries: r.manual_salaries || {},
+      cashModifications: r.cash_modifications || [],
     }));
   },
   async addRecord(date: string, record: CarWashRecord): Promise<boolean> {

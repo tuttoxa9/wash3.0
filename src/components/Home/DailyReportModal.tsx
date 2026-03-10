@@ -929,8 +929,14 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                   <div className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1 whitespace-nowrap">
                     Наличные
                   </div>
-                  <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words">
-                    {currentReport.totalCash.toFixed(2)} BYN
+                  <div className="text-xs sm:text-sm md:text-base font-bold text-card-foreground leading-tight break-words flex flex-col items-center">
+                    {(() => {
+                      const actualCash = currentReport.totalCash + (currentReport.cashModifications || []).reduce((sum, mod) => sum + mod.amount, 0);
+                      return actualCash.toFixed(2);
+                    })()} BYN
+                    {currentReport.cashModifications && currentReport.cashModifications.length > 0 && (
+                       <span className="text-[9px] font-normal text-muted-foreground mt-0.5">по услугам {currentReport.totalCash.toFixed(2)}</span>
+                    )}
                   </div>
                 </div>
                 <div
