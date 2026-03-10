@@ -21,6 +21,8 @@ export const getPaymentMethodLabel = (
     }
     case "debt":
       return "Долг";
+    case "certificate":
+      return "Сертификат";
     default:
       return method;
   }
@@ -37,6 +39,8 @@ export const getPaymentMethodColor = (method: string, theme: ThemeMode) => {
         return "text-purple-300 bg-purple-500/10 border-purple-500/20";
       case "debt":
         return "text-red-300 bg-red-500/10 border-red-500/20";
+      case "certificate":
+        return "text-yellow-300 bg-yellow-500/10 border-yellow-500/20";
       default:
         return "text-gray-300 bg-gray-500/10 border-gray-500/20";
     }
@@ -50,6 +54,8 @@ export const getPaymentMethodColor = (method: string, theme: ThemeMode) => {
         return "text-purple-400 bg-purple-500/5 border-purple-400/30";
       case "debt":
         return "text-red-400 bg-red-500/5 border-red-500/30";
+      case "certificate":
+        return "text-yellow-400 bg-yellow-500/5 border-yellow-500/30";
       default:
         return "text-gray-400 bg-gray-500/5 border-gray-500/30";
     }
@@ -63,6 +69,8 @@ export const getPaymentMethodColor = (method: string, theme: ThemeMode) => {
         return "text-purple-600 bg-purple-50 border-purple-200";
       case "debt":
         return "text-red-600 bg-red-50 border-red-200";
+      case "certificate":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
       default:
         return "text-gray-600 bg-gray-50 border-gray-200";
     }

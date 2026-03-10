@@ -960,6 +960,9 @@ const ReportsPage: React.FC = () => {
                       Долг
                     </th>
                     <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
+                      Серт.
+                    </th>
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       Всего
                     </th>
                     <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
@@ -977,6 +980,7 @@ const ReportsPage: React.FC = () => {
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
                         </tr>
@@ -987,7 +991,8 @@ const ReportsPage: React.FC = () => {
                       report.totalCash +
                       report.totalNonCash +
                       report.totalOrganizations +
-                      report.totalDebt;
+                      report.totalDebt +
+                      report.totalCertificate;
 
                     // Рассчитываем зарплату сотрудника с учетом роли
                     const reportDate = startDate.toISOString().split("T")[0];
@@ -1051,6 +1056,9 @@ const ReportsPage: React.FC = () => {
                         <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm text-red-500">
                           {report.totalDebt.toFixed(2)}
                         </td>
+                        <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm text-yellow-600">
+                          {report.totalCertificate.toFixed(2)}
+                        </td>
                         <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
                           {totalRevenueEmp.toFixed(2)}
                         </td>
@@ -1086,7 +1094,7 @@ const ReportsPage: React.FC = () => {
                   })}
                   {!loading && earningsReport.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
+                      <td colSpan={9} className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
                         Нет данных для выбранного периода и фильтра
                       </td>
                     </tr>

@@ -21,6 +21,10 @@ describe("EmployeeRecords utils", () => {
       expect(getPaymentMethodLabel("debt", mockOrganizations)).toBe("Долг");
     });
 
+    it("should return 'Сертификат' for 'certificate'", () => {
+      expect(getPaymentMethodLabel("certificate", mockOrganizations)).toBe("Сертификат");
+    });
+
     it("should return organization name when method is 'organization' and id is found", () => {
       expect(
         getPaymentMethodLabel("organization", mockOrganizations, "org1"),
@@ -64,6 +68,9 @@ describe("EmployeeRecords utils", () => {
         expect(getPaymentMethodColor("debt", "dark")).toBe(
           "text-red-300 bg-red-500/10 border-red-500/20",
         );
+        expect(getPaymentMethodColor("certificate", "dark")).toBe(
+          "text-yellow-300 bg-yellow-500/10 border-yellow-500/20",
+        );
         expect(getPaymentMethodColor("unknown", "dark")).toBe(
           "text-gray-300 bg-gray-500/10 border-gray-500/20",
         );
@@ -84,6 +91,9 @@ describe("EmployeeRecords utils", () => {
         expect(getPaymentMethodColor("debt", "black")).toBe(
           "text-red-400 bg-red-500/5 border-red-500/30",
         );
+        expect(getPaymentMethodColor("certificate", "black")).toBe(
+          "text-yellow-400 bg-yellow-500/5 border-yellow-500/30",
+        );
         expect(getPaymentMethodColor("unknown", "black")).toBe(
           "text-gray-400 bg-gray-500/5 border-gray-500/30",
         );
@@ -103,6 +113,9 @@ describe("EmployeeRecords utils", () => {
         );
         expect(getPaymentMethodColor("debt", "light")).toBe(
           "text-red-600 bg-red-50 border-red-200",
+        );
+        expect(getPaymentMethodColor("certificate", "light")).toBe(
+          "text-yellow-600 bg-yellow-50 border-yellow-200",
         );
         expect(getPaymentMethodColor("unknown", "light")).toBe(
           "text-gray-600 bg-gray-50 border-gray-200",
