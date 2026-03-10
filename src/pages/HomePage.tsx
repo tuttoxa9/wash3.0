@@ -2158,7 +2158,7 @@ const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
   const { state } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [paymentType, setPaymentType] = useState<
-    "cash" | "card" | "organization"
+    "cash" | "card" | "organization" | "certificate"
   >("cash");
   const [organizationId, setOrganizationId] = useState("");
 
@@ -2302,6 +2302,13 @@ const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
               >
                 Безнал
               </button>
+              <button
+                type="button"
+                onClick={() => setPaymentType("certificate")}
+                className={paymentType === "certificate" ? "active" : ""}
+              >
+                Сертификат
+              </button>
             </div>
           </div>
 
@@ -2424,7 +2431,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
 
   // Обработка изменения способа оплаты
   const handlePaymentTypeChange = (
-    type: "cash" | "card" | "organization" | "debt",
+    type: "cash" | "card" | "organization" | "debt" | "certificate",
   ) => {
     setFormData({
       ...formData,
@@ -2804,6 +2811,15 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                   }
                 >
                   Долг
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePaymentTypeChange("certificate")}
+                  className={
+                    formData.paymentMethod.type === "certificate" ? "active" : ""
+                  }
+                >
+                  Сертификат
                 </button>
               </div>
 
