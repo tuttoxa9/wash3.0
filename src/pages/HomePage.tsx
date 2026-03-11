@@ -12,6 +12,7 @@ import {
   carWashService,
   dailyReportService,
   dailyRolesService,
+  certificateService,
 } from "@/lib/services/supabaseService";
 import type {
   Appointment,
@@ -46,11 +47,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import AddCarWashModal from "@/components/Home/AddCarWashModal";
-import AppointmentsWidget from "@/components/Home/AppointmentsWidget";
-import CloseDebtModal from "@/components/Home/CloseDebtModal";
 import DailyReportModal from "@/components/Home/DailyReportModal";
-import EmployeeDetailModal from "@/components/Home/EmployeeDetailModal";
 import CashModificationsModal from "@/components/Home/CashModificationsModal";
 import CertificatesWidget from "@/components/Home/CertificatesWidget";
 import { PreShiftScreen } from "@/components/Home/PreShiftScreen";
@@ -207,7 +204,7 @@ const HomePage: React.FC = () => {
 
     const carCount = employeeRecords.length;
     const totalEarnings = employeeRecords.reduce(
-      (sum, record) => sum + record.price,
+      (sum, record) => sum + (record.price / record.employeeIds.length),
       0,
     );
 
@@ -376,6 +373,42 @@ const HomePage: React.FC = () => {
       if (success) {
         toast.success("Долг закрыт");
         loadActiveDebts();
+
+        // Проверяем: нужно ли создать кассовую проводку в текущей смене
+        // Условие: оплата налом или картой, и долг не относится к сегодняшней смене (либо мы всё равно хотим учесть это в кассе текущей смены)
+        if (
+          (paymentMethod.type === "cash" || paymentMethod.type === "card") &&
+          currentReport &&
+          recordToUpdate
+        ) {
+          // Если долг был за прошлую дату, добавляем в текущую открытую смену, чтобы сошлась физическая касса
+          // Если за текущую, то долг уже перешел в totalCash/totalNonCash текущего отчета, так что дополнительная проводка не нужна
+          if (reportId !== selectedDate) {
+            const modification = {
+              id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+              amount: recordToUpdate.price, // Внесение суммы
+              reason: `Закрытие долга за ${format(parseISO(reportId), "dd.MM")} - ${recordToUpdate.carInfo}`,
+              createdAt: new Date().toISOString(),
+              method: paymentMethod.type as "cash" | "card",
+            };
+
+            const updatedCurrentReport = {
+              ...currentReport,
+              cashModifications: [
+                ...(currentReport.cashModifications || []),
+                modification,
+              ],
+            };
+
+            await dailyReportService.updateReport(updatedCurrentReport);
+            dispatch({
+              type: "SET_DAILY_REPORT",
+              payload: { date: selectedDate, report: updatedCurrentReport },
+            });
+            toast.success(`Внесено в кассу текущей смены (${paymentMethod.type === "cash" ? "Наличные" : "Карта"})`);
+          }
+        }
+
         // Если закрываем долг за текущую выбранную дату, обновляем состояние
         if (reportId === selectedDate) {
           dispatch({
@@ -409,6 +442,8 @@ const HomePage: React.FC = () => {
         currentReport,
         state.employees,
         selectedDate,
+        state.organizations,
+        state.organizationsInTotal
       );
 
       // Преобразуем в blob
@@ -439,7 +474,8 @@ const HomePage: React.FC = () => {
         currentReport,
         state.employees,
         state.organizations,
-        selectedDate
+        selectedDate,
+        state.organizationsInTotal
       );
 
       const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
@@ -881,7 +917,7 @@ const HomePage: React.FC = () => {
               const dailyRoles =
                 await dailyRolesService.getDailyRoles(selectedDate);
               if (dailyRoles) {
-                setEmployeeRoles(dailyRoles);
+                setEmployeeRoles(dailyRoles as Record<string, EmployeeRole>);
               } else {
                 // Если ролей нет нигде, устанавливаем роли по умолчанию (мойщик)
                 const defaultRoles: Record<string, EmployeeRole> = {};
@@ -2432,6 +2468,7 @@ interface AddCarWashModalProps {
   clickPosition?: { x: number; y: number } | null;
   employeeRoles: Record<string, EmployeeRole>;
   preselectedEmployeeId?: string | null;
+  preselectedCertificateId?: string | null;
   onSuccess?: () => void;
 }
 
@@ -2442,6 +2479,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
   clickPosition,
   employeeRoles,
   preselectedEmployeeId,
+  preselectedCertificateId,
   onSuccess,
 }) => {
   const { state, dispatch } = useAppContext();
@@ -2667,13 +2705,6 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                 await appointmentService.update(updatedAppointment);
 
               if (success) {
-                // Обновляем список записей
-                setAppointments(
-                  appointments.map((app) =>
-                    app.id === appointment.id ? updatedAppointment : app,
-                  ),
-                );
-
                 // Обновляем в глобальном состоянии
                 dispatch({
                   type: "UPDATE_APPOINTMENT",
@@ -3448,7 +3479,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
 
   // Общая сумма работника
   const totalEarnings = employeeRecords.reduce(
-    (sum, record) => sum + record.price,
+    (sum, record) => sum + (record.price / record.employeeIds.length),
     0,
   );
 
@@ -3515,6 +3546,9 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                   <th className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right text-xs sm:text-sm font-semibold text-card-foreground">
                     Стоимость
                   </th>
+                  <th className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right text-xs sm:text-sm font-semibold text-primary">
+                    Доля
+                  </th>
                   <th className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-left text-xs sm:text-sm font-semibold text-card-foreground">
                     Оплата
                   </th>
@@ -3556,6 +3590,9 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right font-semibold text-card-foreground text-xs sm:text-sm">
                         {record.price.toFixed(2)} BYN
                       </td>
+                      <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right font-bold text-primary text-xs sm:text-sm">
+                        {(record.price / record.employeeIds.length).toFixed(2)} BYN
+                      </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-card-foreground text-xs sm:text-sm">
                         {getPaymentMethodDisplay(
                           record.paymentMethod.type,
@@ -3577,7 +3614,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                 ) : (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="py-8 sm:py-12 text-center text-muted-foreground text-xs sm:text-sm"
                     >
                       У этого работника нет записей за выбранную дату.
