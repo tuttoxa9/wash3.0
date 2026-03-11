@@ -36,6 +36,7 @@ import { dailyReportService, carWashService } from "@/lib/services/supabaseServi
 import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import TransactionHistory from "@/components/Settings/TransactionHistory";
 
 // Компонент для ввода пароля
 const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
@@ -1698,18 +1699,21 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="employees" className="w-full">
-        <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:flex bg-muted/60 p-1.5 rounded-2xl border border-border/10">
-          <TabsTrigger value="general" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+        <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 md:grid-cols-3 lg:flex bg-muted/60 p-1.5 rounded-2xl border border-border/10">
+          <TabsTrigger value="general" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground whitespace-nowrap">
             Общие
           </TabsTrigger>
-          <TabsTrigger value="employees" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+          <TabsTrigger value="employees" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground whitespace-nowrap">
             Сотрудники
           </TabsTrigger>
-          <TabsTrigger value="organizations" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+          <TabsTrigger value="organizations" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground whitespace-nowrap">
             Организации
           </TabsTrigger>
-          <TabsTrigger value="debts" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+          <TabsTrigger value="debts" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground whitespace-nowrap">
             Долги
+          </TabsTrigger>
+          <TabsTrigger value="transactions" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground whitespace-nowrap">
+            Транзакции
           </TabsTrigger>
         </TabsList>
 
@@ -1739,6 +1743,12 @@ export default function SettingsPage() {
         <TabsContent value="debts" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
           <div className="grid grid-cols-1 gap-4">
             <DebtsManagement />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="transactions" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 gap-4">
+            <TransactionHistory />
           </div>
         </TabsContent>
       </Tabs>
