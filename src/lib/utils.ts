@@ -33,6 +33,7 @@ export function generateDailyReportCsv(
   employees: Employee[],
   organizations: Organization[] = [],
   date: string,
+  organizationsInTotal: string[] = [],
 ): string {
   if (!report || !report.records) return "";
 
@@ -116,9 +117,28 @@ export function generateDailyReportCsv(
     csvContent += `Карта (факт):;${actualCard.toFixed(2)}\n`;
   }
 
-  // Только Орг для безнала
-  const totalOrg = report.records.reduce((sum, r) => sum + (r.paymentMethod.type === "organization" ? r.price : 0), 0);
-  csvContent += `Всего Безнал (Орг):;${totalOrg.toFixed(2)}\n`;
+  // Раздельный безнал (Организации из Separate учета)
+  organizationsInTotal.forEach(orgId => {
+    const org = organizations.find((o) => o.id === orgId);
+    if (!org) return;
+    const orgSum = report.records.reduce((sum, r) => {
+      return sum + ((r.paymentMethod.type === "organization" && r.paymentMethod.organizationId === orgId) ? r.price : 0);
+    }, 0);
+    if (orgSum > 0) {
+      csvContent += `Безнал (${escapeCsv(org.name)}):;${orgSum.toFixed(2)}\n`;
+    }
+  });
+
+  // Остальной Безнал
+  const totalRestOrg = report.records.reduce((sum, r) => {
+    const isOrg = r.paymentMethod.type === "organization";
+    const isSeparated = r.paymentMethod.organizationId && organizationsInTotal.includes(r.paymentMethod.organizationId);
+    return sum + ((isOrg && !isSeparated) ? r.price : 0);
+  }, 0);
+
+  if (totalRestOrg > 0 || organizationsInTotal.length === 0) {
+    csvContent += `Всего Безнал (Орг):;${totalRestOrg.toFixed(2)}\n`;
+  }
 
   const totalDebt = report.records.reduce(
     (sum, r) => sum + (r.paymentMethod.type === "debt" ? r.price : 0),
@@ -452,6 +472,8 @@ export function generateDailyReportDocx(
   report: DailyReport,
   employees: Employee[],
   date: string,
+  organizations: Organization[] = [],
+  organizationsInTotal: string[] = [],
 ) {
   // Получаем всех работавших сотрудников
   const workingEmployeeIds = new Set<string>();
@@ -499,6 +521,7 @@ export function generateDailyReportDocx(
   let totalOrganizations = 0;
   let totalDebt = 0;
   let totalCertificate = 0;
+  const separateOrgTotals: Record<string, number> = {};
 
   const modifications = report.cashModifications || [];
   const cashModifications = modifications.filter(m => !m.method || m.method === "cash");
@@ -514,7 +537,12 @@ export function generateDailyReportDocx(
       } else if (record.paymentMethod.type === "card") {
         totalCard += record.price;
       } else if (record.paymentMethod.type === "organization") {
-        totalOrganizations += record.price;
+        if (record.paymentMethod.organizationId && organizationsInTotal.includes(record.paymentMethod.organizationId)) {
+          const orgId = record.paymentMethod.organizationId;
+          separateOrgTotals[orgId] = (separateOrgTotals[orgId] || 0) + record.price;
+        } else {
+          totalOrganizations += record.price;
+        }
       } else if (record.paymentMethod.type === "debt") {
         totalDebt += record.price;
       } else if (record.paymentMethod.type === "certificate") {
@@ -522,7 +550,8 @@ export function generateDailyReportDocx(
       }
     });
   }
-  const totalRevenue = totalCash + totalCard + totalOrganizations + totalDebt + totalCertificate;
+  const totalSeparateOrgs = Object.values(separateOrgTotals).reduce((sum, val) => sum + val, 0);
+  const totalRevenue = totalCash + totalCard + totalOrganizations + totalSeparateOrgs + totalDebt + totalCertificate;
   const totalSalary = salaryResults.reduce(
     (sum, result) => sum + result.calculatedSalary,
     0,
@@ -705,21 +734,41 @@ export function generateDailyReportDocx(
               ],
             }),
           ] : []),
-          new TableRow({
-            children: [
-              new TableCell({
-                children: [new Paragraph({ text: "Безнал (организации)" })],
-              }),
-              new TableCell({
-                children: [
-                  new Paragraph({
-                    text: totalOrganizations.toFixed(2),
-                    alignment: AlignmentType.RIGHT,
-                  }),
-                ],
-              }),
-            ],
+          ...Object.entries(separateOrgTotals).map(([orgId, orgSum]) => {
+            const orgName = organizations.find((o) => o.id === orgId)?.name || "Неизвестная организация";
+            return new TableRow({
+              children: [
+                new TableCell({
+                  children: [new Paragraph({ text: `Безнал (${orgName})` })],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      text: orgSum.toFixed(2),
+                      alignment: AlignmentType.RIGHT,
+                    }),
+                  ],
+                }),
+              ],
+            });
           }),
+          ...(totalOrganizations > 0 || Object.keys(separateOrgTotals).length === 0 ? [
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: [new Paragraph({ text: "Безнал (организации)" })],
+                }),
+                new TableCell({
+                  children: [
+                    new Paragraph({
+                      text: totalOrganizations.toFixed(2),
+                      alignment: AlignmentType.RIGHT,
+                    }),
+                  ],
+                }),
+              ],
+            })
+          ] : []),
           new TableRow({
             children: [
               new TableCell({
@@ -929,6 +978,7 @@ export function generateDailyReportDocx(
     let empOrganizations = 0;
     let empDebt = 0;
     let empCertificate = 0;
+    const empSeparateOrgs: Record<string, number> = {};
 
     employeeRecords.forEach((record) => {
       const share = record.price / record.employeeIds.length;
@@ -937,7 +987,12 @@ export function generateDailyReportDocx(
       } else if (record.paymentMethod.type === "card") {
         empCard += share;
       } else if (record.paymentMethod.type === "organization") {
-        empOrganizations += share;
+        if (record.paymentMethod.organizationId && organizationsInTotal.includes(record.paymentMethod.organizationId)) {
+          const orgId = record.paymentMethod.organizationId;
+          empSeparateOrgs[orgId] = (empSeparateOrgs[orgId] || 0) + share;
+        } else {
+          empOrganizations += share;
+        }
       } else if (record.paymentMethod.type === "debt") {
         empDebt += share;
       } else if (record.paymentMethod.type === "certificate") {
@@ -945,7 +1000,8 @@ export function generateDailyReportDocx(
       }
     });
 
-    const empTotal = empCash + empCard + empOrganizations + empDebt + empCertificate;
+    const empTotalSeparateOrgs = Object.values(empSeparateOrgs).reduce((sum, val) => sum + val, 0);
+    const empTotal = empCash + empCard + empOrganizations + empTotalSeparateOrgs + empDebt + empCertificate;
     const empSalary =
       salaryResults.find((r) => r.employeeId === employee.id)
         ?.calculatedSalary || 0;
@@ -1256,21 +1312,41 @@ export function generateDailyReportDocx(
                 }),
               ],
             }),
-            new TableRow({
-              children: [
-                new TableCell({
-                  children: [new Paragraph({ text: "Безнал (организации)" })],
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({
-                      text: empOrganizations.toFixed(2),
-                      alignment: AlignmentType.RIGHT,
-                    }),
-                  ],
-                }),
-              ],
+            ...Object.entries(empSeparateOrgs).map(([orgId, orgSum]) => {
+              const orgName = organizations.find((o) => o.id === orgId)?.name || "Неизвестная организация";
+              return new TableRow({
+                children: [
+                  new TableCell({
+                    children: [new Paragraph({ text: `Безнал (${orgName})` })],
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        text: orgSum.toFixed(2),
+                        alignment: AlignmentType.RIGHT,
+                      }),
+                    ],
+                  }),
+                ],
+              });
             }),
+            ...(empOrganizations > 0 || Object.keys(empSeparateOrgs).length === 0 ? [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [new Paragraph({ text: "Безнал (организации)" })],
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        text: empOrganizations.toFixed(2),
+                        alignment: AlignmentType.RIGHT,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ] : []),
             new TableRow({
               children: [
                 new TableCell({
