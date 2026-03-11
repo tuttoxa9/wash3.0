@@ -303,12 +303,17 @@ export class SalaryCalculator {
       .filter((r) => r.paymentMethod.type === "debt")
       .reduce((sum, r) => sum + r.price, 0);
 
+    const certificate = this.records
+      .filter((r) => r.paymentMethod.type === "certificate")
+      .reduce((sum, r) => sum + r.price, 0);
+
     return {
       cash,
       card,
       organization,
       debt,
-      total: cash + card + organization + debt,
+      certificate,
+      total: cash + card + organization + debt + certificate,
     };
   }
 }
