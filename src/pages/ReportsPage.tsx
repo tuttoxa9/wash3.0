@@ -52,6 +52,7 @@ interface EarningsReport {
   totalNonCash: number;
   totalOrganizations: number;
   totalDebt: number;
+  totalCertificate: number;
   recordsCount: number;
   isManual?: boolean;
 }
@@ -267,6 +268,7 @@ const ReportsPage: React.FC = () => {
           totalNonCash: number;
           totalOrganizations: number;
           totalDebt: number;
+          totalCertificate: number;
           recordsCount: number;
         }
       >();
@@ -284,6 +286,7 @@ const ReportsPage: React.FC = () => {
             totalNonCash: 0,
             totalOrganizations: 0,
             totalDebt: 0,
+            totalCertificate: 0,
             recordsCount: 0,
           });
         }
@@ -299,6 +302,7 @@ const ReportsPage: React.FC = () => {
               totalNonCash: 0,
               totalOrganizations: 0,
               totalDebt: 0,
+              totalCertificate: 0,
               recordsCount: 0,
             });
           }
@@ -317,6 +321,7 @@ const ReportsPage: React.FC = () => {
                   totalNonCash: 0,
                   totalOrganizations: 0,
                   totalDebt: 0,
+                  totalCertificate: 0,
                   recordsCount: 0,
                 });
               }
@@ -348,6 +353,8 @@ const ReportsPage: React.FC = () => {
               empData.totalOrganizations += valuePerEmployee;
             } else if (record.paymentMethod.type === "debt") {
               empData.totalDebt += valuePerEmployee;
+            } else if (record.paymentMethod.type === "certificate") {
+              empData.totalCertificate += valuePerEmployee;
             }
             empData.recordsCount++;
           }
@@ -359,17 +366,20 @@ const ReportsPage: React.FC = () => {
       let totalNonCashAll = 0;
       let totalOrganizationsAll = 0;
       let totalDebtAll = 0;
+      let totalCertificateAll = 0;
 
       for (const [_, employee] of employeeMap.entries()) {
         const totalVolume =
           employee.totalCash +
           employee.totalNonCash +
           employee.totalOrganizations +
-          employee.totalDebt;
+          employee.totalDebt +
+          employee.totalCertificate;
         totalCashAll += employee.totalCash;
         totalNonCashAll += employee.totalNonCash;
         totalOrganizationsAll += employee.totalOrganizations;
         totalDebtAll += employee.totalDebt;
+        totalCertificateAll += employee.totalCertificate;
 
         results.push({
           employeeId: employee.id,
@@ -380,6 +390,7 @@ const ReportsPage: React.FC = () => {
           totalNonCash: employee.totalNonCash,
           totalOrganizations: employee.totalOrganizations,
           totalDebt: employee.totalDebt,
+          totalCertificate: employee.totalCertificate,
           recordsCount: employee.recordsCount,
         });
       }
@@ -490,7 +501,7 @@ const ReportsPage: React.FC = () => {
       results.sort((a, b) => b.calculatedEarnings - a.calculatedEarnings);
 
       setTotalRevenue(
-        totalCashAll + totalNonCashAll + totalOrganizationsAll + totalDebtAll,
+        totalCashAll + totalNonCashAll + totalOrganizationsAll + totalDebtAll + totalCertificateAll,
       );
 
       return results;
@@ -960,6 +971,9 @@ const ReportsPage: React.FC = () => {
                       Долг
                     </th>
                     <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
+                      Серт.
+                    </th>
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       Всего
                     </th>
                     <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
@@ -977,6 +991,7 @@ const ReportsPage: React.FC = () => {
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
                         </tr>
@@ -987,7 +1002,8 @@ const ReportsPage: React.FC = () => {
                       report.totalCash +
                       report.totalNonCash +
                       report.totalOrganizations +
-                      report.totalDebt;
+                      report.totalDebt +
+                      report.totalCertificate;
 
                     // Рассчитываем зарплату сотрудника с учетом роли
                     const reportDate = startDate.toISOString().split("T")[0];
@@ -1051,6 +1067,9 @@ const ReportsPage: React.FC = () => {
                         <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm text-red-500">
                           {report.totalDebt.toFixed(2)}
                         </td>
+                        <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm text-orange-500">
+                          {report.totalCertificate.toFixed(2)}
+                        </td>
                         <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
                           {totalRevenueEmp.toFixed(2)}
                         </td>
@@ -1086,7 +1105,7 @@ const ReportsPage: React.FC = () => {
                   })}
                   {!loading && earningsReport.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
+                      <td colSpan={8} className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
                         Нет данных для выбранного периода и фильтра
                       </td>
                     </tr>

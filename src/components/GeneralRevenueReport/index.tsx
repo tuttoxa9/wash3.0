@@ -23,7 +23,6 @@ import {
   TextRun,
 } from "docx";
 import { saveAs } from "file-saver";
-import { motion } from "framer-motion";
 import {
   Activity,
   BarChart3,
@@ -73,6 +72,7 @@ const GeneralRevenueReport: React.FC = () => {
     totalCard: number;
     totalOrganizations: number;
     totalDebt: number;
+    totalCertificate: number;
     totalRevenue: number;
     totalSalaries: number;
     organizationBreakdown: { name: string; amount: number }[];
@@ -82,6 +82,7 @@ const GeneralRevenueReport: React.FC = () => {
       card: number;
       organizations: number;
       debt: number;
+      certificate: number;
       total: number;
       recordsCount: number;
     }[];
@@ -127,6 +128,7 @@ const GeneralRevenueReport: React.FC = () => {
       let totalCard = 0;
       let totalOrganizations = 0;
       let totalDebt = 0;
+      let totalCertificate = 0;
       const organizationBreakdown: Record<string, number> = {};
       const dailyBreakdown: Record<
         string,
@@ -135,6 +137,7 @@ const GeneralRevenueReport: React.FC = () => {
           card: number;
           organizations: number;
           debt: number;
+          certificate: number;
           recordsCount: number;
         }
       > = {};
@@ -145,6 +148,7 @@ const GeneralRevenueReport: React.FC = () => {
           card: 0,
           organizations: 0,
           debt: 0,
+          certificate: 0,
           recordsCount: 0,
         };
       });
@@ -157,6 +161,7 @@ const GeneralRevenueReport: React.FC = () => {
             card: 0,
             organizations: 0,
             debt: 0,
+            certificate: 0,
             recordsCount: 0,
           };
         }
@@ -183,11 +188,14 @@ const GeneralRevenueReport: React.FC = () => {
         } else if (record.paymentMethod.type === "debt") {
           totalDebt += record.price;
           dailyBreakdown[recordDate].debt += record.price;
+        } else if (record.paymentMethod.type === "certificate") {
+          totalCertificate += record.price;
+          dailyBreakdown[recordDate].certificate += record.price;
         }
       });
 
       const totalRevenue =
-        totalCash + totalCard + totalOrganizations + totalDebt;
+        totalCash + totalCard + totalOrganizations + totalDebt + totalCertificate;
 
       const dailyData = dateRange.map((date) => {
         const dayData = dailyBreakdown[date] || {
@@ -195,16 +203,18 @@ const GeneralRevenueReport: React.FC = () => {
           card: 0,
           organizations: 0,
           debt: 0,
+          certificate: 0,
           recordsCount: 0,
         };
         const total =
-          dayData.cash + dayData.card + dayData.organizations + dayData.debt;
+          dayData.cash + dayData.card + dayData.organizations + dayData.debt + dayData.certificate;
         return {
           date: format(parseISO(date), "dd.MM"),
           cash: dayData.cash,
           card: dayData.card,
           organizations: dayData.organizations,
           debt: dayData.debt,
+          certificate: dayData.certificate,
           total,
           recordsCount: dayData.recordsCount,
         };
@@ -303,6 +313,7 @@ const GeneralRevenueReport: React.FC = () => {
         totalCard,
         totalOrganizations,
         totalDebt,
+        totalCertificate,
         totalRevenue,
         totalSalaries,
         organizationBreakdown: Object.entries(organizationBreakdown).map(
@@ -613,27 +624,10 @@ const GeneralRevenueReport: React.FC = () => {
     }
   };
 
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-  };
-
   return (
     <div className="space-y-16">
       {/* Chapter 1: Header and Controls */}
-      <motion.section
-        initial="hidden"
-        animate="visible"
-        variants={fadeInUp}
+      <section
         className="bg-card/40 backdrop-blur-sm border border-border/50 rounded-3xl p-6 sm:p-10 shadow-sm relative overflow-hidden"
       >
         {/* Abstract background decorative elements */}
@@ -772,20 +766,20 @@ const GeneralRevenueReport: React.FC = () => {
             </button>
           </div>
         </div>
-      </motion.section>
+      </section>
 
       {generalReportData && (
         <div className="space-y-24">
           {/* Chapter 2: The Big Picture (KPIs) */}
-          <motion.section
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
+          <section
+
+
+
+
             className="space-y-8"
           >
-            <motion.div
-              variants={fadeInUp}
+            <div
+
               className="flex items-end gap-4 mb-2"
             >
               <div>
@@ -795,12 +789,12 @@ const GeneralRevenueReport: React.FC = () => {
                 </p>
               </div>
               <div className="flex-1 border-b border-border/50 pb-2 mb-1" />
-            </motion.div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Main Revenue Card */}
-              <motion.div
-                variants={fadeInUp}
+              <div
+
                 className="md:col-span-2 bg-gradient-to-br from-primary/10 via-primary/5 to-background border border-primary/20 rounded-3xl p-8 relative overflow-hidden shadow-sm"
               >
                 <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -854,10 +848,10 @@ const GeneralRevenueReport: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Profit & Salary Stack */}
-              <motion.div variants={fadeInUp} className="flex flex-col gap-6">
+              <div  className="flex flex-col gap-6">
                 <div className="flex-1 bg-card border border-border rounded-3xl p-6 shadow-sm flex flex-col justify-center relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full" />
                   <div className="text-sm font-medium text-muted-foreground mb-2 flex items-center">
@@ -906,18 +900,12 @@ const GeneralRevenueReport: React.FC = () => {
                     % от выручки
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
 
             {/* Payment Methods Breakdown (Mini Bento) */}
-            <motion.div
-              variants={staggerContainer}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-            >
-              <motion.div
-                variants={fadeInUp}
-                className="bg-card border border-border/60 hover:border-blue-500/30 transition-colors rounded-2xl p-5 shadow-sm"
-              >
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="bg-card border border-border/60 hover:border-blue-500/30 transition-colors rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-blue-500 mb-3">
                   <DollarSign className="w-5 h-5" />{" "}
                   <span className="font-medium text-sm">Наличные</span>
@@ -936,9 +924,9 @@ const GeneralRevenueReport: React.FC = () => {
                   ).toFixed(1)}
                   % доли
                 </div>
-              </motion.div>
-              <motion.div
-                variants={fadeInUp}
+              </div>
+              <div
+
                 className="bg-card border border-border/60 hover:border-green-500/30 transition-colors rounded-2xl p-5 shadow-sm"
               >
                 <div className="flex items-center gap-2 text-green-500 mb-3">
@@ -959,9 +947,9 @@ const GeneralRevenueReport: React.FC = () => {
                   ).toFixed(1)}
                   % доли
                 </div>
-              </motion.div>
-              <motion.div
-                variants={fadeInUp}
+              </div>
+              <div
+
                 className="bg-card border border-border/60 hover:border-purple-500/30 transition-colors rounded-2xl p-5 shadow-sm"
               >
                 <div className="flex items-center gap-2 text-purple-500 mb-3">
@@ -982,9 +970,9 @@ const GeneralRevenueReport: React.FC = () => {
                   ).toFixed(1)}
                   % доли
                 </div>
-              </motion.div>
-              <motion.div
-                variants={fadeInUp}
+              </div>
+              <div
+
                 className="bg-card border border-border/60 hover:border-red-500/30 transition-colors rounded-2xl p-5 shadow-sm"
               >
                 <div className="flex items-center gap-2 text-red-500 mb-3">
@@ -1005,22 +993,35 @@ const GeneralRevenueReport: React.FC = () => {
                   ).toFixed(1)}
                   % доли
                 </div>
-              </motion.div>
-            </motion.div>
-          </motion.section>
+              </div>
+              <div
+                className="bg-card border border-border/60 hover:border-orange-500/30 transition-colors rounded-2xl p-5 shadow-sm"
+              >
+                <div className="flex items-center gap-2 text-orange-500 mb-3">
+                  <Activity className="w-5 h-5" />{" "}
+                  <span className="font-medium text-sm">Сертификаты</span>
+                </div>
+                <div className="text-2xl font-bold">
+                  {generalReportData.totalCertificate.toFixed(0)}{" "}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    BYN
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {(
+                    (generalReportData.totalCertificate /
+                      generalReportData.totalRevenue) *
+                    100
+                  ).toFixed(1)}
+                  % доли
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* Chapter 3: Dynamics & Charts */}
-          <motion.section
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-            className="space-y-8"
-          >
-            <motion.div
-              variants={fadeInUp}
-              className="flex items-end gap-4 mb-2"
-            >
+          <section className="space-y-8">
+            <div className="flex items-end gap-4 mb-2">
               <div>
                 <h3 className="text-2xl font-bold">Динамика Выручки</h3>
                 <p className="text-muted-foreground">
@@ -1028,10 +1029,10 @@ const GeneralRevenueReport: React.FC = () => {
                 </p>
               </div>
               <div className="flex-1 border-b border-border/50 pb-2 mb-1" />
-            </motion.div>
+            </div>
 
-            <motion.div
-              variants={fadeInUp}
+            <div
+
               className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-sm"
             >
               <div className="h-[400px] w-full">
@@ -1192,19 +1193,19 @@ const GeneralRevenueReport: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </motion.section>
+            </div>
+          </section>
 
           {/* Chapter 4: Efficiency & Analytics */}
-          <motion.section
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
+          <section
+
+
+
+
             className="space-y-8"
           >
-            <motion.div
-              variants={fadeInUp}
+            <div
+
               className="flex items-end gap-4 mb-2"
             >
               <div>
@@ -1214,11 +1215,11 @@ const GeneralRevenueReport: React.FC = () => {
                 </p>
               </div>
               <div className="flex-1 border-b border-border/50 pb-2 mb-1" />
-            </motion.div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <motion.div
-                variants={fadeInUp}
+              <div
+
                 className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-sm"
               >
                 <h4 className="font-semibold mb-6 flex items-center">
@@ -1307,10 +1308,10 @@ const GeneralRevenueReport: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                variants={fadeInUp}
+              <div
+
                 className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-sm"
               >
                 <h4 className="font-semibold mb-6 flex items-center">
@@ -1369,10 +1370,8 @@ const GeneralRevenueReport: React.FC = () => {
                                 {day}
                               </div>
                               <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden flex">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  whileInView={{ width: `${percent}%` }}
-                                  transition={{ duration: 1, delay: idx * 0.1 }}
+                                <div
+                                  style={{ width: `${percent}%` }}
                                   className={`h-full ${idx === 0 ? "bg-primary" : "bg-primary/50"}`}
                                 />
                               </div>
@@ -1388,21 +1387,21 @@ const GeneralRevenueReport: React.FC = () => {
                     );
                   })()}
                 </div>
-              </motion.div>
+              </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* Chapter 5: Corporate Clients */}
           {generalReportData.organizationBreakdown.length > 0 && (
-            <motion.section
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
+            <section
+
+
+
+
               className="space-y-8"
             >
-              <motion.div
-                variants={fadeInUp}
+              <div
+
                 className="flex items-end gap-4 mb-2"
               >
                 <div>
@@ -1412,11 +1411,11 @@ const GeneralRevenueReport: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex-1 border-b border-border/50 pb-2 mb-1" />
-              </motion.div>
+              </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <motion.div
-                  variants={fadeInUp}
+                <div
+
                   className="bg-gradient-to-br from-purple-500/10 to-background border border-purple-500/20 rounded-3xl p-6 sm:p-8 flex flex-col justify-center shadow-sm"
                 >
                   <div className="w-12 h-12 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-6">
@@ -1447,10 +1446,10 @@ const GeneralRevenueReport: React.FC = () => {
                       BYN
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  variants={fadeInUp}
+                <div
+
                   className="lg:col-span-2 bg-card border border-border rounded-3xl p-2 sm:p-4 shadow-sm overflow-hidden"
                 >
                   <div className="overflow-x-auto custom-scrollbar">
@@ -1506,9 +1505,9 @@ const GeneralRevenueReport: React.FC = () => {
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </div>
               </div>
-            </motion.section>
+            </section>
           )}
         </div>
       )}
