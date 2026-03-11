@@ -71,7 +71,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
 
   // Общая сумма работника
   const totalEarnings = employeeRecords.reduce(
-    (sum, record) => sum + record.price,
+    (sum, record) => sum + (record.price / record.employeeIds.length),
     0,
   );
 
@@ -138,6 +138,9 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                   <th className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right text-xs sm:text-sm font-semibold text-card-foreground">
                     Стоимость
                   </th>
+                  <th className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right text-xs sm:text-sm font-semibold text-primary">
+                    Доля
+                  </th>
                   <th className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-left text-xs sm:text-sm font-semibold text-card-foreground">
                     Оплата
                   </th>
@@ -179,6 +182,9 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right font-semibold text-card-foreground text-xs sm:text-sm">
                         {record.price.toFixed(2)} BYN
                       </td>
+                      <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right font-bold text-primary text-xs sm:text-sm">
+                        {(record.price / record.employeeIds.length).toFixed(2)} BYN
+                      </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-card-foreground text-xs sm:text-sm">
                         {getPaymentMethodDisplay(
                           record.paymentMethod.type,
@@ -200,7 +206,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                 ) : (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="py-8 sm:py-12 text-center text-muted-foreground text-xs sm:text-sm"
                     >
                       У этого работника нет записей за выбранную дату.
