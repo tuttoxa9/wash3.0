@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { CreditCard, BanknotesIcon as Coins, BuildingOfficeIcon as Building2, CheckCircle, X, Check, Loader2, ArrowRight } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { useAppContext } from "@/lib/context/AppContext";
-import type { CarWashRecord, EmployeeRole, PaymentMethod } from "@/lib/types";
+import type { CarWashRecord, EmployeeRole, PaymentMethod, MinimumPaymentSettings } from "@/lib/types";
+import { format, parseISO } from "date-fns";
+import { calculateEmployeeShare } from "@/lib/employee-utils";
 
 interface CloseDebtModalProps {
   onClose: () => void;
@@ -10,6 +12,7 @@ interface CloseDebtModalProps {
   clickPosition?: { x: number; y: number } | null;
   record?: CarWashRecord;
   roles?: Record<string, EmployeeRole>;
+  minimumPaymentSettings: MinimumPaymentSettings;
 }
 
 const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
@@ -18,6 +21,7 @@ const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
   clickPosition,
   record,
   roles,
+  minimumPaymentSettings,
 }) => {
   const { state } = useAppContext();
   const [loading, setLoading] = useState(false);
@@ -51,16 +55,54 @@ const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
     >
       <div className="space-y-4">
         {record && (
-          <div className="bg-card border border-border rounded-xl p-4 mb-4">
-            <h3 className="font-semibold text-lg mb-2">Детали записи</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Клиент:</span>
-                <span className="font-medium">{record.clientName}</span>
+          <div className="mb-5 space-y-3">
+            <div className="p-3 rounded-xl bg-muted/30 border border-border/40">
+              <div className="flex justify-between items-start mb-1">
+                <div className="text-sm font-bold text-foreground">
+                  {record.carInfo}
+                </div>
+                <div className="text-[10px] font-medium text-muted-foreground bg-background px-1.5 py-0.5 rounded border border-border/40">
+                  {format(parseISO(record.date as string), "dd.MM.yyyy")} {record.time}
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Сумма:</span>
-                <span className="font-medium text-destructive">{record.price} ₸</span>
+              <div className="text-xs text-muted-foreground mb-2">
+                {record.service} •{" "}
+                <span className="font-bold text-foreground">
+                  {record.price.toFixed(2)} BYN
+                </span>
+              </div>
+
+              <div className="pt-2 border-t border-border/40">
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  Работавшие сотрудники:
+                </div>
+                <div className="space-y-1">
+                  {record.employeeIds.map((id) => {
+                    const employee = state.employees.find((e) => e.id === id);
+                    const role = roles?.[id] || "washer";
+                    const earnings = calculateEmployeeShare(record, id, role, minimumPaymentSettings);
+                    return (
+                      <div
+                        key={id}
+                        className="flex justify-between items-center text-xs"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-foreground">
+                            {employee?.name || "Неизвестный"}
+                          </span>
+                          <span
+                            className={`text-[9px] px-1 rounded ${role === "admin" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}
+                          >
+                            {role === "admin" ? "Админ" : "Мойщик"}
+                          </span>
+                        </div>
+                        <div className="font-medium text-primary">
+                          +{earnings.toFixed(2)} BYN
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
