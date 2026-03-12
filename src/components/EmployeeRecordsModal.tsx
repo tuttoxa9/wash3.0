@@ -1,5 +1,6 @@
 import { useAppContext } from "@/lib/context/AppContext";
 import type { CarWashRecord, Employee } from "@/lib/types";
+import { determineEmployeeRole, calculateEmployeeShare } from "@/lib/employee-utils";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import React, { useState, useMemo, useEffect } from "react";
@@ -124,36 +125,10 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
           ? record.date
           : format(record.date, "yyyy-MM-dd");
 
-      // Определяем роль сотрудника на дату записи
-      const employeeRole = dailyRoles[recordDate]?.[employeeId] || "washer";
-
-      // Всегда используем выбранный метод (минималка + %)
-      const methodToUse = state.salaryCalculationMethod;
-
-      if (methodToUse === "minimumWithPercentage") {
-        const share = record.price / record.employeeIds.length;
-        const isDryClean = record.serviceType === "dryclean";
-
-        if (employeeRole === "washer") {
-          const percentage = isDryClean
-            ? state.minimumPaymentSettings.percentageWasherDryclean
-            : state.minimumPaymentSettings.percentageWasher;
-          return share * (percentage / 100);
-        } else if (employeeRole === "admin") {
-          if (record.employeeIds.includes(employeeId)) {
-            const percentage = isDryClean
-              ? state.minimumPaymentSettings.adminDrycleanPercentage
-              : state.minimumPaymentSettings.adminCarWashPercentage;
-            return share * (percentage / 100);
-          }
-          return 0;
-        }
-      }
-
-      // Если метод не выбран или неизвестен, возвращаем 0
-      return 0;
+      const employeeRole = determineEmployeeRole(employeeId, recordDate, dailyRoles, state.employees);
+      return calculateEmployeeShare(record, employeeId, employeeRole, state.minimumPaymentSettings as any);
     },
-    [dailyRoles, state.salaryCalculationMethod, state.minimumPaymentSettings],
+    [dailyRoles, state.employees, state.minimumPaymentSettings],
   );
 
   // Группировка записей по дням
@@ -194,7 +169,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   const statistics = useMemo(() => {
     const totalRecords = records.length;
     const totalRevenue = records.reduce((sum, record) => {
-      return sum + record.price / record.employeeIds.length;
+      return sum + calculateEmployeeEarnings(record, employee.id);
     }, 0);
 
     const totalEarnings = records.reduce((sum, record) => {
@@ -205,7 +180,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     const paymentStats = records.reduce(
       (stats, record) => {
         const method = record.paymentMethod.type;
-        const share = record.price / record.employeeIds.length;
+        const share = calculateEmployeeEarnings(record, employee.id);
 
         if (!stats[method]) {
           stats[method] = { count: 0, revenue: 0, earnings: 0, records: [] };
@@ -238,7 +213,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
         const date =
           typeof record.date === "string" ? parseISO(record.date) : record.date;
         const weekday = format(date, "EEEE", { locale: ru });
-        const share = record.price / record.employeeIds.length;
+        const share = calculateEmployeeEarnings(record, employee.id);
 
         if (!stats[weekday]) {
           stats[weekday] = { count: 0, revenue: 0, earnings: 0 };
@@ -266,7 +241,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
 
         const hour = Number.parseInt(record.time.split(":")[0]);
         const timeSlot = `${hour}:00-${hour + 1}:00`;
-        const share = record.price / record.employeeIds.length;
+        const share = calculateEmployeeEarnings(record, employee.id);
 
         if (!stats[timeSlot]) {
           stats[timeSlot] = { count: 0, revenue: 0, earnings: 0 };
@@ -291,7 +266,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     const serviceStats = records.reduce(
       (stats, record) => {
         const service = record.service || "Не указано";
-        const share = record.price / record.employeeIds.length;
+        const share = calculateEmployeeEarnings(record, employee.id);
 
         if (!stats[service]) {
           stats[service] = { count: 0, revenue: 0, earnings: 0 };
@@ -320,7 +295,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     const bestDay = Object.entries(groupedRecords).reduce(
       (best, [date, dayRecords]) => {
         const dayRevenue = dayRecords.reduce(
-          (sum, record) => sum + record.price / record.employeeIds.length,
+          (sum, record) => sum + calculateEmployeeEarnings(record, employee.id),
           0,
         );
         const dayEarnings = dayRecords.reduce(

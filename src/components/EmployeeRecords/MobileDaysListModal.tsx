@@ -89,7 +89,7 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
                 );
                 const dayRevenue = dayRecords.reduce(
                   (sum, record) =>
-                    sum + record.price / record.employeeIds.length,
+                    sum + calculateEmployeeEarnings(record, employee.id),
                   0,
                 );
 
