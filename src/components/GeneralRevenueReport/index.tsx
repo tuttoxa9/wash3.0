@@ -7,7 +7,7 @@ import {
   dailyRolesService,
 } from "@/lib/services/supabaseService";
 import type { CarWashRecord } from "@/lib/types";
-import { determineEmployeeRole } from "@/lib/utils";
+import { determineEmployeeRole } from "@/lib/employee-utils";
 import { format, isBefore, isEqual, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
