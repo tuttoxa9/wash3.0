@@ -86,7 +86,7 @@ const HomePage: React.FC = () => {
     useState(false);
 
   // Shift start animation state
-  const [shiftPhase, setShiftPhase] = useState<"idle" | "starting" | "success" | "active" | "closing" | "closed">("idle");
+  const [shiftPhase, setShiftPhase] = useState<"idle" | "starting" | "success" | "active" | "deleting" | "deleted">("idle");
 
   // Smooth scroll to shift selection with highlight
   const scrollToShift = () => {
@@ -523,46 +523,16 @@ const HomePage: React.FC = () => {
     });
   };
 
+  // Delete shift states
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+
   // Начало смены - зафиксировать сотрудников
   const startShift = async () => {
-    // Логика закрытия смены
+    // Логика удаления смены (если сняты все галочки)
     if (shiftEmployees.length === 0 && isEditingShift) {
-      setShiftPhase("closing");
-      try {
-        setLoading((prev) => ({ ...prev, savingShift: true }));
-
-        if (currentReport) {
-          const updatedReport = {
-            ...currentReport,
-            employeeIds: [],
-            dailyEmployeeRoles: {},
-          };
-
-          await dailyReportService.updateReport(updatedReport);
-
-          dispatch({
-            type: "SET_DAILY_REPORT",
-            payload: { date: selectedDate, report: updatedReport },
-          });
-        }
-
-        setTimeout(() => {
-          setShiftPhase("closed");
-          setLoading((prev) => ({ ...prev, savingShift: false }));
-
-          setTimeout(() => {
-            setIsShiftLocked(false);
-            setIsEditingShift(false);
-            setShiftPhase("idle");
-            toast.success("Смена закрыта");
-          }, 1500);
-        }, 1500);
-      } catch (error) {
-        console.error("Ошибка при закрытии смены:", error);
-        toast.error("Не удалось закрыть смену");
-        setShiftPhase("active");
-        setLoading((prev) => ({ ...prev, savingShift: false }));
-      }
+      setIsDeleteConfirmOpen(true);
       return;
     }
 
@@ -985,8 +955,75 @@ const HomePage: React.FC = () => {
   // --- RENDERING SPLIT ---
   // If the shift hasn't started, we render the Morning Lobby (Pre-shift state)
 
+  const handleDeleteShift = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDeleteError("");
+
+    if (deletePassword !== import.meta.env.VITE_SETTINGS_PASSWORD) {
+      setDeleteError("Неверный пароль. Попробуйте еще раз.");
+      return;
+    }
+
+    setIsDeleteConfirmOpen(false);
+    setDeletePassword("");
+    setShiftPhase("deleting");
+    try {
+      setLoading((prev) => ({ ...prev, savingShift: true }));
+
+      // Если отчет существует, удаляем все связанные данные
+      if (currentReport) {
+        // 1. Удаляем все записи о машинах за этот день
+        if (currentReport.records && currentReport.records.length > 0) {
+          await Promise.all(
+            currentReport.records.map((rec) => carWashService.delete(rec.id))
+          );
+        }
+
+        // 2. Удаляем ежедневные роли
+        await dailyRolesService.saveDailyRoles(selectedDate, {}); // или создать метод deleteDailyRoles, но пока просто обнуляем
+
+        // 3. Создаем пустой отчет вместо удаления документа (чтобы структура осталась валидной)
+        const emptyReport: DailyReport = {
+          id: selectedDate,
+          date: selectedDate,
+          employeeIds: [],
+          records: [],
+          totalCash: 0,
+          totalNonCash: 0,
+          dailyEmployeeRoles: {},
+          cashModifications: [],
+        };
+
+        await dailyReportService.updateReport(emptyReport);
+
+        dispatch({
+          type: "SET_DAILY_REPORT",
+          payload: { date: selectedDate, report: emptyReport },
+        });
+      }
+
+      setTimeout(() => {
+        setShiftPhase("deleted");
+        setLoading((prev) => ({ ...prev, savingShift: false }));
+
+        setTimeout(() => {
+          setIsShiftLocked(false);
+          setIsEditingShift(false);
+          setShiftPhase("idle");
+          toast.success("Смена и все данные за день удалены");
+        }, 1500);
+      }, 1500);
+    } catch (error) {
+      console.error("Ошибка при удалении смены:", error);
+      toast.error("Не удалось удалить смену");
+      setShiftPhase("active");
+      setLoading((prev) => ({ ...prev, savingShift: false }));
+    }
+  };
+
+
   // Окно начала смены и анимация перехода
-  if ((!shiftStarted && !isEditingShift) || ["starting", "success", "closing", "closed"].includes(shiftPhase)) {
+  if ((!shiftStarted && !isEditingShift) || ["starting", "success", "deleting", "deleted"].includes(shiftPhase)) {
     // Получаем записи на ближайшие 2 часа для текущей даты
     const now = new Date();
     const isDateToday = selectedDate === format(now, "yyyy-MM-dd");
@@ -1058,7 +1095,7 @@ const HomePage: React.FC = () => {
           </motion.div>
         )}
 
-        {["starting", "success", "closing", "closed"].includes(shiftPhase) && (
+        {["starting", "success", "deleting", "deleted"].includes(shiftPhase) && (
           <motion.div
             key="loading"
             initial={{ opacity: 0 }}
@@ -1101,33 +1138,33 @@ const HomePage: React.FC = () => {
                   </motion.div>
                 )}
 
-                {shiftPhase === "closing" && (
+                {shiftPhase === "deleting" && (
                   <motion.div
-                    key="spinner-close"
+                    key="spinner-delete"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                     className="flex flex-col items-center gap-5 text-destructive"
                   >
-                    <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
-                    <span className="text-base font-medium text-foreground">Закрытие смены...</span>
+                    <Loader2 className="w-12 h-12 animate-spin text-destructive/50" />
+                    <span className="text-base font-medium text-foreground">Удаление смены...</span>
                   </motion.div>
                 )}
 
-                {shiftPhase === "closed" && (
+                {shiftPhase === "deleted" && (
                   <motion.div
-                    key="check-close"
+                    key="check-delete"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                     className="flex flex-col items-center gap-5"
                   >
-                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                      <Check className="w-8 h-8" />
+                    <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+                      <Trash2 className="w-8 h-8" />
                     </div>
-                    <span className="text-base font-medium text-foreground">Смена закрыта</span>
+                    <span className="text-base font-medium text-foreground">Смена удалена</span>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -1595,8 +1632,8 @@ const HomePage: React.FC = () => {
 
                   <div className="pt-4 border-t border-border/50 flex flex-col gap-3">
                     {shiftEmployees.length === 0 && (
-                      <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400 text-sm text-center font-medium">
-                        Вы сняли всех сотрудников. Сохранение закроет текущую смену.
+                      <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm text-center font-medium">
+                        Вы сняли всех сотрудников. Продолжение приведет к ПОЛНОМУ УДАЛЕНИЮ смены и всех записей за этот день.
                       </div>
                     )}
                     <button
@@ -1604,7 +1641,7 @@ const HomePage: React.FC = () => {
                       disabled={loading.savingShift}
                       className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white transition-all shadow-sm ${
                         shiftEmployees.length === 0
-                          ? "bg-red-500 hover:bg-red-600"
+                          ? "bg-destructive hover:bg-destructive/90"
                           : "bg-primary hover:bg-primary/90"
                       } disabled:opacity-50`}
                     >
@@ -1615,8 +1652,8 @@ const HomePage: React.FC = () => {
                         </>
                       ) : (
                         <>
-                          <Save className="w-5 h-5" />
-                          <span>{shiftEmployees.length === 0 ? "Закрыть смену" : "Сохранить изменения"}</span>
+                          {shiftEmployees.length === 0 ? <Trash2 className="w-5 h-5" /> : <Save className="w-5 h-5" />}
+                          <span>{shiftEmployees.length === 0 ? "Удалить смену" : "Сохранить изменения"}</span>
                         </>
                       )}
                     </button>
@@ -2223,6 +2260,77 @@ const HomePage: React.FC = () => {
           currentReport={currentReport}
           selectedDate={selectedDate}
         />
+      )}
+
+      {isDeleteConfirmOpen && (
+        <Modal
+          isOpen={isDeleteConfirmOpen}
+          onClose={() => {
+            setIsDeleteConfirmOpen(false);
+            setDeletePassword("");
+            setDeleteError("");
+          }}
+          className="max-w-md"
+        >
+          <div className="p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Подтвердите удаление</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Вы собираетесь удалить смену. Это действие безвозвратно удалит <b>ВСЕ</b> записи о помытых машинах, выручку, долги и внесенные наличные за эту дату ({format(new Date(selectedDate), "dd.MM.yyyy")}).
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleDeleteShift} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">
+                  Введите пароль от настроек:
+                </label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Пароль"
+                  autoFocus
+                  className="w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-destructive text-sm"
+                />
+                {deleteError && (
+                  <p className="text-xs text-destructive mt-1.5">{deleteError}</p>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDeleteConfirmOpen(false);
+                    setDeletePassword("");
+                    setDeleteError("");
+                  }}
+                  className="px-4 py-2 rounded-xl border border-input text-sm font-medium hover:bg-secondary/50 transition-colors"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  disabled={!deletePassword || loading.savingShift}
+                  className="flex items-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-xl text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                >
+                  {loading.savingShift ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  Удалить навсегда
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
       )}
 
       {dailyReportModalOpen && shiftStarted && (
