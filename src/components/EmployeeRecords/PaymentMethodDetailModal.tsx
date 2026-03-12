@@ -164,7 +164,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
                   {records
                     .reduce(
                       (sum, record) =>
-                        sum + record.price / record.employeeIds.length,
+                        sum + calculateEmployeeEarnings(record, employee.id),
                       0,
                     )
                     .toFixed(0)}
@@ -237,7 +237,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
                     ? (
                         records.reduce(
                           (sum, record) =>
-                            sum + record.price / record.employeeIds.length,
+                            sum + calculateEmployeeEarnings(record, employee.id),
                           0,
                         ) / records.length
                       ).toFixed(0)

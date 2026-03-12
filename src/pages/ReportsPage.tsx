@@ -340,7 +340,7 @@ const ReportsPage: React.FC = () => {
         if (relevantEmployeeIds.length === 0) return;
 
         // Calculate share per employee
-        const valuePerEmployee = record.price / relevantEmployeeIds.length;
+        const valuePerEmployee = record.price / record.employeeIds.length;
 
         relevantEmployeeIds.forEach((empId) => {
           const empData = employeeMap.get(empId);
