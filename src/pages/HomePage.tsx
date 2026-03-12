@@ -203,10 +203,19 @@ const HomePage: React.FC = () => {
     );
 
     const carCount = employeeRecords.length;
-    const totalEarnings = employeeRecords.reduce(
-      (sum, record) => sum + (record.price / record.employeeIds.length),
-      0,
-    );
+    const totalEarnings = employeeRecords.reduce((sum, record) => {
+      const share = record.price / record.employeeIds.length;
+      const role = state.employees.find(e => e.id === employeeId)?.role || 'washer';
+      const isDryClean = record.serviceType === "dryclean";
+      let percentage = 0;
+
+      if (role === "washer") {
+        percentage = isDryClean ? (state.minimumPaymentSettings?.percentageWasherDryclean || 40) : (state.minimumPaymentSettings?.percentageWasher || 30);
+      } else if (role === "admin") {
+        percentage = isDryClean ? (state.minimumPaymentSettings?.adminDrycleanPercentage || 20) : (state.minimumPaymentSettings?.adminCarWashPercentage || 15);
+      }
+      return sum + (share * (percentage / 100));
+    }, 0);
 
     return { carCount, totalEarnings };
   };
@@ -3478,10 +3487,19 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   };
 
   // Общая сумма работника
-  const totalEarnings = employeeRecords.reduce(
-    (sum, record) => sum + (record.price / record.employeeIds.length),
-    0,
-  );
+  const totalEarnings = employeeRecords.reduce((sum, record) => {
+    const share = record.price / record.employeeIds.length;
+    const isDryClean = record.serviceType === "dryclean";
+    let percentage = 0;
+    const role = employees.find(e => e.id === employeeId)?.role || 'washer';
+
+    if (role === "washer") {
+      percentage = isDryClean ? 40 : 30;
+    } else if (role === "admin") {
+      percentage = isDryClean ? 20 : 15;
+    }
+    return sum + (share * (percentage / 100));
+  }, 0);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -3591,7 +3609,18 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                         {record.price.toFixed(2)} BYN
                       </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right font-bold text-primary text-xs sm:text-sm">
-                        {(record.price / record.employeeIds.length).toFixed(2)} BYN
+                        {(() => {
+                          const share = record.price / record.employeeIds.length;
+                          const isDryClean = record.serviceType === "dryclean";
+                          let percentage = 0;
+                          const role = employees.find(e => e.id === employeeId)?.role || 'washer';
+                          if (role === "washer") {
+                            percentage = isDryClean ? 40 : 30;
+                          } else if (role === "admin") {
+                            percentage = isDryClean ? 20 : 15;
+                          }
+                          return (share * (percentage / 100)).toFixed(2);
+                        })()} BYN
                       </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-card-foreground text-xs sm:text-sm">
                         {getPaymentMethodDisplay(
