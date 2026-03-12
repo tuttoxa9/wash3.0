@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Loader2, CheckCircle, Clock } from "lucide-react";
+import { Calendar, Loader2, CheckCircle, Clock, ArrowRight, X, Plus } from "lucide-react";
 import { useAppContext } from "@/lib/context/AppContext";
 import { appointmentService } from "@/lib/services/supabaseService";
 import type { Appointment } from "@/lib/types";
