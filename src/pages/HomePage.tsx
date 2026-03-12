@@ -200,7 +200,7 @@ const HomePage: React.FC = () => {
   // Функция для получения статистики работника
   const getEmployeeStats = (employeeId: string) => {
     if (!currentReport?.records) {
-      return { carCount: 0, totalEarnings: 0 };
+      return { carCount: 0, totalServicesAmount: 0 };
     }
 
     const employeeRecords = currentReport.records.filter((record) =>
@@ -208,12 +208,12 @@ const HomePage: React.FC = () => {
     );
 
     const carCount = employeeRecords.length;
-    const totalEarnings = employeeRecords.reduce((sum, record) => {
-      const role = employeeRoles[employeeId] || state.employees.find(e => e.id === employeeId)?.role || 'washer';
-      return sum + calculateEmployeeShare(record, employeeId, role, state.minimumPaymentSettings);
+    // Сумма оказанных услуг, разделенная на количество сотрудников, выполнявших услугу
+    const totalServicesAmount = employeeRecords.reduce((sum, record) => {
+      return sum + record.price / record.employeeIds.length;
     }, 0);
 
-    return { carCount, totalEarnings };
+    return { carCount, totalServicesAmount };
   };
 
   // Обработчик открытия модального окна работника
@@ -1425,7 +1425,7 @@ const HomePage: React.FC = () => {
                             Сумма
                           </span>
                           <span className="font-semibold text-sm sm:text-base text-card-foreground">
-                            {stats.totalEarnings.toFixed(0)} BYN
+                            {stats.totalServicesAmount.toFixed(0)} BYN
                           </span>
                         </div>
                       </div>
