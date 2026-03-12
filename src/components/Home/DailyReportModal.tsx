@@ -8,6 +8,7 @@ import { createSalaryCalculator } from "@/components/SalaryCalculator";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { toast } from "sonner";
+import type { EmployeeRole, MinimumPaymentSettings } from "@/lib/types";
 
 interface DailyReportModalProps {
   onClose: () => void;
@@ -21,6 +22,8 @@ interface DailyReportModalProps {
   onPaymentFilterChange: (
     filter: "all" | "cash" | "card" | "organization" | "debt" | "certificate",
   ) => void;
+  employeeRoles?: Record<string, EmployeeRole>;
+  minimumPaymentSettings?: MinimumPaymentSettings;
 }
 
 const DailyReportModal: React.FC<DailyReportModalProps> = ({
@@ -33,6 +36,8 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
   isExporting,
   paymentFilter,
   onPaymentFilterChange,
+  employeeRoles,
+  minimumPaymentSettings,
 }) => {
   const { state, dispatch } = useAppContext();
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
@@ -1087,7 +1092,5 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
     </div>
   );
 };
-
-export default HomePage;
 
 export default DailyReportModal;

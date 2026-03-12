@@ -5,9 +5,9 @@ import { useAppContext } from "@/lib/context/AppContext";
 import { carWashService, dailyReportService } from "@/lib/services/supabaseService";
 import type { CarWashRecord, DailyReport, Employee, Organization, PaymentMethod } from "@/lib/types";
 import { createSalaryCalculator } from "@/components/SalaryCalculator";
-import { calculateEmployeeShare, determineEmployeeRole } from "@/lib/employee-utils";
-import { format } from "date-fns";
+import { calculateEmployeeShare } from "@/lib/employee-utils";
 import { toast } from "sonner";
+import type { EmployeeRole, MinimumPaymentSettings } from "@/lib/types";
 
 interface EmployeeDetailModalProps {
   employeeId: string;
@@ -15,6 +15,8 @@ interface EmployeeDetailModalProps {
   currentReport: DailyReport | null;
   employees: Employee[];
   organizations: Organization[];
+  employeeRoles: Record<string, EmployeeRole>;
+  minimumPaymentSettings: MinimumPaymentSettings;
 }
 
 const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
@@ -23,8 +25,9 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   currentReport,
   employees,
   organizations,
+  employeeRoles,
+  minimumPaymentSettings,
 }) => {
-  const { state } = useAppContext();
   const employee = employees.find((emp) => emp.id === employeeId);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [editFormData, setEditFormData] =
@@ -74,9 +77,8 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
 
   // Общая сумма работника
   const totalEarnings = employeeRecords.reduce((sum, record) => {
-    const dateStr = typeof record.date === "string" ? record.date : format(record.date, "yyyy-MM-dd");
-    const role = determineEmployeeRole(employeeId, dateStr, state.dailyRoles[dateStr] || {}, employees);
-    return sum + calculateEmployeeShare(record, employeeId, role, state.minimumPaymentSettings as any);
+    const role = employeeRoles[employeeId] || employees.find(e => e.id === employeeId)?.role || 'washer';
+    return sum + calculateEmployeeShare(record, employeeId, role, minimumPaymentSettings);
   }, 0);
 
   return (
@@ -143,7 +145,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                     Стоимость
                   </th>
                   <th className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right text-xs sm:text-sm font-semibold text-primary">
-                    Доля
+                    Заработок
                   </th>
                   <th className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-left text-xs sm:text-sm font-semibold text-card-foreground">
                     Оплата
@@ -188,9 +190,8 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                       </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right font-bold text-primary text-xs sm:text-sm">
                         {(() => {
-                          const dateStr = typeof record.date === "string" ? record.date : format(record.date, "yyyy-MM-dd");
-                          const role = determineEmployeeRole(employeeId, dateStr, state.dailyRoles[dateStr] || {}, employees);
-                          return calculateEmployeeShare(record, employeeId, role, state.minimumPaymentSettings as any).toFixed(2);
+                          const role = employeeRoles[employeeId] || employees.find(e => e.id === employeeId)?.role || 'washer';
+                          return calculateEmployeeShare(record, employeeId, role, minimumPaymentSettings).toFixed(2);
                         })()} BYN
                       </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-card-foreground text-xs sm:text-sm">
