@@ -13,7 +13,7 @@ import {
   organizationService,
 } from "@/lib/services/supabaseService";
 import type { CarWashRecord, Employee } from "@/lib/types";
-import { determineEmployeeRole } from "@/lib/utils";
+import { determineEmployeeRole } from "@/lib/employee-utils";
 import {
   endOfMonth,
   endOfWeek,

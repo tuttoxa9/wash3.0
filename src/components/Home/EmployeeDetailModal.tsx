@@ -5,6 +5,8 @@ import { useAppContext } from "@/lib/context/AppContext";
 import { carWashService, dailyReportService } from "@/lib/services/supabaseService";
 import type { CarWashRecord, DailyReport, Employee, Organization, PaymentMethod } from "@/lib/types";
 import { createSalaryCalculator } from "@/components/SalaryCalculator";
+import { calculateEmployeeShare, determineEmployeeRole } from "@/lib/employee-utils";
+import { format } from "date-fns";
 import { toast } from "sonner";
 
 interface EmployeeDetailModalProps {
@@ -22,6 +24,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   employees,
   organizations,
 }) => {
+  const { state } = useAppContext();
   const employee = employees.find((emp) => emp.id === employeeId);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [editFormData, setEditFormData] =
@@ -70,10 +73,11 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   };
 
   // Общая сумма работника
-  const totalEarnings = employeeRecords.reduce(
-    (sum, record) => sum + (record.price / record.employeeIds.length),
-    0,
-  );
+  const totalEarnings = employeeRecords.reduce((sum, record) => {
+    const dateStr = typeof record.date === "string" ? record.date : format(record.date, "yyyy-MM-dd");
+    const role = determineEmployeeRole(employeeId, dateStr, state.dailyRoles[dateStr] || {}, employees);
+    return sum + calculateEmployeeShare(record, employeeId, role, state.minimumPaymentSettings as any);
+  }, 0);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -183,7 +187,11 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                         {record.price.toFixed(2)} BYN
                       </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right font-bold text-primary text-xs sm:text-sm">
-                        {(record.price / record.employeeIds.length).toFixed(2)} BYN
+                        {(() => {
+                          const dateStr = typeof record.date === "string" ? record.date : format(record.date, "yyyy-MM-dd");
+                          const role = determineEmployeeRole(employeeId, dateStr, state.dailyRoles[dateStr] || {}, employees);
+                          return calculateEmployeeShare(record, employeeId, role, state.minimumPaymentSettings as any).toFixed(2);
+                        })()} BYN
                       </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-card-foreground text-xs sm:text-sm">
                         {getPaymentMethodDisplay(
