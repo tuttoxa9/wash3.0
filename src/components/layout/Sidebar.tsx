@@ -9,6 +9,7 @@ import {
   BarChart3,
   Clipboard,
   Download,
+  HelpCircle,
   History,
   Home,
   LayoutDashboard,
@@ -25,6 +26,7 @@ import type React from "react";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import ChangelogModal from "../ui/ChangelogModal";
+import HelpModal from "../ui/HelpModal";
 import { CURRENT_VERSION } from "@/lib/changelog";
 import { toast } from "sonner";
 
@@ -42,6 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [isChangelogModalOpen, setIsChangelogModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [newNoteText, setNewNoteText] = useState("");
 
   const currentReport = state.dailyReports[state.currentDate];
@@ -273,6 +276,18 @@ const Sidebar: React.FC<SidebarProps> = ({
               <span>Настройки</span>
             </NavLink>
 
+            {/* Справка и Инструкции */}
+            <button
+              onClick={() => {
+                setIsHelpModalOpen(true);
+                toggleMobileSidebar();
+              }}
+              className="sidebar-link w-full text-left"
+            >
+              <HelpCircle className="w-5 h-5" />
+              <span>Справка</span>
+            </button>
+
             {/* Заметки смены - Mobile View (Button only) */}
             <button
               onClick={() => {
@@ -494,6 +509,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       <ChangelogModal
         isOpen={isChangelogModalOpen}
         onClose={() => setIsChangelogModalOpen(false)}
+      />
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
       />
     </>
   );
