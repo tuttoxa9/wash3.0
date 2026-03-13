@@ -447,16 +447,16 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   const activeSection = activeSectionId ? sections.find(s => s.id === activeSectionId) : null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-background/95 backdrop-blur-md transition-opacity duration-200">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-background/95 backdrop-blur-md">
 
       {/* HEADER */}
-      <div className="flex items-center justify-between p-4 md:px-6 md:py-4 border-b border-border/40 bg-card shrink-0">
+      <div className="flex items-center justify-between p-4 md:px-6 md:py-4 border-b border-border/40 bg-card shrink-0 z-10">
         <div className="flex items-center gap-3">
           {/* Кнопка "Назад" для мобилок */}
           {isMobile && activeSectionId ? (
             <button
               onClick={() => setActiveSectionId(null)}
-              className="p-2 -ml-2 mr-1 rounded-xl hover:bg-accent text-foreground transition-colors"
+              className="p-2 -ml-2 mr-1 rounded-xl hover:bg-accent text-foreground"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -478,120 +478,120 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
         <button
           onClick={onClose}
-          className="p-2 rounded-xl bg-muted/50 hover:bg-muted text-foreground transition-colors"
+          className="p-2 rounded-xl bg-muted/50 hover:bg-muted text-foreground"
           aria-label="Закрыть"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex-1 overflow-hidden relative bg-background">
+        <div
+          className={`flex h-full w-[200%] md:w-full transition-transform duration-300 ease-in-out md:transition-none md:transform-none ${
+            isMobile && activeSectionId ? "-translate-x-1/2" : "translate-x-0"
+          }`}
+        >
 
-        {/* SIDEBAR / MOBILE LIST */}
-        <div className={`
-          flex flex-col bg-muted/10 border-r border-border/40
-          ${isMobile ? (activeSectionId ? 'hidden' : 'w-full') : 'w-[320px] shrink-0'}
-        `}>
-          {/* Поиск */}
-          <div className="p-4 border-b border-border/40 shrink-0">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Поиск по инструкции..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-card border border-border/50 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 transition-colors shadow-sm"
-              />
+          {/* SIDEBAR / MOBILE LIST */}
+          <div className="w-1/2 md:w-[320px] shrink-0 flex flex-col bg-muted/10 border-r border-border/40 h-full">
+            {/* Поиск */}
+            <div className="p-4 border-b border-border/40 shrink-0">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Поиск по инструкции..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-card border border-border/50 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 shadow-sm"
+                />
+              </div>
+            </div>
+
+            {/* Список разделов */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+              {filteredSections.length > 0 ? (
+                filteredSections.map((section) => {
+                  const isActive = !isMobile && activeSectionId === section.id;
+
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSectionId(section.id)}
+                      className={`
+                        w-full flex items-start gap-4 p-4 rounded-2xl text-left border
+                        ${isActive
+                          ? "bg-card border-primary/20 shadow-sm"
+                          : "bg-transparent border-transparent hover:bg-card hover:border-border/50 hover:shadow-sm"
+                        }
+                      `}
+                    >
+                      <div className={`shrink-0 p-2.5 rounded-xl ${isActive ? "bg-primary/10" : "bg-muted"}`}>
+                        {section.icon}
+                      </div>
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <h3 className={`text-sm font-bold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                          {section.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                          {section.description}
+                        </p>
+                      </div>
+                      {isMobile && (
+                        <ChevronRight className="w-5 h-5 shrink-0 text-muted-foreground self-center ml-2" />
+                      )}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center p-6 text-muted-foreground">
+                  <Search className="w-8 h-8 mb-3 opacity-20" />
+                  <p className="text-sm font-medium">Ничего не найдено</p>
+                  <p className="text-xs mt-1">Попробуйте изменить запрос</p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Список разделов */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
-            {filteredSections.length > 0 ? (
-              filteredSections.map((section) => {
-                const isActive = !isMobile && activeSectionId === section.id;
+          {/* MAIN CONTENT AREA */}
+          <div className="w-1/2 md:flex-1 shrink-0 flex flex-col overflow-hidden bg-background h-full relative">
+            {activeSection ? (
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-5 md:p-8 lg:p-12">
+                <div className="max-w-3xl mx-auto">
 
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSectionId(section.id)}
-                    className={`
-                      w-full flex items-start gap-4 p-4 rounded-2xl text-left transition-all duration-200 border
-                      ${isActive
-                        ? "bg-card border-primary/20 shadow-sm"
-                        : "bg-transparent border-transparent hover:bg-card hover:border-border/50 hover:shadow-sm"
-                      }
-                    `}
-                  >
-                    <div className={`shrink-0 p-2.5 rounded-xl ${isActive ? "bg-primary/10" : "bg-muted"}`}>
-                      {section.icon}
+                  {/* Заголовок статьи на десктопе */}
+                  {!isMobile && (
+                    <div className="flex items-center gap-4 mb-8 pb-6 border-b border-border/40">
+                      <div className="p-3 bg-muted/50 rounded-2xl border border-border/50">
+                        {activeSection.icon}
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-foreground tracking-tight">{activeSection.title}</h2>
+                        <p className="text-muted-foreground mt-1 text-sm">{activeSection.description}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <h3 className={`text-sm font-bold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
-                        {section.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
-                        {section.description}
-                      </p>
-                    </div>
-                    {isMobile && (
-                      <ChevronRight className="w-5 h-5 shrink-0 text-muted-foreground self-center ml-2" />
-                    )}
-                  </button>
-                );
-              })
+                  )}
+
+                  {/* Контент */}
+                  <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none">
+                    {activeSection.content}
+                  </div>
+
+                </div>
+              </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center p-6 text-muted-foreground">
-                <Search className="w-8 h-8 mb-3 opacity-20" />
-                <p className="text-sm font-medium">Ничего не найдено</p>
-                <p className="text-xs mt-1">Попробуйте изменить запрос</p>
+              // Empty state for desktop when nothing is selected
+              <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-6">
+                <div className="w-16 h-16 rounded-3xl bg-muted/30 flex items-center justify-center mb-4 border border-border/50">
+                  <HelpCircle className="w-8 h-8 opacity-50" />
+                </div>
+                <h3 className="text-lg font-medium text-foreground">Выберите раздел</h3>
+                <p className="text-sm mt-1 max-w-xs text-center">Инструкции и ответы на частые вопросы появятся здесь</p>
               </div>
             )}
           </div>
+
         </div>
-
-        {/* MAIN CONTENT AREA */}
-        <div className={`
-          flex-1 bg-background flex flex-col overflow-hidden relative
-          ${isMobile ? (activeSectionId ? 'flex' : 'hidden') : 'flex'}
-        `}>
-          {activeSection ? (
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 md:p-8 lg:p-12">
-              <div className="max-w-3xl mx-auto animate-fade-in-up">
-
-                {/* Заголовок статьи на десктопе */}
-                {!isMobile && (
-                  <div className="flex items-center gap-4 mb-8 pb-6 border-b border-border/40">
-                    <div className="p-3 bg-muted/50 rounded-2xl border border-border/50">
-                      {activeSection.icon}
-                    </div>
-                    <div>
-                      <h2 className="text-3xl font-bold text-foreground tracking-tight">{activeSection.title}</h2>
-                      <p className="text-muted-foreground mt-1 text-sm">{activeSection.description}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Контент */}
-                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none">
-                  {activeSection.content}
-                </div>
-
-              </div>
-            </div>
-          ) : (
-            // Empty state for desktop when nothing is selected
-            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-6">
-              <div className="w-16 h-16 rounded-3xl bg-muted/30 flex items-center justify-center mb-4 border border-border/50">
-                <HelpCircle className="w-8 h-8 opacity-50" />
-              </div>
-              <h3 className="text-lg font-medium text-foreground">Выберите раздел</h3>
-              <p className="text-sm mt-1 max-w-xs text-center">Инструкции и ответы на частые вопросы появятся здесь</p>
-            </div>
-          )}
-        </div>
-
       </div>
     </div>
   );
