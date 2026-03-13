@@ -31,7 +31,7 @@ const sections: HelpSection[] = [
   {
     id: "shift",
     title: "Открытие и закрытие смены",
-    description: "Начало рабочего дня, выбор сотрудников, настройка ролей",
+    description: "Начало рабочего дня, ввод остатка кассы, выбор сотрудников",
     icon: <Clock className="w-5 h-5 text-blue-500" />,
     content: (
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
@@ -48,15 +48,15 @@ const sections: HelpSection[] = [
 
             <h4 className="font-bold text-foreground flex items-center gap-2 mt-4">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">2</span>
-              Состав смены
+              Начальная касса
             </h4>
-            <p className="pl-8 text-muted-foreground">Отметьте галочками сотрудников, которые сегодня работают.</p>
+            <p className="pl-8 text-muted-foreground">Перед выбором сотрудников программа попросит указать <strong>Остаток наличных в кассе</strong> на начало дня. Это нужно для корректной сверки в конце смены.</p>
 
             <h4 className="font-bold text-foreground flex items-center gap-2 mt-4">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">3</span>
-              Настройка ролей
+              Состав смены и роли
             </h4>
-            <p className="pl-8 text-muted-foreground">Укажите роль (Мойщик / Админ) и выберите, нужно ли учитывать минимальную оплату за выход (галочка «Учитывать минималку»).</p>
+            <p className="pl-8 text-muted-foreground">Отметьте галочками сотрудников, которые сегодня работают. Укажите роль (Мойщик / Админ) и выберите, нужно ли учитывать минимальную оплату за выход.</p>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ const sections: HelpSection[] = [
           <p className="text-amber-600/90 text-sm">
             Если вы ошиблись при открытии смены, нажмите кнопку <strong>«Изменить состав»</strong>.
             <br/><br/>
-            <strong>Внимание:</strong> Если снять галочки со всех сотрудников и сохранить — текущая смена и все добавленные за этот день услуги будут <strong>ПОЛНОСТЬЮ УДАЛЕНЫ</strong> (для этого потребуется пароль от настроек).
+            <strong>Внимание:</strong> Если снять галочки со всех сотрудников и сохранить — текущая смена и все добавленные за этот день услуги будут <strong>ПОЛНОСТЬЮ УДАЛЕНЫ</strong> (потребуется пароль от настроек).
           </p>
         </div>
       </div>
@@ -211,54 +211,44 @@ const sections: HelpSection[] = [
   },
   {
     id: "cash",
-    title: "Касса (Изъятия/Внесения)",
-    description: "Размен, инкассация, покупка расходников",
+    title: "Касса и Сейф",
+    description: "Сверка кассы, выплата ЗП, инкассация в сейф и ручные операции",
     icon: <Wallet className="w-5 h-5 text-amber-500" />,
     content: (
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
-          <h3 className="text-xl font-bold text-foreground mb-3">Движение наличных и по карте</h3>
-          <p className="mb-4">Иногда в кассе происходят изменения, не связанные напрямую с мойкой машин: утренний размен, инкассация боссу, покупка химии или тряпок.</p>
+          <h3 className="text-xl font-bold text-foreground mb-3">Виджет «Состояние кассы»</h3>
+          <p className="mb-4">В конце дня (или в любой момент) на Главной странице вы можете нажать на блок <strong>«Состояние кассы»</strong>. Это главный инструмент для закрытия смены.</p>
 
-          <div className="bg-card border border-border/50 rounded-2xl overflow-hidden mb-6">
-            <div className="p-4 border-b border-border/50">
-              <h4 className="font-bold flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                Как добавить операцию:
-              </h4>
-            </div>
-            <div className="p-5">
-              <p className="text-muted-foreground mb-4">
-                На Главной странице в блоке «Итого» нажмите на плитку <strong>«Наличные»</strong>. Откроется окно управления кассой.
-              </p>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-xl">
-                  <h5 className="font-bold text-green-600 dark:text-green-500 mb-1 flex items-center gap-1">
-                    <PlusCircle className="w-4 h-4" /> Внесение
-                  </h5>
-                  <p className="text-xs text-muted-foreground">Добавление денег в кассу. Например, утренний размен или возврат сдачи.</p>
-                </div>
-                <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
-                  <h5 className="font-bold text-red-600 dark:text-red-500 mb-1 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" /> Изъятие
-                  </h5>
-                  <p className="text-xs text-muted-foreground">Выдача денег из кассы. Инкассация или покупка расходников. Обязательно указывайте комментарий!</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-primary/5 border border-primary/20 p-5 rounded-2xl flex gap-3 items-start">
-            <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <div className="bg-card border border-border/50 rounded-2xl p-5 mb-6 space-y-4 shadow-sm">
             <div>
-              <h4 className="font-bold text-primary mb-1">
-                Важно понимать
-              </h4>
-              <p className="text-primary/80 text-xs">
-                Эти суммы изменяют только итоговую цифру "Наличных" в интерфейсе, чтобы она совпадала с физическими деньгами в кассе администратора. Они <strong>никак не влияют на зарплаты</strong> сотрудников и общую сумму оказанных за день услуг.
-              </p>
+              <h4 className="font-bold text-foreground mb-1">1. Сверка кассы</h4>
+              <p className="text-muted-foreground text-sm">Программа показывает ожидаемую сумму наличных (Начальная касса + Все наличные за услуги). Вы можете нажать кнопку сверки и ввести <strong>фактическое количество денег</strong> в ящике. Программа покажет недостачу или излишек.</p>
+            </div>
+            <div className="w-full h-px bg-border/50"></div>
+            <div>
+              <h4 className="font-bold text-foreground mb-1">2. Выплата зарплат</h4>
+              <p className="text-muted-foreground text-sm">Прямо из виджета кассы нажмите «Выплатить ЗП». Выберите сотрудника из списка и введите сумму, которую выдаете ему на руки. Эта сумма автоматически вычтется из наличных в кассе.</p>
+            </div>
+            <div className="w-full h-px bg-border/50"></div>
+            <div>
+              <h4 className="font-bold text-foreground mb-1">3. Перенос в Сейф</h4>
+              <p className="text-muted-foreground text-sm">В конце дня оставшуюся сумму можно перенести в Сейф. Нажмите кнопку «В сейф», укажите сумму, и деньги спишутся из текущей кассы.</p>
             </div>
           </div>
+
+          <h3 className="text-xl font-bold text-foreground mb-3 mt-8">Общий Сейф</h3>
+          <p className="mb-4 text-muted-foreground">Доступен в левом меню в разделе <strong>Настройки → вкладка «Сейф»</strong>.</p>
+          <div className="bg-muted/20 border border-border/50 rounded-2xl p-5 mb-6">
+            <ul className="list-disc pl-4 space-y-2 text-muted-foreground">
+              <li>Хранит общий баланс всех перенесенных туда средств.</li>
+              <li>Вы можете вручную <strong>пополнить</strong> сейф или <strong>изъять</strong> из него деньги (например, босс забрал выручку).</li>
+              <li>Все операции (переносы из касс, ручные изъятия) сохраняются в подробной истории с датами и суммами.</li>
+            </ul>
+          </div>
+
+          <h3 className="text-xl font-bold text-foreground mb-3 mt-8">Ручные изъятия и внесения</h3>
+          <p className="mb-4 text-muted-foreground">Если в течение дня нужно дать сдачу, купить химию или воду — нажмите на блок «Наличные» (рядом с Итого). Там можно добавить Внесение или Изъятие (с комментарием). Эти операции меняют наличку в кассе, но <strong>не влияют на зарплаты</strong>.</p>
         </div>
       </div>
     ),
