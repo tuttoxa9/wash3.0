@@ -806,7 +806,7 @@ const GeneralRevenueReport: React.FC = () => {
                       Общая Выручка
                     </span>
                     <div className="text-5xl lg:text-7xl font-bold tracking-tighter text-foreground">
-                      {generalReportData.totalRevenue.toFixed(0)}{" "}
+                      {generalReportData.totalRevenue.toFixed(2)}{" "}
                       <span className="text-2xl lg:text-3xl text-muted-foreground font-medium">
                         BYN
                       </span>
@@ -839,7 +839,7 @@ const GeneralRevenueReport: React.FC = () => {
                                 (sum, day) => sum + day.recordsCount,
                                 0,
                               )
-                            ).toFixed(0)
+                            ).toFixed(2)
                           : 0}{" "}
                         <span className="text-sm text-muted-foreground">
                           BYN
@@ -862,7 +862,7 @@ const GeneralRevenueReport: React.FC = () => {
                     {(
                       generalReportData.totalRevenue -
                       generalReportData.totalSalaries
-                    ).toFixed(0)}{" "}
+                    ).toFixed(2)}{" "}
                     <span className="text-lg text-muted-foreground font-medium">
                       BYN
                     </span>
@@ -886,7 +886,7 @@ const GeneralRevenueReport: React.FC = () => {
                     Зарплат
                   </div>
                   <div className="text-3xl font-bold text-foreground">
-                    {generalReportData.totalSalaries.toFixed(0)}{" "}
+                    {generalReportData.totalSalaries.toFixed(2)}{" "}
                     <span className="text-lg text-muted-foreground font-medium">
                       BYN
                     </span>
@@ -911,7 +911,7 @@ const GeneralRevenueReport: React.FC = () => {
                   <span className="font-medium text-sm">Наличные</span>
                 </div>
                 <div className="text-2xl font-bold">
-                  {generalReportData.totalCash.toFixed(0)}{" "}
+                  {generalReportData.totalCash.toFixed(2)}{" "}
                   <span className="text-sm font-normal text-muted-foreground">
                     BYN
                   </span>
@@ -934,7 +934,7 @@ const GeneralRevenueReport: React.FC = () => {
                   <span className="font-medium text-sm">Карта</span>
                 </div>
                 <div className="text-2xl font-bold">
-                  {generalReportData.totalCard.toFixed(0)}{" "}
+                  {generalReportData.totalCard.toFixed(2)}{" "}
                   <span className="text-sm font-normal text-muted-foreground">
                     BYN
                   </span>
@@ -957,7 +957,7 @@ const GeneralRevenueReport: React.FC = () => {
                   <span className="font-medium text-sm">Безнал (Орг.)</span>
                 </div>
                 <div className="text-2xl font-bold">
-                  {generalReportData.totalOrganizations.toFixed(0)}{" "}
+                  {generalReportData.totalOrganizations.toFixed(2)}{" "}
                   <span className="text-sm font-normal text-muted-foreground">
                     BYN
                   </span>
@@ -980,7 +980,7 @@ const GeneralRevenueReport: React.FC = () => {
                   <span className="font-medium text-sm">Долги</span>
                 </div>
                 <div className="text-2xl font-bold">
-                  {generalReportData.totalDebt.toFixed(0)}{" "}
+                  {generalReportData.totalDebt.toFixed(2)}{" "}
                   <span className="text-sm font-normal text-muted-foreground">
                     BYN
                   </span>
@@ -1002,7 +1002,7 @@ const GeneralRevenueReport: React.FC = () => {
                   <span className="font-medium text-sm">Сертификаты</span>
                 </div>
                 <div className="text-2xl font-bold">
-                  {generalReportData.totalCertificate.toFixed(0)}{" "}
+                  {generalReportData.totalCertificate.toFixed(2)}{" "}
                   <span className="text-sm font-normal text-muted-foreground">
                     BYN
                   </span>
@@ -1114,7 +1114,7 @@ const GeneralRevenueReport: React.FC = () => {
                       formatter={(value: number, name: string) => [
                         name === "recordsCount"
                           ? `${value} шт.`
-                          : `${value.toFixed(0)} BYN`,
+                          : `${value.toFixed(2)} BYN`,
                         name === "recordsCount"
                           ? "Автомобилей"
                           : name === "total"
@@ -1156,7 +1156,7 @@ const GeneralRevenueReport: React.FC = () => {
                     Лучший день
                   </div>
                   <div className="font-semibold">
-                    {generalReportData.maxDay.amount.toFixed(0)} BYN
+                    {generalReportData.maxDay.amount.toFixed(2)} BYN
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {generalReportData.maxDay.date}
@@ -1167,7 +1167,7 @@ const GeneralRevenueReport: React.FC = () => {
                     Худший день
                   </div>
                   <div className="font-semibold">
-                    {generalReportData.minDay.amount.toFixed(0)} BYN
+                    {generalReportData.minDay.amount.toFixed(2)} BYN
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {generalReportData.minDay.date}
@@ -1178,7 +1178,7 @@ const GeneralRevenueReport: React.FC = () => {
                     Среднее / день
                   </div>
                   <div className="font-semibold">
-                    {generalReportData.averageDaily.toFixed(0)} BYN
+                    {generalReportData.averageDaily.toFixed(2)} BYN
                   </div>
                 </div>
                 <div>
@@ -1288,7 +1288,7 @@ const GeneralRevenueReport: React.FC = () => {
                               generalReportData.dailyData.filter(
                                 (day) => day.recordsCount > 0,
                               ).length
-                            ).toFixed(0)
+                            ).toFixed(2)
                           : 0}{" "}
                         BYN
                       </div>
@@ -1376,7 +1376,7 @@ const GeneralRevenueReport: React.FC = () => {
                                 />
                               </div>
                               <div className="w-20 text-right text-sm font-semibold">
-                                {avgVal.toFixed(0)}{" "}
+                                {avgVal.toFixed(2)}{" "}
                                 <span className="text-xs text-muted-foreground font-normal">
                                   BYN
                                 </span>
@@ -1442,7 +1442,7 @@ const GeneralRevenueReport: React.FC = () => {
                     <div className="text-sm text-primary font-medium">
                       {generalReportData.organizationBreakdown
                         .sort((a, b) => b.amount - a.amount)[0]
-                        ?.amount.toFixed(0)}{" "}
+                        ?.amount.toFixed(2)}{" "}
                       BYN
                     </div>
                   </div>
@@ -1483,7 +1483,7 @@ const GeneralRevenueReport: React.FC = () => {
                                 <span className="truncate">{org.name}</span>
                               </td>
                               <td className="px-4 py-3 sm:px-6 sm:py-4 text-right font-semibold whitespace-nowrap">
-                                {org.amount.toFixed(0)}
+                                {org.amount.toFixed(2)}
                               </td>
                               <td className="px-4 py-3 sm:px-6 sm:py-4 text-right text-muted-foreground whitespace-nowrap">
                                 {(

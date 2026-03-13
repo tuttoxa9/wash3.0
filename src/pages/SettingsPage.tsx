@@ -1531,7 +1531,7 @@ const DebtsManagement: React.FC = () => {
                   <div className="text-sm text-muted-foreground truncate mb-1.5">
                     {record.service} •{" "}
                     <span className="font-bold text-foreground">
-                      {record.price.toFixed(0)} BYN
+                      {record.price.toFixed(2)} BYN
                     </span>
                   </div>
                   {record.paymentMethod.comment && (

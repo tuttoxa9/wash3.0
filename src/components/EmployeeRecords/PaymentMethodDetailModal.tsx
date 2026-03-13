@@ -167,7 +167,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
                         sum + calculateEmployeeEarnings(record, employee.id),
                       0,
                     )
-                    .toFixed(0)}
+                    .toFixed(2)}
                 </div>
                 <div
                   className={`text-xs ${
@@ -240,7 +240,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
                             sum + calculateEmployeeEarnings(record, employee.id),
                           0,
                         ) / records.length
-                      ).toFixed(0)
+                      ).toFixed(2)
                     : "0"}
                 </div>
                 <div
