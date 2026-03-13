@@ -83,74 +83,26 @@ const sections: HelpSection[] = [
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
           <h3 className="text-xl font-bold text-foreground mb-4">Создание новой записи</h3>
-          <p className="mb-5 text-muted-foreground">Для добавления услуги нажмите основную синюю кнопку <strong>«Добавить услугу»</strong> в верхней панели или кнопку с <strong>плюсиком (+)</strong> прямо на карточке конкретного сотрудника.</p>
+          <p className="mb-5 text-muted-foreground">Для добавления услуги нажмите основную синюю кнопку <strong>«Добавить услугу»</strong> в верхней панели или кнопку с плюсиком (+) прямо на карточке конкретного сотрудника.</p>
 
-          <div className="relative pl-6 border-l-2 border-green-500/20 space-y-8 pb-2">
+          <div className="grid gap-4">
 
-            <div className="relative group">
-              <div className="absolute -left-[35px] top-0 w-8 h-8 rounded-full bg-background border-2 border-green-500/50 flex items-center justify-center text-green-600 font-bold text-sm shadow-sm group-hover:border-green-500 transition-colors">
-                1
-              </div>
-              <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm group-hover:border-green-500/30 transition-colors">
-                <h4 className="font-bold text-lg text-foreground mb-2 flex items-center gap-2">
-                  <span className="text-xl">🚗</span> Машина и Услуга
-                </h4>
-                <p className="text-muted-foreground mb-3">Укажите понятные идентификаторы. Это нужно для истории и поиска.</p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1 bg-muted/30 rounded-xl p-3 border border-border/50">
-                    <span className="text-xs font-semibold text-muted-foreground block mb-1">Автомобиль</span>
-                    <span className="text-sm font-medium">BMW X5 7777 AB-7</span>
-                  </div>
-                  <div className="flex-1 bg-muted/30 rounded-xl p-3 border border-border/50">
-                    <span className="text-xs font-semibold text-muted-foreground block mb-1">Услуга</span>
-                    <span className="text-sm font-medium">Комплекс + Воск</span>
-                  </div>
-                </div>
-              </div>
+            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
+              <h4 className="font-bold text-foreground mb-1 text-base">Машина и Услуга</h4>
+              <p className="text-muted-foreground">Укажите марку или номер автомобиля и краткое название оказанной услуги.</p>
             </div>
 
-            <div className="relative group">
-              <div className="absolute -left-[35px] top-0 w-8 h-8 rounded-full bg-background border-2 border-green-500/50 flex items-center justify-center text-green-600 font-bold text-sm shadow-sm group-hover:border-green-500 transition-colors">
-                2
-              </div>
-              <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm group-hover:border-green-500/30 transition-colors">
-                <h4 className="font-bold text-lg text-foreground mb-2 flex items-center gap-2">
-                  <span className="text-xl">👥</span> Исполнители и Сумма
-                </h4>
-                <p className="text-muted-foreground mb-3">
-                  Укажите полную стоимость услуги. Выберите <strong>одного или нескольких</strong> сотрудников.
-                  Если выбрано двое, сумма (и зарплата) автоматически разделится между ними поровну.
-                </p>
-                <div className="bg-emerald-500/5 border border-emerald-500/20 p-3 rounded-xl flex items-center justify-between">
-                  <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-background flex items-center justify-center text-xs font-bold text-primary">И</div>
-                    <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-background flex items-center justify-center text-xs font-bold text-primary">С</div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs text-muted-foreground block">Сумма услуги</span>
-                    <span className="font-bold text-emerald-600 text-base">100 BYN</span>
-                  </div>
-                </div>
-              </div>
+            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
+              <h4 className="font-bold text-foreground mb-1 text-base">Исполнители и Сумма</h4>
+              <p className="text-muted-foreground">
+                Укажите полную стоимость услуги для клиента. Затем выберите одного или нескольких сотрудников.
+                Если выбрано несколько человек, выручка с этой услуги (и начисленная зарплата) автоматически разделится между ними поровну.
+              </p>
             </div>
 
-            <div className="relative group">
-              <div className="absolute -left-[35px] top-0 w-8 h-8 rounded-full bg-background border-2 border-green-500/50 flex items-center justify-center text-green-600 font-bold text-sm shadow-sm group-hover:border-green-500 transition-colors">
-                3
-              </div>
-              <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm group-hover:border-green-500/30 transition-colors">
-                <h4 className="font-bold text-lg text-foreground mb-2 flex items-center gap-2">
-                  <span className="text-xl">💳</span> Оплата
-                </h4>
-                <p className="text-muted-foreground mb-4">Выберите, как клиент рассчитался. От этого зависит, куда пойдут деньги в итоговом отчете.</p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1.5 bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20 rounded-lg text-xs font-medium">Наличные</span>
-                  <span className="px-3 py-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 rounded-lg text-xs font-medium">Карта терминал</span>
-                  <span className="px-3 py-1.5 bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 rounded-lg text-xs font-medium">Безнал (Организация)</span>
-                  <span className="px-3 py-1.5 bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 rounded-lg text-xs font-medium">Сертификат</span>
-                  <span className="px-3 py-1.5 bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20 rounded-lg text-xs font-medium">Долг</span>
-                </div>
-              </div>
+            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
+              <h4 className="font-bold text-foreground mb-1 text-base">Способ оплаты</h4>
+              <p className="text-muted-foreground">Выберите, как клиент рассчитался: Наличные, Карта, Безнал (Организация), Сертификат или Долг. От этого зависит, куда поступят деньги в отчетах.</p>
             </div>
 
           </div>
@@ -375,65 +327,43 @@ const sections: HelpSection[] = [
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
           <h3 className="text-xl font-bold text-foreground mb-2">Формирование заработной платы</h3>
-          <p className="mb-6 text-muted-foreground">Зарплата считается автоматически в реальном времени. Базовые ставки и проценты задаются в разделе <strong>Настройки</strong> администратором.</p>
+          <p className="mb-6 text-muted-foreground">Зарплата считается автоматически. Базовые ставки и проценты задаются администратором в разделе "Настройки".</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 
-            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-5">
-                <Calculator className="w-20 h-20" />
-              </div>
-              <h4 className="font-bold text-lg text-foreground mb-3 flex items-center gap-2">
-                <span className="text-emerald-500">%</span> Проценты
-              </h4>
-              <p className="text-muted-foreground text-xs mb-3">
-                Стоимость услуги делится на число исполнителей и умножается на процент сотрудника (зависит от его роли: Мойщик/Админ).
+            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
+              <h4 className="font-bold text-foreground mb-2">Проценты</h4>
+              <p className="text-muted-foreground text-sm">
+                Базовый расчет зарплаты. Программа берет стоимость оказанной услуги, делит её поровну между всеми исполнителями, а затем умножает на процент сотрудника (который зависит от его роли: Мойщик или Админ).
               </p>
-              <div className="bg-muted/30 p-3 rounded-xl border border-border/50 font-mono text-[11px] text-muted-foreground">
-                <span className="text-foreground">Сумма: 100 BYN (2 чел)</span><br/>
-                Доля каждого: 50 BYN<br/>
-                ЗП (30%): <strong className="text-emerald-500">15 BYN</strong>
-              </div>
             </div>
 
-            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-5">
-                <AlertCircle className="w-20 h-20" />
-              </div>
-              <h4 className="font-bold text-lg text-foreground mb-3 flex items-center gap-2">
-                <span className="text-blue-500">🛡️</span> Минималка
-              </h4>
-              <p className="text-muted-foreground text-xs mb-3">
-                Если сотрудник заработал на процентах меньше минимального оклада за выход, система автоматически дотянет его ЗП.
+            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
+              <h4 className="font-bold text-foreground mb-2">Минимальная оплата</h4>
+              <p className="text-muted-foreground text-sm">
+                Гарантированный оклад за выход. Если сотрудник заработал на своих процентах за день меньше установленной минималки, программа автоматически дотянет его зарплату до этой суммы.
               </p>
-              <div className="bg-blue-500/5 p-3 rounded-xl border border-blue-500/20 font-mono text-[11px] text-blue-700 dark:text-blue-300">
-                Гарантия: 40 BYN<br/>
-                Заработано: 25 BYN<br/>
-                К выплате: <strong className="text-blue-600 dark:text-blue-400">40 BYN</strong>
-              </div>
             </div>
 
           </div>
 
           <div className="space-y-4">
-            <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-5 flex gap-4 items-start">
-              <div className="mt-1 w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center shrink-0">
-                <span className="text-orange-600 font-bold">*</span>
-              </div>
+            <div className="bg-muted/20 border border-border/50 rounded-2xl p-5 flex gap-4 items-start">
+              <div className="mt-1 font-bold text-foreground text-lg">*</div>
               <div>
-                <h4 className="font-bold text-orange-700 dark:text-orange-400 mb-1">Ручная ЗП (Премии и Штрафы)</h4>
-                <p className="text-orange-800/80 dark:text-orange-200/80 text-xs leading-relaxed">
-                  Если вы хотите переопределить автоматический расчет и заплатить фиксированную сумму, нажмите на карточку сотрудника на Главной странице и введите <strong>"Ручную ЗП"</strong>. На карточке появится оранжевая звездочка (*). Это значение полностью заменит системный расчет для этого человека.
+                <h4 className="font-bold text-foreground mb-1">Ручная ЗП (Премии и Штрафы)</h4>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Если вы хотите заплатить сотруднику другую сумму (оштрафовать или премировать), нажмите на его карточку на Главной странице и введите <strong>«Ручную ЗП»</strong>. На карточке появится звездочка (*). Это значение <strong>перекроет все автоматические расчеты</strong>.
                 </p>
               </div>
             </div>
 
-            <div className="bg-muted/20 border border-border/50 rounded-2xl p-5 flex gap-4 items-center">
-              <Clock className="w-6 h-6 text-muted-foreground shrink-0" />
+            <div className="bg-muted/20 border border-border/50 rounded-2xl p-5 flex gap-4 items-start">
+              <Clock className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
               <div>
                 <h4 className="font-bold text-foreground mb-1 text-sm">Почасовая разбивка</h4>
-                <p className="text-muted-foreground text-xs">
-                  В течение дня (с 9:00 до 21:00) карточки сотрудников показывают "ЗП за N часов". Это информативная метрика — сколько сотрудник заработал к текущему часу. После 21:00 расчет фиксируется как окончательная "ЗП за день".
+                <p className="text-muted-foreground text-sm">
+                  В течение рабочего времени (с 9:00 до 21:00) на карточках сотрудников отображается предварительный расчет — "ЗП за N часов". Это информативная цифра, показывающая, сколько сотрудник заработал к текущему часу. После 21:00 она превратится в окончательную "ЗП за день".
                 </p>
               </div>
             </div>
