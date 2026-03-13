@@ -124,6 +124,7 @@ export interface AppState {
   minimumPaymentSettings: MinimumPaymentSettings; // Настройки минимальной оплаты
   organizationsInTotal: string[]; // ID организаций, которые считаются в Итого
   isRealtimeEnabled: boolean; // Включена ли синхронизация в реальном времени
+  isInitialized: boolean; // Загружены ли первоначальные данные
 }
 
 // Типы действий для редьюсера
@@ -160,4 +161,5 @@ export type AppAction =
     }
   | { type: "SET_MINIMUM_PAYMENT_SETTINGS"; payload: MinimumPaymentSettings }
   | { type: "SET_ORGANIZATIONS_IN_TOTAL"; payload: string[] }
-  | { type: "SET_REALTIME_ENABLED"; payload: boolean };
+  | { type: "SET_REALTIME_ENABLED"; payload: boolean }
+  | { type: "SET_INITIALIZED"; payload: boolean };

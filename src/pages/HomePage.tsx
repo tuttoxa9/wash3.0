@@ -946,11 +946,12 @@ const HomePage: React.FC = () => {
 
 
   useEffect(() => {
-    // В AppContext данные загружаются, как только они приходят, отключаем лоадер
-    if (state.employees) {
+    // Используем настоящий флаг инициализации из AppContext,
+    // чтобы точно знать, когда завершилась первичная загрузка данных.
+    if (state.isInitialized) {
       setLoading((prev) => ({ ...prev, employees: false }));
     }
-  }, [state.employees]);
+  }, [state.isInitialized]);
 
   // --- RENDERING SPLIT ---
   // If the shift hasn't started, we render the Morning Lobby (Pre-shift state)
