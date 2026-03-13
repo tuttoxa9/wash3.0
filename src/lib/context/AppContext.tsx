@@ -49,6 +49,7 @@ const initialState: AppState = {
   },
   organizationsInTotal: [],
   isRealtimeEnabled: true,
+  isInitialized: false,
 };
 
 // Создаем контекст
@@ -232,6 +233,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         isRealtimeEnabled: action.payload,
+      };
+    case "SET_INITIALIZED":
+      return {
+        ...state,
+        isInitialized: action.payload,
       };
     case "SET_CERTIFICATES":
       return { ...state, certificates: action.payload };
@@ -476,6 +482,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         const realtimeEnabled = await settingsService.getRealtimeEnabled();
         dispatch({ type: "SET_REALTIME_ENABLED", payload: realtimeEnabled });
+
+        // Отмечаем, что инициализация завершена
+        dispatch({ type: "SET_INITIALIZED", payload: true });
       } catch (error) {
         console.error("Ошибка при загрузке данных при запуске:", error);
       }
