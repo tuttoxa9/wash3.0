@@ -56,7 +56,6 @@ import EmployeeDetailModal from "@/components/Home/EmployeeDetailModal";
 import AddCarWashModal from "@/components/Home/AddCarWashModal";
 import AppointmentsWidget from "@/components/Home/AppointmentsWidget";
 import CloseDebtModal from "@/components/Home/CloseDebtModal";
-import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const HomePage: React.FC = () => {
@@ -71,7 +70,9 @@ const HomePage: React.FC = () => {
   const [shiftEmployees, setShiftEmployees] = useState<string[]>(() => {
     // Synchronous initialization to prevent initial flicker
     try {
-      const cachedDataStr = localStorage.getItem(`cached_daily_report_${state.currentDate}`);
+      const cachedDataStr = localStorage.getItem(
+        `cached_daily_report_${state.currentDate}`,
+      );
       if (cachedDataStr) {
         const cachedReport = JSON.parse(cachedDataStr);
         if (cachedReport.employeeIds && cachedReport.employeeIds.length > 0) {
@@ -87,7 +88,9 @@ const HomePage: React.FC = () => {
     Record<string, EmployeeRole>
   >(() => {
     try {
-      const cachedDataStr = localStorage.getItem(`cached_daily_report_${state.currentDate}`);
+      const cachedDataStr = localStorage.getItem(
+        `cached_daily_report_${state.currentDate}`,
+      );
       if (cachedDataStr) {
         const cachedReport = JSON.parse(cachedDataStr);
         if (cachedReport.dailyEmployeeRoles) {
@@ -101,7 +104,9 @@ const HomePage: React.FC = () => {
   });
   const [isShiftLocked, setIsShiftLocked] = useState(() => {
     try {
-      const cachedDataStr = localStorage.getItem(`cached_daily_report_${state.currentDate}`);
+      const cachedDataStr = localStorage.getItem(
+        `cached_daily_report_${state.currentDate}`,
+      );
       if (cachedDataStr) {
         const cachedReport = JSON.parse(cachedDataStr);
         if (cachedReport.employeeIds && cachedReport.employeeIds.length > 0) {
@@ -126,7 +131,9 @@ const HomePage: React.FC = () => {
     useState(false);
 
   // Shift start animation state
-  const [shiftPhase, setShiftPhase] = useState<"idle" | "starting" | "success" | "active" | "deleting" | "deleted">("idle");
+  const [shiftPhase, setShiftPhase] = useState<
+    "idle" | "starting" | "success" | "active" | "deleting" | "deleted"
+  >("idle");
 
   // Smooth scroll to shift selection with highlight
   const scrollToShift = () => {
@@ -198,7 +205,8 @@ const HomePage: React.FC = () => {
 
   // Состояния для закрытия долга
   const [isCloseDebtModalOpen, setIsCloseDebtModalOpen] = useState(false);
-  const [isCashModificationsModalOpen, setIsCashModificationsModalOpen] = useState(false);
+  const [isCashModificationsModalOpen, setIsCashModificationsModalOpen] =
+    useState(false);
   const [debtToClose, setDebtToClose] = useState<{
     reportId: string;
     recordId: string;
@@ -430,7 +438,9 @@ const HomePage: React.FC = () => {
           // Если за текущую, то долг уже перешел в totalCash/totalNonCash текущего отчета, так что дополнительная проводка не нужна
           if (reportId !== selectedDate) {
             const modification = {
-              id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+              id: crypto.randomUUID
+                ? crypto.randomUUID()
+                : Math.random().toString(36).substring(2, 15),
               amount: recordToUpdate.price, // Внесение суммы
               reason: `Закрытие долга за ${format(parseISO(reportId), "dd.MM")} - ${recordToUpdate.carInfo}`,
               createdAt: new Date().toISOString(),
@@ -450,7 +460,9 @@ const HomePage: React.FC = () => {
               type: "SET_DAILY_REPORT",
               payload: { date: selectedDate, report: updatedCurrentReport },
             });
-            toast.success(`Внесено в кассу текущей смены (${paymentMethod.type === "cash" ? "Наличные" : "Карта"})`);
+            toast.success(
+              `Внесено в кассу текущей смены (${paymentMethod.type === "cash" ? "Наличные" : "Карта"})`,
+            );
           }
         }
 
@@ -488,7 +500,7 @@ const HomePage: React.FC = () => {
         state.employees,
         selectedDate,
         state.organizations,
-        state.organizationsInTotal
+        state.organizationsInTotal,
       );
 
       // Преобразуем в blob
@@ -520,7 +532,7 @@ const HomePage: React.FC = () => {
         state.employees,
         state.organizations,
         selectedDate,
-        state.organizationsInTotal
+        state.organizationsInTotal,
       );
 
       const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
@@ -626,7 +638,10 @@ const HomePage: React.FC = () => {
         };
 
         // Обновляем кэш в localStorage
-        localStorage.setItem(`cached_daily_report_${selectedDate}`, JSON.stringify(newReport));
+        localStorage.setItem(
+          `cached_daily_report_${selectedDate}`,
+          JSON.stringify(newReport),
+        );
 
         await dailyReportService.updateReport(newReport);
         dispatch({
@@ -654,7 +669,6 @@ const HomePage: React.FC = () => {
         setLoading((prev) => ({ ...prev, savingShift: false }));
         toast.success("Состав смены обновлен");
       }
-
     } catch (error) {
       console.error("Ошибка при сохранении состава смены:", error);
       toast.error("Не удалось сохранить состав смены");
@@ -1013,8 +1027,6 @@ const HomePage: React.FC = () => {
     };
   }, [calendarRef]);
 
-
-
   useEffect(() => {
     // В AppContext данные загружаются, как только они приходят, отключаем лоадер
     if (state.employees) {
@@ -1045,7 +1057,7 @@ const HomePage: React.FC = () => {
         // 1. Удаляем все записи о машинах за этот день
         if (currentReport.records && currentReport.records.length > 0) {
           await Promise.all(
-            currentReport.records.map((rec) => carWashService.delete(rec.id))
+            currentReport.records.map((rec) => carWashService.delete(rec.id)),
           );
         }
 
@@ -1094,9 +1106,11 @@ const HomePage: React.FC = () => {
     }
   };
 
-
   // Окно начала смены и анимация перехода
-  if ((!shiftStarted && !isEditingShift) || ["starting", "success", "deleting", "deleted"].includes(shiftPhase)) {
+  if (
+    (!shiftStarted && !isEditingShift) ||
+    ["starting", "success", "deleting", "deleted"].includes(shiftPhase)
+  ) {
     // Получаем записи на ближайшие 2 часа для текущей даты
     const now = new Date();
     const isDateToday = selectedDate === format(now, "yyyy-MM-dd");
@@ -1109,7 +1123,7 @@ const HomePage: React.FC = () => {
     }
 
     const upcomingAppointments = state.appointments
-      .filter(app => {
+      .filter((app) => {
         if (app.date !== selectedDate) return false;
         if (!isDateToday) return true; // Если смотрим будущую дату, показываем все за день
 
@@ -1117,7 +1131,10 @@ const HomePage: React.FC = () => {
         const appTimeMinutes = hours * 60 + minutes;
 
         // Показываем записи от "текущего времени" до +2 часов
-        return appTimeMinutes >= currentTimeMinutes && appTimeMinutes <= currentTimeMinutes + 120;
+        return (
+          appTimeMinutes >= currentTimeMinutes &&
+          appTimeMinutes <= currentTimeMinutes + 120
+        );
       })
       .sort((a, b) => {
         const timeA = a.time.split(":").map(Number);
@@ -1125,19 +1142,14 @@ const HomePage: React.FC = () => {
         return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
       });
 
-    const totalAppointmentsToday = state.appointments.filter(app => app.date === selectedDate).length;
+    const totalAppointmentsToday = state.appointments.filter(
+      (app) => app.date === selectedDate,
+    ).length;
 
     return (
-      <AnimatePresence mode="wait">
+      <>
         {shiftPhase === "idle" && (
-          <motion.div
-            key="preshift"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.3 }}
-            className="w-full"
-          >
+          <div className="w-full">
             <PreShiftScreen
               selectedDate={selectedDate}
               isCalendarOpen={isCalendarOpen}
@@ -1165,98 +1177,65 @@ const HomePage: React.FC = () => {
               upcomingAppointments={upcomingAppointments}
               totalAppointmentsToday={totalAppointmentsToday}
             />
-          </motion.div>
+          </div>
         )}
 
-        {["starting", "success", "deleting", "deleted"].includes(shiftPhase) && (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md"
-          >
-            <motion.div
-              className="bg-card min-w-[320px] rounded-3xl shadow-xl border border-border/50 flex flex-col items-center justify-center p-10 gap-6"
-            >
-              <AnimatePresence mode="wait">
+        {["starting", "success", "deleting", "deleted"].includes(
+          shiftPhase,
+        ) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md">
+            <div className="bg-card min-w-[320px] rounded-3xl shadow-xl border border-border/50 flex flex-col items-center justify-center p-10 gap-6">
+              <>
                 {shiftPhase === "starting" && (
-                  <motion.div
-                    key="spinner-start"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex flex-col items-center gap-5 text-primary"
-                  >
+                  <div className="flex flex-col items-center gap-5 text-primary">
                     <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
-                    <span className="text-base font-medium text-foreground">Открытие смены...</span>
-                  </motion.div>
+                    <span className="text-base font-medium text-foreground">
+                      Открытие смены...
+                    </span>
+                  </div>
                 )}
 
                 {shiftPhase === "success" && (
-                  <motion.div
-                    key="check-start"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex flex-col items-center gap-5"
-                  >
+                  <div className="flex flex-col items-center gap-5">
                     <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
                       <Check className="w-8 h-8" />
                     </div>
-                    <span className="text-base font-medium text-foreground">Смена открыта</span>
-                  </motion.div>
+                    <span className="text-base font-medium text-foreground">
+                      Смена открыта
+                    </span>
+                  </div>
                 )}
 
                 {shiftPhase === "deleting" && (
-                  <motion.div
-                    key="spinner-delete"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex flex-col items-center gap-5 text-destructive"
-                  >
+                  <div className="flex flex-col items-center gap-5 text-destructive">
                     <Loader2 className="w-12 h-12 animate-spin text-destructive/50" />
-                    <span className="text-base font-medium text-foreground">Удаление смены...</span>
-                  </motion.div>
+                    <span className="text-base font-medium text-foreground">
+                      Удаление смены...
+                    </span>
+                  </div>
                 )}
 
                 {shiftPhase === "deleted" && (
-                  <motion.div
-                    key="check-delete"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex flex-col items-center gap-5"
-                  >
+                  <div className="flex flex-col items-center gap-5">
                     <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
                       <Trash2 className="w-8 h-8" />
                     </div>
-                    <span className="text-base font-medium text-foreground">Смена удалена</span>
-                  </motion.div>
+                    <span className="text-base font-medium text-foreground">
+                      Смена удалена
+                    </span>
+                  </div>
                 )}
-              </AnimatePresence>
-            </motion.div>
-          </motion.div>
+              </>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
     );
   }
 
   // --- ACTIVE SHIFT VIEW ---
   return (
-    <motion.div
-      className="bg-card rounded-[2rem] p-4 sm:p-6 shadow-sm border border-border/50 min-h-[85dvh] flex flex-col gap-6"
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-    >
-
+    <div className="bg-card rounded-[2rem] p-4 sm:p-6 shadow-sm border border-border/50 min-h-[85dvh] flex flex-col gap-6">
       {/* Модальное окно закрытия долга */}
       {isCloseDebtModalOpen && debtToClose && (
         <CloseDebtModal
@@ -1297,9 +1276,7 @@ const HomePage: React.FC = () => {
                 className="flex h-9 items-center rounded-lg border border-border/50 bg-card px-3 py-1.5 text-sm cursor-pointer hover:bg-accent/50 transition-colors"
                 onClick={toggleCalendar}
               >
-                <span className="flex-1 font-semibold">
-                  {formattedDate}
-                </span>
+                <span className="flex-1 font-semibold">{formattedDate}</span>
               </div>
               {isCalendarOpen && (
                 <div className="absolute top-full left-0 mt-2 z-50 bg-card rounded-xl shadow-xl border border-border p-3 backdrop-blur-sm">
@@ -1309,7 +1286,9 @@ const HomePage: React.FC = () => {
                     onDayClick={handleDaySelect}
                     locale={ru}
                     modifiers={{ today: new Date() }}
-                    modifiersStyles={{ today: { fontWeight: "bold", color: "var(--primary)" } }}
+                    modifiersStyles={{
+                      today: { fontWeight: "bold", color: "var(--primary)" },
+                    }}
                     className="bg-card rounded-xl border-none m-0"
                   />
                 </div>
@@ -1325,9 +1304,7 @@ const HomePage: React.FC = () => {
               shiftStarted
                 ? openDailyReportModal
                 : () =>
-                    toast.info(
-                      "Сначала выберите работников и начните смену",
-                    )
+                    toast.info("Сначала выберите работников и начните смену")
             }
             disabled={!shiftStarted}
             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
@@ -1382,7 +1359,10 @@ const HomePage: React.FC = () => {
             {loading.dailyReport ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-[142px] w-full rounded-xl bg-muted/60" />
+                  <Skeleton
+                    key={i}
+                    className="h-[142px] w-full rounded-xl bg-muted/60"
+                  />
                 ))}
               </div>
             ) : workingEmployees.length > 0 ? (
@@ -1446,7 +1426,10 @@ const HomePage: React.FC = () => {
                       {/* Верхняя часть: Имя, Роль, Кнопка + */}
                       <div className="flex items-start justify-between gap-2 w-full">
                         <div className="flex flex-col min-w-0 flex-1">
-                          <h4 className="font-semibold text-base text-foreground truncate" title={employee.name}>
+                          <h4
+                            className="font-semibold text-base text-foreground truncate"
+                            title={employee.name}
+                          >
                             {employee.name}
                           </h4>
                           <span
@@ -1490,7 +1473,11 @@ const HomePage: React.FC = () => {
                             Машин
                           </span>
                           <span className="font-semibold text-sm sm:text-base text-card-foreground">
-                            {loading.dailyReport ? <Skeleton className="h-5 w-8" /> : stats.carCount}
+                            {loading.dailyReport ? (
+                              <Skeleton className="h-5 w-8" />
+                            ) : (
+                              stats.carCount
+                            )}
                           </span>
                         </div>
                         <div className="w-px h-8 bg-border/40" />
@@ -1499,7 +1486,11 @@ const HomePage: React.FC = () => {
                             Сумма
                           </span>
                           <span className="font-semibold text-sm sm:text-base text-card-foreground flex items-center">
-                            {loading.dailyReport ? <Skeleton className="h-5 w-12 mr-1" /> : `${stats.totalServicesAmount.toFixed(0)} BYN`}
+                            {loading.dailyReport ? (
+                              <Skeleton className="h-5 w-12 mr-1" />
+                            ) : (
+                              `${stats.totalServicesAmount.toFixed(0)} BYN`
+                            )}
                           </span>
                         </div>
                       </div>
@@ -1533,7 +1524,12 @@ const HomePage: React.FC = () => {
                             isManualSalary ? "text-orange-500" : "text-primary"
                           }`}
                         >
-                          {loading.dailyReport ? <Skeleton className="h-6 w-14 mr-1" /> : `${dailySalary.toFixed(0)} BYN`} {isManualSalary && "*"}
+                          {loading.dailyReport ? (
+                            <Skeleton className="h-6 w-14 mr-1" />
+                          ) : (
+                            `${dailySalary.toFixed(0)} BYN`
+                          )}{" "}
+                          {isManualSalary && "*"}
                         </span>
                       </div>
                     </div>
@@ -1545,9 +1541,12 @@ const HomePage: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
                   <User className="w-8 h-8 text-muted-foreground/50" />
                 </div>
-                <h3 className="text-lg font-medium text-foreground mb-1">Смена еще не начата</h3>
+                <h3 className="text-lg font-medium text-foreground mb-1">
+                  Смена еще не начата
+                </h3>
                 <p className="text-sm max-w-sm">
-                  Выберите сотрудников ниже и нажмите «Начать смену», чтобы получить доступ к функциям записи.
+                  Выберите сотрудников ниже и нажмите «Начать смену», чтобы
+                  получить доступ к функциям записи.
                 </p>
               </div>
             )}
@@ -1586,7 +1585,8 @@ const HomePage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-2">
                     {state.employees.map((employee) => {
                       const isSelected = shiftEmployees.includes(employee.id);
-                      const currentRole = employeeRoles[employee.id] || "washer";
+                      const currentRole =
+                        employeeRoles[employee.id] || "washer";
 
                       return (
                         <div
@@ -1611,7 +1611,9 @@ const HomePage: React.FC = () => {
                               type="checkbox"
                               className="hidden"
                               checked={isSelected}
-                              onChange={() => handleEmployeeSelection(employee.id)}
+                              onChange={() =>
+                                handleEmployeeSelection(employee.id)
+                              }
                             />
                             <div className="flex-1 min-w-0">
                               <p
@@ -1674,22 +1676,34 @@ const HomePage: React.FC = () => {
                               <label className="flex items-center gap-2 px-1 py-0.5 cursor-pointer group w-fit">
                                 <div
                                   className={`flex-shrink-0 w-3.5 h-3.5 rounded-[4px] border flex items-center justify-center transition-colors ${
-                                    (employeeRoles as any)?.[`min_${employee.id}`] !== false
+                                    (employeeRoles as any)?.[
+                                      `min_${employee.id}`
+                                    ] !== false
                                       ? "bg-primary border-primary text-primary-foreground"
                                       : "border-input bg-background"
                                   }`}
                                 >
-                                  {(employeeRoles as any)?.[`min_${employee.id}`] !== false && <Check className="w-2.5 h-2.5" />}
+                                  {(employeeRoles as any)?.[
+                                    `min_${employee.id}`
+                                  ] !== false && (
+                                    <Check className="w-2.5 h-2.5" />
+                                  )}
                                 </div>
                                 <input
                                   type="checkbox"
                                   className="hidden"
-                                  checked={(employeeRoles as any)?.[`min_${employee.id}`] !== false}
+                                  checked={
+                                    (employeeRoles as any)?.[
+                                      `min_${employee.id}`
+                                    ] !== false
+                                  }
                                   onChange={(e) => {
                                     e.stopPropagation();
                                     setEmployeeRoles({
                                       ...employeeRoles,
-                                      [`min_${employee.id}`]: e.target.checked ? true : false,
+                                      [`min_${employee.id}`]: e.target.checked
+                                        ? true
+                                        : false,
                                     } as any);
                                   }}
                                 />
@@ -1707,7 +1721,8 @@ const HomePage: React.FC = () => {
                   <div className="pt-4 border-t border-border/50 flex flex-col gap-3">
                     {shiftEmployees.length === 0 && (
                       <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm text-center font-medium">
-                        Вы сняли всех сотрудников. Продолжение приведет к ПОЛНОМУ УДАЛЕНИЮ смены и всех записей за этот день.
+                        Вы сняли всех сотрудников. Продолжение приведет к
+                        ПОЛНОМУ УДАЛЕНИЮ смены и всех записей за этот день.
                       </div>
                     )}
                     <button
@@ -1726,8 +1741,16 @@ const HomePage: React.FC = () => {
                         </>
                       ) : (
                         <>
-                          {shiftEmployees.length === 0 ? <Trash2 className="w-5 h-5" /> : <Save className="w-5 h-5" />}
-                          <span>{shiftEmployees.length === 0 ? "Удалить смену" : "Сохранить изменения"}</span>
+                          {shiftEmployees.length === 0 ? (
+                            <Trash2 className="w-5 h-5" />
+                          ) : (
+                            <Save className="w-5 h-5" />
+                          )}
+                          <span>
+                            {shiftEmployees.length === 0
+                              ? "Удалить смену"
+                              : "Сохранить изменения"}
+                          </span>
                         </>
                       )}
                     </button>
@@ -1752,7 +1775,9 @@ const HomePage: React.FC = () => {
                     className={`relative flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border bg-muted/20 border-border/50 hover:bg-accent/30 ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
                     onClick={(e) => {
                       if (!shiftStarted) {
-                        toast.info("Сначала выберите работников и начните смену");
+                        toast.info(
+                          "Сначала выберите работников и начните смену",
+                        );
                         return;
                       }
                       // Не открываем DailyReportModal, а открываем модалку с движением наличных
@@ -1764,13 +1789,14 @@ const HomePage: React.FC = () => {
                         : "Сначала выберите работников и начните смену"
                     }
                   >
-                    {currentReport.cashModifications && currentReport.cashModifications.length > 0 && (
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-[10px] font-bold text-amber-600">
-                          {currentReport.cashModifications.length}
-                        </span>
-                      </div>
-                    )}
+                    {currentReport.cashModifications &&
+                      currentReport.cashModifications.length > 0 && (
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-[10px] font-bold text-amber-600">
+                            {currentReport.cashModifications.length}
+                          </span>
+                        </div>
+                      )}
                     <span className="text-sm text-muted-foreground font-medium mb-1.5">
                       Наличные
                     </span>
@@ -1779,22 +1805,22 @@ const HomePage: React.FC = () => {
                         const actualCash =
                           currentReport.totalCash +
                           (currentReport.cashModifications || [])
-                            .filter(m => !m.method || m.method === "cash")
-                            .reduce(
-                              (sum, mod) => sum + mod.amount,
-                              0,
-                            );
+                            .filter((m) => !m.method || m.method === "cash")
+                            .reduce((sum, mod) => sum + mod.amount, 0);
                         return actualCash.toFixed(2);
                       })()}{" "}
                       <span className="text-sm font-semibold opacity-80 text-muted-foreground">
                         BYN
                       </span>
                     </span>
-                    {currentReport.cashModifications && currentReport.cashModifications.filter(m => !m.method || m.method === "cash").length > 0 && (
-                      <span className="text-[10px] text-muted-foreground mt-0.5">
-                        По услугам: {currentReport.totalCash.toFixed(2)} BYN
-                      </span>
-                    )}
+                    {currentReport.cashModifications &&
+                      currentReport.cashModifications.filter(
+                        (m) => !m.method || m.method === "cash",
+                      ).length > 0 && (
+                        <span className="text-[10px] text-muted-foreground mt-0.5">
+                          По услугам: {currentReport.totalCash.toFixed(2)} BYN
+                        </span>
+                      )}
                   </div>
 
                   {/* Карта */}
@@ -1806,7 +1832,9 @@ const HomePage: React.FC = () => {
                     } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
                     onClick={() => {
                       if (!shiftStarted) {
-                        toast.info("Сначала выберите работников и начните смену");
+                        toast.info(
+                          "Сначала выберите работников и начните смену",
+                        );
                         return;
                       }
                       setPaymentFilter("card");
@@ -1818,13 +1846,20 @@ const HomePage: React.FC = () => {
                         : "Сначала выберите работников и начните смену"
                     }
                   >
-                    {currentReport.cashModifications && currentReport.cashModifications.filter(m => m.method === "card").length > 0 && (
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600">
-                          {currentReport.cashModifications.filter(m => m.method === "card").length}
-                        </span>
-                      </div>
-                    )}
+                    {currentReport.cashModifications &&
+                      currentReport.cashModifications.filter(
+                        (m) => m.method === "card",
+                      ).length > 0 && (
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600">
+                            {
+                              currentReport.cashModifications.filter(
+                                (m) => m.method === "card",
+                              ).length
+                            }
+                          </span>
+                        </div>
+                      )}
                     <span className="text-sm text-muted-foreground font-medium mb-1.5">
                       Карта
                     </span>
@@ -1834,19 +1869,48 @@ const HomePage: React.FC = () => {
                       ) : (
                         <>
                           {(() => {
-                            const totalCardServices = currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0;
-                            const cardMods = (currentReport.cashModifications || []).filter(m => m.method === "card").reduce((sum, mod) => sum + mod.amount, 0);
+                            const totalCardServices =
+                              currentReport.records?.reduce(
+                                (sum, rec) =>
+                                  sum +
+                                  (rec.paymentMethod.type === "card"
+                                    ? rec.price
+                                    : 0),
+                                0,
+                              ) || 0;
+                            const cardMods = (
+                              currentReport.cashModifications || []
+                            )
+                              .filter((m) => m.method === "card")
+                              .reduce((sum, mod) => sum + mod.amount, 0);
                             return (totalCardServices + cardMods).toFixed(2);
                           })()}{" "}
-                          <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                          <span className="text-sm font-semibold opacity-80 text-muted-foreground">
+                            BYN
+                          </span>
                         </>
                       )}
                     </span>
-                    {!loading.dailyReport && currentReport.cashModifications && currentReport.cashModifications.filter(m => m.method === "card").length > 0 && (
-                      <span className="text-[10px] text-muted-foreground mt-0.5">
-                        По услугам: {(currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0).toFixed(2)} BYN
-                      </span>
-                    )}
+                    {!loading.dailyReport &&
+                      currentReport.cashModifications &&
+                      currentReport.cashModifications.filter(
+                        (m) => m.method === "card",
+                      ).length > 0 && (
+                        <span className="text-[10px] text-muted-foreground mt-0.5">
+                          По услугам:{" "}
+                          {(
+                            currentReport.records?.reduce(
+                              (sum, rec) =>
+                                sum +
+                                (rec.paymentMethod.type === "card"
+                                  ? rec.price
+                                  : 0),
+                              0,
+                            ) || 0
+                          ).toFixed(2)}{" "}
+                          BYN
+                        </span>
+                      )}
                   </div>
 
                   {/* Безналичные */}
@@ -1858,7 +1922,9 @@ const HomePage: React.FC = () => {
                     } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
                     onClick={() => {
                       if (!shiftStarted) {
-                        toast.info("Сначала выберите работников и начните смену");
+                        toast.info(
+                          "Сначала выберите работников и начните смену",
+                        );
                         return;
                       }
                       setPaymentFilter("organization");
@@ -1879,7 +1945,8 @@ const HomePage: React.FC = () => {
                       ) : (
                         <>
                           {(() => {
-                            const orgsInTotal = state.organizationsInTotal || [];
+                            const orgsInTotal =
+                              state.organizationsInTotal || [];
                             const orgSum =
                               currentReport.records?.reduce((sum, record) => {
                                 const isOrg =
@@ -1889,10 +1956,16 @@ const HomePage: React.FC = () => {
                                   orgsInTotal.includes(
                                     record.paymentMethod.organizationId,
                                   );
-                                return sum + (isOrg && !isSeparated ? record.price : 0);
+                                return (
+                                  sum +
+                                  (isOrg && !isSeparated ? record.price : 0)
+                                );
                               }, 0) || 0;
                             return orgSum.toFixed(2);
-                          })()} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                          })()}{" "}
+                          <span className="text-sm font-semibold opacity-80 text-muted-foreground">
+                            BYN
+                          </span>
                         </>
                       )}
                     </span>
@@ -1923,7 +1996,9 @@ const HomePage: React.FC = () => {
                         } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
                         onClick={() => {
                           if (!shiftStarted) {
-                            toast.info("Сначала выберите работников и начните смену");
+                            toast.info(
+                              "Сначала выберите работников и начните смену",
+                            );
                             return;
                           }
                           setPaymentFilter("organization");
@@ -1943,7 +2018,10 @@ const HomePage: React.FC = () => {
                             <Skeleton className="h-7 w-20" />
                           ) : (
                             <>
-                              {sumForOrg.toFixed(2)} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                              {sumForOrg.toFixed(2)}{" "}
+                              <span className="text-sm font-semibold opacity-80 text-muted-foreground">
+                                BYN
+                              </span>
                             </>
                           )}
                         </span>
@@ -1952,54 +2030,61 @@ const HomePage: React.FC = () => {
                   })}
                 </div>
 
-                  {/* Сертификаты (только если есть) */}
-                  {(() => {
-                    const totalCertificate =
-                      currentReport.records?.reduce(
-                        (sum, rec) =>
-                          sum +
-                          (rec.paymentMethod.type === "certificate" ? rec.price : 0),
-                        0,
-                      ) || 0;
+                {/* Сертификаты (только если есть) */}
+                {(() => {
+                  const totalCertificate =
+                    currentReport.records?.reduce(
+                      (sum, rec) =>
+                        sum +
+                        (rec.paymentMethod.type === "certificate"
+                          ? rec.price
+                          : 0),
+                      0,
+                    ) || 0;
 
-                    if (totalCertificate <= 0) return null;
+                  if (totalCertificate <= 0) return null;
 
-                    return (
-                      <div
-                        className={`flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
-                          paymentFilter === "certificate"
-                            ? "bg-purple-500/10 border-purple-500/30"
-                            : "bg-muted/20 border-border/50 hover:bg-accent/30"
-                        } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
-                        onClick={() => {
-                          if (!shiftStarted) {
-                            toast.info("Сначала выберите работников и начните смену");
-                            return;
-                          }
-                          setPaymentFilter("certificate");
-                          openDailyReportModal();
-                        }}
-                        title={
-                          shiftStarted
-                            ? "Нажмите для просмотра ведомости по сертификатам"
-                            : "Сначала выберите работников и начните смену"
+                  return (
+                    <div
+                      className={`flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
+                        paymentFilter === "certificate"
+                          ? "bg-purple-500/10 border-purple-500/30"
+                          : "bg-muted/20 border-border/50 hover:bg-accent/30"
+                      } ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
+                      onClick={() => {
+                        if (!shiftStarted) {
+                          toast.info(
+                            "Сначала выберите работников и начните смену",
+                          );
+                          return;
                         }
-                      >
-                        <span className="text-sm text-muted-foreground font-medium mb-1.5 truncate">
-                          Сертификат
-                        </span>
-                        <span className="font-bold text-lg text-purple-500">
-                          {loading.dailyReport ? (
-                            <Skeleton className="h-7 w-20" />
-                          ) : (
-                            <>
-                              {totalCertificate.toFixed(2)} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
-                            </>
-                          )}
-                        </span>
-                      </div>
-                    );
-                  })()}
+                        setPaymentFilter("certificate");
+                        openDailyReportModal();
+                      }}
+                      title={
+                        shiftStarted
+                          ? "Нажмите для просмотра ведомости по сертификатам"
+                          : "Сначала выберите работников и начните смену"
+                      }
+                    >
+                      <span className="text-sm text-muted-foreground font-medium mb-1.5 truncate">
+                        Сертификат
+                      </span>
+                      <span className="font-bold text-lg text-purple-500">
+                        {loading.dailyReport ? (
+                          <Skeleton className="h-7 w-20" />
+                        ) : (
+                          <>
+                            {totalCertificate.toFixed(2)}{" "}
+                            <span className="text-sm font-semibold opacity-80 text-muted-foreground">
+                              BYN
+                            </span>
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })()}
 
                 {/* Всего */}
                 <div
@@ -2020,9 +2105,7 @@ const HomePage: React.FC = () => {
                       : "Сначала выберите работников и начните смену"
                   }
                 >
-                  <span className="font-bold text-lg">
-                    Всего
-                  </span>
+                  <span className="font-bold text-lg">Всего</span>
                   <span className="font-bold text-2xl text-primary text-right">
                     {loading.dailyReport ? (
                       <Skeleton className="h-8 w-28" />
@@ -2034,7 +2117,10 @@ const HomePage: React.FC = () => {
                               return sum + record.price;
                             }, 0) || 0;
                           return totalRevenue.toFixed(2);
-                        })()} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                        })()}{" "}
+                        <span className="text-sm font-semibold opacity-80 text-muted-foreground">
+                          BYN
+                        </span>
                       </>
                     )}
                   </span>
@@ -2124,8 +2210,7 @@ const HomePage: React.FC = () => {
                                     const workEndMinutes = 21 * 60;
 
                                     if (
-                                      currentTimeInMinutes <
-                                        workStartMinutes ||
+                                      currentTimeInMinutes < workStartMinutes ||
                                       currentTimeInMinutes >= workEndMinutes
                                     ) {
                                       return result.calculatedSalary / 12;
@@ -2163,7 +2248,11 @@ const HomePage: React.FC = () => {
                                         >
                                           {result.employeeName}
                                           <span className="text-xs text-muted-foreground font-normal ml-1">
-                                            ({result.role === "admin" ? "Админ" : "Мойщик"})
+                                            (
+                                            {result.role === "admin"
+                                              ? "Админ"
+                                              : "Мойщик"}
+                                            )
                                           </span>
                                           {result.isManual && " *"}
                                         </span>
@@ -2205,7 +2294,9 @@ const HomePage: React.FC = () => {
                                       </div>
                                       <span
                                         className={`font-bold shrink-0 text-base ${
-                                          result.isManual ? "text-orange-500" : "text-primary"
+                                          result.isManual
+                                            ? "text-orange-500"
+                                            : "text-primary"
                                         }`}
                                       >
                                         {loading.dailyReport ? (
@@ -2232,9 +2323,7 @@ const HomePage: React.FC = () => {
                               {loading.dailyReport ? (
                                 <Skeleton className="h-8 w-24" />
                               ) : (
-                                <>
-                                  {totalSalarySum.toFixed(2)} BYN
-                                </>
+                                <>{totalSalarySum.toFixed(2)} BYN</>
                               )}
                             </span>
                           </div>
@@ -2245,7 +2334,9 @@ const HomePage: React.FC = () => {
                     if (methodToUse === "none") {
                       return (
                         <div className="flex justify-between p-3 bg-muted/20 rounded-lg">
-                          <span className="text-sm text-muted-foreground">Выберите метод расчета в настройках</span>
+                          <span className="text-sm text-muted-foreground">
+                            Выберите метод расчета в настройках
+                          </span>
                           <span className="font-medium">0.00 BYN</span>
                         </div>
                       );
@@ -2394,9 +2485,14 @@ const HomePage: React.FC = () => {
                 <AlertCircle className="w-5 h-5 text-destructive" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-foreground">Подтвердите удаление</h3>
+                <h3 className="text-lg font-bold text-foreground">
+                  Подтвердите удаление
+                </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Вы собираетесь удалить смену. Это действие безвозвратно удалит <b>ВСЕ</b> записи о помытых машинах, выручку, долги и внесенные наличные за эту дату ({format(new Date(selectedDate), "dd.MM.yyyy")}).
+                  Вы собираетесь удалить смену. Это действие безвозвратно удалит{" "}
+                  <b>ВСЕ</b> записи о помытых машинах, выручку, долги и
+                  внесенные наличные за эту дату (
+                  {format(new Date(selectedDate), "dd.MM.yyyy")}).
                 </p>
               </div>
             </div>
@@ -2415,7 +2511,9 @@ const HomePage: React.FC = () => {
                   className="w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-destructive text-sm"
                 />
                 {deleteError && (
-                  <p className="text-xs text-destructive mt-1.5">{deleteError}</p>
+                  <p className="text-xs text-destructive mt-1.5">
+                    {deleteError}
+                  </p>
                 )}
               </div>
 
@@ -2465,7 +2563,7 @@ const HomePage: React.FC = () => {
           minimumPaymentSettings={state.minimumPaymentSettings}
         />
       )}
-    </motion.div>
+    </div>
   );
 };
 
