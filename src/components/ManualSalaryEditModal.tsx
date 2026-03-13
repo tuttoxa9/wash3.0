@@ -44,7 +44,7 @@ const ManualSalaryEditModal: React.FC<ManualSalaryEditModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="w-full max-w-md bg-card rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md">
         <div className="p-4 sm:p-6 border-b border-border flex justify-between items-center">
           <h2 className="text-lg sm:text-xl font-bold text-card-foreground">
             Корректировка зарплаты
