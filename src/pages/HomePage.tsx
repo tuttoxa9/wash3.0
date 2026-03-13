@@ -1128,9 +1128,16 @@ const HomePage: React.FC = () => {
     const totalAppointmentsToday = state.appointments.filter(app => app.date === selectedDate).length;
 
     return (
-      <>
+      <AnimatePresence mode="wait">
         {shiftPhase === "idle" && (
-          <div className="w-full">
+          <motion.div
+            key="preshift"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full"
+          >
             <PreShiftScreen
               selectedDate={selectedDate}
               isCalendarOpen={isCalendarOpen}
@@ -1158,14 +1165,13 @@ const HomePage: React.FC = () => {
               upcomingAppointments={upcomingAppointments}
               totalAppointmentsToday={totalAppointmentsToday}
             />
-          </div>
+          </motion.div>
         )}
 
         {["starting", "success", "deleting", "deleted"].includes(shiftPhase) && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -1237,15 +1243,19 @@ const HomePage: React.FC = () => {
                 </AnimatePresence>
               </motion.div>
             </motion.div>
-          </AnimatePresence>
         )}
-      </>
+      </AnimatePresence>
     );
   }
 
   // --- ACTIVE SHIFT VIEW ---
   return (
-    <div className="bg-card rounded-[2rem] p-4 sm:p-6 shadow-sm border border-border/50 min-h-[85dvh] flex flex-col gap-6">
+    <motion.div
+      className="bg-card rounded-[2rem] p-4 sm:p-6 shadow-sm border border-border/50 min-h-[85dvh] flex flex-col gap-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
 
       {/* Модальное окно закрытия долга */}
       {isCloseDebtModalOpen && debtToClose && (
@@ -1369,7 +1379,7 @@ const HomePage: React.FC = () => {
                 </button>
               )}
             </div>
-            {loading.dailyReport ? (
+            {loading.dailyReport && (!currentReport || shiftEmployees.length === 0) ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                 {[...Array(3)].map((_, i) => (
                   <Skeleton key={i} className="h-[142px] w-full rounded-xl bg-muted/60" />
@@ -1480,7 +1490,7 @@ const HomePage: React.FC = () => {
                             Машин
                           </span>
                           <span className="font-semibold text-sm sm:text-base text-card-foreground">
-                            {loading.dailyReport ? <Skeleton className="h-5 w-8" /> : stats.carCount}
+                            {loading.dailyReport && !currentReport ? <Skeleton className="h-5 w-8" /> : stats.carCount}
                           </span>
                         </div>
                         <div className="w-px h-8 bg-border/40" />
@@ -1489,7 +1499,7 @@ const HomePage: React.FC = () => {
                             Сумма
                           </span>
                           <span className="font-semibold text-sm sm:text-base text-card-foreground flex items-center">
-                            {loading.dailyReport ? <Skeleton className="h-5 w-12 mr-1" /> : `${stats.totalServicesAmount.toFixed(0)} BYN`}
+                            {loading.dailyReport && !currentReport ? <Skeleton className="h-5 w-12 mr-1" /> : `${stats.totalServicesAmount.toFixed(0)} BYN`}
                           </span>
                         </div>
                       </div>
@@ -1523,7 +1533,7 @@ const HomePage: React.FC = () => {
                             isManualSalary ? "text-orange-500" : "text-primary"
                           }`}
                         >
-                          {loading.dailyReport ? <Skeleton className="h-6 w-14 mr-1" /> : `${dailySalary.toFixed(0)} BYN`} {isManualSalary && "*"}
+                          {loading.dailyReport && !currentReport ? <Skeleton className="h-6 w-14 mr-1" /> : `${dailySalary.toFixed(0)} BYN`} {isManualSalary && "*"}
                         </span>
                       </div>
                     </div>
@@ -1819,7 +1829,7 @@ const HomePage: React.FC = () => {
                       Карта
                     </span>
                     <span className="font-bold text-lg text-foreground">
-                      {loading.dailyReport ? (
+                      {loading.dailyReport && !currentReport ? (
                         <Skeleton className="h-7 w-20" />
                       ) : (
                         <>
@@ -1832,7 +1842,7 @@ const HomePage: React.FC = () => {
                         </>
                       )}
                     </span>
-                    {!loading.dailyReport && currentReport.cashModifications && currentReport.cashModifications.filter(m => m.method === "card").length > 0 && (
+                    {!(loading.dailyReport && !currentReport) && currentReport.cashModifications && currentReport.cashModifications.filter(m => m.method === "card").length > 0 && (
                       <span className="text-[10px] text-muted-foreground mt-0.5">
                         По услугам: {(currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0).toFixed(2)} BYN
                       </span>
@@ -1864,7 +1874,7 @@ const HomePage: React.FC = () => {
                       Безналичные
                     </span>
                     <span className="font-bold text-lg text-foreground">
-                      {loading.dailyReport ? (
+                      {loading.dailyReport && !currentReport ? (
                         <Skeleton className="h-7 w-20" />
                       ) : (
                         <>
@@ -1929,7 +1939,7 @@ const HomePage: React.FC = () => {
                           {org.name}
                         </span>
                         <span className="font-bold text-lg text-indigo-500">
-                          {loading.dailyReport ? (
+                          {loading.dailyReport && !currentReport ? (
                             <Skeleton className="h-7 w-20" />
                           ) : (
                             <>
@@ -1979,7 +1989,7 @@ const HomePage: React.FC = () => {
                           Сертификат
                         </span>
                         <span className="font-bold text-lg text-purple-500">
-                          {loading.dailyReport ? (
+                          {loading.dailyReport && !currentReport ? (
                             <Skeleton className="h-7 w-20" />
                           ) : (
                             <>
@@ -2014,7 +2024,7 @@ const HomePage: React.FC = () => {
                     Всего
                   </span>
                   <span className="font-bold text-2xl text-primary text-right">
-                    {loading.dailyReport ? (
+                    {loading.dailyReport && !currentReport ? (
                       <Skeleton className="h-8 w-28" />
                     ) : (
                       <>
@@ -2198,7 +2208,7 @@ const HomePage: React.FC = () => {
                                           result.isManual ? "text-orange-500" : "text-primary"
                                         }`}
                                       >
-                                        {loading.dailyReport ? (
+                                        {loading.dailyReport && !currentReport ? (
                                           <Skeleton className="h-6 w-16" />
                                         ) : (
                                           <>
@@ -2219,7 +2229,7 @@ const HomePage: React.FC = () => {
                               Общая сумма
                             </span>
                             <span className="font-bold text-xl text-primary">
-                              {loading.dailyReport ? (
+                              {loading.dailyReport && !currentReport ? (
                                 <Skeleton className="h-8 w-24" />
                               ) : (
                                 <>
@@ -2455,7 +2465,7 @@ const HomePage: React.FC = () => {
           minimumPaymentSettings={state.minimumPaymentSettings}
         />
       )}
-    </div>
+    </motion.div>
   );
 };
 
