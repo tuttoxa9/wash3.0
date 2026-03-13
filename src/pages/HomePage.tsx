@@ -68,11 +68,51 @@ const HomePage: React.FC = () => {
     savingShift: false,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [shiftEmployees, setShiftEmployees] = useState<string[]>([]);
+  const [shiftEmployees, setShiftEmployees] = useState<string[]>(() => {
+    // Synchronous initialization to prevent initial flicker
+    try {
+      const cachedDataStr = localStorage.getItem(`cached_daily_report_${state.currentDate}`);
+      if (cachedDataStr) {
+        const cachedReport = JSON.parse(cachedDataStr);
+        if (cachedReport.employeeIds && cachedReport.employeeIds.length > 0) {
+          return cachedReport.employeeIds;
+        }
+      }
+    } catch (e) {
+      console.warn("Error reading cache for shiftEmployees initialization");
+    }
+    return [];
+  });
   const [employeeRoles, setEmployeeRoles] = useState<
     Record<string, EmployeeRole>
-  >({});
-  const [isShiftLocked, setIsShiftLocked] = useState(false);
+  >(() => {
+    try {
+      const cachedDataStr = localStorage.getItem(`cached_daily_report_${state.currentDate}`);
+      if (cachedDataStr) {
+        const cachedReport = JSON.parse(cachedDataStr);
+        if (cachedReport.dailyEmployeeRoles) {
+          return cachedReport.dailyEmployeeRoles;
+        }
+      }
+    } catch (e) {
+      console.warn("Error reading cache for employeeRoles initialization");
+    }
+    return {};
+  });
+  const [isShiftLocked, setIsShiftLocked] = useState(() => {
+    try {
+      const cachedDataStr = localStorage.getItem(`cached_daily_report_${state.currentDate}`);
+      if (cachedDataStr) {
+        const cachedReport = JSON.parse(cachedDataStr);
+        if (cachedReport.employeeIds && cachedReport.employeeIds.length > 0) {
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn("Error reading cache for isShiftLocked initialization");
+    }
+    return false;
+  });
   const [isEditingShift, setIsEditingShift] = useState(false);
   const [selectedDate, setSelectedDate] = useState(state.currentDate);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -585,6 +625,9 @@ const HomePage: React.FC = () => {
           dailyEmployeeRoles: employeeRoles,
         };
 
+        // Обновляем кэш в localStorage
+        localStorage.setItem(`cached_daily_report_${selectedDate}`, JSON.stringify(newReport));
+
         await dailyReportService.updateReport(newReport);
         dispatch({
           type: "SET_DAILY_REPORT",
@@ -870,10 +913,37 @@ const HomePage: React.FC = () => {
   // Загрузка данных
   useEffect(() => {
     const loadData = async () => {
+      // 1. Пытаемся быстро подгрузить кэш из localStorage
+      const cachedKey = `cached_daily_report_${selectedDate}`;
+      const cachedDataStr = localStorage.getItem(cachedKey);
+
+      if (cachedDataStr) {
+        try {
+          const cachedReport = JSON.parse(cachedDataStr);
+          dispatch({
+            type: "SET_DAILY_REPORT",
+            payload: { date: selectedDate, report: cachedReport },
+          });
+
+          if (cachedReport.employeeIds && cachedReport.employeeIds.length > 0) {
+            setShiftEmployees(cachedReport.employeeIds);
+            setIsShiftLocked(true);
+            if (cachedReport.dailyEmployeeRoles) {
+              setEmployeeRoles(cachedReport.dailyEmployeeRoles);
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to parse cached daily report", e);
+        }
+      }
+
       setLoading((prev) => ({ ...prev, dailyReport: true }));
       try {
         const report = await dailyReportService.getByDate(selectedDate);
         if (report) {
+          // Обновляем кэш
+          localStorage.setItem(cachedKey, JSON.stringify(report));
+
           dispatch({
             type: "SET_DAILY_REPORT",
             payload: { date: selectedDate, report },
@@ -1000,6 +1070,9 @@ const HomePage: React.FC = () => {
           type: "SET_DAILY_REPORT",
           payload: { date: selectedDate, report: emptyReport },
         });
+
+        // Очищаем кэш в localStorage
+        localStorage.removeItem(`cached_daily_report_${selectedDate}`);
       }
 
       setTimeout(() => {
@@ -1361,13 +1434,14 @@ const HomePage: React.FC = () => {
                     <div
                       key={employee.id}
                       className={`relative group rounded-xl p-4 cursor-pointer transition-all duration-200 border bg-background hover:bg-accent/5 w-full flex flex-col gap-3 ${
-                        loading.dailyReport ? "loading" : ""
-                      } ${
                         isManualSalary
                           ? "border-orange-400/50 shadow-sm"
                           : "border-border/50 shadow-sm hover:border-primary/30"
                       }`}
-                      onClick={() => openEmployeeModal(employee.id)}
+                      onClick={() => {
+                        if (loading.dailyReport) return;
+                        openEmployeeModal(employee.id);
+                      }}
                     >
                       {/* Верхняя часть: Имя, Роль, Кнопка + */}
                       <div className="flex items-start justify-between gap-2 w-full">
@@ -1416,7 +1490,7 @@ const HomePage: React.FC = () => {
                             Машин
                           </span>
                           <span className="font-semibold text-sm sm:text-base text-card-foreground">
-                            {stats.carCount}
+                            {loading.dailyReport ? <Skeleton className="h-5 w-8" /> : stats.carCount}
                           </span>
                         </div>
                         <div className="w-px h-8 bg-border/40" />
@@ -1424,8 +1498,8 @@ const HomePage: React.FC = () => {
                           <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
                             Сумма
                           </span>
-                          <span className="font-semibold text-sm sm:text-base text-card-foreground">
-                            {stats.totalServicesAmount.toFixed(0)} BYN
+                          <span className="font-semibold text-sm sm:text-base text-card-foreground flex items-center">
+                            {loading.dailyReport ? <Skeleton className="h-5 w-12 mr-1" /> : `${stats.totalServicesAmount.toFixed(0)} BYN`}
                           </span>
                         </div>
                       </div>
@@ -1455,11 +1529,11 @@ const HomePage: React.FC = () => {
                           })()}
                         </span>
                         <span
-                          className={`font-bold text-lg tabular-nums ${
+                          className={`font-bold text-lg tabular-nums flex items-center ${
                             isManualSalary ? "text-orange-500" : "text-primary"
                           }`}
                         >
-                          {dailySalary.toFixed(0)} BYN {isManualSalary && "*"}
+                          {loading.dailyReport ? <Skeleton className="h-6 w-14 mr-1" /> : `${dailySalary.toFixed(0)} BYN`} {isManualSalary && "*"}
                         </span>
                       </div>
                     </div>
@@ -1755,14 +1829,20 @@ const HomePage: React.FC = () => {
                       Карта
                     </span>
                     <span className="font-bold text-lg text-foreground">
-                      {(() => {
-                        const totalCardServices = currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0;
-                        const cardMods = (currentReport.cashModifications || []).filter(m => m.method === "card").reduce((sum, mod) => sum + mod.amount, 0);
-                        return (totalCardServices + cardMods).toFixed(2);
-                      })()}{" "}
-                      <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                      {loading.dailyReport ? (
+                        <Skeleton className="h-7 w-20" />
+                      ) : (
+                        <>
+                          {(() => {
+                            const totalCardServices = currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0;
+                            const cardMods = (currentReport.cashModifications || []).filter(m => m.method === "card").reduce((sum, mod) => sum + mod.amount, 0);
+                            return (totalCardServices + cardMods).toFixed(2);
+                          })()}{" "}
+                          <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                        </>
+                      )}
                     </span>
-                    {currentReport.cashModifications && currentReport.cashModifications.filter(m => m.method === "card").length > 0 && (
+                    {!loading.dailyReport && currentReport.cashModifications && currentReport.cashModifications.filter(m => m.method === "card").length > 0 && (
                       <span className="text-[10px] text-muted-foreground mt-0.5">
                         По услугам: {(currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0).toFixed(2)} BYN
                       </span>
@@ -1794,21 +1874,27 @@ const HomePage: React.FC = () => {
                       Безналичные
                     </span>
                     <span className="font-bold text-lg text-foreground">
-                      {(() => {
-                        const orgsInTotal = state.organizationsInTotal || [];
-                        const orgSum =
-                          currentReport.records?.reduce((sum, record) => {
-                            const isOrg =
-                              record.paymentMethod.type === "organization";
-                            const isSeparated =
-                              record.paymentMethod.organizationId &&
-                              orgsInTotal.includes(
-                                record.paymentMethod.organizationId,
-                              );
-                            return sum + (isOrg && !isSeparated ? record.price : 0);
-                          }, 0) || 0;
-                        return orgSum.toFixed(2);
-                      })()} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                      {loading.dailyReport ? (
+                        <Skeleton className="h-7 w-20" />
+                      ) : (
+                        <>
+                          {(() => {
+                            const orgsInTotal = state.organizationsInTotal || [];
+                            const orgSum =
+                              currentReport.records?.reduce((sum, record) => {
+                                const isOrg =
+                                  record.paymentMethod.type === "organization";
+                                const isSeparated =
+                                  record.paymentMethod.organizationId &&
+                                  orgsInTotal.includes(
+                                    record.paymentMethod.organizationId,
+                                  );
+                                return sum + (isOrg && !isSeparated ? record.price : 0);
+                              }, 0) || 0;
+                            return orgSum.toFixed(2);
+                          })()} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                        </>
+                      )}
                     </span>
                   </div>
 
@@ -1853,7 +1939,13 @@ const HomePage: React.FC = () => {
                           {org.name}
                         </span>
                         <span className="font-bold text-lg text-indigo-500">
-                          {sumForOrg.toFixed(2)} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                          {loading.dailyReport ? (
+                            <Skeleton className="h-7 w-20" />
+                          ) : (
+                            <>
+                              {sumForOrg.toFixed(2)} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                            </>
+                          )}
                         </span>
                       </div>
                     );
@@ -1897,7 +1989,13 @@ const HomePage: React.FC = () => {
                           Сертификат
                         </span>
                         <span className="font-bold text-lg text-purple-500">
-                          {totalCertificate.toFixed(2)} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                          {loading.dailyReport ? (
+                            <Skeleton className="h-7 w-20" />
+                          ) : (
+                            <>
+                              {totalCertificate.toFixed(2)} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                            </>
+                          )}
                         </span>
                       </div>
                     );
@@ -1926,13 +2024,19 @@ const HomePage: React.FC = () => {
                     Всего
                   </span>
                   <span className="font-bold text-2xl text-primary text-right">
-                    {(() => {
-                      const totalRevenue =
-                        currentReport.records?.reduce((sum, record) => {
-                          return sum + record.price;
-                        }, 0) || 0;
-                      return totalRevenue.toFixed(2);
-                    })()} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                    {loading.dailyReport ? (
+                      <Skeleton className="h-8 w-28" />
+                    ) : (
+                      <>
+                        {(() => {
+                          const totalRevenue =
+                            currentReport.records?.reduce((sum, record) => {
+                              return sum + record.price;
+                            }, 0) || 0;
+                          return totalRevenue.toFixed(2);
+                        })()} <span className="text-sm font-semibold opacity-80 text-muted-foreground">BYN</span>
+                      </>
+                    )}
                   </span>
                 </div>
               </div>
@@ -2104,8 +2208,14 @@ const HomePage: React.FC = () => {
                                           result.isManual ? "text-orange-500" : "text-primary"
                                         }`}
                                       >
-                                        {result.calculatedSalary.toFixed(2)}{" "}
-                                        BYN
+                                        {loading.dailyReport ? (
+                                          <Skeleton className="h-6 w-16" />
+                                        ) : (
+                                          <>
+                                            {result.calculatedSalary.toFixed(2)}{" "}
+                                            BYN
+                                          </>
+                                        )}
                                       </span>
                                     </div>
                                   );
@@ -2119,7 +2229,13 @@ const HomePage: React.FC = () => {
                               Общая сумма
                             </span>
                             <span className="font-bold text-xl text-primary">
-                              {totalSalarySum.toFixed(2)} BYN
+                              {loading.dailyReport ? (
+                                <Skeleton className="h-8 w-24" />
+                              ) : (
+                                <>
+                                  {totalSalarySum.toFixed(2)} BYN
+                                </>
+                              )}
                             </span>
                           </div>
                         </>

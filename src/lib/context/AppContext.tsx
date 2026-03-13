@@ -104,7 +104,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, services: action.payload };
     case "ADD_SERVICE":
       return { ...state, services: [...state.services, action.payload] };
-    case "SET_DAILY_REPORT":
+    case "SET_DAILY_REPORT": {
+      // Обновляем кэш при любом изменении отчета
+      localStorage.setItem(`cached_daily_report_${action.payload.date}`, JSON.stringify(action.payload.report));
+
       return {
         ...state,
         dailyReports: {
@@ -112,6 +115,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
           [action.payload.date]: action.payload.report,
         },
       };
+    }
     case "SET_DAILY_REPORTS":
       return {
         ...state,
@@ -163,6 +167,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
         totalCash,
         totalNonCash,
       };
+
+      // Обновляем кэш при добавлении записи
+      localStorage.setItem(`cached_daily_report_${date}`, JSON.stringify(updatedReport));
 
       return {
         ...state,
