@@ -752,16 +752,6 @@ h1, h2, h3, h4, h5, h6 {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
-    border-radius: 1rem; /* должен совпадать с rounded-2xl */
-    padding: 1px; /* толщина подсветки */
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-            mask-composite: exclude;
-    background: radial-gradient(120% 65% at 50% 0%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 55%, rgba(255,255,255,0) 100%);
-    pointer-events: none;
-  }
 
   /* Dark theme overrides */
   .dark .sidebar-link {
@@ -1218,4 +1208,5 @@ h1, h2, h3, h4, h5, h6 {
     background: hsl(var(--muted-foreground));
     border-radius: 2px;
   }
+}
 }

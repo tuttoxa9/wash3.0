@@ -20,6 +20,7 @@ import {
   TableCell,
   TableRow,
   TextRun,
+  WidthType,
 } from "docx";
 import type { Organization } from "./types";
 import { twMerge } from "tailwind-merge";
@@ -222,7 +223,7 @@ export const generatePeriodReportDocx = (
           children: [
             new Paragraph({ text: "Дата", alignment: AlignmentType.CENTER }),
           ],
-          width: { size: 15, type: "pct" },
+          width: { size: 15, type: WidthType.PERCENTAGE },
         }),
         new TableCell({
           children: [
@@ -231,7 +232,7 @@ export const generatePeriodReportDocx = (
               alignment: AlignmentType.CENTER,
             }),
           ],
-          width: { size: 15, type: "pct" },
+          width: { size: 15, type: WidthType.PERCENTAGE },
         }),
         new TableCell({
           children: [
@@ -240,7 +241,7 @@ export const generatePeriodReportDocx = (
               alignment: AlignmentType.CENTER,
             }),
           ],
-          width: { size: 20, type: "pct" },
+          width: { size: 20, type: WidthType.PERCENTAGE },
         }),
         new TableCell({
           children: [
@@ -249,7 +250,7 @@ export const generatePeriodReportDocx = (
               alignment: AlignmentType.CENTER,
             }),
           ],
-          width: { size: 20, type: "pct" },
+          width: { size: 20, type: WidthType.PERCENTAGE },
         }),
         new TableCell({
           children: [
@@ -258,7 +259,7 @@ export const generatePeriodReportDocx = (
               alignment: AlignmentType.CENTER,
             }),
           ],
-          width: { size: 15, type: "pct" },
+          width: { size: 15, type: WidthType.PERCENTAGE },
         }),
         new TableCell({
           children: [
@@ -267,7 +268,7 @@ export const generatePeriodReportDocx = (
               alignment: AlignmentType.CENTER,
             }),
           ],
-          width: { size: 15, type: "pct" },
+          width: { size: 15, type: WidthType.PERCENTAGE },
         }),
       ],
       tableHeader: true,
@@ -339,8 +340,7 @@ export const generatePeriodReportDocx = (
         new TableCell({
           children: [
             new Paragraph({
-              text: "ИТОГО:",
-              bold: true,
+              children: [new TextRun({ text: "ИТОГО:", bold: true })]
             }),
           ],
           columnSpan: 2,
@@ -348,8 +348,7 @@ export const generatePeriodReportDocx = (
         new TableCell({
           children: [
             new Paragraph({
-              text: periodStats.cash.toFixed(2),
-              bold: true,
+              children: [new TextRun({ text: periodStats.cash.toFixed(2), bold: true })],
               alignment: AlignmentType.RIGHT,
             }),
           ],
@@ -357,8 +356,7 @@ export const generatePeriodReportDocx = (
         new TableCell({
           children: [
             new Paragraph({
-              text: periodStats.nonCash.toFixed(2),
-              bold: true,
+              children: [new TextRun({ text: periodStats.nonCash.toFixed(2), bold: true })],
               alignment: AlignmentType.RIGHT,
             }),
           ],
@@ -366,8 +364,7 @@ export const generatePeriodReportDocx = (
         new TableCell({
           children: [
             new Paragraph({
-              text: periodStats.total.toFixed(2),
-              bold: true,
+              children: [new TextRun({ text: periodStats.total.toFixed(2), bold: true })],
               alignment: AlignmentType.RIGHT,
             }),
           ],
@@ -375,8 +372,7 @@ export const generatePeriodReportDocx = (
         new TableCell({
           children: [
             new Paragraph({
-              text: periodStats.salary.toFixed(2),
-              bold: true,
+              children: [new TextRun({ text: periodStats.salary.toFixed(2), bold: true })],
               alignment: AlignmentType.RIGHT,
             }),
           ],
@@ -389,7 +385,7 @@ export const generatePeriodReportDocx = (
     rows: tableRows,
     width: {
       size: 100,
-      type: "pct",
+      type: WidthType.PERCENTAGE,
     },
     borders: {
       top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
@@ -605,7 +601,7 @@ export function generateDailyReportDocx(
                     alignment: AlignmentType.CENTER,
                   }),
                 ],
-                width: { size: 4000, type: "dxa" },
+                width: { size: 4000, type: WidthType.DXA },
               }),
               new TableCell({
                 children: [
@@ -614,7 +610,7 @@ export function generateDailyReportDocx(
                     alignment: AlignmentType.CENTER,
                   }),
                 ],
-                width: { size: 2000, type: "dxa" },
+                width: { size: 2000, type: WidthType.DXA },
               }),
             ],
             tableHeader: true,
@@ -750,15 +746,14 @@ export function generateDailyReportDocx(
             children: [
               new TableCell({
                 children: [
-                  new Paragraph({ text: "ИТОГО ВЫРУЧКА", bold: true }),
+                  new Paragraph({ children: [new TextRun({ text: "ИТОГО ВЫРУЧКА", bold: true })] }),
                 ],
               }),
               new TableCell({
                 children: [
                   new Paragraph({
-                    text: totalRevenue.toFixed(2),
+                    children: [new TextRun({ text: totalRevenue.toFixed(2), bold: true })],
                     alignment: AlignmentType.RIGHT,
-                    bold: true,
                   }),
                 ],
               }),
@@ -768,22 +763,21 @@ export function generateDailyReportDocx(
             children: [
               new TableCell({
                 children: [
-                  new Paragraph({ text: "ИТОГО ЗАРПЛАТА", bold: true }),
+                  new Paragraph({ children: [new TextRun({ text: "ИТОГО ЗАРПЛАТА", bold: true })] }),
                 ],
               }),
               new TableCell({
                 children: [
                   new Paragraph({
-                    text: totalSalary.toFixed(2),
+                    children: [new TextRun({ text: totalSalary.toFixed(2), bold: true })],
                     alignment: AlignmentType.RIGHT,
-                    bold: true,
                   }),
                 ],
               }),
             ],
           }),
         ],
-        width: { size: 6000, type: "dxa" },
+        width: { size: 6000, type: WidthType.DXA },
         borders: {
           top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
           bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
@@ -820,7 +814,7 @@ export function generateDailyReportDocx(
                     alignment: AlignmentType.CENTER,
                   }),
                 ],
-                width: { size: 3000, type: "dxa" },
+                width: { size: 3000, type: WidthType.DXA },
               }),
               new TableCell({
                 children: [
@@ -829,7 +823,7 @@ export function generateDailyReportDocx(
                     alignment: AlignmentType.CENTER,
                   }),
                 ],
-                width: { size: 1500, type: "dxa" },
+                width: { size: 1500, type: WidthType.DXA },
               }),
               new TableCell({
                 children: [
@@ -838,7 +832,7 @@ export function generateDailyReportDocx(
                     alignment: AlignmentType.CENTER,
                   }),
                 ],
-                width: { size: 1500, type: "dxa" },
+                width: { size: 1500, type: WidthType.DXA },
               }),
             ],
             tableHeader: true,
@@ -870,7 +864,7 @@ export function generateDailyReportDocx(
               }),
           ),
         ],
-        width: { size: 6000, type: "dxa" },
+        width: { size: 6000, type: WidthType.DXA },
         borders: {
           top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
           bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
@@ -899,10 +893,10 @@ export function generateDailyReportDocx(
           rows: [
             new TableRow({
               children: [
-                new TableCell({ children: [new Paragraph({ text: "Время", alignment: AlignmentType.CENTER })], width: { size: 1000, type: "dxa" } }),
-                new TableCell({ children: [new Paragraph({ text: "Тип", alignment: AlignmentType.CENTER })], width: { size: 1000, type: "dxa" } }),
-                new TableCell({ children: [new Paragraph({ text: "Комментарий", alignment: AlignmentType.CENTER })], width: { size: 2500, type: "dxa" } }),
-                new TableCell({ children: [new Paragraph({ text: "Сумма (BYN)", alignment: AlignmentType.CENTER })], width: { size: 1500, type: "dxa" } }),
+                new TableCell({ children: [new Paragraph({ text: "Время", alignment: AlignmentType.CENTER })], width: { size: 1000, type: WidthType.DXA } }),
+                new TableCell({ children: [new Paragraph({ text: "Тип", alignment: AlignmentType.CENTER })], width: { size: 1000, type: WidthType.DXA } }),
+                new TableCell({ children: [new Paragraph({ text: "Комментарий", alignment: AlignmentType.CENTER })], width: { size: 2500, type: WidthType.DXA } }),
+                new TableCell({ children: [new Paragraph({ text: "Сумма (BYN)", alignment: AlignmentType.CENTER })], width: { size: 1500, type: WidthType.DXA } }),
               ],
               tableHeader: true,
             }),
@@ -915,7 +909,7 @@ export function generateDailyReportDocx(
               ],
             }))
           ],
-          width: { size: 6000, type: "dxa" },
+          width: { size: 6000, type: WidthType.DXA },
           borders: {
             top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
             bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
@@ -991,19 +985,19 @@ export function generateDailyReportDocx(
             children: [
               new Paragraph({ text: "№", alignment: AlignmentType.CENTER }),
             ],
-            width: { size: 500, type: "dxa" },
+            width: { size: 500, type: WidthType.DXA },
           }),
           new TableCell({
             children: [
               new Paragraph({ text: "Время", alignment: AlignmentType.CENTER }),
             ],
-            width: { size: 800, type: "dxa" },
+            width: { size: 800, type: WidthType.DXA },
           }),
           new TableCell({
             children: [
               new Paragraph({ text: "Авто", alignment: AlignmentType.CENTER }),
             ],
-            width: { size: 1800, type: "dxa" },
+            width: { size: 1800, type: WidthType.DXA },
           }),
           new TableCell({
             children: [
@@ -1012,7 +1006,7 @@ export function generateDailyReportDocx(
                 alignment: AlignmentType.CENTER,
               }),
             ],
-            width: { size: 1800, type: "dxa" },
+            width: { size: 1800, type: WidthType.DXA },
           }),
           new TableCell({
             children: [
@@ -1021,7 +1015,7 @@ export function generateDailyReportDocx(
                 alignment: AlignmentType.CENTER,
               }),
             ],
-            width: { size: 800, type: "dxa" },
+            width: { size: 800, type: WidthType.DXA },
           }),
           new TableCell({
             children: [
@@ -1030,13 +1024,13 @@ export function generateDailyReportDocx(
                 alignment: AlignmentType.CENTER,
               }),
             ],
-            width: { size: 1000, type: "dxa" },
+            width: { size: 1000, type: WidthType.DXA },
           }),
           new TableCell({
             children: [
               new Paragraph({ text: "Доля", alignment: AlignmentType.CENTER }),
             ],
-            width: { size: 800, type: "dxa" },
+            width: { size: 800, type: WidthType.DXA },
           }),
         ],
         tableHeader: true,
@@ -1164,7 +1158,7 @@ export function generateDailyReportDocx(
 
         new Table({
           rows: employeeTableRows,
-          width: { size: 8500, type: "dxa" },
+          width: { size: 8500, type: WidthType.DXA },
           borders: {
             top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
             bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
@@ -1217,7 +1211,7 @@ export function generateDailyReportDocx(
                       alignment: AlignmentType.CENTER,
                     }),
                   ],
-                  width: { size: 4000, type: "dxa" },
+                  width: { size: 4000, type: WidthType.DXA },
                 }),
                 new TableCell({
                   children: [
@@ -1226,7 +1220,7 @@ export function generateDailyReportDocx(
                       alignment: AlignmentType.CENTER,
                     }),
                   ],
-                  width: { size: 2000, type: "dxa" },
+                  width: { size: 2000, type: WidthType.DXA },
                 }),
               ],
               tableHeader: true,
@@ -1328,15 +1322,14 @@ export function generateDailyReportDocx(
               children: [
                 new TableCell({
                   children: [
-                    new Paragraph({ text: "ИТОГО УСЛУГИ", bold: true }),
+                    new Paragraph({ children: [new TextRun({ text: "ИТОГО УСЛУГИ", bold: true })] }),
                   ],
                 }),
                 new TableCell({
                   children: [
                     new Paragraph({
-                      text: empTotal.toFixed(2),
+                      children: [new TextRun({ text: empTotal.toFixed(2), bold: true })],
                       alignment: AlignmentType.RIGHT,
-                      bold: true,
                     }),
                   ],
                 }),
@@ -1345,21 +1338,20 @@ export function generateDailyReportDocx(
             new TableRow({
               children: [
                 new TableCell({
-                  children: [new Paragraph({ text: "ЗАРПЛАТА", bold: true })],
+                  children: [new Paragraph({ children: [new TextRun({ text: "ЗАРПЛАТА", bold: true })] })],
                 }),
                 new TableCell({
                   children: [
                     new Paragraph({
-                      text: empSalary.toFixed(2),
+                      children: [new TextRun({ text: empSalary.toFixed(2), bold: true })],
                       alignment: AlignmentType.RIGHT,
-                      bold: true,
                     }),
                   ],
                 }),
               ],
             }),
           ],
-          width: { size: 6000, type: "dxa" },
+          width: { size: 6000, type: WidthType.DXA },
           borders: {
             top: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
             bottom: { style: BorderStyle.SINGLE, size: 1, color: "000000" },

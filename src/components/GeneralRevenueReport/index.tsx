@@ -194,6 +194,33 @@ const GeneralRevenueReport: React.FC = () => {
         }
       });
 
+      // Считаем фактические поступления денег (Касса)
+      let actualCashCollected = totalCash;
+      let actualCardCollected = totalCard;
+      let actualDebtRemaining = totalDebt;
+
+      reportsInRange.forEach((report) => {
+        if (report.cashModifications) {
+          report.cashModifications.forEach((mod) => {
+            // Если было внесение наличных/карты для "закрытия долга"
+            if (mod.amount > 0) {
+              if (mod.method === "card") {
+                actualCardCollected += mod.amount;
+              } else {
+                actualCashCollected += mod.amount;
+              }
+
+              // Если это было именно закрытие долга, мы должны уменьшить сумму висящих долгов за период
+              if (mod.reason && mod.reason.toLowerCase().includes("долг")) {
+                actualDebtRemaining -= mod.amount;
+                // Не позволяем долгу уйти в минус (на случай если закрыли долг за предыдущий месяц)
+                if (actualDebtRemaining < 0) actualDebtRemaining = 0;
+              }
+            }
+          });
+        }
+      });
+
       const totalRevenue =
         totalCash + totalCard + totalOrganizations + totalDebt + totalCertificate;
 
@@ -309,10 +336,10 @@ const GeneralRevenueReport: React.FC = () => {
       }
 
       setGeneralReportData({
-        totalCash,
-        totalCard,
+        totalCash: actualCashCollected,
+        totalCard: actualCardCollected,
         totalOrganizations,
-        totalDebt,
+        totalDebt: actualDebtRemaining,
         totalCertificate,
         totalRevenue,
         totalSalaries,
