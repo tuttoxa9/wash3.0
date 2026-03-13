@@ -145,7 +145,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                         : "text-gray-900"
                   }`}
                 >
-                  {statistics.totalEarnings.toFixed(0)}
+                  {statistics.totalEarnings.toFixed(2)}
                 </div>
                 <div
                   className={`text-xs ${
@@ -214,7 +214,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                   {(
                     statistics.totalEarnings /
                     Math.max(statistics.totalRecords, 1)
-                  ).toFixed(0)}
+                  ).toFixed(2)}
                 </div>
                 <div
                   className={`text-xs ${
@@ -263,7 +263,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                   }`}
                 >
                   {statistics.bestDay.count} машин •{" "}
-                  {statistics.bestDay.earnings?.toFixed(0)} BYN
+                  {statistics.bestDay.earnings?.toFixed(2)} BYN
                 </div>
               </div>
             )}
@@ -314,7 +314,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                           <div className="flex gap-3 text-xs">
                             <span>{stats.count} оп.</span>
                             <span className="font-medium">
-                              {stats.earnings.toFixed(0)} BYN
+                              {stats.earnings.toFixed(2)} BYN
                             </span>
                           </div>
                         </div>
@@ -367,7 +367,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                           <div className="flex gap-3 text-xs">
                             <span>{stats.count}×</span>
                             <span className="font-medium">
-                              {stats.earnings.toFixed(0)} BYN
+                              {stats.earnings.toFixed(2)} BYN
                             </span>
                           </div>
                         </div>
@@ -418,7 +418,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                           <div className="flex gap-3 text-xs">
                             <span>{stats.count} машин</span>
                             <span className="font-medium">
-                              {stats.earnings.toFixed(0)} BYN
+                              {stats.earnings.toFixed(2)} BYN
                             </span>
                           </div>
                         </div>
@@ -475,7 +475,7 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                                 : "text-gray-600"
                           }`}
                         >
-                          {stats.count} • {stats.earnings.toFixed(0)} BYN
+                          {stats.count} • {stats.earnings.toFixed(2)} BYN
                         </div>
                       </div>
                     ))}

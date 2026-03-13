@@ -1499,7 +1499,7 @@ const HomePage: React.FC = () => {
                             Сумма
                           </span>
                           <span className="font-semibold text-sm sm:text-base text-card-foreground flex items-center">
-                            {loading.dailyReport && !currentReport ? <Skeleton className="h-5 w-12 mr-1" /> : `${stats.totalServicesAmount.toFixed(0)} BYN`}
+                            {loading.dailyReport && !currentReport ? <Skeleton className="h-5 w-12 mr-1" /> : `${stats.totalServicesAmount.toFixed(2)} BYN`}
                           </span>
                         </div>
                       </div>
@@ -1533,7 +1533,7 @@ const HomePage: React.FC = () => {
                             isManualSalary ? "text-orange-500" : "text-primary"
                           }`}
                         >
-                          {loading.dailyReport && !currentReport ? <Skeleton className="h-6 w-14 mr-1" /> : `${dailySalary.toFixed(0)} BYN`} {isManualSalary && "*"}
+                          {loading.dailyReport && !currentReport ? <Skeleton className="h-6 w-14 mr-1" /> : `${dailySalary.toFixed(2)} BYN`} {isManualSalary && "*"}
                         </span>
                       </div>
                     </div>
@@ -2303,7 +2303,7 @@ const HomePage: React.FC = () => {
                           <div className="text-xs text-muted-foreground truncate mt-1">
                             {record.service} •{" "}
                             <span className="font-bold text-foreground">
-                              {record.price.toFixed(0)} BYN
+                              {record.price.toFixed(2)} BYN
                             </span>
                           </div>
                           {record.paymentMethod.comment && (
