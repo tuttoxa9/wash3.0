@@ -49,6 +49,8 @@ const initialState: AppState = {
   },
   organizationsInTotal: [],
   isRealtimeEnabled: true,
+  safeBalance: 0,
+  safeTransactions: [],
 };
 
 // Создаем контекст
@@ -235,7 +237,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         organizationsInTotal: action.payload,
       };
+
+    case "SET_SAFE_BALANCE":
+      return { ...state, safeBalance: action.payload };
+    case "SET_SAFE_TRANSACTIONS":
+      return { ...state, safeTransactions: action.payload };
+    case "ADD_SAFE_TRANSACTION":
+      return {
+        ...state,
+        safeTransactions: [action.payload, ...state.safeTransactions],
+      };
     case "SET_REALTIME_ENABLED":
+
       return {
         ...state,
         isRealtimeEnabled: action.payload,
@@ -481,8 +494,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
           );
         }
 
+
         const realtimeEnabled = await settingsService.getRealtimeEnabled();
+
+        // Сейф
+        const safeBalance = await settingsService.getSafeBalance();
+        const safeTransactions = await settingsService.getSafeTransactions();
+
+
         dispatch({ type: "SET_REALTIME_ENABLED", payload: realtimeEnabled });
+        dispatch({ type: "SET_SAFE_BALANCE", payload: safeBalance });
+        dispatch({ type: "SET_SAFE_TRANSACTIONS", payload: safeTransactions });
+
       } catch (error) {
         console.error("Ошибка при загрузке данных при запуске:", error);
       }

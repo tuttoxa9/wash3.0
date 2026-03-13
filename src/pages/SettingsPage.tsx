@@ -37,6 +37,13 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import {
+  Wallet,
+  ArrowUpRight,
+  ArrowDownLeft,
+} from "lucide-react";
+
+
 // Компонент для ввода пароля
 const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
   const [password, setPassword] = useState("");
@@ -1662,6 +1669,194 @@ const RealtimeSettings: React.FC = () => {
   );
 };
 
+
+// Safe Management Component
+const SafeSettings: React.FC = () => {
+  const { state, dispatch } = useAppContext();
+  const [loading, setLoading] = useState(false);
+  const [transactionType, setTransactionType] = useState<"in" | "out">("in");
+  const [amount, setAmount] = useState<string>("");
+  const [comment, setComment] = useState<string>("");
+
+  const handleTransaction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const numAmount = Number.parseFloat(amount);
+    if (!numAmount || numAmount <= 0) {
+      toast.error("Введите корректную сумму");
+      return;
+    }
+    if (!comment.trim()) {
+      toast.error("Добавьте комментарий");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const transaction = {
+        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+        date: new Date().toISOString(),
+        amount: numAmount,
+        type: transactionType,
+        comment: comment.trim(),
+      };
+
+      const successTx = await settingsService.addSafeTransaction(transaction);
+
+      const newBalance =
+        transactionType === "in"
+          ? state.safeBalance + numAmount
+          : state.safeBalance - numAmount;
+
+      const successBal = await settingsService.updateSafeBalance(newBalance);
+
+      if (successTx && successBal) {
+        dispatch({ type: "ADD_SAFE_TRANSACTION", payload: transaction });
+        dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
+        toast.success(
+          transactionType === "in" ? "Средства внесены" : "Средства изъяты"
+        );
+        setAmount("");
+        setComment("");
+      } else {
+        throw new Error("Ошибка при обновлении сейфа");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Произошла ошибка");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-600">
+            <Wallet className="w-8 h-8" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Баланс сейфа</p>
+            <h2 className="text-3xl font-bold text-foreground">
+              {state.safeBalance.toFixed(2)} <span className="text-xl text-muted-foreground">BYN</span>
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4">
+        {/* Форма */}
+        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
+          <h3 className="text-lg font-bold mb-4">Новая операция</h3>
+          <div className="flex bg-muted/50 p-1 rounded-xl gap-1 mb-5">
+            <button
+              onClick={() => setTransactionType("in")}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                transactionType === "in"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:bg-background/50"
+              }`}
+            >
+              Внести
+            </button>
+            <button
+              onClick={() => setTransactionType("out")}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                transactionType === "out"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:bg-background/50"
+              }`}
+            >
+              Изъять
+            </button>
+          </div>
+
+          <form onSubmit={handleTransaction} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                Сумма (BYN)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full px-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                Комментарий
+              </label>
+              <input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Причина операции"
+                className="w-full px-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || !amount || !comment.trim()}
+              className={`w-full py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 text-white ${
+                transactionType === "in" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
+              }`}
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : transactionType === "in" ? (
+                <ArrowDownLeft className="w-4 h-4" />
+              ) : (
+                <ArrowUpRight className="w-4 h-4" />
+              )}
+              {transactionType === "in" ? "Пополнить сейф" : "Изъять средства"}
+            </button>
+          </form>
+        </div>
+
+        {/* История */}
+        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col h-[500px]">
+          <h3 className="text-lg font-bold mb-4">История операций</h3>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+            {state.safeTransactions.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm">
+                <Wallet className="w-12 h-12 text-muted/30 mb-2" />
+                <p>История пуста</p>
+              </div>
+            ) : (
+              state.safeTransactions.map((tx) => (
+                <div key={tx.id} className="p-4 rounded-xl border border-border/50 bg-background flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                      tx.type === "in" ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
+                    }`}>
+                      {tx.type === "in" ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{tx.comment}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {format(new Date(tx.date), "dd.MM.yyyy HH:mm")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`font-bold whitespace-nowrap ${tx.type === "in" ? "text-green-600" : "text-foreground"}`}>
+                    {tx.type === "in" ? "+" : "-"}{tx.amount.toFixed(2)} <span className="text-xs font-normal opacity-70">BYN</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function SettingsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { dispatch } = useAppContext();
@@ -1711,6 +1906,9 @@ export default function SettingsPage() {
           <TabsTrigger value="debts" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Долги
           </TabsTrigger>
+          <TabsTrigger value="safe" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+            Сейф
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
@@ -1740,6 +1938,10 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-4">
             <DebtsManagement />
           </div>
+        </TabsContent>
+
+        <TabsContent value="safe" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
+          <SafeSettings />
         </TabsContent>
       </Tabs>
     </div>

@@ -19,6 +19,9 @@ interface PreShiftScreenProps {
   employeeRoles: Record<string, EmployeeRole>;
   setEmployeeRoles: (roles: Record<string, EmployeeRole>) => void;
   startShift: () => void;
+  startOfDayCash: string;
+  setStartOfDayCash: (val: string) => void;
+  previousDayCash?: number;
   loading: { savingShift: boolean; employees: boolean };
   upcomingAppointments: Appointment[];
   totalAppointmentsToday: number;
@@ -41,6 +44,9 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
   setEmployeeRoles,
   startShift,
   loading,
+  startOfDayCash,
+  setStartOfDayCash,
+  previousDayCash,
   upcomingAppointments,
   totalAppointmentsToday,
 }) => {
@@ -311,6 +317,43 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
           </div>
         </div>
 
+
+        {/* Блок ввода кассы на начало дня */}
+        <div className="lg:col-span-2 mt-4 p-6 bg-card border border-border/50 rounded-[2rem] shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            </div>
+            <h3 className="text-xl font-bold text-foreground">Состояние кассы</h3>
+          </div>
+
+          {previousDayCash !== undefined && (
+            <div className="mb-6 p-4 rounded-xl bg-muted/30 border border-border/50 flex justify-between items-center">
+              <span className="text-sm text-muted-foreground font-medium">Остаток в кассе за предыдущую смену:</span>
+              <span className="text-lg font-bold text-foreground">{previousDayCash.toFixed(2)} BYN</span>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-semibold text-foreground mb-2">
+              Наличные в кассе на начало смены <span className="text-destructive">*</span>
+            </label>
+            <input
+              type="number"
+              value={startOfDayCash}
+              onChange={(e) => setStartOfDayCash(e.target.value)}
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+              className="w-full px-4 py-3 bg-muted/20 border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-base font-medium transition-colors"
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              Введите сумму наличных, которая физически находится в кассе до начала работы.
+            </p>
+          </div>
+        </div>
+
+
         {/* Action Bar */}
         <div className="lg:col-span-2 flex justify-center mt-4">
           <button
@@ -318,7 +361,8 @@ export const PreShiftScreen: React.FC<PreShiftScreenProps> = ({
             disabled={
               shiftEmployees.length === 0 ||
               loading.savingShift ||
-              loading.employees
+              loading.employees ||
+              !startOfDayCash || Number.parseFloat(startOfDayCash) < 0
             }
             className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-semibold text-lg hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none shadow-lg shadow-primary/20 w-full sm:w-auto min-w-[280px]"
           >

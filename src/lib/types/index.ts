@@ -44,6 +44,26 @@ export interface CarWashRecord {
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 
+
+// Тип для транзакции сейфа
+export interface SafeTransaction {
+  id: string;
+  date: string; // ISO string
+  amount: number;
+  type: "in" | "out";
+  comment: string;
+  reportId?: string; // Связь с ежедневным отчетом (если это перенос из кассы)
+}
+
+// Тип для состояния кассы в рамках смены
+export interface CashState {
+  isShiftOpen: boolean; // Открыта ли касса
+  startOfDayCash: number; // Наличные на начало дня
+  actualEndOfDayCash?: number; // Фактическое количество наличных в конце дня (после пересчета)
+  salaryPayouts?: Record<string, number>; // Выплаты сотрудникам (employeeId -> amount)
+  transferredToSafe?: number; // Сколько денег перенесено в сейф из этой кассы
+}
+
 // Тип для ежедневной ведомости
 export interface DailyReport {
   id: string;
@@ -55,6 +75,7 @@ export interface DailyReport {
   dailyEmployeeRoles?: Record<string, EmployeeRole>; // Ежедневные роли сотрудников (employeeId -> role)
   manualSalaries?: Record<string, number>; // Ручные изменения зарплат (employeeId -> amount)
   notes?: { id: string; text: string; createdAt: string }[]; // Заметки по смене
+  cashState?: CashState; // Состояние кассы (старт, факт, выплаты)
   cashModifications?: {
     id: string;
     amount: number; // Отрицательное значение для изъятия, положительное для внесения
@@ -123,6 +144,8 @@ export interface AppState {
   salaryCalculationDate: string; // Дата изменения метода расчета зарплаты в формате YYYY-MM-DD
   minimumPaymentSettings: MinimumPaymentSettings; // Настройки минимальной оплаты
   organizationsInTotal: string[]; // ID организаций, которые считаются в Итого
+  safeBalance: number; // Текущий баланс сейфа
+  safeTransactions: SafeTransaction[]; // История транзакций сейфа
   isRealtimeEnabled: boolean; // Включена ли синхронизация в реальном времени
 }
 
@@ -160,4 +183,7 @@ export type AppAction =
     }
   | { type: "SET_MINIMUM_PAYMENT_SETTINGS"; payload: MinimumPaymentSettings }
   | { type: "SET_ORGANIZATIONS_IN_TOTAL"; payload: string[] }
-  | { type: "SET_REALTIME_ENABLED"; payload: boolean };
+  | { type: "SET_REALTIME_ENABLED"; payload: boolean }
+  | { type: "SET_SAFE_BALANCE"; payload: number }
+  | { type: "SET_SAFE_TRANSACTIONS"; payload: SafeTransaction[] }
+  | { type: "ADD_SAFE_TRANSACTION"; payload: SafeTransaction };

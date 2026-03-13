@@ -51,6 +51,12 @@ import { toast } from "sonner";
 import DailyReportModal from "@/components/Home/DailyReportModal";
 import CashModificationsModal from "@/components/Home/CashModificationsModal";
 import CertificatesWidget from "@/components/Home/CertificatesWidget";
+import CashStateWidget from "@/components/Home/CashStateWidget";
+
+import CloseCashModal from "@/components/Home/CashState/CloseCashModal";
+import PayoutEmployeesModal from "@/components/Home/CashState/PayoutEmployeesModal";
+import TransferToSafeModal from "@/components/Home/CashState/TransferToSafeModal";
+
 import { PreShiftScreen } from "@/components/Home/PreShiftScreen";
 import EmployeeDetailModal from "@/components/Home/EmployeeDetailModal";
 import AddCarWashModal from "@/components/Home/AddCarWashModal";
@@ -128,6 +134,9 @@ const HomePage: React.FC = () => {
   // Shift start animation state
   const [shiftPhase, setShiftPhase] = useState<"idle" | "starting" | "success" | "active" | "deleting" | "deleted">("idle");
 
+  const [startOfDayCash, setStartOfDayCash] = useState<string>("");
+  const [previousDayCash, setPreviousDayCash] = useState<number | undefined>(undefined);
+
   // Smooth scroll to shift selection with highlight
   const scrollToShift = () => {
     if (shiftSectionRef.current) {
@@ -199,6 +208,11 @@ const HomePage: React.FC = () => {
   // Состояния для закрытия долга
   const [isCloseDebtModalOpen, setIsCloseDebtModalOpen] = useState(false);
   const [isCashModificationsModalOpen, setIsCashModificationsModalOpen] = useState(false);
+
+  const [isCloseCashModalOpen, setIsCloseCashModalOpen] = useState(false);
+  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
+  const [isTransferSafeModalOpen, setIsTransferSafeModalOpen] = useState(false);
+
   const [debtToClose, setDebtToClose] = useState<{
     reportId: string;
     recordId: string;
@@ -614,6 +628,7 @@ const HomePage: React.FC = () => {
           payload: { date: selectedDate, report: updatedReport },
         });
       } else {
+
         // Создаем новый отчет
         const newReport: DailyReport = {
           id: selectedDate,
@@ -623,7 +638,12 @@ const HomePage: React.FC = () => {
           totalCash: 0,
           totalNonCash: 0,
           dailyEmployeeRoles: employeeRoles,
+          cashState: {
+            isShiftOpen: true,
+            startOfDayCash: Number.parseFloat(startOfDayCash) || 0,
+          }
         };
+
 
         // Обновляем кэш в localStorage
         localStorage.setItem(`cached_daily_report_${selectedDate}`, JSON.stringify(newReport));
@@ -914,6 +934,29 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       // 1. Пытаемся быстро подгрузить кэш из localStorage
+
+      // Загрузка кассы предыдущей смены
+      try {
+        const prevDate = new Date(selectedDate);
+        prevDate.setDate(prevDate.getDate() - 1);
+        const prevDateStr = format(prevDate, "yyyy-MM-dd");
+        const prevReport = await dailyReportService.getByDate(prevDateStr);
+        if (prevReport?.cashState?.actualEndOfDayCash !== undefined) {
+          const cashState = prevReport.cashState;
+          const totalPayouts = Object.values(cashState.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
+          const transferred = cashState.transferredToSafe || 0;
+          setPreviousDayCash(cashState.actualEndOfDayCash - totalPayouts - transferred);
+        } else if (prevReport) {
+          // Вычисляем если не было cashState
+          const calcCash = prevReport.totalCash + (prevReport.cashModifications || [])
+            .filter(m => !m.method || m.method === "cash")
+            .reduce((sum, mod) => sum + mod.amount, 0);
+          setPreviousDayCash(calcCash);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
       const cachedKey = `cached_daily_report_${selectedDate}`;
       const cachedDataStr = localStorage.getItem(cachedKey);
 
@@ -1164,6 +1207,9 @@ const HomePage: React.FC = () => {
               loading={loading}
               upcomingAppointments={upcomingAppointments}
               totalAppointmentsToday={totalAppointmentsToday}
+              startOfDayCash={startOfDayCash}
+              setStartOfDayCash={setStartOfDayCash}
+              previousDayCash={previousDayCash}
             />
           </motion.div>
         )}
@@ -2272,6 +2318,17 @@ const HomePage: React.FC = () => {
               canCreateRecords={shiftStarted}
             />
 
+
+            {currentReport && shiftStarted && (
+              <CashStateWidget
+                report={currentReport}
+                onCloseCash={() => setIsCloseCashModalOpen(true)}
+                onPayout={() => setIsPayoutModalOpen(true)}
+                onTransferToSafe={() => setIsTransferSafeModalOpen(true)}
+              />
+            )}
+
+
             {/* Активные долги */}
             {activeDebts.length > 0 && (
               <div className="mt-6 rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden flex flex-col">
@@ -2448,6 +2505,33 @@ const HomePage: React.FC = () => {
           </div>
         </Modal>
       )}
+
+
+      {isCloseCashModalOpen && currentReport && (
+        <CloseCashModal
+          isOpen={isCloseCashModalOpen}
+          onClose={() => setIsCloseCashModalOpen(false)}
+          report={currentReport}
+        />
+      )}
+
+      {isPayoutModalOpen && currentReport && (
+        <PayoutEmployeesModal
+          isOpen={isPayoutModalOpen}
+          onClose={() => setIsPayoutModalOpen(false)}
+          report={currentReport}
+          employees={state.employees}
+        />
+      )}
+
+      {isTransferSafeModalOpen && currentReport && (
+        <TransferToSafeModal
+          isOpen={isTransferSafeModalOpen}
+          onClose={() => setIsTransferSafeModalOpen(false)}
+          report={currentReport}
+        />
+      )}
+
 
       {dailyReportModalOpen && shiftStarted && (
         <DailyReportModal

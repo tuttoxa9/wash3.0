@@ -328,7 +328,8 @@ export const dailyReportService = {
       totalNonCash: data.total_non_cash || 0,
       dailyEmployeeRoles: data.daily_employee_roles || undefined,
       manualSalaries: data.manual_salaries || {},
-      notes: data.notes || [],
+      cashState: (data.notes || []).find((n: any) => n.id === "CASH_STATE") ? JSON.parse((data.notes || []).find((n: any) => n.id === "CASH_STATE").text) : undefined,
+      notes: (data.notes || []).filter((n: any) => n.id !== "CASH_STATE"),
       cashModifications: data.cash_modifications || [],
     };
   },
@@ -355,7 +356,8 @@ export const dailyReportService = {
       totalNonCash: r.total_non_cash || 0,
       dailyEmployeeRoles: r.daily_employee_roles || undefined,
       manualSalaries: r.manual_salaries || {},
-      notes: r.notes || [],
+      cashState: (r.notes || []).find((n: any) => n.id === "CASH_STATE") ? JSON.parse((r.notes || []).find((n: any) => n.id === "CASH_STATE").text) : undefined,
+      notes: (r.notes || []).filter((n: any) => n.id !== "CASH_STATE"),
       cashModifications: r.cash_modifications || [],
     }));
   },
@@ -372,7 +374,14 @@ export const dailyReportService = {
       total_non_cash: report.totalNonCash,
       daily_employee_roles: report.dailyEmployeeRoles ?? null,
       manual_salaries: report.manualSalaries ?? {},
-      notes: report.notes ?? [],
+      notes: [
+        ...(report.notes || []).filter(n => n.id !== "CASH_STATE"),
+        ...(report.cashState ? [{
+          id: "CASH_STATE",
+          text: JSON.stringify(report.cashState),
+          createdAt: new Date().toISOString()
+        }] : [])
+      ],
       cash_modifications: report.cashModifications ?? [],
       updated_at: new Date().toISOString(),
     };
@@ -717,6 +726,62 @@ export const certificateService = {
 
 // settings
 export const settingsService = {
+
+  async getSafeBalance(): Promise<number> {
+    const { data, error } = await supabase
+      .from("settings")
+      .select("data")
+      .eq("key", "safeBalance")
+      .single();
+    if (error) {
+      if ((error as any).code === "PGRST116") return 0;
+      logSupabaseError("settings.getSafeBalance", error);
+      return 0;
+    }
+    return (data as any)?.data?.balance ?? 0;
+  },
+  async updateSafeBalance(balance: number): Promise<boolean> {
+    const { error } = await supabase
+      .from("settings")
+      .upsert(
+        { key: "safeBalance", data: { balance } },
+        { onConflict: "key" },
+      );
+    if (error) {
+      logSupabaseError("settings.updateSafeBalance", error);
+      return false;
+    }
+    return true;
+  },
+  async getSafeTransactions(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from("settings")
+      .select("data")
+      .eq("key", "safeTransactions")
+      .single();
+    if (error) {
+      if ((error as any).code === "PGRST116") return [];
+      logSupabaseError("settings.getSafeTransactions", error);
+      return [];
+    }
+    return (data as any)?.data?.transactions ?? [];
+  },
+  async addSafeTransaction(transaction: any): Promise<boolean> {
+    const transactions = await this.getSafeTransactions();
+    transactions.unshift(transaction); // новые транзакции в начало
+    const { error } = await supabase
+      .from("settings")
+      .upsert(
+        { key: "safeTransactions", data: { transactions } },
+        { onConflict: "key" },
+      );
+    if (error) {
+      logSupabaseError("settings.addSafeTransaction", error);
+      return false;
+    }
+    return true;
+  },
+
   async saveSalaryCalculationMethod(
     method: string,
     date: string,
