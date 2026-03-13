@@ -1034,7 +1034,9 @@ const ReportsPage: React.FC = () => {
                           )
                           .sort((a, b) => {
                             // Сначала сортируем по дате
-                            const dateCompare = a.date.localeCompare(b.date);
+                            const dateA = typeof a.date === 'string' ? a.date : (a.date instanceof Date ? a.date.toISOString() : String(a.date));
+                            const dateB = typeof b.date === 'string' ? b.date : (b.date instanceof Date ? b.date.toISOString() : String(b.date));
+                            const dateCompare = dateA.localeCompare(dateB);
                             if (dateCompare !== 0) return dateCompare;
 
                             // Затем по времени
@@ -1165,7 +1167,9 @@ const ReportsPage: React.FC = () => {
             )
             .sort((a, b) => {
               // Сначала сортируем по дате
-              const dateCompare = a.date.localeCompare(b.date);
+              const dateA = typeof a.date === 'string' ? a.date : (a.date instanceof Date ? a.date.toISOString() : String(a.date));
+              const dateB = typeof b.date === 'string' ? b.date : (b.date instanceof Date ? b.date.toISOString() : String(b.date));
+              const dateCompare = dateA.localeCompare(dateB);
               if (dateCompare !== 0) return dateCompare;
 
               // Затем по времени
