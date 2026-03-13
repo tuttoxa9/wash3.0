@@ -1128,16 +1128,9 @@ const HomePage: React.FC = () => {
     const totalAppointmentsToday = state.appointments.filter(app => app.date === selectedDate).length;
 
     return (
-      <AnimatePresence mode="wait">
+      <>
         {shiftPhase === "idle" && (
-          <motion.div
-            key="preshift"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.3 }}
-            className="w-full"
-          >
+          <div className="w-full">
             <PreShiftScreen
               selectedDate={selectedDate}
               isCalendarOpen={isCalendarOpen}
@@ -1165,22 +1158,23 @@ const HomePage: React.FC = () => {
               upcomingAppointments={upcomingAppointments}
               totalAppointmentsToday={totalAppointmentsToday}
             />
-          </motion.div>
+          </div>
         )}
 
         {["starting", "success", "deleting", "deleted"].includes(shiftPhase) && (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md"
-          >
+          <AnimatePresence mode="wait">
             <motion.div
-              className="bg-card min-w-[320px] rounded-3xl shadow-xl border border-border/50 flex flex-col items-center justify-center p-10 gap-6"
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md"
             >
-              <AnimatePresence mode="wait">
+              <motion.div
+                className="bg-card min-w-[320px] rounded-3xl shadow-xl border border-border/50 flex flex-col items-center justify-center p-10 gap-6"
+              >
+                <AnimatePresence mode="wait">
                 {shiftPhase === "starting" && (
                   <motion.div
                     key="spinner-start"
@@ -1239,23 +1233,19 @@ const HomePage: React.FC = () => {
                     </div>
                     <span className="text-base font-medium text-foreground">Смена удалена</span>
                   </motion.div>
-                )}
-              </AnimatePresence>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </AnimatePresence>
         )}
-      </AnimatePresence>
+      </>
     );
   }
 
   // --- ACTIVE SHIFT VIEW ---
   return (
-    <motion.div
-      className="bg-card rounded-[2rem] p-4 sm:p-6 shadow-sm border border-border/50 min-h-[85dvh] flex flex-col gap-6"
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-    >
+    <div className="bg-card rounded-[2rem] p-4 sm:p-6 shadow-sm border border-border/50 min-h-[85dvh] flex flex-col gap-6">
 
       {/* Модальное окно закрытия долга */}
       {isCloseDebtModalOpen && debtToClose && (
@@ -2465,7 +2455,7 @@ const HomePage: React.FC = () => {
           minimumPaymentSettings={state.minimumPaymentSettings}
         />
       )}
-    </motion.div>
+    </div>
   );
 };
 
