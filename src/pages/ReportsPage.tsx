@@ -1170,6 +1170,17 @@ const ReportsPage: React.FC = () => {
         </TabsContent>
       </Tabs>
 
+      {/* Модальное окно ручного редактирования ЗП */}
+      <ManualSalaryEditModal
+        isOpen={salaryEditModalState.isOpen}
+        onClose={() =>
+          setSalaryEditModalState((prev) => ({ ...prev, isOpen: false }))
+        }
+        employeeName={salaryEditModalState.employeeName}
+        currentSalary={salaryEditModalState.currentSalary}
+        onSave={handleSaveManualSalary}
+      />
+
       {/* Модальное окно с записями сотрудника */}
       {selectedEmployeeForModal && (
         <EmployeeRecordsModal
