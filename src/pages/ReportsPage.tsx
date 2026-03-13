@@ -12,6 +12,7 @@ import {
   dailyRolesService,
   organizationService,
 } from "@/lib/services/supabaseService";
+import ManualSalaryEditModal from "@/components/ManualSalaryEditModal";
 import type { CarWashRecord, Employee } from "@/lib/types";
 import { determineEmployeeRole } from "@/lib/employee-utils";
 import {
@@ -94,6 +95,19 @@ const ReportsPage: React.FC = () => {
   const [selectedEmployeeForModal, setSelectedEmployeeForModal] =
     useState<Employee | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Manual Salary Edit Modal state
+  const [salaryEditModalState, setSalaryEditModalState] = useState<{
+    isOpen: boolean;
+    employeeId: string | null;
+    employeeName: string;
+    currentSalary: number;
+  }>({
+    isOpen: false,
+    employeeId: null,
+    employeeName: "",
+    currentSalary: 0,
+  });
 
   // Date picker state
   const [activeDatePicker, setActiveDatePicker] = useState<
@@ -537,7 +551,7 @@ const ReportsPage: React.FC = () => {
     setSelectedEmployeeId(null);
   };
 
-  const handleManualSalaryEdit = async (
+  const handleManualSalaryEdit = (
     employeeId: string,
     currentSalary: number,
   ) => {
@@ -548,20 +562,24 @@ const ReportsPage: React.FC = () => {
       return;
     }
 
-    const dateStr = format(startDate, "yyyy-MM-dd");
     const employee = earningsReport.find((e) => e.employeeId === employeeId);
-    const newSalaryStr = window.prompt(
-      `Введите скорректированную зарплату для ${employee?.employeeName} (или 0 для сброса):`,
-      currentSalary.toFixed(2),
-    );
+    if (!employee) return;
 
-    if (newSalaryStr === null) return;
+    setSalaryEditModalState({
+      isOpen: true,
+      employeeId,
+      employeeName: employee.employeeName,
+      currentSalary,
+    });
+  };
 
-    const newSalary = Number.parseFloat(newSalaryStr.replace(",", "."));
-    if (isNaN(newSalary)) {
-      toast.error("Некорректная сумма");
-      return;
-    }
+  const handleSaveManualSalary = async (newSalary: number | null) => {
+    const { employeeId } = salaryEditModalState;
+    if (!employeeId) return;
+
+    setSalaryEditModalState((prev) => ({ ...prev, isOpen: false }));
+
+    const dateStr = format(startDate, "yyyy-MM-dd");
 
     try {
       let report = dailyReports[dateStr];
@@ -578,7 +596,9 @@ const ReportsPage: React.FC = () => {
       }
 
       const manualSalaries = { ...(report.manualSalaries || {}) };
-      if (newSalary <= 0) {
+
+      if (newSalary === null) {
+        // Reset to auto
         delete manualSalaries[employeeId];
       } else {
         manualSalaries[employeeId] = newSalary;
