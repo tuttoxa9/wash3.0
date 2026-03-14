@@ -35,10 +35,8 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
 
   // Учитываем операции с наличными (внесения, изъятия, сертификаты за наличку)
   const cashModificationsTotal = (currentReport?.cashModifications || [])
-    .filter((mod) => mod.method === "cash")
-    .reduce((sum, mod) => {
-      return mod.type === "in" ? sum + mod.amount : sum - mod.amount;
-    }, 0);
+    .filter((mod) => !mod.method || mod.method === "cash")
+    .reduce((sum, mod) => sum + mod.amount, 0);
 
   const expectedCash = stateCash.startOfDayCash + (currentReport?.totalCash || 0) + cashModificationsTotal - totalPayouts - (stateCash.transferredToSafe || 0);
   const safeAvailable = state.safeBalance;
