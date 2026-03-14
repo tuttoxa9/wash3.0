@@ -1969,7 +1969,9 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="employees" className="w-full">
-        <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:flex bg-muted/60 p-1.5 rounded-2xl border border-border/10">
+
+      <div className="w-full overflow-x-auto pb-2 -mb-2 scrollbar-hide">
+        <TabsList className="mb-6 w-max min-w-full sm:w-auto flex bg-muted/60 p-1.5 rounded-2xl border border-border/10">
           <TabsTrigger value="general" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Общие
           </TabsTrigger>
@@ -1986,6 +1988,7 @@ export default function SettingsPage() {
             Сейф
           </TabsTrigger>
         </TabsList>
+      </div>
 
         <TabsContent value="general" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

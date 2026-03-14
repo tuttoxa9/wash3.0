@@ -19,9 +19,10 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
   const [actualCash, setActualCash] = useState<string>("");
 
   const cashState = report.cashState;
-  const totalCashMods = (report.cashModifications || [])
-    .filter(m => !m.method || m.method === "cash")
-    .reduce((sum, mod) => sum + mod.amount, 0);
+  const cashMods = (report.cashModifications || []).filter(m => !m.method || m.method === "cash");
+  const totalCashMods = cashMods.reduce((sum, mod) => sum + mod.amount, 0);
+  const totalIn = cashMods.filter(m => m.amount > 0).reduce((sum, mod) => sum + mod.amount, 0);
+  const totalOut = Math.abs(cashMods.filter(m => m.amount < 0).reduce((sum, mod) => sum + mod.amount, 0));
 
   const expectedCash = (cashState?.startOfDayCash || 0) + report.totalCash + totalCashMods;
 
@@ -88,10 +89,18 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
             <span className="text-muted-foreground">Выручка (наличные):</span>
             <span className="font-semibold">{report.totalCash.toFixed(2)} BYN</span>
           </div>
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">Корректировки:</span>
-            <span className="font-semibold">{totalCashMods.toFixed(2)} BYN</span>
-          </div>
+          {totalIn > 0 && (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground pl-3 border-l-2 border-green-500/50">Внесения (размен и др.):</span>
+              <span className="font-semibold text-green-600">+{totalIn.toFixed(2)} BYN</span>
+            </div>
+          )}
+          {totalOut > 0 && (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground pl-3 border-l-2 border-red-500/50">Изъятия (на хоз. нужды):</span>
+              <span className="font-semibold text-red-600">-{totalOut.toFixed(2)} BYN</span>
+            </div>
+          )}
           <div className="h-px bg-border/50 my-1" />
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground font-medium">Ожидается в кассе:</span>
