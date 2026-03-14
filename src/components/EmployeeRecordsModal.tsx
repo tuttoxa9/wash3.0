@@ -148,6 +148,13 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
       {} as Record<string, CarWashRecord[]>,
     );
 
+    // Также добавляем все дни, когда сотрудник был на смене (даже если нет записей)
+    Object.keys(dailyRoles).forEach((date) => {
+      if (dailyRoles[date][employee.id] && !groups[date]) {
+        groups[date] = [];
+      }
+    });
+
     // Сортируем записи в каждом дне по времени
     Object.keys(groups).forEach((date) => {
       groups[date].sort((a, b) => {
@@ -157,7 +164,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     });
 
     return groups;
-  }, [records]);
+  }, [records, dailyRoles, employee.id]);
 
   // Сортировка дат
   const sortedDates = useMemo(
