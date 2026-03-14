@@ -209,33 +209,37 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
                 <button
                   type="button"
                   onClick={() => setSource("cash")}
-                  className={`p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left relative ${
+                  className={`p-3 rounded-xl border flex flex-col transition-colors text-left ${
                     source === "cash"
                       ? "border-primary bg-primary/5 shadow-sm"
                       : "border-border/50 bg-background hover:bg-muted/50"
                   }`}
                 >
-                  <span className="font-semibold text-sm">Касса смены</span>
-                  <span className="text-xs text-muted-foreground">Выдать из наличности</span>
-                  <span className="absolute top-3 right-3 text-xs font-medium text-muted-foreground">
-                    {expectedCash.toFixed(2)} BYN
-                  </span>
+                  <div className="flex justify-between items-start w-full gap-2">
+                    <span className="font-semibold text-sm leading-tight">Касса смены</span>
+                    <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap mt-0.5">
+                      {expectedCash.toFixed(2)} BYN
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground mt-1 leading-tight">Выдать из наличности</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setSource("safe")}
                   disabled={safeAvailable <= 0}
-                  className={`p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left relative ${
+                  className={`p-3 rounded-xl border flex flex-col transition-colors text-left ${
                     source === "safe"
                       ? "border-primary bg-primary/5 shadow-sm"
                       : "border-border/50 bg-background hover:bg-muted/50"
                   } ${safeAvailable <= 0 ? "opacity-50 cursor-not-allowed hover:bg-background" : ""}`}
                 >
-                  <span className="font-semibold text-sm">Глобальный Сейф</span>
-                  <span className="text-xs text-muted-foreground">Создать транзакцию</span>
-                  <span className="absolute top-3 right-3 text-xs font-medium text-muted-foreground">
-                    {safeAvailable.toFixed(2)} BYN
-                  </span>
+                  <div className="flex justify-between items-start w-full gap-2">
+                    <span className="font-semibold text-sm leading-tight">Глобальный Сейф</span>
+                    <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap mt-0.5">
+                      {safeAvailable.toFixed(2)} BYN
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground mt-1 leading-tight">Создать транзакцию</span>
                 </button>
               </div>
             </div>
