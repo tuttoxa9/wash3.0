@@ -1670,6 +1670,7 @@ const RealtimeSettings: React.FC = () => {
 };
 
 
+
 // Safe Management Component
 const SafeSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
@@ -1677,6 +1678,7 @@ const SafeSettings: React.FC = () => {
   const [transactionType, setTransactionType] = useState<"in" | "out">("in");
   const [amount, setAmount] = useState<string>("");
   const [comment, setComment] = useState<string>("");
+  const [filter, setFilter] = useState<"all" | "in" | "out">("all");
 
   const handleTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1728,25 +1730,67 @@ const SafeSettings: React.FC = () => {
     }
   };
 
+  // Статистика за текущий месяц
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  const monthlyStats = state.safeTransactions.reduce(
+    (acc, tx) => {
+      const txDate = new Date(tx.date);
+      if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
+        if (tx.type === "in") acc.in += tx.amount;
+        if (tx.type === "out") acc.out += tx.amount;
+      }
+      return acc;
+    },
+    { in: 0, out: 0 }
+  );
+
+  const filteredTransactions = state.safeTransactions.filter(
+    (tx) => filter === "all" || tx.type === filter
+  );
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-600">
-            <Wallet className="w-8 h-8" />
+    <div className="flex flex-col gap-4 animate-in fade-in duration-300">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Главный баланс */}
+        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col justify-center gap-2 relative overflow-hidden">
+          <div className="absolute -right-6 -top-6 text-green-500/5 rotate-12">
+            <Wallet className="w-40 h-40" />
           </div>
-          <div>
-            <p className="text-sm font-medium text-muted-foreground mb-1">Баланс сейфа</p>
-            <h2 className="text-3xl font-bold text-foreground">
-              {state.safeBalance.toFixed(2)} <span className="text-xl text-muted-foreground">BYN</span>
-            </h2>
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
+              <Wallet className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Баланс сейфа</p>
+          </div>
+          <h2 className="text-3xl font-bold text-foreground relative z-10 mt-2">
+            {state.safeBalance.toFixed(2)} <span className="text-xl text-muted-foreground font-semibold">BYN</span>
+          </h2>
+        </div>
+
+        {/* Статистика месяц - Внесено */}
+        <div className="p-5 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col justify-center">
+          <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Внесено за месяц</p>
+          <div className="flex items-end gap-2">
+            <h3 className="text-2xl font-bold text-green-600">+{monthlyStats.in.toFixed(2)}</h3>
+            <span className="text-sm text-muted-foreground mb-1">BYN</span>
+          </div>
+        </div>
+
+        {/* Статистика месяц - Изъято */}
+        <div className="p-5 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col justify-center">
+          <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Изъято за месяц</p>
+          <div className="flex items-end gap-2">
+            <h3 className="text-2xl font-bold text-foreground">-{monthlyStats.out.toFixed(2)}</h3>
+            <span className="text-sm text-muted-foreground mb-1">BYN</span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4">
         {/* Форма */}
-        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm">
+        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col">
           <h3 className="text-lg font-bold mb-4">Новая операция</h3>
           <div className="flex bg-muted/50 p-1 rounded-xl gap-1 mb-5">
             <button
@@ -1771,7 +1815,7 @@ const SafeSettings: React.FC = () => {
             </button>
           </div>
 
-          <form onSubmit={handleTransaction} className="space-y-4">
+          <form onSubmit={handleTransaction} className="space-y-4 flex-1 flex flex-col">
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1.5">
                 Сумма (BYN)
@@ -1783,7 +1827,7 @@ const SafeSettings: React.FC = () => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                className="w-full px-4 py-3 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-base font-semibold"
                 required
               />
             </div>
@@ -1796,56 +1840,88 @@ const SafeSettings: React.FC = () => {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Причина операции"
-                className="w-full px-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                className="w-full px-4 py-3 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm"
                 required
               />
             </div>
-            <button
-              type="submit"
-              disabled={loading || !amount || !comment.trim()}
-              className={`w-full py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 text-white ${
-                transactionType === "in" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
-              }`}
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : transactionType === "in" ? (
-                <ArrowDownLeft className="w-4 h-4" />
-              ) : (
-                <ArrowUpRight className="w-4 h-4" />
-              )}
-              {transactionType === "in" ? "Пополнить сейф" : "Изъять средства"}
-            </button>
+            <div className="mt-auto pt-4">
+              <button
+                type="submit"
+                disabled={loading || !amount || !comment.trim()}
+                className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 text-white shadow-sm ${
+                  transactionType === "in" ? "bg-green-600 hover:bg-green-700" : "bg-primary hover:bg-primary/90"
+                }`}
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : transactionType === "in" ? (
+                  <ArrowDownLeft className="w-5 h-5" />
+                ) : (
+                  <ArrowUpRight className="w-5 h-5" />
+                )}
+                {transactionType === "in" ? "Пополнить сейф" : "Изъять средства"}
+              </button>
+            </div>
           </form>
         </div>
 
         {/* История */}
-        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col h-[500px]">
-          <h3 className="text-lg font-bold mb-4">История операций</h3>
+        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col lg:h-[500px]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <h3 className="text-lg font-bold">История операций</h3>
+
+            <div className="flex bg-muted/40 p-1 rounded-lg gap-1 self-start">
+              <button
+                onClick={() => setFilter("all")}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  filter === "all" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
+                }`}
+              >
+                Все
+              </button>
+              <button
+                onClick={() => setFilter("in")}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  filter === "in" ? "bg-background shadow-sm text-green-600" : "text-muted-foreground hover:bg-background/50"
+                }`}
+              >
+                Внесения
+              </button>
+              <button
+                onClick={() => setFilter("out")}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  filter === "out" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
+                }`}
+              >
+                Изъятия
+              </button>
+            </div>
+          </div>
+
           <div className="flex-1 overflow-y-auto pr-2 space-y-3">
-            {state.safeTransactions.length === 0 ? (
+            {filteredTransactions.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm">
-                <Wallet className="w-12 h-12 text-muted/30 mb-2" />
-                <p>История пуста</p>
+                <Wallet className="w-12 h-12 text-muted/30 mb-3" />
+                <p>Транзакции не найдены</p>
               </div>
             ) : (
-              state.safeTransactions.map((tx) => (
-                <div key={tx.id} className="p-4 rounded-xl border border-border/50 bg-background flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
+              filteredTransactions.map((tx) => (
+                <div key={tx.id} className="p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-background flex items-center justify-between gap-4 transition-colors">
+                  <div className="flex items-center gap-3.5">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                      tx.type === "in" ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
+                      tx.type === "in" ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-muted text-foreground border border-border"
                     }`}>
                       {tx.type === "in" ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
                     </div>
-                    <div>
-                      <p className="font-semibold text-sm">{tx.comment}</p>
+                    <div className="flex flex-col">
+                      <p className="font-semibold text-sm text-foreground">{tx.comment}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {format(new Date(tx.date), "dd.MM.yyyy HH:mm")}
                       </p>
                     </div>
                   </div>
-                  <div className={`font-bold whitespace-nowrap ${tx.type === "in" ? "text-green-600" : "text-foreground"}`}>
-                    {tx.type === "in" ? "+" : "-"}{tx.amount.toFixed(2)} <span className="text-xs font-normal opacity-70">BYN</span>
+                  <div className={`font-bold text-base whitespace-nowrap ${tx.type === "in" ? "text-green-600" : "text-foreground"}`}>
+                    {tx.type === "in" ? "+" : "-"}{tx.amount.toFixed(2)} <span className="text-xs font-medium opacity-70">BYN</span>
                   </div>
                 </div>
               ))

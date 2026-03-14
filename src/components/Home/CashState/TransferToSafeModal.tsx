@@ -123,7 +123,7 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
                 onChange={(e) => setAmount(e.target.value)}
                 step="0.01"
                 min="0.01"
-                max={availableCash > 0 ? availableCash : undefined}
+                max={availableCash >= 0 ? availableCash : 0}
                 placeholder="0.00"
                 required
                 autoFocus
@@ -137,9 +137,9 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
                 Всё
               </button>
             </div>
-            {availableCash < 0 && (
+            {availableCash <= 0 && (
               <p className="text-sm text-destructive mt-2 font-medium">
-                Касса в минусе, перенос невозможен.
+                Касса пуста или в минусе, перенос невозможен.
               </p>
             )}
           </div>
@@ -154,7 +154,7 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
             </button>
             <button
               type="submit"
-              disabled={loading || !amount || Number.parseFloat(amount) <= 0 || availableCash < 0}
+              disabled={loading || !amount || Number.parseFloat(amount) <= 0 || availableCash <= 0 || Number.parseFloat(amount) > availableCash}
               className="flex-1 py-3 bg-secondary text-secondary-foreground rounded-xl font-medium hover:bg-secondary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
