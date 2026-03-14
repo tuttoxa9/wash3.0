@@ -140,6 +140,12 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
 
   const isShiftOpen = currentReport ? (currentReport.cashState?.isShiftOpen ?? true) : false;
 
+  const parsedAmount = Number.parseFloat(amount);
+  const isValidAmount = !Number.isNaN(parsedAmount) && parsedAmount > 0;
+  const isExceedingCash = source === "cash" && isValidAmount && parsedAmount > expectedCash;
+  const isExceedingSafe = source === "safe" && isValidAmount && parsedAmount > safeAvailable;
+  const isOverLimit = isExceedingCash || isExceedingSafe;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="!max-w-md">
       <div className="p-6">
@@ -175,8 +181,24 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
                 placeholder="0.00"
                 required
                 autoFocus
-                className="w-full px-4 py-3 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary font-semibold text-lg"
+                className={`w-full px-4 py-3 bg-background border rounded-xl focus:outline-none focus:ring-1 font-semibold text-lg transition-colors ${
+                  isOverLimit
+                    ? "border-destructive/50 focus:ring-destructive/50 text-destructive bg-destructive/5"
+                    : "border-input focus:ring-primary"
+                }`}
               />
+              {isExceedingCash && (
+                <p className="text-xs text-destructive mt-2 flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  Сумма превышает остаток в кассе
+                </p>
+              )}
+              {isExceedingSafe && (
+                <p className="text-xs text-destructive mt-2 flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  Сумма превышает баланс сейфа
+                </p>
+              )}
             </div>
 
             <div>
@@ -202,11 +224,12 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
                 <button
                   type="button"
                   onClick={() => setSource("safe")}
+                  disabled={safeAvailable <= 0}
                   className={`p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left relative ${
                     source === "safe"
                       ? "border-primary bg-primary/5 shadow-sm"
                       : "border-border/50 bg-background hover:bg-muted/50"
-                  }`}
+                  } ${safeAvailable <= 0 ? "opacity-50 cursor-not-allowed hover:bg-background" : ""}`}
                 >
                   <span className="font-semibold text-sm">Глобальный Сейф</span>
                   <span className="text-xs text-muted-foreground">Создать транзакцию</span>
@@ -261,7 +284,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
             </button>
             <button
               type="submit"
-              disabled={loading || !amount || Number.parseFloat(amount) <= 0 || (source === "cash" && !isShiftOpen)}
+              disabled={loading || !isValidAmount || isOverLimit || (source === "cash" && !isShiftOpen)}
               className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
