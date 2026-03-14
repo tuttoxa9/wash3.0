@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState, useMemo } from "react";
 import Modal from "@/components/ui/modal";
-import { X, Users, Loader2, Wallet, Lock } from "lucide-react";
+import { X, Users, Loader2, Wallet, Lock, Check } from "lucide-react";
 import type { DailyReport, Employee } from "@/lib/types";
 import { dailyReportService, settingsService } from "@/lib/services/supabaseService";
 import { useAppContext } from "@/lib/context/AppContext";
@@ -181,12 +181,17 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
           <button
             type="button"
             onClick={() => setSource("cash")}
-            className={`p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left ${
+            className={`relative p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left ${
               source === "cash"
                 ? "border-primary bg-primary/5 shadow-sm"
                 : "border-border/50 bg-background hover:bg-muted/50"
             }`}
           >
+            <div className={`absolute top-3 right-3 flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+              source === "cash" ? "bg-primary border-primary text-primary-foreground" : "border-input bg-background"
+            }`}>
+              {source === "cash" && <Check className="w-3.5 h-3.5" />}
+            </div>
             <span className="font-semibold text-sm flex items-center gap-2">
               <Wallet className="w-4 h-4 text-primary" />
               Касса смены
@@ -196,12 +201,17 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
           <button
             type="button"
             onClick={() => setSource("safe")}
-            className={`p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left ${
+            className={`relative p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left ${
               source === "safe"
                 ? "border-primary bg-primary/5 shadow-sm"
                 : "border-border/50 bg-background hover:bg-muted/50"
             }`}
           >
+             <div className={`absolute top-3 right-3 flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+              source === "safe" ? "bg-primary border-primary text-primary-foreground" : "border-input bg-background"
+            }`}>
+              {source === "safe" && <Check className="w-3.5 h-3.5" />}
+            </div>
             <span className="font-semibold text-sm flex items-center gap-2">
               <Lock className="w-4 h-4 text-primary" />
               Сейф
