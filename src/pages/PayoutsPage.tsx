@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useAppContext } from "@/lib/context/AppContext";
 import { format, isToday } from "date-fns";
-import { Search, Wallet, WalletCards, ArrowUpRight, ArrowDownLeft, Loader2, Info } from "lucide-react";
+import { Search, Wallet, WalletCards, ArrowUpRight, ArrowDownLeft, Loader2, Info, X } from "lucide-react";
 import { toast } from "sonner";
 import { dailyReportService, settingsService } from "@/lib/services/supabaseService";
 import { createSalaryCalculator } from "@/components/SalaryCalculator";
