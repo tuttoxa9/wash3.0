@@ -116,17 +116,15 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                       {group.items.map((mod) => (
-                        <div key={mod.id} className="p-3.5 rounded-xl border border-border/50 bg-background/50 hover:bg-muted/10 flex items-center justify-between gap-4 transition-colors">
-                          <div className="flex items-center gap-3.5">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
-                              mod.amount > 0 ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20"
-                            }`}>
-                              {mod.amount > 0 ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+                        <div key={mod.id} className="p-3 border-b border-border/50 last:border-none hover:bg-muted/5 flex items-center justify-between gap-4 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="flex flex-col items-center justify-center shrink-0 text-muted-foreground opacity-60">
+                              {mod.amount > 0 ? <ArrowDownLeft className="w-4 h-4 text-green-500" /> : <ArrowUpRight className="w-4 h-4 text-red-500" />}
                             </div>
                             <div className="flex flex-col">
-                              <p className="font-semibold text-sm text-foreground line-clamp-1">{mod.reason}</p>
+                              <p className="font-medium text-sm text-foreground line-clamp-1">{mod.reason}</p>
                               <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
                                 <span>{format(new Date(mod.createdAt), "HH:mm")}</span>
                                 <span className="w-1 h-1 bg-muted-foreground/30 rounded-full"></span>
@@ -134,8 +132,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                               </p>
                             </div>
                           </div>
-                          <div className={`font-bold text-base whitespace-nowrap shrink-0 ${mod.amount > 0 ? "text-green-600" : "text-foreground"}`}>
-                            {mod.amount > 0 ? "+" : ""}{mod.amount.toFixed(2)} <span className="text-xs font-medium opacity-70">BYN</span>
+                          <div className={`font-bold text-sm whitespace-nowrap shrink-0 ${mod.amount > 0 ? "text-green-500" : "text-foreground"}`}>
+                            {mod.amount > 0 ? "+" : ""}{mod.amount.toFixed(2)} <span className="text-[10px] font-medium opacity-70">BYN</span>
                           </div>
                         </div>
                       ))}
