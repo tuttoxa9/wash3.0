@@ -24,6 +24,25 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
   const employee = state.employees.find((e) => e.id === employeeId);
   const currentReport = state.dailyReports[state.currentDate];
 
+  const stateCash = currentReport?.cashState || {
+    isShiftOpen: true,
+    startOfDayCash: 0,
+    salaryPayouts: {},
+    transferredToSafe: 0
+  };
+
+  const totalPayouts = Object.values(stateCash.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
+
+  // Учитываем операции с наличными (внесения, изъятия, сертификаты за наличку)
+  const cashModificationsTotal = (currentReport?.cashModifications || [])
+    .filter((mod) => mod.method === "cash")
+    .reduce((sum, mod) => {
+      return mod.type === "in" ? sum + mod.amount : sum - mod.amount;
+    }, 0);
+
+  const expectedCash = stateCash.startOfDayCash + (currentReport?.totalCash || 0) + cashModificationsTotal - totalPayouts - (stateCash.transferredToSafe || 0);
+  const safeAvailable = state.safeBalance;
+
   if (!isOpen || !employee) return null;
 
   const handlePayout = async (e: React.FormEvent) => {
@@ -47,17 +66,6 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
           setLoading(false);
           return;
         }
-
-        // Инициализируем cashState, если он отсутствует (для старых отчетов)
-        const stateCash = currentReport!.cashState || {
-          isShiftOpen: true,
-          startOfDayCash: 0,
-          salaryPayouts: {},
-          transferredToSafe: 0
-        };
-
-        const totalPayouts = Object.values(stateCash.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
-        const expectedCash = stateCash.startOfDayCash + currentReport!.totalCash - totalPayouts - (stateCash.transferredToSafe || 0);
 
         if (numAmount > expectedCash) {
           toast.error(`В кассе недостаточно средств (доступно: ${expectedCash.toFixed(2)} BYN)`);
@@ -179,7 +187,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
                 <button
                   type="button"
                   onClick={() => setSource("cash")}
-                  className={`p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left ${
+                  className={`p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left relative ${
                     source === "cash"
                       ? "border-primary bg-primary/5 shadow-sm"
                       : "border-border/50 bg-background hover:bg-muted/50"
@@ -187,11 +195,14 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
                 >
                   <span className="font-semibold text-sm">Касса смены</span>
                   <span className="text-xs text-muted-foreground">Выдать из наличности</span>
+                  <span className="absolute top-3 right-3 text-xs font-medium text-muted-foreground">
+                    {expectedCash.toFixed(2)} BYN
+                  </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setSource("safe")}
-                  className={`p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left ${
+                  className={`p-3 rounded-xl border flex flex-col gap-1 transition-colors text-left relative ${
                     source === "safe"
                       ? "border-primary bg-primary/5 shadow-sm"
                       : "border-border/50 bg-background hover:bg-muted/50"
@@ -199,6 +210,9 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
                 >
                   <span className="font-semibold text-sm">Глобальный Сейф</span>
                   <span className="text-xs text-muted-foreground">Создать транзакцию</span>
+                  <span className="absolute top-3 right-3 text-xs font-medium text-muted-foreground">
+                    {safeAvailable.toFixed(2)} BYN
+                  </span>
                 </button>
               </div>
             </div>
