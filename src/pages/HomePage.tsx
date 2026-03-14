@@ -219,7 +219,7 @@ const HomePage: React.FC = () => {
   } | null>(null);
 
   // Проверяем, является ли выбранная дата текущей
-  const isCurrentDate = isToday(new Date(selectedDate));
+  const isCurrentDate = isToday(parseISO(selectedDate));
 
   // Получаем текущий отчет и список сотрудников
   const currentReport = state.dailyReports[selectedDate] || null;
@@ -330,7 +330,7 @@ const HomePage: React.FC = () => {
   };
 
   // Format date for display
-  const formattedDate = format(new Date(selectedDate), "dd.MM.yyyy");
+  const formattedDate = format(parseISO(selectedDate), "dd.MM.yyyy");
 
   // Загрузка активных долгов
   const loadActiveDebts = async () => {
@@ -509,7 +509,7 @@ const HomePage: React.FC = () => {
       const blob = await Packer.toBlob(doc);
 
       // Сохраняем файл
-      const fileName = `Ведомость_${format(new Date(selectedDate), "dd-MM-yyyy")}.docx`;
+      const fileName = `Ведомость_${format(parseISO(selectedDate), "dd-MM-yyyy")}.docx`;
       saveAs(blob, fileName);
 
       toast.success("Документ успешно экспортирован");
@@ -538,7 +538,7 @@ const HomePage: React.FC = () => {
       );
 
       const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-      const fileName = `Ведомость_${format(new Date(selectedDate), "dd-MM-yyyy")}.csv`;
+      const fileName = `Ведомость_${format(parseISO(selectedDate), "dd-MM-yyyy")}.csv`;
       saveAs(blob, fileName);
       toast.success("CSV успешно экспортирован");
     } catch (error) {
@@ -617,6 +617,10 @@ const HomePage: React.FC = () => {
           ...currentReport,
           employeeIds: shiftEmployees,
           dailyEmployeeRoles: employeeRoles,
+          cashState: currentReport.cashState || {
+            isShiftOpen: true,
+            startOfDayCash: Number.parseFloat(startOfDayCash) || 0,
+          }
         };
 
         // Сохраняем в базе данных
@@ -937,7 +941,7 @@ const HomePage: React.FC = () => {
 
       // Загрузка кассы предыдущей смены
       try {
-        const prevDate = new Date(selectedDate);
+        const prevDate = parseISO(selectedDate);
         prevDate.setDate(prevDate.getDate() - 1);
         const prevDateStr = format(prevDate, "yyyy-MM-dd");
         const prevReport = await dailyReportService.getByDate(prevDateStr);
@@ -945,7 +949,7 @@ const HomePage: React.FC = () => {
           const cashState = prevReport.cashState;
           const totalPayouts = Object.values(cashState.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
           const transferred = cashState.transferredToSafe || 0;
-          setPreviousDayCash(cashState.actualEndOfDayCash - totalPayouts - transferred);
+          setPreviousDayCash((cashState.actualEndOfDayCash || 0) - totalPayouts - transferred);
         } else if (prevReport) {
           // Вычисляем если не было cashState
           const calcCash = prevReport.totalCash + (prevReport.cashModifications || [])
@@ -1351,7 +1355,7 @@ const HomePage: React.FC = () => {
                 <div className="absolute top-full left-0 mt-2 z-50 bg-card rounded-xl shadow-xl border border-border p-3 backdrop-blur-sm">
                   <DayPicker
                     mode="single"
-                    selected={new Date(selectedDate)}
+                    selected={parseISO(selectedDate)}
                     onDayClick={handleDaySelect}
                     locale={ru}
                     modifiers={{ today: new Date() }}
@@ -2453,7 +2457,7 @@ const HomePage: React.FC = () => {
               <div>
                 <h3 className="text-lg font-bold text-foreground">Подтвердите удаление</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Вы собираетесь удалить смену. Это действие безвозвратно удалит <b>ВСЕ</b> записи о помытых машинах, выручку, долги и внесенные наличные за эту дату ({format(new Date(selectedDate), "dd.MM.yyyy")}).
+                  Вы собираетесь удалить смену. Это действие безвозвратно удалит <b>ВСЕ</b> записи о помытых машинах, выручку, долги и внесенные наличные за эту дату ({format(parseISO(selectedDate), "dd.MM.yyyy")}).
                 </p>
               </div>
             </div>
@@ -2541,7 +2545,6 @@ const HomePage: React.FC = () => {
           organizations={state.organizations}
           selectedDate={selectedDate}
           onExport={exportToWord}
-          onExportCsv={exportToCsv}
           isExporting={loading.exporting}
           paymentFilter={paymentFilter}
           onPaymentFilterChange={setPaymentFilter}

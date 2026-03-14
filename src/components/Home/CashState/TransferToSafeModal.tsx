@@ -6,7 +6,7 @@ import type { DailyReport } from "@/lib/types";
 import { dailyReportService, settingsService } from "@/lib/services/supabaseService";
 import { useAppContext } from "@/lib/context/AppContext";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 interface Props {
   isOpen: boolean;
@@ -49,7 +49,7 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
         date: new Date().toISOString(),
         amount: numAmount,
         type: "in" as const,
-        comment: `Выручка за ${format(new Date(report.date), "dd.MM.yyyy")}`,
+        comment: `Выручка за ${format(parseISO(report.date as string), "dd.MM.yyyy")}`,
         reportId: report.id
       };
 
