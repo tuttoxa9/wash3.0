@@ -38,18 +38,26 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
     setLoading(true);
 
     try {
-      const isShiftOpen = currentReport && currentReport.cashState?.isShiftOpen;
+      // Чтобы получить последнюю открытую смену (даже если она была открыта в прошлую дату),
+      // находим последнюю смену, у которой isShiftOpen === true
+      const allReports = Object.values(state.dailyReports);
+      const lastOpenReport = allReports
+        .filter(r => r.cashState?.isShiftOpen)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+
+      const reportToUpdate = lastOpenReport || currentReport;
+      const isShiftOpen = reportToUpdate && reportToUpdate.cashState?.isShiftOpen;
 
       if (source === "cash") {
         if (!isShiftOpen) {
-          toast.error("Смена закрыта или не начата. Выплата из кассы невозможна.");
+          toast.error("Нет открытых смен. Выплата из кассы невозможна.");
           setLoading(false);
           return;
         }
 
-        const stateCash = currentReport.cashState!;
+        const stateCash = reportToUpdate.cashState!;
         const totalPayouts = Object.values(stateCash.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
-        const expectedCash = stateCash.startOfDayCash + currentReport.totalCash - totalPayouts - (stateCash.transferredToSafe || 0);
+        const expectedCash = stateCash.startOfDayCash + reportToUpdate.totalCash - totalPayouts - (stateCash.transferredToSafe || 0);
 
         if (numAmount > expectedCash) {
           toast.error(`В кассе недостаточно средств (доступно: ${expectedCash.toFixed(2)} BYN)`);
@@ -60,7 +68,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
         const currentPayout = stateCash.salaryPayouts?.[employeeId] || 0;
 
         const updatedReport = {
-          ...currentReport,
+          ...reportToUpdate,
           cashState: {
             ...stateCash,
             salaryPayouts: {
@@ -74,7 +82,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
         if (success) {
           dispatch({
             type: "SET_DAILY_REPORT",
-            payload: { date: state.currentDate, report: updatedReport }
+            payload: { date: reportToUpdate.date as string, report: updatedReport }
           });
           toast.success(`Выплачено ${numAmount.toFixed(2)} BYN из кассы`);
           onClose();
@@ -122,7 +130,8 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
     }
   };
 
-  const isShiftOpen = currentReport && currentReport.cashState?.isShiftOpen;
+  // Определяем, есть ли открытая смена вообще, чтобы правильно показывать предупреждения
+  const hasOpenShift = Object.values(state.dailyReports).some(r => r.cashState?.isShiftOpen);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="!max-w-md">
@@ -195,11 +204,11 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
               </div>
             </div>
 
-            {source === "cash" && !isShiftOpen && (
+            {source === "cash" && !hasOpenShift && (
                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-2">
                  <Info className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
                  <p className="text-xs text-destructive font-medium leading-relaxed">
-                   Смена на сегодня не открыта или закрыта. Выдача из кассы невозможна. Выберите сейф.
+                   Нет открытых смен. Выдача из кассы невозможна. Выберите сейф.
                  </p>
                </div>
             )}
@@ -239,7 +248,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
             </button>
             <button
               type="submit"
-              disabled={loading || !amount || Number.parseFloat(amount) <= 0 || (source === "cash" && !isShiftOpen)}
+              disabled={loading || !amount || Number.parseFloat(amount) <= 0 || (source === "cash" && !hasOpenShift)}
               className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -257,10 +266,15 @@ export default function PayoutsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
 
-  // Для удобства показываем, сколько человек заработал за сегодня (если смена открыта)
-  const currentReport = state.dailyReports[state.currentDate];
+  // Для удобства показываем, сколько человек заработал в ПОСЛЕДНЮЮ открытую смену
+  const allReports = Object.values(state.dailyReports);
+  const lastOpenReport = allReports
+    .filter(r => r.cashState?.isShiftOpen)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
 
-  const todayEarnings = useMemo(() => {
+  const currentReport = lastOpenReport || state.dailyReports[state.currentDate];
+
+  const currentEarnings = useMemo(() => {
     const earnings: Record<string, number> = {};
 
     if (currentReport?.records && currentReport.dailyEmployeeRoles) {
@@ -298,17 +312,17 @@ export default function PayoutsPage() {
       result = result.filter(e => e.name.toLowerCase().includes(q));
     }
 
-    // Сортируем: сначала те, кто сегодня работает (имеет заработок), затем по алфавиту
+    // Сортируем: сначала те, кто в текущей открытой смене (имеют заработок), затем по алфавиту
     return result.sort((a, b) => {
-      const earnA = todayEarnings[a.id] || 0;
-      const earnB = todayEarnings[b.id] || 0;
+      const earnA = currentEarnings[a.id] || 0;
+      const earnB = currentEarnings[b.id] || 0;
 
       if (earnA > 0 && earnB === 0) return -1;
       if (earnA === 0 && earnB > 0) return 1;
 
       return a.name.localeCompare(b.name);
     });
-  }, [state.employees, searchQuery, todayEarnings]);
+  }, [state.employees, searchQuery, currentEarnings]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500">
@@ -345,9 +359,9 @@ export default function PayoutsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredEmployees.map((employee) => {
-                const earnedToday = todayEarnings[employee.id] || 0;
-                const paidFromCashToday = currentReport?.cashState?.salaryPayouts?.[employee.id] || 0;
-                const isWorkingToday = currentReport?.employeeIds.includes(employee.id);
+                const earnedCurrent = currentEarnings[employee.id] || 0;
+                const paidFromCashCurrent = currentReport?.cashState?.salaryPayouts?.[employee.id] || 0;
+                const isWorkingCurrent = currentReport?.employeeIds.includes(employee.id);
 
                 return (
                   <div
@@ -359,9 +373,9 @@ export default function PayoutsPage() {
                         <h3 className="font-semibold text-foreground text-base truncate pr-2" title={employee.name}>
                           {employee.name}
                         </h3>
-                        {isWorkingToday ? (
+                        {isWorkingCurrent ? (
                           <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-green-500/10 text-green-600 text-[10px] font-bold">
-                            В смене сегодня
+                            В текущей смене
                           </span>
                         ) : (
                           <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-[10px] font-bold">
@@ -375,17 +389,17 @@ export default function PayoutsPage() {
                     </div>
 
                     <div className="mt-auto space-y-3">
-                      {earnedToday > 0 && (
+                      {earnedCurrent > 0 && (
                         <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-muted/40 border border-border/50">
-                          <span className="text-muted-foreground">Заработано сегодня:</span>
-                          <span className="font-bold text-foreground">{earnedToday.toFixed(2)} BYN</span>
+                          <span className="text-muted-foreground">Заработано в смене:</span>
+                          <span className="font-bold text-foreground">{earnedCurrent.toFixed(2)} BYN</span>
                         </div>
                       )}
 
-                      {paidFromCashToday > 0 && (
+                      {paidFromCashCurrent > 0 && (
                         <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-muted/40 border border-border/50">
-                          <span className="text-muted-foreground">Выдано из кассы сегодня:</span>
-                          <span className="font-bold text-foreground">{paidFromCashToday.toFixed(2)} BYN</span>
+                          <span className="text-muted-foreground">Уже выдано из кассы:</span>
+                          <span className="font-bold text-foreground">{paidFromCashCurrent.toFixed(2)} BYN</span>
                         </div>
                       )}
 
