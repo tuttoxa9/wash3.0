@@ -41,6 +41,8 @@ import {
   Wallet,
   ArrowUpRight,
   ArrowDownLeft,
+  FileDown,
+  Search,
 } from "lucide-react";
 
 
@@ -1671,6 +1673,176 @@ const RealtimeSettings: React.FC = () => {
 
 
 
+// Cash History Component
+const CashHistorySettings: React.FC = () => {
+  const { state } = useAppContext();
+  const [activeTab, setActiveTab] = useState<"shifts" | "modifications">("shifts");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const reportsList = Object.values(state.dailyReports).sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const shifts = reportsList.filter(r => r.cashState);
+
+  const allModifications = reportsList.flatMap((report) =>
+    (report.cashModifications || []).map((mod) => ({
+      ...mod,
+      reportDate: report.date as string,
+    }))
+  ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const filteredModifications = allModifications.filter((mod) =>
+    mod.reason.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="flex flex-col gap-4 animate-in fade-in duration-300">
+      <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col h-[600px]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-bold">История касс и операций</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Просмотр закрытых смен и движения наличных средств
+            </p>
+          </div>
+
+          <div className="flex bg-muted/40 p-1 rounded-lg gap-1 self-start">
+            <button
+              onClick={() => setActiveTab("shifts")}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === "shifts" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
+              }`}
+            >
+              Закрытые смены
+            </button>
+            <button
+              onClick={() => setActiveTab("modifications")}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === "modifications" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
+              }`}
+            >
+              Внесения / Изъятия
+            </button>
+          </div>
+        </div>
+
+        {activeTab === "shifts" ? (
+          <div className="flex-1 overflow-y-auto pr-2">
+            {shifts.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm">
+                <Wallet className="w-12 h-12 text-muted/30 mb-3" />
+                <p>Нет данных о закрытых сменах</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {shifts.map((report) => {
+                  const state = report.cashState!;
+                  const totalPayouts = Object.values(state.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
+                  const expectedCash = state.startOfDayCash + report.totalCash - totalPayouts - (state.transferredToSafe || 0);
+                  const diff = state.actualEndOfDayCash !== undefined ? state.actualEndOfDayCash - expectedCash : 0;
+
+                  return (
+                    <div key={report.id} className="p-4 rounded-xl border border-border/50 bg-background/50 flex flex-col gap-3 transition-colors">
+                      <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                        <span className="font-bold text-foreground bg-secondary/10 text-secondary-foreground px-2 py-0.5 rounded text-sm">
+                          {format(new Date(report.date), "dd.MM.yyyy")}
+                        </span>
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-md ${
+                          state.isShiftOpen ? "bg-amber-500/10 text-amber-600" : "bg-green-500/10 text-green-600"
+                        }`}>
+                          {state.isShiftOpen ? "Смена открыта" : "Смена закрыта"}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-1">На начало дня</p>
+                          <p className="font-semibold text-foreground">{state.startOfDayCash.toFixed(2)} BYN</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-1">Наличными за день</p>
+                          <p className="font-semibold text-green-600">+{report.totalCash.toFixed(2)} BYN</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-1">Выплачено ЗП</p>
+                          <p className="font-semibold text-red-500">-{totalPayouts.toFixed(2)} BYN</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs mb-1">Перенесено в сейф</p>
+                          <p className="font-semibold text-blue-500">-{state.transferredToSafe?.toFixed(2) || "0.00"} BYN</p>
+                        </div>
+                      </div>
+
+                      {state.actualEndOfDayCash !== undefined && (
+                        <div className="flex items-center justify-between mt-2 pt-3 border-t border-border/50 bg-muted/20 -mx-4 -mb-4 px-4 pb-4 rounded-b-xl">
+                          <div>
+                            <p className="text-muted-foreground text-xs mb-1">Фактически в кассе</p>
+                            <p className="font-bold text-base">{state.actualEndOfDayCash.toFixed(2)} BYN</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-muted-foreground text-xs mb-1">Разница (излишек/недостача)</p>
+                            <p className={`font-bold text-base ${diff > 0 ? "text-green-600" : diff < 0 ? "text-red-500" : "text-foreground"}`}>
+                              {diff > 0 ? "+" : ""}{diff.toFixed(2)} BYN
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col h-full">
+            <div className="mb-4 relative">
+               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+               <input
+                 type="text"
+                 placeholder="Поиск по причине..."
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 className="w-full pl-9 pr-3 py-2 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
+               />
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+              {filteredModifications.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm">
+                  <Wallet className="w-12 h-12 text-muted/30 mb-3" />
+                  <p>Транзакции не найдены</p>
+                </div>
+              ) : (
+                filteredModifications.map((mod) => (
+                  <div key={mod.id} className="p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-background flex items-center justify-between gap-4 transition-colors">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                        mod.amount > 0 ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-muted text-foreground border border-border"
+                      }`}>
+                        {mod.amount > 0 ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="font-semibold text-sm text-foreground">{mod.reason}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {format(new Date(mod.createdAt), "dd.MM.yyyy HH:mm")} • Смена {format(new Date(mod.reportDate), "dd.MM.yyyy")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className={`font-bold text-base whitespace-nowrap ${mod.amount > 0 ? "text-green-600" : "text-foreground"}`}>
+                      {mod.amount > 0 ? "+" : ""}{mod.amount.toFixed(2)} <span className="text-xs font-medium opacity-70">BYN</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Safe Management Component
 const SafeSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
@@ -1679,6 +1851,7 @@ const SafeSettings: React.FC = () => {
   const [amount, setAmount] = useState<string>("");
   const [comment, setComment] = useState<string>("");
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1689,6 +1862,11 @@ const SafeSettings: React.FC = () => {
     }
     if (!comment.trim()) {
       toast.error("Добавьте комментарий");
+      return;
+    }
+
+    if (transactionType === "out" && numAmount > state.safeBalance) {
+      toast.error("Сумма изъятия превышает баланс сейфа!");
       return;
     }
 
@@ -1730,6 +1908,43 @@ const SafeSettings: React.FC = () => {
     }
   };
 
+  const exportToCsv = () => {
+    if (state.safeTransactions.length === 0) {
+      toast.error("Нет транзакций для экспорта");
+      return;
+    }
+
+    const csvRows = [];
+    // Заголовки
+    csvRows.push(["Дата", "Время", "Тип", "Сумма (BYN)", "Комментарий"].join(";"));
+
+    state.safeTransactions.forEach((tx) => {
+      const date = new Date(tx.date);
+      const row = [
+        format(date, "dd.MM.yyyy"),
+        format(date, "HH:mm"),
+        tx.type === "in" ? "Внесение" : "Изъятие",
+        tx.amount.toFixed(2),
+        `"${tx.comment.replace(/"/g, '""')}"`
+      ];
+      csvRows.push(row.join(";"));
+    });
+
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const fileName = `Сейф_${format(new Date(), "dd-MM-yyyy")}.csv`;
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("CSV успешно экспортирован");
+  };
+
   // Статистика за текущий месяц
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -1746,9 +1961,11 @@ const SafeSettings: React.FC = () => {
     { in: 0, out: 0 }
   );
 
-  const filteredTransactions = state.safeTransactions.filter(
-    (tx) => filter === "all" || tx.type === filter
-  );
+  const filteredTransactions = state.safeTransactions.filter((tx) => {
+    const matchesFilter = filter === "all" || tx.type === filter;
+    const matchesSearch = tx.comment.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   return (
     <div className="flex flex-col gap-4 animate-in fade-in duration-300">
@@ -1844,10 +2061,15 @@ const SafeSettings: React.FC = () => {
                 required
               />
             </div>
+            {transactionType === "out" && Number.parseFloat(amount) > state.safeBalance && (
+              <p className="text-sm text-destructive font-medium mt-2">
+                Сумма изъятия не может превышать баланс сейфа ({state.safeBalance.toFixed(2)} BYN)
+              </p>
+            )}
             <div className="mt-auto pt-4">
               <button
                 type="submit"
-                disabled={loading || !amount || !comment.trim()}
+                disabled={loading || !amount || !comment.trim() || (transactionType === "out" && Number.parseFloat(amount) > state.safeBalance)}
                 className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 text-white shadow-sm ${
                   transactionType === "in" ? "bg-green-600 hover:bg-green-700" : "bg-primary hover:bg-primary/90"
                 }`}
@@ -1867,8 +2089,17 @@ const SafeSettings: React.FC = () => {
 
         {/* История */}
         <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col lg:h-[500px]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <h3 className="text-lg font-bold">История операций</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold">История операций</h3>
+              <button
+                onClick={exportToCsv}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                title="Экспорт в CSV"
+              >
+                <FileDown className="w-4 h-4" />
+              </button>
+            </div>
 
             <div className="flex bg-muted/40 p-1 rounded-lg gap-1 self-start">
               <button
@@ -1896,6 +2127,17 @@ const SafeSettings: React.FC = () => {
                 Изъятия
               </button>
             </div>
+          </div>
+
+          <div className="mb-4 relative">
+             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+             <input
+               type="text"
+               placeholder="Поиск по комментарию..."
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+               className="w-full pl-9 pr-3 py-2 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
+             />
           </div>
 
           <div className="flex-1 overflow-y-auto pr-2 space-y-3">
@@ -1984,6 +2226,9 @@ export default function SettingsPage() {
           <TabsTrigger value="debts" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Долги
           </TabsTrigger>
+          <TabsTrigger value="cash" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
+            Касса
+          </TabsTrigger>
           <TabsTrigger value="safe" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Сейф
           </TabsTrigger>
@@ -2017,6 +2262,10 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-4">
             <DebtsManagement />
           </div>
+        </TabsContent>
+
+        <TabsContent value="cash" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
+          <CashHistorySettings />
         </TabsContent>
 
         <TabsContent value="safe" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">

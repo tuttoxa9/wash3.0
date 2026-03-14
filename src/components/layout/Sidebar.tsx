@@ -19,6 +19,7 @@ import {
   Settings,
   StickyNote,
   Sun,
+  WalletCards,
   Trash2,
   X,
 } from "lucide-react";
@@ -263,6 +264,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             >
               <BarChart className="w-5 h-5" />
               <span>Отчеты</span>
+            </NavLink>
+
+            <NavLink
+              to="/payouts"
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? "active" : ""}`
+              }
+              onClick={toggleMobileSidebar}
+            >
+              <WalletCards className="w-5 h-5" />
+              <span>Выплаты</span>
             </NavLink>
 
             <NavLink

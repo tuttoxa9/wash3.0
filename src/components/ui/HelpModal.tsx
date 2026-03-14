@@ -57,7 +57,7 @@ const sections: HelpSection[] = [
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">3</span>
               Настройка ролей
             </h4>
-            <p className="pl-8 text-muted-foreground">Укажите роль (Мойщик / Админ) и выберите, нужно ли учитывать минимальную оплату за выход (галочка «Учитывать минималку»).</p>
+            <p className="pl-8 text-muted-foreground">Укажите роль и выберите, нужно ли учитывать минимальную оплату за выход.</p>
           </div>
         </div>
 
@@ -68,7 +68,7 @@ const sections: HelpSection[] = [
           <p className="text-amber-600/90 text-sm">
             Если вы ошиблись при открытии смены, нажмите кнопку <strong>«Изменить состав»</strong>.
             <br/><br/>
-            <strong>Внимание:</strong> Если снять галочки со всех сотрудников и сохранить — текущая смена и все добавленные за этот день услуги будут <strong>ПОЛНОСТЬЮ УДАЛЕНЫ</strong> (для этого потребуется пароль от настроек).
+            <strong>Внимание:</strong> Если снять галочки со всех сотрудников и сохранить — текущая смена и все добавленные за этот день услуги будут <strong>ПОЛНОСТЬЮ УДАЛЕНЫ</strong>. Для этого потребуется пароль от настроек.
           </p>
         </div>
       </div>
@@ -88,23 +88,25 @@ const sections: HelpSection[] = [
 
           <div className="space-y-4">
             <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
-              <h4 className="font-semibold text-foreground mb-2">1. Сверка кассы (Конец дня)</h4>
-              <p>В конце смены нажмите кнопку <strong>«Сверить кассу»</strong> в виджете. Пересчитайте все физические деньги в ящике и введите эту сумму. Система автоматически покажет, сошлась ли касса, или есть излишек/недостача.</p>
+              <h4 className="font-semibold text-foreground mb-2">1. Сверка кассы</h4>
+              <p>В конце смены нажмите кнопку <strong>«Сверить кассу»</strong> в виджете. Пересчитайте все физические деньги в ящике и введите эту сумму. Система автоматически покажет, сошлась ли касса, или есть излишек или недостача.</p>
             </div>
 
             <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
               <h4 className="font-semibold text-foreground mb-2">2. Расчет сотрудников</h4>
-              <p>После сверки кассы нажмите <strong>«Рассчитать сотрудников»</strong>. Откроется список <em>абсолютно всех</em> сотрудников из базы. Вы можете:</p>
+              <p>После сверки кассы нажмите <strong>«Рассчитать сотрудников»</strong>. Вы можете выдать зарплату из кассы смены или из глобального сейфа. Откроется список всех сотрудников. Вы можете:</p>
               <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
                 <li>Нажать кнопку <strong>«Всё»</strong>, чтобы выдать сотруднику ровно ту сумму, которую он заработал за сегодня.</li>
-                <li>Ввести любую другую сумму вручную (например, выдать аванс или удержать часть ЗП).</li>
-                <li>Эти деньги будут вычтены из фактического остатка вашей кассы.</li>
+                <li>Ввести любую другую сумму вручную.</li>
+                <li>При выборе источника "Касса" деньги будут вычтены из фактического остатка вашей кассы.</li>
+                <li>При выборе источника "Сейф" деньги будут списаны из глобального сейфа, а касса смены останется нетронутой.</li>
               </ul>
+              <p className="mt-2 text-xs">Также выдать деньги сотрудникам в любое время можно в разделе <strong>«Выплаты»</strong> в главном меню.</p>
             </div>
 
             <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
               <h4 className="font-semibold text-foreground mb-2">3. Перенос в сейф</h4>
-              <p>Оставшиеся в кассе деньги можно перенести в глобальный сейф, нажав кнопку <strong>«В сейф»</strong>. Глобальный сейф находится в <strong>Настройках → Сейф</strong>. Там хранится весь баланс и история всех операций (кто, когда и сколько положил или изъял).</p>
+              <p>Оставшиеся в кассе деньги можно перенести в глобальный сейф, нажав кнопку <strong>«В сейф»</strong>. Глобальный сейф находится в настройках. Там хранится весь баланс и история всех операций.</p>
             </div>
           </div>
         </div>
@@ -156,7 +158,7 @@ const sections: HelpSection[] = [
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
           <h3 className="text-xl font-bold text-foreground mb-3">Разделение выручки</h3>
-          <p className="mb-4">В системе поддерживается несколько способов оплаты. Они по-разному влияют на кассу (Итого) и на зарплату сотрудников.</p>
+          <p className="mb-4">В системе поддерживается несколько способов оплаты. Они по-разному влияют на кассу и на зарплату сотрудников.</p>
 
           <div className="space-y-4">
             <div className="flex gap-4 p-4 bg-muted/20 border border-border/50 rounded-2xl">
@@ -167,7 +169,7 @@ const sections: HelpSection[] = [
               </div>
               <div>
                 <h4 className="font-bold text-foreground text-base">Наличные и Карта</h4>
-                <p className="text-muted-foreground mt-1">Обычная оплата от физических лиц. Эти суммы моментально попадают в общую кассу дня (в блоки "Наличные" и "Карта"), и с них сразу же начисляется процент сотрудникам.</p>
+                <p className="text-muted-foreground mt-1">Обычная оплата от физических лиц. Эти суммы моментально попадают в общую кассу дня, и с них сразу же начисляется процент сотрудникам.</p>
               </div>
             </div>
 
@@ -178,8 +180,8 @@ const sections: HelpSection[] = [
                 </div>
               </div>
               <div>
-                <h4 className="font-bold text-foreground text-base">Безналичные (Организации)</h4>
-                <p className="text-muted-foreground mt-1">При выборе "Безнал" необходимо указать организацию из выпадающего списка (список организаций настраивается в разделе "Настройки").</p>
+                <h4 className="font-bold text-foreground text-base">Безналичные. Организации.</h4>
+                <p className="text-muted-foreground mt-1">При выборе "Безнал" необходимо указать организацию из выпадающего списка. Список организаций настраивается в разделе "Настройки".</p>
                 <div className="mt-3 p-3 bg-background rounded-xl border border-border/50 text-xs">
                   <strong>Как считаются деньги:</strong> Если в настройках организации включена галочка <em>"Учитывать в общей сумме"</em>, то оплата приплюсуется к большой цифре "Всего" за день. В противном случае она будет выведена отдельно. Зарплата работникам начисляется в любом случае.
                 </div>
@@ -207,11 +209,11 @@ const sections: HelpSection[] = [
               </div>
               <h4 className="font-bold text-lg text-foreground mb-2">Продажа сертификата</h4>
               <p className="text-muted-foreground mb-3">
-                Используйте виджет <strong>"Сертификаты"</strong> (находится справа на компьютере или внизу списка на телефоне). Нажмите кнопку "Продать".
+                Используйте виджет <strong>"Сертификаты"</strong>. Нажмите кнопку "Продать".
               </p>
               <div className="bg-purple-500/5 p-4 rounded-xl border border-purple-500/20 text-purple-700 dark:text-purple-300">
                 <ul className="list-disc pl-4 space-y-1">
-                  <li>Деньги <strong>сразу попадают в кассу</strong> (как движение средств по наличному или безналичному расчету).</li>
+                  <li>Деньги <strong>сразу попадают в кассу</strong>.</li>
                   <li>Эта сумма <strong>НЕ влияет на зарплату</strong> сотрудников, так как физическая услуга еще не была оказана.</li>
                 </ul>
               </div>
@@ -221,7 +223,7 @@ const sections: HelpSection[] = [
               <div className="absolute -left-[35px] top-0 w-8 h-8 rounded-full bg-card border-2 border-purple-500 flex items-center justify-center text-purple-500 font-bold text-sm">
                 2
               </div>
-              <h4 className="font-bold text-lg text-foreground mb-2">Использование (Оказание услуги)</h4>
+              <h4 className="font-bold text-lg text-foreground mb-2">Использование. Оказание услуги.</h4>
               <p className="text-muted-foreground mb-3">
                 Когда клиент приезжает по купленному ранее сертификату:
               </p>
@@ -237,7 +239,7 @@ const sections: HelpSection[] = [
               </div>
               <div className="bg-purple-500/5 p-4 rounded-xl border border-purple-500/20 text-purple-700 dark:text-purple-300">
                 <ul className="list-disc pl-4 space-y-1">
-                  <li>При использовании <strong>деньги в кассу НЕ добавляются</strong> (чтобы избежать задвоения выручки).</li>
+                  <li>При использовании <strong>деньги в кассу НЕ добавляются</strong>.</li>
                   <li>Услуга записывается сотруднику в статистику и с нее <strong>начисляется зарплата</strong>.</li>
                 </ul>
               </div>
@@ -249,20 +251,20 @@ const sections: HelpSection[] = [
   },
   {
     id: "cash",
-    title: "Касса (Изъятия/Внесения)",
+    title: "Касса. Изъятия и Внесения",
     description: "Размен, инкассация, покупка расходников",
     icon: <Wallet className="w-5 h-5 text-amber-500" />,
     content: (
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
           <h3 className="text-xl font-bold text-foreground mb-3">Движение наличных и по карте</h3>
-          <p className="mb-4">Иногда в кассе происходят изменения, не связанные напрямую с мойкой машин: утренний размен, инкассация боссу, покупка химии или тряпок.</p>
+          <p className="mb-4">Иногда в кассе происходят изменения, не связанные напрямую с мойкой машин. Например, утренний размен, инкассация боссу, покупка химии или тряпок.</p>
 
           <div className="bg-card border border-border/50 rounded-2xl overflow-hidden mb-6">
             <div className="p-4 border-b border-border/50">
               <h4 className="font-bold flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                Как добавить операцию:
+                Как добавить операцию
               </h4>
             </div>
             <div className="p-5">
@@ -280,7 +282,7 @@ const sections: HelpSection[] = [
                   <h5 className="font-bold text-red-600 dark:text-red-500 mb-1 flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" /> Изъятие
                   </h5>
-                  <p className="text-xs text-muted-foreground">Выдача денег из кассы. Инкассация или покупка расходников. Обязательно указывайте комментарий!</p>
+                  <p className="text-xs text-muted-foreground">Выдача денег из кассы. Например, покупка расходников. Обязательно указывайте комментарий.</p>
                 </div>
               </div>
             </div>
@@ -371,7 +373,7 @@ const sections: HelpSection[] = [
             <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
               <h4 className="font-bold text-foreground mb-2">Проценты</h4>
               <p className="text-muted-foreground text-sm">
-                Базовый расчет зарплаты. Программа берет стоимость оказанной услуги, делит её поровну между всеми исполнителями, а затем умножает на процент сотрудника (который зависит от его роли: Мойщик или Админ).
+                Базовый расчет зарплаты. Программа берет стоимость оказанной услуги, делит её поровну между всеми исполнителями, а затем умножает на процент сотрудника. Процент зависит от его роли.
               </p>
             </div>
 
@@ -388,9 +390,9 @@ const sections: HelpSection[] = [
             <div className="bg-muted/20 border border-border/50 rounded-2xl p-5 flex gap-4 items-start">
               <div className="mt-1 font-bold text-foreground text-lg">*</div>
               <div>
-                <h4 className="font-bold text-foreground mb-1">Ручная ЗП (Премии и Штрафы)</h4>
+                <h4 className="font-bold text-foreground mb-1">Ручная ЗП. Премии и Штрафы.</h4>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Если вы хотите заплатить сотруднику другую сумму (оштрафовать или премировать), нажмите на его карточку на Главной странице и введите <strong>«Ручную ЗП»</strong>. На карточке появится звездочка (*). Это значение <strong>перекроет все автоматические расчеты</strong>.
+                  Если вы хотите заплатить сотруднику другую сумму, нажмите на его карточку на Главной странице и введите <strong>«Ручную ЗП»</strong>. На карточке появится звездочка. Это значение <strong>перекроет все автоматические расчеты</strong>.
                 </p>
               </div>
             </div>
@@ -400,7 +402,7 @@ const sections: HelpSection[] = [
               <div>
                 <h4 className="font-bold text-foreground mb-1 text-sm">Почасовая разбивка</h4>
                 <p className="text-muted-foreground text-sm">
-                  В течение рабочего времени (с 9:00 до 21:00) на карточках сотрудников отображается предварительный расчет — "ЗП за N часов". Это информативная цифра, показывающая, сколько сотрудник заработал к текущему часу. После 21:00 она превратится в окончательную "ЗП за день".
+                  В течение рабочего времени на карточках сотрудников отображается предварительный расчет. Это информативная цифра, показывающая, сколько сотрудник заработал к текущему часу. После 21:00 она превратится в окончательную ЗП за день.
                 </p>
               </div>
             </div>
