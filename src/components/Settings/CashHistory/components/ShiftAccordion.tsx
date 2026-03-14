@@ -35,27 +35,23 @@ export const ShiftAccordion: React.FC<ShiftAccordionProps> = ({ report, state })
   const hasDiff = Math.abs(diff) > 0.01;
 
   return (
-    <div className={`border rounded-xl mb-3 overflow-hidden transition-all duration-200 ${
-      isExpanded ? "border-border shadow-md" : "border-border/50 hover:border-border"
-    }`}>
+    <div className={`group border-b border-border/50 last:border-none overflow-hidden transition-all duration-200 ${isExpanded ? "bg-muted/5" : "hover:bg-muted/5"}`}>
       {/* Header Row (Collapsed State) */}
       <div
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer bg-card hover:bg-muted/10 transition-colors ${
-           isExpanded ? "bg-muted/10 border-b border-border/50" : ""
-        }`}
+        className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer transition-colors"
       >
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-             <div className="flex items-center gap-2">
-                 <span className="font-bold text-foreground flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-primary" />
+             <div className="flex items-center gap-2.5">
+                 <span className="font-semibold text-foreground flex items-center gap-2">
                     {format(parseISO(report.date as string), "dd.MM.yyyy")}
                  </span>
-                 <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md ${
-                    cashState.isShiftOpen ? "bg-amber-500/10 text-amber-600 border border-amber-500/20" : "bg-green-500/10 text-green-600 border border-green-500/20"
-                 }`}>
-                    {cashState.isShiftOpen ? "Открыта" : "Закрыта"}
+                 <span className="flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full ${cashState.isShiftOpen ? "bg-amber-500" : "bg-green-500"}`}></span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                        {cashState.isShiftOpen ? "Открыта" : "Закрыта"}
+                    </span>
                  </span>
              </div>
              <p className="text-xs text-muted-foreground mt-1.5">
@@ -68,9 +64,9 @@ export const ShiftAccordion: React.FC<ShiftAccordionProps> = ({ report, state })
             {cashState.actualEndOfDayCash !== undefined && (
                 <div className="flex flex-col items-end">
                     <p className="text-xs text-muted-foreground mb-0.5">Разница</p>
-                    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${
-                        diff < -0.01 ? "bg-red-500/10 text-red-500" :
-                        diff > 0.01 ? "bg-green-500/10 text-green-600" : "bg-muted text-foreground"
+                    <div className={`flex items-center gap-1.5 ${
+                        diff < -0.01 ? "text-red-500" :
+                        diff > 0.01 ? "text-green-500" : "text-muted-foreground"
                     }`}>
                         {hasDiff && diff < -0.01 && <AlertTriangle className="w-3.5 h-3.5" />}
                         <span className="font-bold text-sm">
@@ -79,8 +75,8 @@ export const ShiftAccordion: React.FC<ShiftAccordionProps> = ({ report, state })
                     </div>
                 </div>
             )}
-            <div className="text-muted-foreground p-1 rounded-full hover:bg-border/50 transition-colors">
-                {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            <div className="text-muted-foreground p-1 rounded-full group-hover:bg-border/50 transition-colors">
+                {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </div>
         </div>
       </div>
