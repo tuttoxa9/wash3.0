@@ -1781,29 +1781,31 @@ const SafeSettings: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col gap-4 animate-in fade-in duration-300">
-      <div className="grid grid-cols-1 gap-4">
-        {/* Главный баланс */}
-        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col justify-center gap-2 relative overflow-hidden">
-          <div className="absolute -right-6 -top-6 text-green-500/5 rotate-12">
-            <Wallet className="w-40 h-40" />
-          </div>
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
-              <Wallet className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-medium text-muted-foreground">Баланс сейфа</p>
-          </div>
-          <h2 className="text-3xl font-bold text-foreground relative z-10 mt-2">
-            {state.safeBalance.toFixed(2)} <span className="text-xl text-muted-foreground font-semibold">BYN</span>
-          </h2>
-        </div>
-      </div>
-
+    <div className="flex flex-col animate-in fade-in duration-300">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4">
-        {/* Форма */}
-        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col">
-          <h3 className="text-lg font-bold mb-4">Новая операция</h3>
+
+        {/* Левая колонка (Баланс + Форма) */}
+        <div className="flex flex-col gap-4">
+
+          {/* Главный баланс */}
+          <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col justify-center gap-2 relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 text-green-500/5 rotate-12">
+              <Wallet className="w-40 h-40" />
+            </div>
+            <div className="flex items-center gap-3 relative z-10">
+              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <p className="text-sm font-medium text-muted-foreground">Баланс сейфа</p>
+            </div>
+            <h2 className="text-3xl font-bold text-foreground relative z-10 mt-2">
+              {state.safeBalance.toFixed(2)} <span className="text-xl text-muted-foreground font-semibold">BYN</span>
+            </h2>
+          </div>
+
+          {/* Форма */}
+          <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col">
+            <h3 className="text-lg font-bold mb-4">Новая операция</h3>
           <div className="flex bg-muted/50 p-1 rounded-xl gap-1 mb-5">
             <button
               onClick={() => setTransactionType("in")}
@@ -1880,10 +1882,11 @@ const SafeSettings: React.FC = () => {
               </button>
             </div>
           </form>
+          </div>
         </div>
 
-        {/* История */}
-        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col lg:h-[500px]">
+        {/* История (Правая колонка) */}
+        <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col h-[500px] lg:h-auto lg:min-h-[600px]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-bold">История операций</h3>
