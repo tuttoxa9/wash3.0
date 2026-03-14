@@ -44,7 +44,6 @@ import {
   FileDown,
   Search,
 } from "lucide-react";
-import { CashHistoryDashboard } from "@/components/Settings/CashHistory";
 
 // Компонент для ввода пароля
 const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
@@ -1673,11 +1672,6 @@ const RealtimeSettings: React.FC = () => {
 
 
 
-// Cash History Component
-const CashHistorySettings: React.FC = () => {
-  return <CashHistoryDashboard />;
-};
-
 // Safe Management Component
 const SafeSettings: React.FC = () => {
   const { state, dispatch } = useAppContext();
@@ -2027,9 +2021,6 @@ export default function SettingsPage() {
           <TabsTrigger value="debts" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Долги
           </TabsTrigger>
-          <TabsTrigger value="cash" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
-            Касса
-          </TabsTrigger>
           <TabsTrigger value="safe" className="rounded-xl text-sm px-7 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all text-muted-foreground hover:text-foreground">
             Сейф
           </TabsTrigger>
@@ -2063,10 +2054,6 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-4">
             <DebtsManagement />
           </div>
-        </TabsContent>
-
-        <TabsContent value="cash" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
-          <CashHistorySettings />
         </TabsContent>
 
         <TabsContent value="safe" className="space-y-4 focus-visible:outline-none animate-in fade-in duration-300">
