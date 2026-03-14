@@ -11,6 +11,7 @@ import MobileDayDetailsModal from "./EmployeeRecords/MobileDayDetailsModal";
 // Import sub-components
 import MobileDaysListModal from "./EmployeeRecords/MobileDaysListModal";
 import PaymentMethodDetailModal from "./EmployeeRecords/PaymentMethodDetailModal";
+import { createSalaryCalculator } from "./SalaryCalculator";
 
 interface EmployeeRecordsModalProps {
   isOpen: boolean;
@@ -142,13 +143,18 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
         if (!acc[date]) {
           acc[date] = [];
         }
-        acc[date].push(record);
+
+        // Добавляем запись в список ТОЛЬКО если сотрудник реально участвовал в ней
+        if (record.employeeIds.includes(employee.id)) {
+          acc[date].push(record);
+        }
         return acc;
       },
       {} as Record<string, CarWashRecord[]>,
     );
 
-    // Также добавляем все дни, когда сотрудник был на смене (даже если нет записей)
+    // Добавляем все дни, когда сотрудник был на смене (даже если он админ и не мыл машины,
+    // день должен быть, но массив записей будет пуст)
     Object.keys(dailyRoles).forEach((date) => {
       if (dailyRoles[date][employee.id] && !groups[date]) {
         groups[date] = [];
@@ -166,6 +172,57 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     return groups;
   }, [records, dailyRoles, employee.id]);
 
+  // Функция для расчёта заработка сотрудника за весь день
+  const calculateDaySalary = React.useCallback(
+    (dateStr: string) => {
+      // Чтобы посчитать процент админа от кассы, нам нужны ВСЕ записи за этот день, а не только те, что он мыл.
+      // records уже содержит все записи за эти дни (спасибо ReportsPage.tsx).
+      const allDayRecords = records.filter((r) => {
+        const rDate = typeof r.date === "string" ? r.date : format(r.date, "yyyy-MM-dd");
+        return rDate === dateStr;
+      });
+
+      const dayRoles = dailyRoles[dateStr] || {};
+
+      const employeeRolesForDay: Record<string, "admin" | "washer"> = {};
+      const minimumOverrideForDay: Record<string, boolean> = {};
+
+      const participantIds = new Set<string>();
+      Object.keys(dayRoles).forEach((key) => {
+        if (!key.startsWith("min_")) participantIds.add(key);
+      });
+      allDayRecords.forEach((rec) =>
+        rec.employeeIds.forEach((id) => participantIds.add(id)),
+      );
+
+      participantIds.forEach((empId) => {
+        employeeRolesForDay[empId] = determineEmployeeRole(
+          empId,
+          dateStr,
+          dayRoles,
+          state.employees,
+        );
+
+        const minKey = `min_${empId}`;
+        const minVal = dayRoles[minKey];
+        minimumOverrideForDay[empId] = minVal !== false;
+      });
+
+      const salaryCalculator = createSalaryCalculator(
+        state.minimumPaymentSettings,
+        allDayRecords,
+        employeeRolesForDay,
+        state.employees,
+        minimumOverrideForDay,
+      );
+
+      const dailyResults = salaryCalculator.calculateSalaries();
+      const res = dailyResults.find((r) => r.employeeId === employee.id);
+      return res ? res.calculatedSalary : 0;
+    },
+    [dailyRoles, state.employees, state.minimumPaymentSettings, employee.id, records],
+  );
+
   // Сортировка дат
   const sortedDates = useMemo(
     () => Object.keys(groupedRecords).sort((a, b) => b.localeCompare(a)),
@@ -175,13 +232,17 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   // Детальная статистика
   const statistics = useMemo(() => {
     const totalRecords = records.length;
+
+    // Total Revenue is their personal generated revenue (from records they washed)
     const totalRevenue = records.reduce((sum, record) => {
       return sum + calculateEmployeeEarnings(record, employee.id);
     }, 0);
 
-    const totalEarnings = records.reduce((sum, record) => {
-      return sum + calculateEmployeeEarnings(record, employee.id);
-    }, 0);
+    // Total Earnings is the sum of all their actual daily salaries over this period
+    let totalEarnings = 0;
+    Object.keys(groupedRecords).forEach((dateStr) => {
+      totalEarnings += calculateDaySalary(dateStr);
+    });
 
     // Статистика по способам оплаты
     const paymentStats = records.reduce(
@@ -302,13 +363,10 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     const bestDay = Object.entries(groupedRecords).reduce(
       (best, [date, dayRecords]) => {
         const dayRevenue = dayRecords.reduce(
-          (sum, record) => sum + calculateEmployeeEarnings(record, employee.id),
+          (sum, record) => sum + record.price,
           0,
         );
-        const dayEarnings = dayRecords.reduce(
-          (sum, record) => sum + calculateEmployeeEarnings(record, employee.id),
-          0,
-        );
+        const dayEarnings = calculateDaySalary(date);
 
         if (dayEarnings > (best.earnings || 0)) {
           return {
@@ -343,9 +401,9 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   }, [
     records,
     employee.id,
-    dailyRoles,
     groupedRecords,
     calculateEmployeeEarnings,
+    calculateDaySalary,
   ]);
 
   if (!isOpen) return null;
@@ -363,7 +421,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
             groupedRecords={groupedRecords}
             sortedDates={sortedDates}
             periodLabel={periodLabel}
-            calculateEmployeeEarnings={calculateEmployeeEarnings}
+            calculateEmployeeEarnings={calculateDaySalary}
             onDayClick={handleDayClick}
             onAnalyticsClick={() => {
               setShowMobileDaysList(false);
@@ -392,6 +450,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
           sortedDates={sortedDates}
           periodLabel={periodLabel}
           calculateEmployeeEarnings={calculateEmployeeEarnings}
+          calculateDaySalary={calculateDaySalary}
           onDayClick={handleDayClick}
           selectedDate={selectedDate}
           selectedDateRecords={selectedDateRecords}

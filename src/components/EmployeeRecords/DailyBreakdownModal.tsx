@@ -15,6 +15,7 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
   sortedDates,
   periodLabel,
   calculateEmployeeEarnings,
+  calculateDaySalary,
   onDayClick,
   selectedDate,
   selectedDateRecords,
@@ -55,14 +56,14 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
               <div className="space-y-2">
                 {sortedDates.map((date) => {
                   const dayRecords = groupedRecords[date];
-                  const dayEarnings = dayRecords.reduce(
+                  const dayEarnings = calculateDaySalary ? calculateDaySalary(date) : dayRecords.reduce(
                     (sum, record) =>
                       sum + calculateEmployeeEarnings(record, employee.id),
                     0,
                   );
                   const dayRevenue = dayRecords.reduce(
                     (sum, record) =>
-                      sum + calculateEmployeeEarnings(record, employee.id),
+                      sum + record.price,
                     0,
                   );
 
@@ -84,16 +85,18 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
                             })}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {dayRecords.length} записей
+                            {dayRecords.length > 0 ? `${dayRecords.length} записей` : "Нет лично выполненных услуг"}
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium text-green-600">
                             +{dayEarnings.toFixed(2)} BYN
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            из {dayRevenue.toFixed(2)}
-                          </div>
+                          {dayRecords.length > 0 && (
+                            <div className="text-xs text-muted-foreground">
+                              на {dayRevenue.toFixed(2)} BYN
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -187,6 +190,14 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : selectedDate ? (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <div className="text-center">
+                    <Calendar className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                    <p className="font-medium text-foreground mb-1">Нет лично выполненных услуг</p>
+                    <p className="text-sm">В этот день вы не мыли машины, но заработали процент от общей кассы смены.</p>
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
