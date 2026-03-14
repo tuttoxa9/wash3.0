@@ -38,7 +38,8 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
     setLoading(true);
 
     try {
-      const isShiftOpen = currentReport && currentReport.cashState?.isShiftOpen;
+      // Если есть отчет, но нет cashState (старые данные), считаем смену открытой
+      const isShiftOpen = currentReport ? (currentReport.cashState?.isShiftOpen ?? true) : false;
 
       if (source === "cash") {
         if (!isShiftOpen) {
@@ -47,9 +48,16 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
           return;
         }
 
-        const stateCash = currentReport.cashState!;
+        // Инициализируем cashState, если он отсутствует (для старых отчетов)
+        const stateCash = currentReport!.cashState || {
+          isShiftOpen: true,
+          startOfDayCash: 0,
+          salaryPayouts: {},
+          transferredToSafe: 0
+        };
+
         const totalPayouts = Object.values(stateCash.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
-        const expectedCash = stateCash.startOfDayCash + currentReport.totalCash - totalPayouts - (stateCash.transferredToSafe || 0);
+        const expectedCash = stateCash.startOfDayCash + currentReport!.totalCash - totalPayouts - (stateCash.transferredToSafe || 0);
 
         if (numAmount > expectedCash) {
           toast.error(`В кассе недостаточно средств (доступно: ${expectedCash.toFixed(2)} BYN)`);
@@ -60,7 +68,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
         const currentPayout = stateCash.salaryPayouts?.[employeeId] || 0;
 
         const updatedReport = {
-          ...currentReport,
+          ...currentReport!,
           cashState: {
             ...stateCash,
             salaryPayouts: {
@@ -122,7 +130,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
     }
   };
 
-  const isShiftOpen = currentReport && currentReport.cashState?.isShiftOpen;
+  const isShiftOpen = currentReport ? (currentReport.cashState?.isShiftOpen ?? true) : false;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="!max-w-md">

@@ -17,6 +17,7 @@ interface DailyReportModalProps {
   organizations: Organization[];
   selectedDate: string;
   onExport: () => void;
+  onExportCsv?: () => void;
   isExporting: boolean;
   paymentFilter: "all" | "cash" | "card" | "organization" | "debt" | "certificate";
   onPaymentFilterChange: (
@@ -33,6 +34,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
   organizations,
   selectedDate,
   onExport,
+  onExportCsv,
   isExporting,
   paymentFilter,
   onPaymentFilterChange,

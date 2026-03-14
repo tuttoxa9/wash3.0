@@ -2545,6 +2545,7 @@ const HomePage: React.FC = () => {
           organizations={state.organizations}
           selectedDate={selectedDate}
           onExport={exportToWord}
+          onExportCsv={exportToCsv}
           isExporting={loading.exporting}
           paymentFilter={paymentFilter}
           onPaymentFilterChange={setPaymentFilter}
