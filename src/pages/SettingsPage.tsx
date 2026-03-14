@@ -1780,22 +1780,6 @@ const SafeSettings: React.FC = () => {
     toast.success("CSV успешно экспортирован");
   };
 
-  // Статистика за текущий месяц
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-
-  const monthlyStats = state.safeTransactions.reduce(
-    (acc, tx) => {
-      const txDate = new Date(tx.date);
-      if (txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear) {
-        if (tx.type === "in") acc.in += tx.amount;
-        if (tx.type === "out") acc.out += tx.amount;
-      }
-      return acc;
-    },
-    { in: 0, out: 0 }
-  );
-
   const filteredTransactions = state.safeTransactions.filter((tx) => {
     const matchesFilter = filter === "all" || tx.type === filter;
     const matchesSearch = tx.comment.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1804,7 +1788,7 @@ const SafeSettings: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 animate-in fade-in duration-300">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {/* Главный баланс */}
         <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col justify-center gap-2 relative overflow-hidden">
           <div className="absolute -right-6 -top-6 text-green-500/5 rotate-12">
@@ -1819,24 +1803,6 @@ const SafeSettings: React.FC = () => {
           <h2 className="text-3xl font-bold text-foreground relative z-10 mt-2">
             {state.safeBalance.toFixed(2)} <span className="text-xl text-muted-foreground font-semibold">BYN</span>
           </h2>
-        </div>
-
-        {/* Статистика месяц - Внесено */}
-        <div className="p-5 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col justify-center">
-          <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Внесено за месяц</p>
-          <div className="flex items-end gap-2">
-            <h3 className="text-2xl font-bold text-green-600">+{monthlyStats.in.toFixed(2)}</h3>
-            <span className="text-sm text-muted-foreground mb-1">BYN</span>
-          </div>
-        </div>
-
-        {/* Статистика месяц - Изъято */}
-        <div className="p-5 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col justify-center">
-          <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Изъято за месяц</p>
-          <div className="flex items-end gap-2">
-            <h3 className="text-2xl font-bold text-foreground">-{monthlyStats.out.toFixed(2)}</h3>
-            <span className="text-sm text-muted-foreground mb-1">BYN</span>
-          </div>
         </div>
       </div>
 
