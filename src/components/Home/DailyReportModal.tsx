@@ -306,7 +306,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-card-foreground">
               <span className="hidden sm:inline">Ежедневная ведомость - </span>
               <span className="sm:hidden">Ведомость - </span>
-              {format(new Date(selectedDate), "dd.MM.yyyy")}
+              {format(parseISO(selectedDate), "dd.MM.yyyy")}
             </h3>
             <div className="flex gap-2 sm:gap-3">
               <button

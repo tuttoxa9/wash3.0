@@ -1424,7 +1424,7 @@ const DebtsManagement: React.FC = () => {
       });
 
       // Сортировка по дате (по убыванию)
-      debts.sort((a, b) => new Date(b.reportId).getTime() - new Date(a.reportId).getTime());
+      debts.sort((a, b) => parseISO(b.reportId).getTime() - parseISO(a.reportId).getTime());
 
       setActiveDebts(debts);
     } catch (error) {
@@ -1680,7 +1680,7 @@ const CashHistorySettings: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const reportsList = Object.values(state.dailyReports).sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => parseISO(b.date as string).getTime() - parseISO(a.date as string).getTime()
   );
 
   const shifts = reportsList.filter(r => r.cashState);
@@ -1746,7 +1746,7 @@ const CashHistorySettings: React.FC = () => {
                     <div key={report.id} className="p-4 rounded-xl border border-border/50 bg-background/50 flex flex-col gap-3 transition-colors">
                       <div className="flex items-center justify-between pb-3 border-b border-border/50">
                         <span className="font-bold text-foreground bg-secondary/10 text-secondary-foreground px-2 py-0.5 rounded text-sm">
-                          {format(new Date(report.date), "dd.MM.yyyy")}
+                          {format(parseISO(report.date as string), "dd.MM.yyyy")}
                         </span>
                         <span className={`text-xs font-semibold px-2 py-1 rounded-md ${
                           state.isShiftOpen ? "bg-amber-500/10 text-amber-600" : "bg-green-500/10 text-green-600"
@@ -1825,7 +1825,7 @@ const CashHistorySettings: React.FC = () => {
                       <div className="flex flex-col">
                         <p className="font-semibold text-sm text-foreground">{mod.reason}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(new Date(mod.createdAt), "dd.MM.yyyy HH:mm")} • Смена {format(new Date(mod.reportDate), "dd.MM.yyyy")}
+                          {format(new Date(mod.createdAt), "dd.MM.yyyy HH:mm")} • Смена {format(parseISO(mod.reportDate), "dd.MM.yyyy")}
                         </p>
                       </div>
                     </div>
