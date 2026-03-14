@@ -1049,9 +1049,16 @@ const ReportsPage: React.FC = () => {
                       if (employee) {
                         // Фильтруем записи для этого сотрудника и сортируем по времени
                         const employeeRecords = records
-                          .filter((record) =>
-                            record.employeeIds.includes(report.employeeId),
-                          )
+                          .filter((record) => {
+                            const recordDate = typeof record.date === "string"
+                              ? record.date
+                              : format(record.date, "yyyy-MM-dd");
+                            const isParticipant = record.employeeIds.includes(report.employeeId);
+                            const roleOnDay = dailyRoles[recordDate]?.[report.employeeId];
+
+                            // Показывать запись, если он либо мыл машину, либо был админом в этот день
+                            return isParticipant || roleOnDay === "admin";
+                          })
                           .sort((a, b) => {
                             // Сначала сортируем по дате
                             const dateCompare = a.date.localeCompare(b.date);
@@ -1191,9 +1198,14 @@ const ReportsPage: React.FC = () => {
           }}
           employee={selectedEmployeeForModal}
           records={records
-            .filter((record) =>
-              record.employeeIds.includes(selectedEmployeeForModal.id),
-            )
+            .filter((record) => {
+              const recordDate = typeof record.date === "string"
+                ? record.date
+                : format(record.date, "yyyy-MM-dd");
+              const isParticipant = record.employeeIds.includes(selectedEmployeeForModal.id);
+              const roleOnDay = dailyRoles[recordDate]?.[selectedEmployeeForModal.id];
+              return isParticipant || roleOnDay === "admin";
+            })
             .sort((a, b) => {
               // Сначала сортируем по дате
               const dateCompare = a.date.localeCompare(b.date);

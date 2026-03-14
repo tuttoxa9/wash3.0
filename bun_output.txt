@@ -4,3 +4,6 @@ $ vite --host 0.0.0.0
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: http://192.168.0.2:5173/
+3:59:58 PM [vite] (client) hmr update /src/pages/ReportsPage.tsx, /src/index.css
+4:00:05 PM [vite] (client) hmr update /src/pages/ReportsPage.tsx, /src/index.css
+4:00:18 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
