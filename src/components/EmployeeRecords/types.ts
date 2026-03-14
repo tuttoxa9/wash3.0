@@ -29,6 +29,9 @@ export interface DailyBreakdownModalProps {
     record: CarWashRecord,
     employeeId: string,
   ) => number;
+  calculateDaySalary?: (
+    dateStr: string,
+  ) => number;
   onDayClick: (date: string, dayRecords: CarWashRecord[]) => void;
   selectedDate: string | null;
   selectedDateRecords: CarWashRecord[];

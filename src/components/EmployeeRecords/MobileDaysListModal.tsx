@@ -33,6 +33,10 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  // calculateEmployeeEarnings is passed as calculateDaySalary from parent if it was remapped,
+  // but to be clear let's just use it as the daily earings function directly since it's remapped in the parent
+  // Wait, in parent I passed calculateEmployeeEarnings={calculateDaySalary}
+
   return (
     <AnimatePresence>
       <motion.div
@@ -82,14 +86,11 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
             <div className="space-y-2">
               {sortedDates.map((date) => {
                 const dayRecords = groupedRecords[date];
-                const dayEarnings = dayRecords.reduce(
-                  (sum, record) =>
-                    sum + calculateEmployeeEarnings(record, employee.id),
-                  0,
-                );
+                  // calculateEmployeeEarnings is calculateDaySalary from parent
+                  const dayEarnings = calculateEmployeeEarnings(date, dayRecords);
+
                 const dayRevenue = dayRecords.reduce(
-                  (sum, record) =>
-                    sum + calculateEmployeeEarnings(record, employee.id),
+                    (sum, record) => sum + record.price,
                   0,
                 );
 
@@ -107,16 +108,18 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
                           })}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {dayRecords.length} записей
+                            {dayRecords.length > 0 ? `${dayRecords.length} записей` : "Нет лично выполненных услуг"}
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-medium text-green-600">
                           +{dayEarnings.toFixed(2)} BYN
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          из {dayRevenue.toFixed(2)}
-                        </div>
+                          {dayRecords.length > 0 && (
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              на {dayRevenue.toFixed(2)} BYN
+                            </div>
+                          )}
                       </div>
                     </div>
                   </div>

@@ -7,3 +7,24 @@ $ vite --host 0.0.0.0
 3:59:58 PM [vite] (client) hmr update /src/pages/ReportsPage.tsx, /src/index.css
 4:00:05 PM [vite] (client) hmr update /src/pages/ReportsPage.tsx, /src/index.css
 4:00:18 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:08:27 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:08:42 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:08:48 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:08:54 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:08:58 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:09:02 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:09:11 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:09:15 PM [vite] (client) hmr update /src/index.css
+4:09:21 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecords/DailyBreakdownModal.tsx
+4:09:26 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecords/DailyBreakdownModal.tsx
+4:09:31 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecords/MobileDaysListModal.tsx
+4:09:53 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:09:58 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:10:03 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecordsModal.tsx
+4:10:07 PM [vite] (client) hmr update /src/index.css
+4:10:11 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecords/DailyBreakdownModal.tsx
+4:10:19 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecords/DailyBreakdownModal.tsx
+4:10:31 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecords/DailyBreakdownModal.tsx
+4:10:40 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecords/MobileDaysListModal.tsx
+4:11:04 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecords/MobileDayDetailsModal.tsx
+4:11:10 PM [vite] (client) hmr update /src/index.css, /src/components/EmployeeRecords/MobileDayDetailsModal.tsx
