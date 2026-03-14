@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Receipt, X, Loader2, Save, Edit, Trash2, FileDown, Eye } from "lucide-react";
+import { Receipt, X, Loader2, Save, Edit, Trash2, FileDown, Eye, Check } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { useAppContext } from "@/lib/context/AppContext";
 import { carWashService, dailyReportService } from "@/lib/services/supabaseService";
