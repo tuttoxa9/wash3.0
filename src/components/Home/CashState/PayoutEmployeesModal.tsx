@@ -72,7 +72,12 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
         // Проверяем, хватает ли наличных в кассе
         const totalPayoutsSum = Object.values(numericPayouts).reduce((sum, val) => sum + val, 0);
         const stateCash = report.cashState!;
-        const expectedCash = stateCash.startOfDayCash + report.totalCash - (stateCash.transferredToSafe || 0);
+
+        const cashModificationsTotal = (report.cashModifications || [])
+          .filter(m => !m.method || m.method === "cash")
+          .reduce((sum, mod) => sum + mod.amount, 0);
+
+        const expectedCash = stateCash.startOfDayCash + report.totalCash + cashModificationsTotal - (stateCash.transferredToSafe || 0);
 
         if (totalPayoutsSum > expectedCash) {
           toast.error(`В кассе недостаточно средств (доступно: ${expectedCash.toFixed(2)} BYN)`);
