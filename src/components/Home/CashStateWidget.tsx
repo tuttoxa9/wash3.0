@@ -1,6 +1,7 @@
 import type React from "react";
 import type { DailyReport } from "@/lib/types";
 import { Wallet, CheckCircle, Users, ArrowUpRight } from "lucide-react";
+import { useAppContext } from "@/lib/context/AppContext";
 
 interface Props {
   report: DailyReport;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function CashStateWidget({ report, onCloseCash, onPayout, onTransferToSafe }: Props) {
+  const { state } = useAppContext();
   const cashState = report.cashState;
 
   // Расчет ожидаемой кассы:
@@ -59,9 +61,40 @@ export default function CashStateWidget({ report, onCloseCash, onPayout, onTrans
               </span>
             </div>
 
-            {(Object.keys(cashState?.salaryPayouts || {}).length > 0 || (cashState?.transferredToSafe || 0) > 0) && (
+            {(Object.keys(cashState?.salaryPayouts || {}).length > 0) && (
+              <div className="flex flex-col gap-1 mt-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground font-medium">На выплаты ушло:</span>
+                  <span className="font-bold text-base text-orange-500">
+                    -{Object.values(cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0).toFixed(2)} BYN
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1 pl-2 border-l-2 border-border/50 mb-1">
+                  {Object.entries(cashState?.salaryPayouts || {}).map(([empId, amount]) => {
+                    const emp = state.employees.find(e => e.id === empId);
+                    return (
+                      <div key={empId} className="flex justify-between items-center text-xs text-muted-foreground">
+                        <span>{emp?.name || 'Неизвестный'}</span>
+                        <span>{amount.toFixed(2)} BYN</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {(cashState?.transferredToSafe || 0) > 0 && (
               <div className="flex justify-between items-center mt-1">
-                <span className="text-sm text-muted-foreground font-medium text-secondary-foreground">После выплат/сейфа:</span>
+                <span className="text-sm text-muted-foreground font-medium">В сейф ушло:</span>
+                <span className="font-bold text-base text-blue-500">
+                  -{cashState?.transferredToSafe?.toFixed(2)} BYN
+                </span>
+              </div>
+            )}
+
+            {(Object.keys(cashState?.salaryPayouts || {}).length > 0 || (cashState?.transferredToSafe || 0) > 0) && (
+              <div className="flex justify-between items-center mt-2 pt-2 border-t border-border/50">
+                <span className="text-sm text-muted-foreground font-medium text-secondary-foreground">Фактический остаток:</span>
                 <span className="font-bold text-lg text-secondary-foreground">
                   {((cashState?.actualEndOfDayCash || 0) - Object.values(cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0) - (cashState?.transferredToSafe || 0)).toFixed(2)} BYN
                 </span>
