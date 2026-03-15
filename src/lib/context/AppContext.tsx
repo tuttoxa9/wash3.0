@@ -50,6 +50,7 @@ const initialState: AppState = {
   },
   organizationsInTotal: [],
   isRealtimeEnabled: true,
+  isInitialized: false,
   safeBalance: 0,
   safeTransactions: [],
 };
@@ -234,6 +235,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         safeTransactions: [action.payload, ...state.safeTransactions],
+      };
+    case "SET_INITIALIZED":
+      return {
+        ...state,
+        isInitialized: action.payload,
       };
     case "SET_REALTIME_ENABLED":
 
@@ -494,8 +500,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         dispatch({ type: "SET_SAFE_BALANCE", payload: safeBalance });
         dispatch({ type: "SET_SAFE_TRANSACTIONS", payload: safeTransactions });
 
+        dispatch({ type: "SET_INITIALIZED", payload: true });
       } catch (error) {
         console.error("Ошибка при загрузке данных при запуске:", error);
+        // Even on error, we should probably unblock the UI if possible,
+        // or let it stay in a loading state if data is critical.
+        // For now, we'll mark as initialized so the user isn't stuck forever.
+        dispatch({ type: "SET_INITIALIZED", payload: true });
       }
     };
 
