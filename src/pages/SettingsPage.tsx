@@ -43,71 +43,9 @@ import {
   ArrowDownLeft,
   FileDown,
   Search,
+  Calendar as CalendarIcon,
 } from "lucide-react";
-
-// Компонент для ввода пароля
-const PasswordAuth: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    setTimeout(() => {
-      if (password === import.meta.env.VITE_SETTINGS_PASSWORD) {
-        setError("");
-        onSuccess();
-      } else {
-        setError("Неверный пароль. Попробуйте еще раз.");
-      }
-      setIsLoading(false);
-    }, 500);
-  };
-
-  return (
-    <div className="max-w-md mx-auto mt-12 bg-card rounded-2xl border border-border/50 shadow-sm p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-300">
-      <div className="text-center mb-6">
-        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <Lock className="w-6 h-6 text-primary" />
-        </div>
-        <h2 className="text-xl font-semibold">Доступ к настройкам</h2>
-        <p className="text-muted-foreground mt-2 text-sm">
-          Введите пароль для доступа к панели управления
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        <div className="mb-5">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Введите пароль"
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
-            autoFocus
-          />
-          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-primary text-primary-foreground py-2.5 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Проверка...
-            </>
-          ) : (
-            <>Войти</>
-          )}
-        </button>
-      </form>
-    </div>
-  );
-};
+import PasswordAuth from "@/components/ui/PasswordAuth";
 
 // Component for theme settings section
 const ThemeSettings: React.FC = () => {
@@ -1676,6 +1614,9 @@ const SafeSettings: React.FC = () => {
   const [comment, setComment] = useState<string>("");
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [displayCount, setDisplayCount] = useState(15);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const datePickerRef = useRef<HTMLInputElement>(null);
 
   const handleTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1772,8 +1713,22 @@ const SafeSettings: React.FC = () => {
   const filteredTransactions = state.safeTransactions.filter((tx) => {
     const matchesFilter = filter === "all" || tx.type === filter;
     const matchesSearch = tx.comment.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+    const matchesDate = selectedDate ? format(new Date(tx.date), "yyyy-MM-dd") === selectedDate : true;
+    return matchesFilter && matchesSearch && matchesDate;
   });
+
+  const displayTransactions = filteredTransactions.slice(0, displayCount);
+  const hasMore = displayCount < filteredTransactions.length;
+
+  // Group transactions by date
+  const groupedTransactions = displayTransactions.reduce((acc, tx) => {
+    const dateStr = format(new Date(tx.date), "dd.MM.yyyy");
+    if (!acc[dateStr]) {
+      acc[dateStr] = [];
+    }
+    acc[dateStr].push(tx);
+    return acc;
+  }, {} as Record<string, typeof state.safeTransactions>);
 
   return (
     <div className="flex flex-col animate-in fade-in duration-300">
@@ -1922,44 +1877,101 @@ const SafeSettings: React.FC = () => {
             </div>
           </div>
 
-          <div className="mb-4 relative">
-             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-             <input
-               type="text"
-               placeholder="Поиск по комментарию..."
-               value={searchQuery}
-               onChange={(e) => setSearchQuery(e.target.value)}
-               className="w-full pl-9 pr-3 py-2 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
-             />
+          <div className="mb-4 flex gap-2 relative">
+            <div className="relative flex-1">
+               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+               <input
+                 type="text"
+                 placeholder="Поиск..."
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 className="w-full pl-9 pr-3 py-2 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
+               />
+            </div>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => datePickerRef.current?.showPicker()}
+                className={`p-2.5 rounded-xl border transition-colors flex items-center justify-center ${
+                  selectedDate
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "bg-background border-input text-muted-foreground hover:bg-muted/50"
+                }`}
+                title={selectedDate ? "Очистить дату" : "Выбрать дату"}
+              >
+                <CalendarIcon className="w-4 h-4" />
+                {selectedDate && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedDate("");
+                    }}
+                    className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center shadow-sm"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                )}
+              </button>
+              <input
+                ref={datePickerRef}
+                type="date"
+                value={selectedDate}
+                onChange={(e) => {
+                  setSelectedDate(e.target.value);
+                  setDisplayCount(15);
+                }}
+                className="absolute opacity-0 w-0 h-0"
+              />
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4">
             {filteredTransactions.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm">
                 <Wallet className="w-12 h-12 text-muted/30 mb-3" />
                 <p>Транзакции не найдены</p>
               </div>
             ) : (
-              filteredTransactions.map((tx) => (
-                <div key={tx.id} className="p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-background flex items-center justify-between gap-4 transition-colors">
-                  <div className="flex items-center gap-3.5">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                      tx.type === "in" ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-muted text-foreground border border-border"
-                    }`}>
-                      {tx.type === "in" ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+              <>
+                {Object.entries(groupedTransactions).map(([dateStr, txs]) => (
+                  <div key={dateStr} className="space-y-2">
+                    <div className="sticky top-0 z-10 bg-card py-1">
+                      <div className="inline-block px-3 py-1 rounded-lg bg-muted/50 border border-border/50 text-xs font-semibold text-muted-foreground shadow-sm">
+                        {dateStr === format(new Date(), "dd.MM.yyyy") ? "Сегодня" : dateStr}
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <p className="font-semibold text-sm text-foreground">{tx.comment}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {format(new Date(tx.date), "dd.MM.yyyy HH:mm")}
-                      </p>
-                    </div>
+                    {txs.map((tx) => (
+                      <div key={tx.id} className="p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-background flex items-center justify-between gap-4 transition-colors">
+                        <div className="flex items-center gap-3.5">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                            tx.type === "in" ? "bg-green-500/10 text-green-600 border border-green-500/20" : "bg-muted text-foreground border border-border"
+                          }`}>
+                            {tx.type === "in" ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+                          </div>
+                          <div className="flex flex-col">
+                            <p className="font-semibold text-sm text-foreground">{tx.comment}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {format(new Date(tx.date), "HH:mm")}
+                            </p>
+                          </div>
+                        </div>
+                        <div className={`font-bold text-base whitespace-nowrap ${tx.type === "in" ? "text-green-600" : "text-foreground"}`}>
+                          {tx.type === "in" ? "+" : "-"}{tx.amount.toFixed(2)} <span className="text-xs font-medium opacity-70">BYN</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className={`font-bold text-base whitespace-nowrap ${tx.type === "in" ? "text-green-600" : "text-foreground"}`}>
-                    {tx.type === "in" ? "+" : "-"}{tx.amount.toFixed(2)} <span className="text-xs font-medium opacity-70">BYN</span>
-                  </div>
-                </div>
-              ))
+                ))}
+
+                {hasMore && (
+                  <button
+                    onClick={() => setDisplayCount((prev) => prev + 15)}
+                    className="w-full py-3 rounded-xl border border-input bg-background hover:bg-muted/50 transition-colors text-sm font-medium text-foreground mt-4"
+                  >
+                    Ещё
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

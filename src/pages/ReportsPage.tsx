@@ -41,6 +41,7 @@ import {
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import PasswordAuth from "@/components/ui/PasswordAuth";
 
 type PeriodType = "day" | "week" | "month" | "custom";
 
@@ -63,6 +64,7 @@ const ReportsPage: React.FC = () => {
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const initialPeriodType = (searchParams.get("period") as PeriodType) || "day";
   const [periodType, setPeriodType] = useState<PeriodType>(initialPeriodType);
@@ -688,6 +690,14 @@ const ReportsPage: React.FC = () => {
     }
     setActiveDatePicker(null);
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-4">
+        <PasswordAuth onSuccess={() => setIsAuthenticated(true)} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 min-h-screen pb-20 overflow-x-hidden">
