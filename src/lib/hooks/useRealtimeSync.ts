@@ -121,7 +121,7 @@ export function useRealtimeSync() {
           const dateToUpdate = recordDate || state.currentDate;
 
           try {
-            // Перезапрашиваем отчет, так как там хранятся все записи и итоги (totalCash, totalNonCash)
+            // Перезапрашиваем отчет, так как там хранятся все записи и итоги (totalCash, totalCard)
             const updatedReport =
               await dailyReportService.getByDate(dateToUpdate);
             if (updatedReport) {

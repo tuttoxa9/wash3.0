@@ -300,7 +300,7 @@ const DataManagement: React.FC = () => {
           if (report) {
             setDaySummary({
               recordsCount: report.records.length,
-              totalRevenue: report.totalCash + report.totalNonCash,
+              totalRevenue: report.records.reduce((sum, r) => sum + r.price, 0),
             });
           } else {
             setDaySummary(null);
@@ -1459,13 +1459,8 @@ const DebtsManagement: React.FC = () => {
             0,
           );
 
-          const totalNonCash = updatedRecords.reduce(
-            (sum, rec) =>
-              sum +
-              (rec.paymentMethod.type === "card" ||
-              rec.paymentMethod.type === "organization"
-                ? rec.price
-                : 0),
+          const totalCard = updatedRecords.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
             0,
           );
 
@@ -1473,7 +1468,7 @@ const DebtsManagement: React.FC = () => {
             ...report,
             records: updatedRecords,
             totalCash,
-            totalNonCash,
+            totalCard,
           };
 
           // Обновляем отчет в базе

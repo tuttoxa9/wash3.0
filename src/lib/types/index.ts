@@ -71,7 +71,7 @@ export interface DailyReport {
   employeeIds: string[]; // ID сотрудников, работавших в этот день
   records: CarWashRecord[]; // Записи о помывках за день
   totalCash: number; // Сумма наличных платежей
-  totalNonCash: number; // Сумма безналичных платежей
+  totalCard: number; // Сумма безналичных платежей
   dailyEmployeeRoles?: Record<string, EmployeeRole>; // Ежедневные роли сотрудников (employeeId -> role)
   manualSalaries?: Record<string, number>; // Ручные изменения зарплат (employeeId -> amount)
   notes?: { id: string; text: string; createdAt: string }[]; // Заметки по смене
