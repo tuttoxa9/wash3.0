@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { dailyReportService, carWashService } from "@/lib/services/supabaseService";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 
 import {
