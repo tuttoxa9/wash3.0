@@ -146,7 +146,8 @@ export interface AppState {
   organizationsInTotal: string[]; // ID организаций, которые считаются в Итого
   safeBalance: number; // Текущий баланс сейфа
   safeTransactions: SafeTransaction[]; // История транзакций сейфа
-  isRealtimeEnabled: boolean; // Включена ли синхронизация в реальном времени
+  isRealtimeEnabled: boolean;
+  isInitialized: boolean; // Включена ли синхронизация в реальном времени
 }
 
 // Типы действий для редьюсера
@@ -186,4 +187,5 @@ export type AppAction =
   | { type: "SET_REALTIME_ENABLED"; payload: boolean }
   | { type: "SET_SAFE_BALANCE"; payload: number }
   | { type: "SET_SAFE_TRANSACTIONS"; payload: SafeTransaction[] }
-  | { type: "ADD_SAFE_TRANSACTION"; payload: SafeTransaction };
+  | { type: "ADD_SAFE_TRANSACTION"; payload: SafeTransaction }
+  | { type: "SET_INITIALIZED"; payload: boolean };
