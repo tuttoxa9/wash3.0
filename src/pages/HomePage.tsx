@@ -1099,6 +1099,18 @@ const HomePage: React.FC = () => {
 
   // Окно начала смены и анимация перехода
   if ((!shiftStarted && !isEditingShift) || ["starting", "success", "deleting", "deleted"].includes(shiftPhase)) {
+
+    // Если смена заблокирована в кэше, но отчет еще грузится с сервера - показываем лоадер,
+    // чтобы не было моргания экрана "Открытие смены"
+    if (loading.dailyReport && isShiftLocked && shiftPhase === "idle") {
+      return (
+        <div className="flex h-[50vh] flex-col items-center justify-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground font-medium">Загрузка данных смены...</p>
+        </div>
+      );
+    }
+
     // Получаем записи на ближайшие 2 часа для текущей даты
     const now = new Date();
     const isDateToday = selectedDate === format(now, "yyyy-MM-dd");
