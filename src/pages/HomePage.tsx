@@ -405,13 +405,8 @@ const HomePage: React.FC = () => {
         0,
       );
 
-      const totalNonCash = updatedRecords.reduce(
-        (sum, rec) =>
-          sum +
-          (rec.paymentMethod.type === "card" ||
-          rec.paymentMethod.type === "organization"
-            ? rec.price
-            : 0),
+      const totalCard = updatedRecords.reduce(
+        (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
         0,
       );
 
@@ -419,7 +414,7 @@ const HomePage: React.FC = () => {
         ...report,
         records: updatedRecords,
         totalCash,
-        totalNonCash,
+        totalCard,
       };
 
       // Обновляем запись в таблице car_wash_records
@@ -441,7 +436,7 @@ const HomePage: React.FC = () => {
           recordToUpdate
         ) {
           // Если долг был за прошлую дату, добавляем в текущую открытую смену, чтобы сошлась физическая касса
-          // Если за текущую, то долг уже перешел в totalCash/totalNonCash текущего отчета, так что дополнительная проводка не нужна
+          // Если за текущую, то долг уже перешел в totalCash/totalCard текущего отчета, так что дополнительная проводка не нужна
           if (reportId !== selectedDate) {
             const modification = {
               id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
@@ -640,7 +635,7 @@ const HomePage: React.FC = () => {
           employeeIds: shiftEmployees,
           records: [],
           totalCash: 0,
-          totalNonCash: 0,
+          totalCard: 0,
           dailyEmployeeRoles: employeeRoles,
           cashState: {
             isShiftOpen: true,
@@ -835,21 +830,13 @@ const HomePage: React.FC = () => {
             0,
           );
 
-          const totalNonCash = updatedReport.records.reduce(
-            (sum, rec) =>
-              sum +
-              (rec.paymentMethod.type === "card" ||
-              rec.paymentMethod.type === "organization"
-                ? rec.price
-                : 0),
+          const totalCard = updatedReport.records.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
             0,
           );
 
-          // Также пересчитываем организации, хотя они не хранятся отдельно
-          // totalOrganizations можно вычислить как totalRevenue - totalCash - totalNonCash
-
           updatedReport.totalCash = totalCash;
-          updatedReport.totalNonCash = totalNonCash;
+          updatedReport.totalCard = totalCard;
 
           // Сохраняем обновленный отчет в базе данных
           await dailyReportService.updateReport(updatedReport);
@@ -897,22 +884,14 @@ const HomePage: React.FC = () => {
             0,
           );
 
-          const totalNonCash = updatedRecords.reduce(
-            (sum, rec) =>
-              sum +
-              (rec.paymentMethod.type === "card" ||
-              rec.paymentMethod.type === "organization"
-                ? rec.price
-                : 0),
+          const totalCard = updatedRecords.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
             0,
           );
 
-          // Также пересчитываем организации, хотя они не хранятся отдельно
-          // totalOrganizations можно вычислить как totalRevenue - totalCash - totalNonCash
-
           updatedReport.records = updatedRecords;
           updatedReport.totalCash = totalCash;
-          updatedReport.totalNonCash = totalNonCash;
+          updatedReport.totalCard = totalCard;
 
           // Сохраняем обновленный отчет в базе данных
           await dailyReportService.updateReport(updatedReport);
@@ -1106,7 +1085,7 @@ const HomePage: React.FC = () => {
           employeeIds: [],
           records: [],
           totalCash: 0,
-          totalNonCash: 0,
+          totalCard: 0,
           dailyEmployeeRoles: {},
           cashModifications: [],
         };

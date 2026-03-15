@@ -196,18 +196,13 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             0,
           );
 
-          const totalNonCash = updatedReport.records.reduce(
-            (sum, rec) =>
-              sum +
-              (rec.paymentMethod.type === "card" ||
-              rec.paymentMethod.type === "organization"
-                ? rec.price
-                : 0),
+          const totalCard = updatedReport.records.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
             0,
           );
 
           updatedReport.totalCash = totalCash;
-          updatedReport.totalNonCash = totalNonCash;
+          updatedReport.totalCard = totalCard;
 
           // Сохраняем обновленный отчет в базе данных
           await dailyReportService.updateReport(updatedReport);
@@ -255,19 +250,14 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             0,
           );
 
-          const totalNonCash = updatedRecords.reduce(
-            (sum, rec) =>
-              sum +
-              (rec.paymentMethod.type === "card" ||
-              rec.paymentMethod.type === "organization"
-                ? rec.price
-                : 0),
+          const totalCard = updatedRecords.reduce(
+            (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
             0,
           );
 
           updatedReport.records = updatedRecords;
           updatedReport.totalCash = totalCash;
-          updatedReport.totalNonCash = totalNonCash;
+          updatedReport.totalCard = totalCard;
 
           // Сохраняем обновленный отчет в базе данных
           await dailyReportService.updateReport(updatedReport);

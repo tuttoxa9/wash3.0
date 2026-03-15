@@ -134,7 +134,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         employeeIds: [],
         records: [],
         totalCash: 0,
-        totalNonCash: 0,
+        totalCard: 0,
       };
 
       // Добавляем запись и обновляем итоги
@@ -147,13 +147,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
         0,
       );
 
-      const totalNonCash = updatedRecords.reduce(
-        (sum, rec) =>
-          sum +
-          (rec.paymentMethod.type === "card" ||
-          rec.paymentMethod.type === "organization"
-            ? rec.price
-            : 0),
+      const totalCard = updatedRecords.reduce(
+        (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
         0,
       );
 
@@ -167,7 +162,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         records: updatedRecords,
         employeeIds: allEmployeeIds,
         totalCash,
-        totalNonCash,
+        totalCard,
       };
 
       // Обновляем кэш при добавлении записи

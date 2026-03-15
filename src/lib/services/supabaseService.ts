@@ -325,7 +325,7 @@ export const dailyReportService = {
       employeeIds: data.employee_ids || [],
       records: data.records || [],
       totalCash: data.total_cash || 0,
-      totalNonCash: data.total_non_cash || 0,
+      totalCard: data.total_non_cash || 0,
       dailyEmployeeRoles: data.daily_employee_roles || undefined,
       manualSalaries: data.manual_salaries || {},
       cashState: (data.notes || []).find((n: any) => n.id === "CASH_STATE") ? JSON.parse((data.notes || []).find((n: any) => n.id === "CASH_STATE").text) : undefined,
@@ -353,7 +353,7 @@ export const dailyReportService = {
       employeeIds: r.employee_ids || [],
       records: r.records || [],
       totalCash: r.total_cash || 0,
-      totalNonCash: r.total_non_cash || 0,
+      totalCard: r.total_non_cash || 0,
       dailyEmployeeRoles: r.daily_employee_roles || undefined,
       manualSalaries: r.manual_salaries || {},
       cashState: (r.notes || []).find((n: any) => n.id === "CASH_STATE") ? JSON.parse((r.notes || []).find((n: any) => n.id === "CASH_STATE").text) : undefined,
@@ -371,7 +371,7 @@ export const dailyReportService = {
       employee_ids: report.employeeIds,
       records: report.records,
       total_cash: report.totalCash,
-      total_non_cash: report.totalNonCash,
+      total_non_cash: report.totalCard,
       daily_employee_roles: report.dailyEmployeeRoles ?? null,
       manual_salaries: report.manualSalaries ?? {},
       notes: [
@@ -412,7 +412,7 @@ export const dailyReportService = {
       employeeIds: r.employee_ids || [],
       records: r.records || [],
       totalCash: r.total_cash || 0,
-      totalNonCash: r.total_non_cash || 0,
+      totalCard: r.total_non_cash || 0,
       dailyEmployeeRoles: r.daily_employee_roles || undefined,
       manualSalaries: r.manual_salaries || {},
       cashModifications: r.cash_modifications || [],
@@ -428,7 +428,7 @@ export const dailyReportService = {
         employeeIds: [],
         records: [],
         totalCash: 0,
-        totalNonCash: 0,
+        totalCard: 0,
       } as DailyReport);
 
     const records = [...current.records, record];
@@ -436,13 +436,8 @@ export const dailyReportService = {
       (s, r) => s + (r.paymentMethod.type === "cash" ? r.price : 0),
       0,
     );
-    const totalNonCash = records.reduce(
-      (s, r) =>
-        s +
-        (r.paymentMethod.type === "card" ||
-        r.paymentMethod.type === "organization"
-          ? r.price
-          : 0),
+    const totalCard = records.reduce(
+      (s, r) => s + (r.paymentMethod.type === "card" ? r.price : 0),
       0,
     );
     const employeeIds = Array.from(
@@ -460,7 +455,7 @@ export const dailyReportService = {
       ...current,
       records,
       totalCash,
-      totalNonCash,
+      totalCard,
       employeeIds,
     });
   },

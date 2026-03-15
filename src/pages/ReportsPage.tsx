@@ -50,7 +50,7 @@ interface EarningsReport {
   totalServiceValue: number;
   calculatedEarnings: number;
   totalCash: number;
-  totalNonCash: number;
+  totalCard: number;
   totalOrganizations: number;
   totalDebt: number;
   totalCertificate: number;
@@ -279,7 +279,7 @@ const ReportsPage: React.FC = () => {
           id: string;
           name: string;
           totalCash: number;
-          totalNonCash: number;
+          totalCard: number;
           totalOrganizations: number;
           totalDebt: number;
           totalCertificate: number;
@@ -297,7 +297,7 @@ const ReportsPage: React.FC = () => {
             id: selectedEmployeeId,
             name: selectedEmployee.name,
             totalCash: 0,
-            totalNonCash: 0,
+            totalCard: 0,
             totalOrganizations: 0,
             totalDebt: 0,
             totalCertificate: 0,
@@ -313,7 +313,7 @@ const ReportsPage: React.FC = () => {
               id: empId,
               name: employee.name,
               totalCash: 0,
-              totalNonCash: 0,
+              totalCard: 0,
               totalOrganizations: 0,
               totalDebt: 0,
               totalCertificate: 0,
@@ -332,7 +332,7 @@ const ReportsPage: React.FC = () => {
                   id: empId,
                   name: employee.name,
                   totalCash: 0,
-                  totalNonCash: 0,
+                  totalCard: 0,
                   totalOrganizations: 0,
                   totalDebt: 0,
                   totalCertificate: 0,
@@ -362,7 +362,7 @@ const ReportsPage: React.FC = () => {
             if (record.paymentMethod.type === "cash") {
               empData.totalCash += valuePerEmployee;
             } else if (record.paymentMethod.type === "card") {
-              empData.totalNonCash += valuePerEmployee;
+              empData.totalCard += valuePerEmployee;
             } else if (record.paymentMethod.type === "organization") {
               empData.totalOrganizations += valuePerEmployee;
             } else if (record.paymentMethod.type === "debt") {
@@ -377,7 +377,7 @@ const ReportsPage: React.FC = () => {
 
       const results: EarningsReport[] = [];
       let totalCashAll = 0;
-      let totalNonCashAll = 0;
+      let totalCardAll = 0;
       let totalOrganizationsAll = 0;
       let totalDebtAll = 0;
       let totalCertificateAll = 0;
@@ -385,12 +385,12 @@ const ReportsPage: React.FC = () => {
       for (const [_, employee] of employeeMap.entries()) {
         const totalVolume =
           employee.totalCash +
-          employee.totalNonCash +
+          employee.totalCard +
           employee.totalOrganizations +
           employee.totalDebt +
           employee.totalCertificate;
         totalCashAll += employee.totalCash;
-        totalNonCashAll += employee.totalNonCash;
+        totalCardAll += employee.totalCard;
         totalOrganizationsAll += employee.totalOrganizations;
         totalDebtAll += employee.totalDebt;
         totalCertificateAll += employee.totalCertificate;
@@ -401,7 +401,7 @@ const ReportsPage: React.FC = () => {
           totalServiceValue: totalVolume,
           calculatedEarnings: 0, // will calculate below
           totalCash: employee.totalCash,
-          totalNonCash: employee.totalNonCash,
+          totalCard: employee.totalCard,
           totalOrganizations: employee.totalOrganizations,
           totalDebt: employee.totalDebt,
           totalCertificate: employee.totalCertificate,
@@ -515,7 +515,7 @@ const ReportsPage: React.FC = () => {
       results.sort((a, b) => b.calculatedEarnings - a.calculatedEarnings);
 
       setTotalRevenue(
-        totalCashAll + totalNonCashAll + totalOrganizationsAll + totalDebtAll + totalCertificateAll,
+        totalCashAll + totalCardAll + totalOrganizationsAll + totalDebtAll + totalCertificateAll,
       );
 
       return results;
@@ -590,7 +590,7 @@ const ReportsPage: React.FC = () => {
           employeeIds: [],
           records: [],
           totalCash: 0,
-          totalNonCash: 0,
+          totalCard: 0,
           manualSalaries: {},
         };
       }
@@ -1020,7 +1020,7 @@ const ReportsPage: React.FC = () => {
                   ) : earningsReport.map((report) => {
                     const totalRevenueEmp =
                       report.totalCash +
-                      report.totalNonCash +
+                      report.totalCard +
                       report.totalOrganizations +
                       report.totalDebt +
                       report.totalCertificate;
@@ -1086,7 +1086,7 @@ const ReportsPage: React.FC = () => {
                           {report.totalCash.toFixed(2)}
                         </td>
                         <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
-                          {report.totalNonCash.toFixed(2)}
+                          {report.totalCard.toFixed(2)}
                         </td>
                         <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
                           {report.totalOrganizations.toFixed(2)}

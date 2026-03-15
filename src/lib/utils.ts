@@ -280,7 +280,7 @@ export const generatePeriodReportDocx = (
       locale: ru,
     });
     const orderCount = report.records.length;
-    const totalDay = report.totalCash + report.totalNonCash;
+    const totalDay = report.records.reduce((sum, r) => sum + r.price, 0);
     const salary = totalDay * 0.27;
 
     tableRows.push(
@@ -306,7 +306,7 @@ export const generatePeriodReportDocx = (
           new TableCell({
             children: [
               new Paragraph({
-                text: report.totalNonCash.toFixed(2),
+                text: report.totalCard.toFixed(2),
                 alignment: AlignmentType.RIGHT,
               }),
             ],
