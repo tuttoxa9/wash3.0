@@ -71,9 +71,9 @@ const Layout: React.FC = () => {
               <NotificationPanel />
             </div>
 
-            <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate absolute left-1/2 -translate-x-1/2">
-              Detail Lab
-            </h1>
+            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
+              <img src="/logo.png" alt="Detail Lab" className="h-8 w-auto object-contain" />
+            </div>
 
             <button
               onClick={toggleMobileSidebar}

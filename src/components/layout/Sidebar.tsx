@@ -220,9 +220,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           />
           {/* Шапка сайдбара */}
           <div className="flex items-center justify-between mb-6 sm:mb-8">
-            <h1 className="text-lg sm:text-xl font-bold gradient-heading truncate">
-              Detail Lab
-            </h1>
+            <div className="flex items-center">
+              <img src="/logo.png" alt="Detail Lab" className="h-10 w-auto object-contain" />
+            </div>
             <button
               onClick={toggleMobileSidebar}
               className="mobile-button p-2 rounded-lg hover:bg-secondary md:hidden touch-manipulation active:scale-95 transition-transform"
