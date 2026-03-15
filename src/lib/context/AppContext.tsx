@@ -16,6 +16,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
+import { recalculateReportTotals } from "@/lib/report-utils";
 import type {
   AppAction,
   AppState,
@@ -141,16 +142,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const updatedRecords = [...currentReport.records, record];
 
       // Рассчитываем новые итоги с учетом изменений в PaymentMethod
-      // Долги (debt) не учитываются в текущей выручке
-      const totalCash = updatedRecords.reduce(
-        (sum, rec) => sum + (rec.paymentMethod.type === "cash" ? rec.price : 0),
-        0,
-      );
-
-      const totalCard = updatedRecords.reduce(
-        (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
-        0,
-      );
+      // Рассчитываем новые итоги с учетом изменений в PaymentMethod
+      const { totalCash, totalCard } = recalculateReportTotals({ records: updatedRecords });
 
       // Объединяем ID сотрудников
       const allEmployeeIds = [
