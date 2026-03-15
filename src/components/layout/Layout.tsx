@@ -72,8 +72,8 @@ const Layout: React.FC = () => {
             </div>
 
             <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center w-3/5">
-              <div className="bg-zinc-950 dark:bg-transparent px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-zinc-800/50 dark:border-transparent transition-colors">
-                <img src="/logo.png" alt="Detail Lab" className="h-5 sm:h-6 w-auto object-contain" />
+              <div className="bg-zinc-950 dark:bg-transparent px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-zinc-800/50 dark:border-transparent transition-colors select-none pointer-events-none">
+                <img src="/logo.png" alt="Detail Lab" className="h-5 sm:h-6 w-auto object-contain select-none pointer-events-none" draggable="false" />
               </div>
             </div>
 
