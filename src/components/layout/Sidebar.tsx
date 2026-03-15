@@ -220,8 +220,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           />
           {/* Шапка сайдбара */}
           <div className="flex items-center justify-between mb-6 sm:mb-8">
-            <div className="flex items-center">
-              <img src="/logo.png" alt="Detail Lab" className="h-16 w-auto object-contain scale-[1.3] ml-2" />
+            <div className="flex items-center w-full justify-center md:justify-start">
+              <img src="/logo.png" alt="Detail Lab" className="h-8 md:h-10 w-auto object-contain" />
             </div>
             <button
               onClick={toggleMobileSidebar}
