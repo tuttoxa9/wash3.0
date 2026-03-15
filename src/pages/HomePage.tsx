@@ -1574,7 +1574,7 @@ const HomePage: React.FC = () => {
                               const workedMinutes =
                                 currentTimeInMinutes - workStartMinutes;
                               const workedHours = workedMinutes / 60;
-                              return `ЗП за ${workedHours.toFixed(1)}ч`;
+                              return `ЗП за ${workedHours.toFixed(2)}ч`;
                             }
                           })()}
                         </span>
@@ -2249,7 +2249,7 @@ const HomePage: React.FC = () => {
                                               return `${hourlyRate.toFixed(2)} BYN/час`;
                                             }
 
-                                            return `${hourlyRate.toFixed(2)} BYN/час за ${workedHours.toFixed(1)}ч`;
+                                            return `${hourlyRate.toFixed(2)} BYN/час за ${workedHours.toFixed(2)}ч`;
                                           })()}
                                         </span>
                                       </div>

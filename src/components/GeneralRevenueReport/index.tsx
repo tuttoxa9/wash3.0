@@ -869,12 +869,14 @@ const GeneralRevenueReport: React.FC = () => {
                   </div>
                   <div className="mt-2 text-sm text-emerald-500 font-medium">
                     Рентабельность:{" "}
-                    {(
-                      ((generalReportData.totalRevenue -
-                        generalReportData.totalSalaries) /
-                        generalReportData.totalRevenue) *
-                      100
-                    ).toFixed(1)}
+                    {generalReportData.totalRevenue > 0
+                      ? (
+                          ((generalReportData.totalRevenue -
+                            generalReportData.totalSalaries) /
+                            generalReportData.totalRevenue) *
+                          100
+                        ).toFixed(2)
+                      : "0.00"}
                     %
                   </div>
                 </div>
@@ -892,11 +894,13 @@ const GeneralRevenueReport: React.FC = () => {
                     </span>
                   </div>
                   <div className="mt-2 text-sm text-muted-foreground">
-                    {(
-                      (generalReportData.totalSalaries /
-                        generalReportData.totalRevenue) *
-                      100
-                    ).toFixed(1)}
+                    {generalReportData.totalRevenue > 0
+                      ? (
+                          (generalReportData.totalSalaries /
+                            generalReportData.totalRevenue) *
+                          100
+                        ).toFixed(2)
+                      : "0.00"}
                     % от выручки
                   </div>
                 </div>
@@ -917,11 +921,13 @@ const GeneralRevenueReport: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {(
-                    (generalReportData.totalCash /
-                      generalReportData.totalRevenue) *
-                    100
-                  ).toFixed(1)}
+                  {generalReportData.totalRevenue > 0
+                    ? (
+                        (generalReportData.totalCash /
+                          generalReportData.totalRevenue) *
+                        100
+                      ).toFixed(2)
+                    : "0.00"}
                   % доли
                 </div>
               </div>
@@ -940,11 +946,13 @@ const GeneralRevenueReport: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {(
-                    (generalReportData.totalCard /
-                      generalReportData.totalRevenue) *
-                    100
-                  ).toFixed(1)}
+                  {generalReportData.totalRevenue > 0
+                    ? (
+                        (generalReportData.totalCard /
+                          generalReportData.totalRevenue) *
+                        100
+                      ).toFixed(2)
+                    : "0.00"}
                   % доли
                 </div>
               </div>
@@ -963,11 +971,13 @@ const GeneralRevenueReport: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {(
-                    (generalReportData.totalOrganizations /
-                      generalReportData.totalRevenue) *
-                    100
-                  ).toFixed(1)}
+                  {generalReportData.totalRevenue > 0
+                    ? (
+                        (generalReportData.totalOrganizations /
+                          generalReportData.totalRevenue) *
+                        100
+                      ).toFixed(2)
+                    : "0.00"}
                   % доли
                 </div>
               </div>
@@ -986,11 +996,13 @@ const GeneralRevenueReport: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {(
-                    (generalReportData.totalDebt /
-                      generalReportData.totalRevenue) *
-                    100
-                  ).toFixed(1)}
+                  {generalReportData.totalRevenue > 0
+                    ? (
+                        (generalReportData.totalDebt /
+                          generalReportData.totalRevenue) *
+                        100
+                      ).toFixed(2)
+                    : "0.00"}
                   % доли
                 </div>
               </div>
@@ -1008,11 +1020,13 @@ const GeneralRevenueReport: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {(
-                    (generalReportData.totalCertificate /
-                      generalReportData.totalRevenue) *
-                    100
-                  ).toFixed(1)}
+                  {generalReportData.totalRevenue > 0
+                    ? (
+                        (generalReportData.totalCertificate /
+                          generalReportData.totalRevenue) *
+                        100
+                      ).toFixed(2)
+                    : "0.00"}
                   % доли
                 </div>
               </div>
@@ -1486,11 +1500,13 @@ const GeneralRevenueReport: React.FC = () => {
                                 {org.amount.toFixed(2)}
                               </td>
                               <td className="px-4 py-3 sm:px-6 sm:py-4 text-right text-muted-foreground whitespace-nowrap">
-                                {(
-                                  (org.amount /
-                                    generalReportData.totalOrganizations) *
-                                  100
-                                ).toFixed(1)}
+                                {generalReportData.totalOrganizations > 0
+                                  ? (
+                                      (org.amount /
+                                        generalReportData.totalOrganizations) *
+                                      100
+                                    ).toFixed(2)
+                                  : "0.00"}
                                 %
                               </td>
                             </tr>
