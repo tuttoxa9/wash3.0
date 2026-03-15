@@ -1100,9 +1100,9 @@ const HomePage: React.FC = () => {
   // Окно начала смены и анимация перехода
   if ((!shiftStarted && !isEditingShift) || ["starting", "success", "deleting", "deleted"].includes(shiftPhase)) {
 
-    // Если смена заблокирована в кэше, но отчет еще грузится с сервера - показываем лоадер,
+    // Глобальная проверка инициализации: пока приложение (или отчет) грузится, показываем лоадер,
     // чтобы не было моргания экрана "Открытие смены"
-    if (loading.dailyReport && isShiftLocked && shiftPhase === "idle") {
+    if ((!state.isInitialized || loading.dailyReport) && shiftPhase === "idle") {
       return (
         <div className="flex h-[50vh] flex-col items-center justify-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
