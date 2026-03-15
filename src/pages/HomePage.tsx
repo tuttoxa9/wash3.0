@@ -64,6 +64,7 @@ import AppointmentsWidget from "@/components/Home/AppointmentsWidget";
 import CloseDebtModal from "@/components/Home/CloseDebtModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { recalculateReportTotals } from "@/lib/report-utils";
 
 const HomePage: React.FC = () => {
   const { state, dispatch } = useAppContext();
@@ -400,15 +401,7 @@ const HomePage: React.FC = () => {
       });
 
       // Пересчитываем итоги
-      const totalCash = updatedRecords.reduce(
-        (sum, rec) => sum + (rec.paymentMethod.type === "cash" ? rec.price : 0),
-        0,
-      );
-
-      const totalCard = updatedRecords.reduce(
-        (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
-        0,
-      );
+      const { totalCash, totalCard } = recalculateReportTotals({ records: updatedRecords });
 
       const updatedReport = {
         ...report,
@@ -819,24 +812,16 @@ const HomePage: React.FC = () => {
         // Обновляем запись в отчете
         const updatedReport = { ...currentReport };
         if (updatedReport?.records) {
-          updatedReport.records = updatedReport.records.map((rec) =>
+            const updatedRecords = updatedReport.records.map((rec) =>
             rec.id === editingRecordId ? record : rec,
           );
 
-          // Пересчитываем итоги
-          const totalCash = updatedReport.records.reduce(
-            (sum, rec) =>
-              sum + (rec.paymentMethod.type === "cash" ? rec.price : 0),
-            0,
-          );
+            // Пересчитываем итоги
+            const { totalCash, totalCard } = recalculateReportTotals({ records: updatedRecords });
 
-          const totalCard = updatedReport.records.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
-            0,
-          );
-
-          updatedReport.totalCash = totalCash;
-          updatedReport.totalCard = totalCard;
+            updatedReport.records = updatedRecords;
+            updatedReport.totalCash = totalCash;
+            updatedReport.totalCard = totalCard;
 
           // Сохраняем обновленный отчет в базе данных
           await dailyReportService.updateReport(updatedReport);
@@ -877,21 +862,12 @@ const HomePage: React.FC = () => {
             (rec) => rec.id !== recordId,
           );
 
-          // Пересчитываем итоги
-          const totalCash = updatedRecords.reduce(
-            (sum, rec) =>
-              sum + (rec.paymentMethod.type === "cash" ? rec.price : 0),
-            0,
-          );
+            // Пересчитываем итоги
+            const { totalCash, totalCard } = recalculateReportTotals({ records: updatedRecords });
 
-          const totalCard = updatedRecords.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
-            0,
-          );
-
-          updatedReport.records = updatedRecords;
-          updatedReport.totalCash = totalCash;
-          updatedReport.totalCard = totalCard;
+            updatedReport.records = updatedRecords;
+            updatedReport.totalCash = totalCash;
+            updatedReport.totalCard = totalCard;
 
           // Сохраняем обновленный отчет в базе данных
           await dailyReportService.updateReport(updatedReport);

@@ -9,6 +9,7 @@ import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { toast } from "sonner";
 import type { EmployeeRole, MinimumPaymentSettings } from "@/lib/types";
+import { recalculateReportTotals } from "@/lib/report-utils";
 
 interface DailyReportModalProps {
   onClose: () => void;
@@ -190,17 +191,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
           );
 
           // Пересчитываем итоги
-          const totalCash = updatedReport.records.reduce(
-            (sum, rec) =>
-              sum + (rec.paymentMethod.type === "cash" ? rec.price : 0),
-            0,
-          );
-
-          const totalCard = updatedReport.records.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
-            0,
-          );
-
+          const { totalCash, totalCard } = recalculateReportTotals({ records: updatedReport.records });
           updatedReport.totalCash = totalCash;
           updatedReport.totalCard = totalCard;
 
@@ -244,17 +235,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
           );
 
           // Пересчитываем итоги
-          const totalCash = updatedRecords.reduce(
-            (sum, rec) =>
-              sum + (rec.paymentMethod.type === "cash" ? rec.price : 0),
-            0,
-          );
-
-          const totalCard = updatedRecords.reduce(
-            (sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0),
-            0,
-          );
-
+          const { totalCash, totalCard } = recalculateReportTotals({ records: updatedRecords });
           updatedReport.records = updatedRecords;
           updatedReport.totalCash = totalCash;
           updatedReport.totalCard = totalCard;
