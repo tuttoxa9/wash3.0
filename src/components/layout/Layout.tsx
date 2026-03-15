@@ -72,7 +72,7 @@ const Layout: React.FC = () => {
             </div>
 
             <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-              <img src="/logo.png" alt="Detail Lab" className="h-12 w-auto object-contain scale-[1.5]" />
+              <img src="/logo.png" alt="Detail Lab" className="h-8 w-auto object-contain" />
             </div>
 
             <button
