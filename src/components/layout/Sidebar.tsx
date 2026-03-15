@@ -221,7 +221,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* Шапка сайдбара */}
           <div className="flex items-center justify-between mb-6 sm:mb-8 md:px-3 md:mt-2">
             <div className="flex items-center w-full justify-center md:justify-start">
-              <img src="/logo.png" alt="Detail Lab" className="h-8 md:h-8 w-auto object-contain" />
+              <div className="bg-zinc-950 dark:bg-transparent px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-zinc-800/50 dark:border-transparent transition-colors">
+                <img src="/logo.png" alt="Detail Lab" className="h-6 md:h-7 w-auto object-contain" />
+              </div>
             </div>
             <button
               onClick={toggleMobileSidebar}
