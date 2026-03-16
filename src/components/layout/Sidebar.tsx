@@ -208,7 +208,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Сайдбар */}
       <aside
-        className={`sidebar fixed bottom-0 left-0 z-50 w-full h-[85dvh] md:h-screen md:w-64 md:top-0 bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-4 rounded-t-2xl md:rounded-none border-t md:border-t-0 md:border-r border-border/40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-xl transition-transform duration-300 ease-in-out md:static md:translate-y-0 md:translate-x-0 md:z-0 overflow-hidden ${
+        className={`sidebar fixed bottom-0 left-0 z-50 w-full h-[85dvh] md:h-screen md:w-64 md:top-0 bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-4 rounded-t-2xl md:rounded-none border-t md:border-t-0 md:border-r border-border/40 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-xl transition-transform duration-300 ease-in-out md:static md:translate-y-0 md:translate-x-0 md:z-0 ${
           isMobileOpen ? "translate-y-0" : "translate-y-full md:translate-y-0 md:translate-x-0"
         }`}
       >
@@ -220,9 +220,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           />
           {/* Шапка сайдбара */}
           <div className="flex items-center justify-between mb-6 sm:mb-8 md:px-3 md:mt-2">
-            <div className="flex items-center w-full justify-center md:justify-start relative group">
+            <div className="flex items-center w-full justify-center md:justify-start relative group overflow-hidden px-4 py-2 -mx-4">
               <div className="absolute inset-0 bg-blue-500/50 dark:bg-blue-500/30 blur-[25px] rounded-full scale-[1.3] md:scale-[1.6] z-[-1] pointer-events-none translate-y-1 md:translate-y-2 opacity-100 dark:opacity-40 animate-[pulse_3s_ease-in-out_infinite]"></div>
-              <div className="bg-zinc-950 dark:bg-transparent px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-zinc-800/50 dark:border-transparent transition-colors select-none pointer-events-none relative z-10">
+              <div className="bg-zinc-950 dark:bg-transparent px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-zinc-800/50 dark:border-transparent transition-colors select-none pointer-events-none relative z-10 mx-auto md:mx-0">
                 <img src="/logo.png" alt="Detail Lab" className="h-6 md:h-7 w-auto object-contain select-none pointer-events-none" draggable="false" />
               </div>
             </div>
@@ -380,9 +380,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               </p>
               <div className="segmented-control">
                 <button
-                  onClick={() => handleThemeChange("light")}
-                  className={state.theme === "light" ? "active" : ""}
-                  aria-label="Светлая тема"
+                  onClick={() => toast.info("Светлая тема в процессе доработки")}
+                  className="opacity-40 cursor-not-allowed hover:bg-transparent"
+                  aria-label="Светлая тема (в разработке)"
+                  title="В процессе доработки"
                 >
                   <Sun className="w-4 h-4 mx-auto" />
                 </button>

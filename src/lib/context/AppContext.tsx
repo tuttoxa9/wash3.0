@@ -36,7 +36,7 @@ const initialState: AppState = {
   dailyReports: {},
   appointments: [],
   currentDate: format(new Date(), "yyyy-MM-dd"),
-  theme: "light",
+  theme: "black",
   salaryCalculationMethod: "minimumWithPercentage", // Единственный доступный метод
   salaryCalculationDate: format(new Date(), "yyyy-MM-dd"), // Текущая дата как дата изменения метода
   minimumPaymentSettings: {

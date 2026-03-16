@@ -65,13 +65,13 @@ const Layout: React.FC = () => {
       {/* Основной контент */}
       <main className="flex-1 overflow-auto mobile-main-content">
         {/* Шапка для мобильных устройств */}
-        <div className="md:hidden sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/20 mobile-header overflow-hidden">
+        <div className="md:hidden sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/20 mobile-header">
           <div className="flex items-center justify-between p-3 sm:p-4">
             <div className="w-10">
               <NotificationPanel />
             </div>
 
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center group">
+            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center group overflow-hidden px-4 py-2">
               <div className="absolute inset-0 bg-blue-500/50 dark:bg-blue-500/30 blur-[20px] rounded-full scale-[1.3] z-[-1] pointer-events-none translate-y-1 opacity-100 dark:opacity-40 animate-[pulse_3s_ease-in-out_infinite]"></div>
               <div className="bg-zinc-950 dark:bg-transparent px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-zinc-800/50 dark:border-transparent transition-colors select-none pointer-events-none relative z-10">
                 <img src="/logo.png" alt="Detail Lab" className="h-5 sm:h-6 w-auto object-contain select-none pointer-events-none" draggable="false" />
