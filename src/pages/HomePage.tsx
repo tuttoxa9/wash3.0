@@ -907,7 +907,7 @@ const HomePage: React.FC = () => {
           setPreviousDayCash((cashState.actualEndOfDayCash || 0) - totalPayouts - transferred);
         } else if (prevReport) {
           // Вычисляем если не было cashState
-          const calcCash = prevReport.totalCash + (prevReport.cashModifications || [])
+          const calcCash = (prevReport.cashState?.startOfDayCash || 0) + prevReport.totalCash + (prevReport.cashModifications || [])
             .filter(m => !m.method || m.method === "cash")
             .reduce((sum, mod) => sum + mod.amount, 0);
           setPreviousDayCash(calcCash);
