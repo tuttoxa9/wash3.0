@@ -287,7 +287,15 @@ function RealtimeSyncWrapper() {
 // Провайдер контекста
 export function AppProvider({ children }: { children: ReactNode }) {
   // Инициализируем начальное состояние с темой из localStorage, если есть
-  const savedTheme = localStorage.getItem("appTheme") as ThemeMode | null;
+  let savedTheme = localStorage.getItem("appTheme") as ThemeMode | null;
+
+  // Принудительно сбрасываем белую тему на черную при запуске приложения,
+  // если пользователь до этого не выбрал ее заново через настройки
+  // Это предотвращает загрузку в "старой" белой теме по умолчанию для существующих пользователей
+  if (savedTheme === "light") {
+    savedTheme = "black";
+    localStorage.setItem("appTheme", "black");
+  }
 
   // Восстанавливаем метод расчета зарплаты из localStorage
   const savedSalaryMethod = localStorage.getItem(
