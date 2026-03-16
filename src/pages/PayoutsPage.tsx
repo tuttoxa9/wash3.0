@@ -38,7 +38,12 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
     .filter((mod) => !mod.method || mod.method === "cash")
     .reduce((sum, mod) => sum + mod.amount, 0);
 
-  const expectedCash = stateCash.startOfDayCash + (currentReport?.totalCash || 0) + cashModificationsTotal - totalPayouts - (stateCash.transferredToSafe || 0);
+  // Базовая сумма в кассе: если касса сверена, берем фактический остаток
+  const baseCash = stateCash.actualEndOfDayCash !== undefined
+    ? stateCash.actualEndOfDayCash
+    : stateCash.startOfDayCash + (currentReport?.totalCash || 0) + cashModificationsTotal;
+
+  const expectedCash = baseCash - totalPayouts - (stateCash.transferredToSafe || 0);
   const safeAvailable = state.safeBalance;
 
   if (!isOpen || !employee) return null;
