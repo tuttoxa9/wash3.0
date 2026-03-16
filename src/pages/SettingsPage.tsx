@@ -67,15 +67,12 @@ const ThemeSettings: React.FC = () => {
 
       <div className="flex bg-muted/50 p-1 rounded-xl gap-1">
         <button
-          onClick={() => setTheme("light")}
-          className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-colors text-xs font-medium ${
-            state.theme === "light"
-              ? "bg-background shadow-sm text-foreground"
-              : "text-muted-foreground hover:bg-background/50"
-          }`}
+          disabled
+          className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-colors text-xs font-medium opacity-50 cursor-not-allowed text-muted-foreground hover:bg-background/50`}
         >
           <Sun className="w-4 h-4 mb-1.5" />
           Светлая
+          <span className="text-[10px] mt-0.5 text-muted-foreground/70">В доработке</span>
         </button>
 
         <button
