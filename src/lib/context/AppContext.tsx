@@ -36,7 +36,7 @@ const initialState: AppState = {
   dailyReports: {},
   appointments: [],
   currentDate: format(new Date(), "yyyy-MM-dd"),
-  theme: "light",
+  theme: "black",
   salaryCalculationMethod: "minimumWithPercentage", // Единственный доступный метод
   salaryCalculationDate: format(new Date(), "yyyy-MM-dd"), // Текущая дата как дата изменения метода
   minimumPaymentSettings: {
@@ -287,7 +287,13 @@ function RealtimeSyncWrapper() {
 // Провайдер контекста
 export function AppProvider({ children }: { children: ReactNode }) {
   // Инициализируем начальное состояние с темой из localStorage, если есть
-  const savedTheme = localStorage.getItem("appTheme") as ThemeMode | null;
+  let savedTheme = localStorage.getItem("appTheme") as ThemeMode | null;
+
+  // Если тема светлая (light), принудительно меняем на черную (black)
+  if (savedTheme === "light" || !savedTheme) {
+    savedTheme = "black";
+    localStorage.setItem("appTheme", "black");
+  }
 
   // Восстанавливаем метод расчета зарплаты из localStorage
   const savedSalaryMethod = localStorage.getItem(
