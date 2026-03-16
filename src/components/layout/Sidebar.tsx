@@ -218,8 +218,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             onClick={toggleMobileSidebar}
           />
           {/* Шапка сайдбара */}
-          <div className="flex items-center justify-between mb-6 sm:mb-8 md:px-3 md:mt-2">
-            <div className="flex items-center w-full justify-center md:justify-start relative group">
+          <div className="flex items-center justify-center md:justify-between mb-6 sm:mb-8 md:px-3 md:mt-2 relative">
+            <div className="flex items-center justify-center md:justify-start relative group">
               <div className="absolute inset-0 bg-blue-500/50 dark:bg-blue-500/30 blur-[25px] rounded-full scale-[1.3] md:scale-[1.6] z-[-1] pointer-events-none translate-y-1 md:translate-y-2 opacity-100 dark:opacity-40 transition-opacity duration-1000 ease-in"></div>
               <div className="bg-zinc-950 dark:bg-transparent px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-zinc-800/50 dark:border-transparent transition-colors select-none pointer-events-none relative z-10">
                 <img src="/logo.png" alt="Detail Lab" className="h-6 md:h-7 w-auto object-contain select-none pointer-events-none" draggable="false" />
@@ -227,7 +227,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <button
               onClick={toggleMobileSidebar}
-              className="mobile-button p-2 rounded-lg hover:bg-secondary md:hidden touch-manipulation active:scale-95 transition-transform"
+              className="mobile-button p-2 rounded-lg hover:bg-secondary md:hidden touch-manipulation active:scale-95 transition-transform absolute right-0"
               aria-label="Закрыть меню"
             >
               <X className="w-5 h-5" />
