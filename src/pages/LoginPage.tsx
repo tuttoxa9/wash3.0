@@ -42,8 +42,10 @@ const LoginPage = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-8 flex justify-center w-full px-4 select-none pointer-events-none relative group">
-          <div className="absolute inset-0 bg-blue-500/40 dark:bg-blue-500/20 blur-[45px] rounded-full scale-[1.4] z-[-1] pointer-events-none opacity-100 dark:opacity-60 transition-opacity duration-1000 ease-in"></div>
-          <img src="/logo.png" alt="Detail Lab" className="h-16 md:h-20 w-auto object-contain drop-shadow-lg select-none pointer-events-none relative z-10" draggable="false" />
+          <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/20 blur-[45px] rounded-full scale-[1.4] z-[-1] pointer-events-none opacity-100 dark:opacity-60 transition-opacity duration-1000 ease-in"></div>
+          <div className="bg-transparent dark:bg-transparent black:bg-zinc-950 px-5 py-3 rounded-2xl shadow-sm dark:shadow-none border border-transparent dark:border-transparent black:border-zinc-800/50 transition-colors select-none pointer-events-none relative z-10">
+            <img src="/logo.png" alt="Detail Lab" className="h-16 md:h-20 w-auto object-contain drop-shadow-lg select-none pointer-events-none" draggable="false" />
+          </div>
         </div>
 
         {/* Login Form */}

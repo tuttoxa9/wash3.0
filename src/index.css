@@ -1220,6 +1220,16 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Адаптация логотипа под светлую тему */
+html:not(.dark):not(.black) img[src="/logo.png"] {
+  filter: brightness(0) invert(0); /* Делаем логотип черным */
+}
+
+.dark img[src="/logo.png"],
+.black img[src="/logo.png"] {
+  filter: none; /* Оставляем оригинальный белый логотип для темных тем */
+}
+
 /* Global Custom Scrollbar */
 @layer base {
   /* For Firefox */
