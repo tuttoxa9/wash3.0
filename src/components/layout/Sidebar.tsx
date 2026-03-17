@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   LogOut,
   Moon,
+  Sun,
   Plus,
   Settings,
   StickyNote,
