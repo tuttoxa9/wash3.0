@@ -23,9 +23,13 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
 
   // Рассчитываем остаток в кассе после выплат
   // Ожидаемая (или фактическая) касса минус все выплаты
+  const cashModificationsTotal = (report.cashModifications || [])
+    .filter((mod) => !mod.method || mod.method === "cash")
+    .reduce((sum, mod) => sum + mod.amount, 0);
+
   const baseCash = cashState?.actualEndOfDayCash !== undefined
     ? cashState.actualEndOfDayCash
-    : (cashState?.startOfDayCash || 0) + report.totalCash;
+    : (cashState?.startOfDayCash || 0) + report.totalCash + cashModificationsTotal;
 
   const totalPayouts = Object.values(cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
   const currentTransferred = cashState?.transferredToSafe || 0;
