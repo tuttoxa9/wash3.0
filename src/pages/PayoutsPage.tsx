@@ -16,23 +16,39 @@ interface PayoutModalProps {
 const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }) => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
+
+  const employee = state.employees.find((e) => e.id === employeeId);
+  const currentReport = state.dailyReports[state.currentDate];
+
   const currentPayoutFromCash = currentReport?.cashState?.salaryPayouts?.[employeeId || ""] || 0;
+
+  // Calculate existing safe payouts for today
+  const existingSafePayout = React.useMemo(() => {
+    if (!employeeId || !employee) return 0;
+    const todayStr = state.currentDate;
+    const todayTxs = state.safeTransactions.filter(tx => tx.date.startsWith(todayStr) && tx.comment.includes(employee.name));
+
+    let sum = 0;
+    todayTxs.forEach(tx => {
+       if (tx.type === "out") sum += tx.amount;
+       if (tx.type === "in") sum -= tx.amount;
+    });
+    return sum > 0 ? sum : 0;
+  }, [state.safeTransactions, state.currentDate, employeeId, employee]);
+
+  const [source, setSource] = useState<"cash" | "safe">("cash");
+  const [useCustomComment, setUseCustomComment] = useState(false);
+  const [customComment, setCustomComment] = useState("");
   const [amount, setAmount] = useState(() => currentPayoutFromCash > 0 ? currentPayoutFromCash.toString() : "");
-  // Когда меняется выбранный сотрудник или источник, пересчитываем начальное значение
+
   React.useEffect(() => {
     if (source === "cash") {
       const p = currentReport?.cashState?.salaryPayouts?.[employeeId || ""] || 0;
       setAmount(p > 0 ? p.toString() : "");
     } else {
-      setAmount(""); // Для сейфа всегда с нуля, так как там транзакции
+      setAmount(existingSafePayout > 0 ? existingSafePayout.toString() : "");
     }
-  }, [employeeId, source, currentReport]);
-  const [source, setSource] = useState<"cash" | "safe">("cash");
-  const [useCustomComment, setUseCustomComment] = useState(false);
-  const [customComment, setCustomComment] = useState("");
-
-  const employee = state.employees.find((e) => e.id === employeeId);
-  const currentReport = state.dailyReports[state.currentDate];
+  }, [employeeId, source, currentReport, existingSafePayout]);
 
   const stateCash = currentReport?.cashState || {
     isShiftOpen: true,
