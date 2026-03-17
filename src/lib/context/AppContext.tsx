@@ -289,12 +289,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Инициализируем начальное состояние с темой из localStorage, если есть
   let savedTheme = localStorage.getItem("appTheme") as ThemeMode | null;
 
-  // Если тема светлая (light), принудительно меняем на черную (black)
-  if (savedTheme === "light" || !savedTheme) {
-    savedTheme = "black";
-    localStorage.setItem("appTheme", "black");
-  }
-
   // Восстанавливаем метод расчета зарплаты из localStorage
   const savedSalaryMethod = localStorage.getItem(
     "salaryCalculationMethod",
