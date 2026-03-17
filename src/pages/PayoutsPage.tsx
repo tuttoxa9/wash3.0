@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { useAppContext } from "@/lib/context/AppContext";
 import { format, isToday } from "date-fns";
-import { Search, Wallet, WalletCards, ArrowUpRight, ArrowDownLeft, Loader2, Info, X } from "lucide-react";
+import { Search, Wallet, WalletCards, ArrowUpRight, ArrowDownLeft, Loader2, Info, X, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { parseISO, addDays, subDays } from "date-fns";
 import { toast } from "sonner";
 import { dailyReportService, settingsService } from "@/lib/services/supabaseService";
 import { createSalaryCalculator } from "@/components/SalaryCalculator";
@@ -11,21 +12,22 @@ interface PayoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   employeeId: string | null;
+  selectedDate: string;
 }
 
-const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }) => {
+const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId, selectedDate }) => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
 
   const employee = state.employees.find((e) => e.id === employeeId);
-  const currentReport = state.dailyReports[state.currentDate];
+  const currentReport = state.dailyReports[selectedDate];
 
   const currentPayoutFromCash = currentReport?.cashState?.salaryPayouts?.[employeeId || ""] || 0;
 
   // Calculate existing safe payouts for today
   const existingSafePayout = React.useMemo(() => {
     if (!employeeId || !employee) return 0;
-    const todayStr = state.currentDate;
+    const todayStr = selectedDate;
     const todayTxs = state.safeTransactions.filter(tx => tx.date.startsWith(todayStr) && tx.comment.includes(employee.name));
 
     let sum = 0;
@@ -34,7 +36,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
        if (tx.type === "in") sum -= tx.amount;
     });
     return sum > 0 ? sum : 0;
-  }, [state.safeTransactions, state.currentDate, employeeId, employee]);
+  }, [state.safeTransactions, selectedDate, employeeId, employee]);
 
   const [source, setSource] = useState<"cash" | "safe">("cash");
   const [useCustomComment, setUseCustomComment] = useState(false);
@@ -126,7 +128,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
         if (success) {
           dispatch({
             type: "SET_DAILY_REPORT",
-            payload: { date: state.currentDate, report: updatedReport }
+            payload: { date: selectedDate, report: updatedReport }
           });
           toast.success(`Сумма выплаты из кассы обновлена: ${numAmount.toFixed(2)} BYN`);
           onClose();
@@ -365,9 +367,20 @@ export default function PayoutsPage() {
   const { state } = useAppContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(state.currentDate);
+
+  const handlePrevDay = () => {
+    const prev = subDays(parseISO(selectedDate), 1);
+    setSelectedDate(format(prev, "yyyy-MM-dd"));
+  };
+
+  const handleNextDay = () => {
+    const next = addDays(parseISO(selectedDate), 1);
+    setSelectedDate(format(next, "yyyy-MM-dd"));
+  };
 
   // Для удобства показываем, сколько человек заработал за сегодня (если смена открыта)
-  const currentReport = state.dailyReports[state.currentDate];
+  const currentReport = state.dailyReports[selectedDate];
 
   const todayEarnings = useMemo(() => {
     const earnings: Record<string, number> = {};
@@ -421,14 +434,39 @@ export default function PayoutsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500">
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <WalletCards className="w-6 h-6 text-primary" />
-          Выплаты сотрудникам
-        </h2>
-        <p className="text-muted-foreground text-sm mt-1">
-          Быстрая выдача средств из кассы смены или из сейфа
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <WalletCards className="w-6 h-6 text-primary" />
+            Выплаты сотрудникам
+          </h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            Быстрая выдача средств из кассы смены или из сейфа
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 bg-card border border-border/50 rounded-xl p-1 shadow-sm shrink-0 self-start md:self-auto">
+            <button
+              onClick={handlePrevDay}
+              className="p-2 hover:bg-accent rounded-lg transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+            </button>
+            <div className="flex items-center gap-2 px-3 font-medium text-foreground min-w-[140px] justify-center">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              {format(parseISO(selectedDate), "dd.MM.yyyy")}
+              {selectedDate === state.currentDate && (
+                 <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded ml-1">Сегодня</span>
+              )}
+            </div>
+            <button
+              onClick={handleNextDay}
+              disabled={selectedDate === state.currentDate}
+              className="p-2 hover:bg-accent rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+            >
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </button>
+        </div>
       </div>
 
       <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[500px]">
@@ -470,7 +508,7 @@ export default function PayoutsPage() {
                         </h3>
                         {isWorkingToday ? (
                           <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-green-500/10 text-green-600 text-[10px] font-bold">
-                            В смене сегодня
+                            В смене
                           </span>
                         ) : (
                           <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-[10px] font-bold">
@@ -486,14 +524,14 @@ export default function PayoutsPage() {
                     <div className="mt-auto space-y-3">
                       {earnedToday > 0 && (
                         <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-muted/40 border border-border/50">
-                          <span className="text-muted-foreground">Заработано сегодня:</span>
+                          <span className="text-muted-foreground">Заработано:</span>
                           <span className="font-bold text-foreground">{earnedToday.toFixed(2)} BYN</span>
                         </div>
                       )}
 
                       {paidFromCashToday > 0 && (
                         <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-muted/40 border border-border/50">
-                          <span className="text-muted-foreground">Выдано из кассы сегодня:</span>
+                          <span className="text-muted-foreground">Выдано из кассы:</span>
                           <span className="font-bold text-foreground">{paidFromCashToday.toFixed(2)} BYN</span>
                         </div>
                       )}
@@ -518,6 +556,7 @@ export default function PayoutsPage() {
         isOpen={!!selectedEmployeeId}
         onClose={() => setSelectedEmployeeId(null)}
         employeeId={selectedEmployeeId}
+        selectedDate={selectedDate}
       />
     </div>
   );
