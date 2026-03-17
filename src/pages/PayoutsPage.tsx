@@ -16,7 +16,17 @@ interface PayoutModalProps {
 const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }) => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
-  const [amount, setAmount] = useState("");
+  const currentPayoutFromCash = currentReport?.cashState?.salaryPayouts?.[employeeId || ""] || 0;
+  const [amount, setAmount] = useState(() => currentPayoutFromCash > 0 ? currentPayoutFromCash.toString() : "");
+  // Когда меняется выбранный сотрудник или источник, пересчитываем начальное значение
+  React.useEffect(() => {
+    if (source === "cash") {
+      const p = currentReport?.cashState?.salaryPayouts?.[employeeId || ""] || 0;
+      setAmount(p > 0 ? p.toString() : "");
+    } else {
+      setAmount(""); // Для сейфа всегда с нуля, так как там транзакции
+    }
+  }, [employeeId, source, currentReport]);
   const [source, setSource] = useState<"cash" | "safe">("cash");
   const [useCustomComment, setUseCustomComment] = useState(false);
   const [customComment, setCustomComment] = useState("");
@@ -52,7 +62,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
     e.preventDefault();
     const numAmount = Number.parseFloat(amount);
 
-    if (Number.isNaN(numAmount) || numAmount <= 0) {
+    if (Number.isNaN(numAmount) || numAmount < 0) {
       toast.error("Введите корректную сумму");
       return;
     }
@@ -70,13 +80,15 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
           return;
         }
 
-        if (numAmount > expectedCash) {
-          toast.error(`В кассе недостаточно средств (доступно: ${expectedCash.toFixed(2)} BYN)`);
+        const currentPayout = stateCash.salaryPayouts?.[employeeId] || 0;
+        const diff = numAmount - currentPayout;
+
+        // Если разница больше нуля, значит мы хотим выдать ЕЩЕ денег. Проверяем остаток.
+        if (diff > expectedCash) {
+          toast.error(`В кассе недостаточно средств для доплаты (доступно: ${expectedCash.toFixed(2)} BYN)`);
           setLoading(false);
           return;
         }
-
-        const currentPayout = stateCash.salaryPayouts?.[employeeId] || 0;
 
         const updatedReport = {
           ...currentReport!,
@@ -84,10 +96,15 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
             ...stateCash,
             salaryPayouts: {
               ...(stateCash.salaryPayouts || {}),
-              [employeeId]: currentPayout + numAmount
+              [employeeId]: numAmount
             }
           }
         };
+
+        // Если numAmount = 0, мы можем удалить ключ из payouts
+        if (numAmount === 0) {
+           delete updatedReport.cashState.salaryPayouts[employeeId];
+        }
 
         const success = await dailyReportService.updateReport(updatedReport);
         if (success) {
@@ -95,7 +112,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
             type: "SET_DAILY_REPORT",
             payload: { date: state.currentDate, report: updatedReport }
           });
-          toast.success(`Выплачено ${numAmount.toFixed(2)} BYN из кассы`);
+          toast.success(`Сумма выплаты из кассы обновлена: ${numAmount.toFixed(2)} BYN`);
           onClose();
         } else {
           throw new Error("Ошибка при обновлении отчета");
@@ -103,31 +120,45 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
 
       } else {
         // Источник: Сейф
-        if (numAmount > state.safeBalance) {
-          toast.error(`В сейфе недостаточно средств (доступно: ${state.safeBalance.toFixed(2)} BYN)`);
+        const diff = numAmount - existingSafePayout;
+
+        if (diff === 0) {
+           toast.success("Изменений нет");
+           setLoading(false);
+           onClose();
+           return;
+        }
+
+        if (diff > state.safeBalance) {
+          toast.error(`В сейфе недостаточно средств для доплаты (доступно: ${state.safeBalance.toFixed(2)} BYN)`);
           setLoading(false);
           return;
         }
 
-        const defaultComment = `Выплата: ${employee.name}`;
+        const defaultComment = diff > 0
+           ? `Выплата ЗП: ${employee.name}`
+           : `Возврат выплаты ЗП: ${employee.name}`;
+
         const finalComment = useCustomComment && customComment.trim() ? customComment.trim() : defaultComment;
 
         const transaction = {
           id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
           date: new Date().toISOString(),
-          amount: numAmount,
-          type: "out" as const,
+          amount: Math.abs(diff),
+          type: diff > 0 ? "out" : "in" as const,
           comment: finalComment,
         };
 
         const successTx = await settingsService.addSafeTransaction(transaction);
-        const newBalance = state.safeBalance - numAmount;
+        const newBalance = state.safeBalance - diff; // if diff > 0 (pay more), balance decreases. If diff < 0 (return), balance increases.
         const successBal = await settingsService.updateSafeBalance(newBalance);
 
         if (successTx && successBal) {
           dispatch({ type: "ADD_SAFE_TRANSACTION", payload: transaction });
           dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
-          toast.success(`Выплачено ${numAmount.toFixed(2)} BYN из сейфа`);
+          toast.success(diff > 0
+             ? `Сейф: выплачено еще ${diff.toFixed(2)} BYN`
+             : `Сейф: возвращено ${Math.abs(diff).toFixed(2)} BYN`);
           onClose();
         } else {
           throw new Error("Ошибка при операции с сейфом");
@@ -144,8 +175,12 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
   const isShiftOpen = currentReport ? (currentReport.cashState?.isShiftOpen ?? true) : false;
 
   const parsedAmount = Number.parseFloat(amount);
-  const isValidAmount = !Number.isNaN(parsedAmount) && parsedAmount > 0;
-  const isExceedingCash = source === "cash" && isValidAmount && parsedAmount > expectedCash;
+  const isValidAmount = !Number.isNaN(parsedAmount) && parsedAmount >= 0;
+
+  const currentPayoutForValidation = stateCash.salaryPayouts?.[employeeId] || 0;
+  const diffForValidation = source === "cash" && isValidAmount ? parsedAmount - currentPayoutForValidation : 0;
+  const isExceedingCash = source === "cash" && isValidAmount && diffForValidation > expectedCash;
+
   const isExceedingSafe = source === "safe" && isValidAmount && parsedAmount > safeAvailable;
   const isOverLimit = isExceedingCash || isExceedingSafe;
 
@@ -165,7 +200,13 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
           </div>
           <div>
             <p className="font-semibold">{employee.name}</p>
-            <p className="text-xs text-muted-foreground">Оформление выдачи средств</p>
+            {source === 'cash' ? (
+              <p className="text-xs text-muted-foreground">
+                {(stateCash.salaryPayouts?.[employeeId] || 0) > 0 ? "Изменение уже выданной суммы" : "Оформление выдачи средств из кассы"}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">Оформление выдачи средств из сейфа</p>
+            )}
           </div>
         </div>
 
@@ -173,14 +214,14 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId }
           <div className="space-y-4 mb-6">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Сумма выплаты (BYN) <span className="text-destructive">*</span>
+                Итоговая сумма выплаты (BYN) <span className="text-destructive">*</span>
               </label>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 step="0.01"
-                min="0.01"
+                min="0"
                 placeholder="0.00"
                 required
                 autoFocus

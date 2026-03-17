@@ -30,8 +30,31 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
     return initial;
   });
 
-  // Для сейфа вводим "новые" суммы выплат за этот раз
-  const [safePayouts, setSafePayouts] = useState<Record<string, string>>({});
+  // Храним уже выданное из сейфа за сегодня для каждого сотрудника
+  const existingSafePayouts = useMemo(() => {
+    const todayStr = state.currentDate;
+    const payouts: Record<string, number> = {};
+    const todayTxs = state.safeTransactions.filter(tx => tx.date.startsWith(todayStr) && tx.comment.includes("Выплата ЗП:"));
+
+    employees.forEach(emp => {
+      const empTxs = todayTxs.filter(tx => tx.comment.includes(emp.name));
+      let sum = 0;
+      empTxs.forEach(tx => {
+         if (tx.type === "out") sum += tx.amount;
+         if (tx.type === "in") sum -= tx.amount;
+      });
+      if (sum > 0) payouts[emp.id] = sum;
+    });
+    return payouts;
+  }, [state.safeTransactions, state.currentDate, employees]);
+
+  const [safePayouts, setSafePayouts] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    Object.keys(existingSafePayouts).forEach(id => {
+      initial[id] = existingSafePayouts[id].toString();
+    });
+    return initial;
+  });
 
   const activePayouts = source === "cash" ? cashPayouts : safePayouts;
   const setActivePayouts = source === "cash" ? setCashPayouts : setSafePayouts;
@@ -63,9 +86,13 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
       if (source === "cash") {
         const numericPayouts: Record<string, number> = {};
         Object.keys(cashPayouts).forEach(id => {
+          if (cashPayouts[id] === "") return; // Skip completely empty
           const val = Number.parseFloat(cashPayouts[id]);
-          if (!Number.isNaN(val) && val > 0) {
-            numericPayouts[id] = val;
+          if (!Number.isNaN(val) && val >= 0) {
+            if (val > 0) {
+                numericPayouts[id] = val;
+            }
+            // if val === 0, we simply don't add it, which effectively deletes it from payouts
           }
         });
 
@@ -111,46 +138,56 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
       } else {
         // Выплата из СЕЙФА
         const newSafeTransactions: any[] = [];
-        let totalSafePayout = 0;
+        let netSafeChange = 0; // Negative means money leaves safe, positive means money returns
 
         Object.keys(safePayouts).forEach(id => {
+          if (safePayouts[id] === "") return;
           const val = Number.parseFloat(safePayouts[id]);
-          if (!Number.isNaN(val) && val > 0) {
-            const emp = employees.find(e => e.id === id);
-            totalSafePayout += val;
-            newSafeTransactions.push({
-              id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
-              date: new Date().toISOString(),
-              amount: val,
-              type: "out" as const,
-              comment: `Выплата ЗП: ${emp?.name || "Сотрудник"}`,
-            });
+          if (!Number.isNaN(val) && val >= 0) {
+            const currentPayout = existingSafePayouts[id] || 0;
+            const diff = val - currentPayout;
+
+            if (diff !== 0) {
+               const emp = employees.find(e => e.id === id);
+               netSafeChange -= diff; // If diff > 0, we pay more out (negative change to balance).
+
+               newSafeTransactions.push({
+                 id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+                 date: new Date().toISOString(),
+                 amount: Math.abs(diff),
+                 type: diff > 0 ? "out" : "in",
+                 comment: diff > 0
+                     ? `Выплата ЗП: ${emp?.name || "Сотрудник"}`
+                     : `Возврат выплаты ЗП: ${emp?.name || "Сотрудник"}`,
+               });
+            }
           }
         });
 
         if (newSafeTransactions.length === 0) {
-          toast.error("Введите суммы для выплаты");
+          toast.error("Нет изменений для сохранения");
           setLoading(false);
           return;
         }
 
-        if (totalSafePayout > state.safeBalance) {
-           toast.error(`В сейфе недостаточно средств (доступно: ${state.safeBalance.toFixed(2)} BYN)`);
+        if (netSafeChange < 0 && Math.abs(netSafeChange) > state.safeBalance) {
+           toast.error(`В сейфе недостаточно средств для доплаты (доступно: ${state.safeBalance.toFixed(2)} BYN)`);
            setLoading(false);
            return;
         }
 
-        // Сохраняем каждую транзакцию и обновляем баланс сейфа
         for (const tx of newSafeTransactions) {
           await settingsService.addSafeTransaction(tx);
           dispatch({ type: "ADD_SAFE_TRANSACTION", payload: tx });
         }
 
-        const newBalance = state.safeBalance - totalSafePayout;
+        const newBalance = state.safeBalance + netSafeChange;
         await settingsService.updateSafeBalance(newBalance);
         dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
 
-        toast.success(`Выплачено ${totalSafePayout.toFixed(2)} BYN из сейфа`);
+        toast.success(netSafeChange < 0
+            ? `Сейф: выплачено еще ${Math.abs(netSafeChange).toFixed(2)} BYN`
+            : `Сейф: возвращено ${netSafeChange.toFixed(2)} BYN`);
         onClose();
       }
     } catch (error) {
@@ -261,6 +298,11 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
                   {source === "safe" && existingCashPayouts[employee.id] > 0 && (
                      <div className="text-[10px] text-muted-foreground font-medium mb-1">
                        Уже выдано из кассы: {existingCashPayouts[employee.id].toFixed(2)}
+                     </div>
+                  )}
+                  {source === "cash" && existingSafePayouts[employee.id] > 0 && (
+                     <div className="text-[10px] text-muted-foreground font-medium mb-1">
+                       Уже выдано из сейфа: {existingSafePayouts[employee.id].toFixed(2)}
                      </div>
                   )}
                   <div className="flex items-center gap-2">
