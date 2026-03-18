@@ -752,16 +752,6 @@ h1, h2, h3, h4, h5, h6 {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
-    border-radius: 1rem; /* должен совпадать с rounded-2xl */
-    padding: 1px; /* толщина подсветки */
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-            mask-composite: exclude;
-    background: radial-gradient(120% 65% at 50% 0%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 55%, rgba(255,255,255,0) 100%);
-    pointer-events: none;
-  }
 
   /* Dark theme overrides */
   .dark .sidebar-link {
@@ -1230,6 +1220,72 @@ html:not(.dark):not(.black) img[src="/logo.png"] {
   filter: none; /* Оставляем оригинальный белый логотип для темных тем */
 }
 
+  /* Водопад света для десктопного сайдбара */
+  .sidebar-waterfall {
+    position: absolute;
+    top: -50px;
+    left: 0;
+    right: 0;
+    height: 350px; /* Высота до кнопки "Главная" */
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(59, 130, 246, 0.15) 20%,
+      rgba(59, 130, 246, 0.4) 40%,
+      rgba(99, 102, 241, 0.45) 60%,
+      rgba(59, 130, 246, 0.2) 80%,
+      transparent 100%
+    );
+    background-size: 100% 200%;
+    filter: blur(40px);
+    opacity: 0.8;
+    z-index: 0;
+    pointer-events: none;
+    animation: waterfall-flow 4s ease-in-out infinite alternate;
+    mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 60%, transparent 100%);
+  }
+
+  .dark .sidebar-waterfall {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(165, 122, 246, 0.1) 20%,
+      rgba(165, 122, 246, 0.3) 40%,
+      rgba(139, 92, 246, 0.35) 60%,
+      rgba(165, 122, 246, 0.15) 80%,
+      transparent 100%
+    );
+  }
+
+  .black .sidebar-waterfall {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(190, 160, 255, 0.1) 20%,
+      rgba(190, 160, 255, 0.25) 40%,
+      rgba(139, 92, 246, 0.3) 60%,
+      rgba(190, 160, 255, 0.15) 80%,
+      transparent 100%
+    );
+  }
+
+  @keyframes waterfall-flow {
+    0% {
+      background-position: 0% 0%;
+      transform: translateY(-20px);
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 0.9;
+    }
+    100% {
+      background-position: 0% 100%;
+      transform: translateY(20px);
+      opacity: 0.6;
+    }
+  }
+
 /* Global Custom Scrollbar */
 @layer base {
   /* For Firefox */
@@ -1266,4 +1322,5 @@ html:not(.dark):not(.black) img[src="/logo.png"] {
   ::-webkit-scrollbar-corner {
     background: transparent;
   }
+}
 }
