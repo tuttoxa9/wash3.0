@@ -212,14 +212,17 @@ const Sidebar: React.FC<SidebarProps> = ({
           isMobileOpen ? "translate-y-0" : "translate-y-full md:translate-y-0 md:translate-x-0"
         }`}
       >
-        <div className="flex flex-col h-full relative">
+        <div className="flex flex-col h-full relative z-10">
+          {/* Водопад света (только на десктопе, позади всех элементов) */}
+          <div className="hidden md:block sidebar-waterfall" />
+
           {/* Ползунок для закрытия свайпом на мобильных */}
           <div
-            className="w-12 h-1.5 bg-muted/50 rounded-full mx-auto mb-4 md:hidden cursor-pointer"
+            className="w-12 h-1.5 bg-muted/50 rounded-full mx-auto mb-4 md:hidden cursor-pointer relative z-10"
             onClick={toggleMobileSidebar}
           />
           {/* Шапка сайдбара */}
-          <div className="flex items-center justify-center md:justify-between mb-6 sm:mb-8 md:px-3 md:mt-2 relative">
+          <div className="flex items-center justify-center md:justify-between mb-6 sm:mb-8 md:px-3 md:mt-2 relative z-10">
             <div className="flex items-center justify-center md:justify-start relative group">
               <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/30 black:bg-blue-500/50 blur-[25px] rounded-full scale-[1.3] md:scale-[1.6] z-[-1] pointer-events-none translate-y-1 md:translate-y-2 opacity-100 dark:opacity-40 transition-opacity duration-1000 ease-in"></div>
               <div className="bg-transparent dark:bg-transparent black:bg-zinc-950 px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-transparent dark:border-transparent black:border-zinc-800/50 transition-colors select-none pointer-events-none relative z-10">
@@ -236,7 +239,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Навигация */}
-          <nav className="flex-1 space-y-2">
+          <nav className="flex-1 space-y-2 relative z-10">
             <NavLink
               to="/"
               className={({ isActive }) =>
