@@ -67,11 +67,14 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId, 
     .reduce((sum, mod) => sum + mod.amount, 0);
 
   // Базовая сумма в кассе: если касса сверена, берем фактический остаток
+  // До сверки ожидаемая касса УЖЕ включает вычитание ЗП и сейфа (baseCash = ожидаемая касса до выплат, expectedCash = ожидаемая касса после выплат)
   const baseCash = stateCash.actualEndOfDayCash !== undefined
     ? stateCash.actualEndOfDayCash
     : stateCash.startOfDayCash + (currentReport?.totalCash || 0) + cashModificationsTotal;
 
-  const expectedCash = baseCash - totalPayouts - (stateCash.transferredToSafe || 0);
+  const expectedCash = stateCash.actualEndOfDayCash !== undefined
+    ? stateCash.actualEndOfDayCash - totalPayouts - (stateCash.transferredToSafe || 0)
+    : baseCash - totalPayouts - (stateCash.transferredToSafe || 0);
   const safeAvailable = state.safeBalance;
 
   if (!isOpen || !employee) return null;

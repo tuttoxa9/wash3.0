@@ -15,14 +15,15 @@ export default function CashStateWidget({ report, onCloseCash, onPayout, onTrans
   const cashState = report.cashState;
 
   // Расчет ожидаемой кассы:
-  // Начальная + Нал за услуги + Внесения - Изъятия (не включая переносы в сейф/выплаты, если они еще не учтены как cashModifications)
-  // Мы предполагаем, что выплата ЗП и сейф могут учитываться отдельно или через модификации.
-  // Но для простоты: ожидаемая касса = (cashState?.startOfDayCash || 0) + totalCash + totalCashMods
+  // Начальная + Нал за услуги + Внесения - Изъятия - Выплаченные ЗП - Переводы в сейф
   const totalCashMods = (report.cashModifications || [])
     .filter(m => !m.method || m.method === "cash")
     .reduce((sum, mod) => sum + mod.amount, 0);
 
-  const expectedCash = (cashState?.startOfDayCash || 0) + report.totalCash + totalCashMods;
+  const totalPayouts = Object.values(cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
+  const transferredToSafe = cashState?.transferredToSafe || 0;
+
+  const expectedCash = (cashState?.startOfDayCash || 0) + report.totalCash + totalCashMods - totalPayouts - transferredToSafe;
   const isCashClosed = cashState?.actualEndOfDayCash !== undefined;
 
   return (
@@ -49,24 +50,14 @@ export default function CashStateWidget({ report, onCloseCash, onPayout, onTrans
           <span className="font-bold text-foreground text-lg">{expectedCash.toFixed(2)} BYN</span>
         </div>
 
-        {isCashClosed && (
+        {(totalPayouts > 0 || transferredToSafe > 0) && (
           <div className="flex flex-col gap-2 pt-2 border-t border-border/50">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Факт в кассе:</span>
-              <span className={`font-bold text-lg ${
-                (cashState?.actualEndOfDayCash || 0) < expectedCash ? "text-red-500" :
-                (cashState?.actualEndOfDayCash || 0) > expectedCash ? "text-green-500" : "text-primary"
-              }`}>
-                {cashState?.actualEndOfDayCash?.toFixed(2)} BYN
-              </span>
-            </div>
-
             {(Object.keys(cashState?.salaryPayouts || {}).length > 0) && (
               <div className="flex flex-col gap-1 mt-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground font-medium">На выплаты ушло:</span>
+                  <span className="text-sm text-muted-foreground font-medium">Выплаты ЗП (из кассы):</span>
                   <span className="font-bold text-base text-orange-500">
-                    -{Object.values(cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0).toFixed(2)} BYN
+                    -{totalPayouts.toFixed(2)} BYN
                   </span>
                 </div>
                 <div className="flex flex-col gap-1 pl-2 border-l-2 border-border/50 mb-1">
@@ -83,20 +74,34 @@ export default function CashStateWidget({ report, onCloseCash, onPayout, onTrans
               </div>
             )}
 
-            {(cashState?.transferredToSafe || 0) > 0 && (
+            {transferredToSafe > 0 && (
               <div className="flex justify-between items-center mt-1">
-                <span className="text-sm text-muted-foreground font-medium">В сейф ушло:</span>
+                <span className="text-sm text-muted-foreground font-medium">Передано в сейф:</span>
                 <span className="font-bold text-base text-blue-500">
-                  -{cashState?.transferredToSafe?.toFixed(2)} BYN
+                  -{transferredToSafe.toFixed(2)} BYN
                 </span>
               </div>
             )}
+          </div>
+        )}
 
-            {(Object.keys(cashState?.salaryPayouts || {}).length > 0 || (cashState?.transferredToSafe || 0) > 0) && (
+        {isCashClosed && (
+          <div className="flex flex-col gap-2 pt-2 border-t border-border/50">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground" title="До вычета ЗП и переводов в сейф">Факт в кассе (грязный):</span>
+              <span className={`font-bold text-lg ${
+                (cashState?.actualEndOfDayCash || 0) < (expectedCash + totalPayouts + transferredToSafe) ? "text-red-500" :
+                (cashState?.actualEndOfDayCash || 0) > (expectedCash + totalPayouts + transferredToSafe) ? "text-green-500" : "text-primary"
+              }`}>
+                {cashState?.actualEndOfDayCash?.toFixed(2)} BYN
+              </span>
+            </div>
+
+            {(totalPayouts > 0 || transferredToSafe > 0) && (
               <div className="flex justify-between items-center mt-2 pt-2 border-t border-border/50">
-                <span className="text-sm text-muted-foreground font-medium text-secondary-foreground">Фактический остаток:</span>
+                <span className="text-sm text-muted-foreground font-medium text-secondary-foreground" title="После вычета ЗП и сейфа">Фактический остаток:</span>
                 <span className="font-bold text-lg text-secondary-foreground">
-                  {((cashState?.actualEndOfDayCash || 0) - Object.values(cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0) - (cashState?.transferredToSafe || 0)).toFixed(2)} BYN
+                  {((cashState?.actualEndOfDayCash || 0) - totalPayouts - transferredToSafe).toFixed(2)} BYN
                 </span>
               </div>
             )}

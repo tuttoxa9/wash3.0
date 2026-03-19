@@ -27,13 +27,16 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
     .filter((mod) => !mod.method || mod.method === "cash")
     .reduce((sum, mod) => sum + mod.amount, 0);
 
+  const totalPayouts = Object.values(cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
+  const currentTransferred = cashState?.transferredToSafe || 0;
+
   const baseCash = cashState?.actualEndOfDayCash !== undefined
     ? cashState.actualEndOfDayCash
     : (cashState?.startOfDayCash || 0) + report.totalCash + cashModificationsTotal;
 
-  const totalPayouts = Object.values(cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
-  const currentTransferred = cashState?.transferredToSafe || 0;
-
+  // Если касса не сверена (actualEndOfDayCash === undefined), baseCash - это касса ДО выплат,
+  // если сверена, baseCash - это касса ДО выплат (т.к. actualEndOfDayCash - это то, что мы ввели при сверке, а до сверки мы ЗП не вычитали из того, что ожидали увидеть в кассе).
+  // Значит формула availableCash едина для обоих случаев: общая касса минус расходы
   const availableCash = baseCash - totalPayouts - currentTransferred;
 
   const handleTransfer = async (e: React.FormEvent) => {

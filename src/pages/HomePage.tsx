@@ -906,10 +906,13 @@ const HomePage: React.FC = () => {
           const transferred = cashState.transferredToSafe || 0;
           setPreviousDayCash((cashState.actualEndOfDayCash || 0) - totalPayouts - transferred);
         } else if (prevReport) {
-          // Вычисляем если не было cashState
+          // Вычисляем если не было cashState (или касса не была закрыта)
+          const totalPayouts = Object.values(prevReport.cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
+          const transferred = prevReport.cashState?.transferredToSafe || 0;
+
           const calcCash = (prevReport.cashState?.startOfDayCash || 0) + prevReport.totalCash + (prevReport.cashModifications || [])
             .filter(m => !m.method || m.method === "cash")
-            .reduce((sum, mod) => sum + mod.amount, 0);
+            .reduce((sum, mod) => sum + mod.amount, 0) - totalPayouts - transferred;
           setPreviousDayCash(calcCash);
         }
       } catch (e) {
