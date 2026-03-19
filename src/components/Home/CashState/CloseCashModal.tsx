@@ -27,23 +27,28 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
   const totalPayouts = Object.values(cashState?.salaryPayouts || {}).reduce((sum, val) => sum + val, 0);
   const transferredToSafe = cashState?.transferredToSafe || 0;
 
-  const expectedCash = (cashState?.startOfDayCash || 0) + report.totalCash + totalCashMods - totalPayouts - transferredToSafe;
+  // Ожидалась грязная касса ДО выплат
+  const expectedGrossCash = (cashState?.startOfDayCash || 0) + report.totalCash + totalCashMods;
+
+  // Текущая ожидаемая касса (чистая, с учетом выплат, которые УЖЕ могли быть сделаны)
+  const expectedNetCash = expectedGrossCash - totalPayouts - transferredToSafe;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const numActualCash = Number.parseFloat(actualCash);
+    const numActualNetCash = Number.parseFloat(actualCash);
 
-    if (Number.isNaN(numActualCash) || numActualCash < 0) {
+    if (Number.isNaN(numActualNetCash) || numActualNetCash < 0) {
       toast.error("Введите корректную сумму");
       return;
     }
 
     setLoading(true);
     try {
-      // Пользователь вводит фактический остаток (уже после вычета ЗП и сейфа, если они были).
-      // Но в actualEndOfDayCash мы должны хранить кассу ДО этих выплат, чтобы вся остальная система
-      // (PayoutsPage, TransferToSafeModal, HomePage) могла корректно отнимать их и не получалось двойного вычитания.
-      const grossActualCash = numActualCash + totalPayouts + transferredToSafe;
+      // Пользователь пересчитывает физические деньги в ящике.
+      // Если он уже выдал ЗП или перевел в сейф - этих денег в ящике НЕТ. Значит он вводит чистую кассу.
+      // Но в actualEndOfDayCash мы должны хранить кассу ДО этих выплат (грязную),
+      // чтобы вся остальная система могла корректно отнимать их и не получалось двойного вычитания.
+      const grossActualCash = numActualNetCash + totalPayouts + transferredToSafe;
 
       const updatedReport: DailyReport = {
         ...report,
@@ -72,7 +77,7 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
     }
   };
 
-  const difference = actualCash ? Number.parseFloat(actualCash) - expectedCash : 0;
+  const difference = actualCash ? Number.parseFloat(actualCash) - expectedNetCash : 0;
   const isDifference = Math.abs(difference) > 0.01;
 
   return (
@@ -91,48 +96,68 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
         <div className="p-4 rounded-xl bg-muted/20 border border-border/50 mb-6 flex flex-col gap-2">
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground">Начало дня:</span>
-            <span className="font-semibold">{cashState?.startOfDayCash?.toFixed(2) || "0.00"} BYN</span>
+            <span className="font-semibold text-foreground">{cashState?.startOfDayCash?.toFixed(2) || "0.00"} BYN</span>
           </div>
           <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">Выручка (наличные):</span>
-            <span className="font-semibold">{report.totalCash.toFixed(2)} BYN</span>
+            <span className="text-muted-foreground">По услугам (нал):</span>
+            <span className="font-semibold text-foreground">{report.totalCash.toFixed(2)} BYN</span>
           </div>
           {totalIn > 0 && (
             <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground pl-3 border-l-2 border-green-500/50">Внесения (размен и др.):</span>
+              <span className="text-muted-foreground pl-3 border-l-2 border-green-500/50">Внесения:</span>
               <span className="font-semibold text-green-600">+{totalIn.toFixed(2)} BYN</span>
             </div>
           )}
           {totalOut > 0 && (
             <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground pl-3 border-l-2 border-red-500/50">Изъятия (на хоз. нужды):</span>
+              <span className="text-muted-foreground pl-3 border-l-2 border-red-500/50">Изъятия:</span>
               <span className="font-semibold text-red-600">-{totalOut.toFixed(2)} BYN</span>
             </div>
           )}
-          {totalPayouts > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground pl-3 border-l-2 border-orange-500/50">Выплаты ЗП (из кассы):</span>
-              <span className="font-semibold text-orange-500">-{totalPayouts.toFixed(2)} BYN</span>
-            </div>
-          )}
-          {transferredToSafe > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground pl-3 border-l-2 border-blue-500/50">Передано в сейф:</span>
-              <span className="font-semibold text-blue-500">-{transferredToSafe.toFixed(2)} BYN</span>
-            </div>
-          )}
-          <div className="h-px bg-border/50 my-1" />
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground font-medium">Ожидается в кассе:</span>
-            <span className="font-bold text-lg text-foreground">{expectedCash.toFixed(2)} BYN</span>
+
+          <div className="flex justify-between items-center text-sm mt-1 pt-2 border-t border-border/50">
+            <span className="text-muted-foreground font-medium">Ожидалось всего:</span>
+            <span className="font-bold text-foreground">{expectedGrossCash.toFixed(2)} BYN</span>
           </div>
+
+          {/* Если уже были расходы до сверки - показываем их, чтобы человек понимал, почему ожидает меньше */}
+          {(totalPayouts > 0 || transferredToSafe > 0) && (
+            <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-border/50">
+              {totalPayouts > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground pl-3 border-l-2 border-orange-500/50">Уже выплачено ЗП:</span>
+                  <span className="font-semibold text-orange-500">-{totalPayouts.toFixed(2)} BYN</span>
+                </div>
+              )}
+              {transferredToSafe > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground pl-3 border-l-2 border-blue-500/50">Уже передано в сейф:</span>
+                  <span className="font-semibold text-blue-500">-{transferredToSafe.toFixed(2)} BYN</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center mt-2 bg-accent/30 -mx-4 px-4 py-2">
+                <span className="text-muted-foreground font-medium">Ожидается сейчас:</span>
+                <span className="font-bold text-lg text-foreground">{expectedNetCash.toFixed(2)} BYN</span>
+              </div>
+            </div>
+          )}
+          {totalPayouts === 0 && transferredToSafe === 0 && (
+             <div className="flex justify-between items-center mt-2 bg-accent/30 -mx-4 px-4 py-2">
+               <span className="text-muted-foreground font-medium">Ожидается сейчас:</span>
+               <span className="font-bold text-lg text-foreground">{expectedNetCash.toFixed(2)} BYN</span>
+             </div>
+          )}
         </div>
 
         <form onSubmit={handleSave}>
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">
-              Фактические наличные в кассе <span className="text-destructive">*</span>
+            <label className="block text-sm font-medium mb-1.5">
+              Физически сейчас в кассе <span className="text-destructive">*</span>
             </label>
+            <p className="text-xs text-muted-foreground mb-3">
+              Пересчитайте деньги в ящике и введите фактическую сумму.
+            </p>
             <input
               type="number"
               value={actualCash}
