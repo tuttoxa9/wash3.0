@@ -97,7 +97,7 @@ export default function CashStateWidget({ report, onCloseCash, onPayout, onTrans
 
         {/* Результат сверки (если закрыта) */}
         {isCashClosed && (
-          <div className="flex flex-col gap-1 mt-1 p-2.5 rounded-lg bg-muted/30 border border-border/50">
+          <div className="flex flex-col gap-1 mt-2 p-2.5 rounded-lg bg-muted/30 border border-border/50">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-foreground">Факт при сверке:</span>
               <span className={`font-bold text-base ${hasDifference ? (difference > 0 ? "text-green-500" : "text-red-500") : "text-primary"}`}>
@@ -150,15 +150,21 @@ export default function CashStateWidget({ report, onCloseCash, onPayout, onTrans
           </div>
         )}
 
-        {/* Итог: Текущий остаток */}
+        {/* Итог: Текущий остаток / Ожидается сейчас */}
         <div className="flex justify-between items-center mt-2 pt-3 border-t border-border/50 bg-accent/20 -mx-4 px-4 pb-2">
           <div className="flex flex-col mt-2">
             <span className="text-sm font-bold text-secondary-foreground">
-              Текущий остаток:
+              {isCashClosed ? "Текущий остаток:" : "Ожидается:"}
             </span>
-            <span className="text-[10px] text-muted-foreground font-medium">
-              Физически в кассе
-            </span>
+            {isCashClosed ? (
+              <span className="text-[10px] text-muted-foreground font-medium">
+                Физически в кассе
+              </span>
+            ) : (
+              <span className="text-[10px] text-muted-foreground font-medium opacity-0">
+                .
+              </span>
+            )}
           </div>
           <span className="font-bold text-2xl text-secondary-foreground mt-2">
             {currentPhysicalCash.toFixed(2)} BYN
