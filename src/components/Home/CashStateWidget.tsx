@@ -95,25 +95,6 @@ export default function CashStateWidget({ report, onCloseCash, onPayout, onTrans
           </span>
         </div>
 
-        {/* Результат сверки (если закрыта) */}
-        {isCashClosed && (
-          <div className="flex flex-col gap-1 mt-1 p-2.5 rounded-lg bg-muted/30 border border-border/50">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-foreground">Факт при сверке:</span>
-              <span className={`font-bold text-base ${hasDifference ? (difference > 0 ? "text-green-500" : "text-red-500") : "text-primary"}`}>
-                {actualGrossCash.toFixed(2)} BYN
-              </span>
-            </div>
-            {hasDifference && (
-              <div className="flex justify-end text-xs font-semibold">
-                <span className={difference > 0 ? "text-green-600" : "text-red-600"}>
-                  {difference > 0 ? `Излишек: +${difference.toFixed(2)} BYN` : `Недостача: ${difference.toFixed(2)} BYN`}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Блок расходов */}
         {(totalPayouts > 0 || transferredToSafe > 0) && (
           <div className="flex flex-col gap-2 mt-2 pt-3 border-t border-border/50">
@@ -144,6 +125,25 @@ export default function CashStateWidget({ report, onCloseCash, onPayout, onTrans
                 <span className="text-sm text-muted-foreground font-medium">Передано в сейф:</span>
                 <span className="font-bold text-base text-blue-500">
                   -{transferredToSafe.toFixed(2)} BYN
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Результат сверки (если закрыта) */}
+        {isCashClosed && (
+          <div className="flex flex-col gap-1 mt-2 p-2.5 rounded-lg bg-muted/30 border border-border/50">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-foreground">Факт при сверке:</span>
+              <span className={`font-bold text-base ${hasDifference ? (difference > 0 ? "text-green-500" : "text-red-500") : "text-primary"}`}>
+                {actualGrossCash.toFixed(2)} BYN
+              </span>
+            </div>
+            {hasDifference && (
+              <div className="flex justify-end text-xs font-semibold">
+                <span className={difference > 0 ? "text-green-600" : "text-red-600"}>
+                  {difference > 0 ? `Излишек: +${difference.toFixed(2)} BYN` : `Недостача: ${difference.toFixed(2)} BYN`}
                 </span>
               </div>
             )}
