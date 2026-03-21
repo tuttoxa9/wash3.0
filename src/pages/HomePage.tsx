@@ -2285,27 +2285,10 @@ const HomePage: React.FC = () => {
 
         {/* Правая колонка с виджетами */}
         <div className="flex flex-col gap-6">
-          {/* Виджет "Записи на мойку" */}
-          <div className="sticky top-6">
-            <AppointmentsWidget
-              onStartAppointment={handleAppointmentConversion}
-              canCreateRecords={shiftStarted}
-            />
-
-
-            {currentReport && shiftStarted && (
-              <CashStateWidget
-                report={currentReport}
-                onCloseCash={() => setIsCloseCashModalOpen(true)}
-                onPayout={() => setIsPayoutModalOpen(true)}
-                onTransferToSafe={() => setIsTransferSafeModalOpen(true)}
-              />
-            )}
-
-
+          <div className="sticky top-6 flex flex-col gap-6">
             {/* Активные долги */}
             {activeDebts.length > 0 && (
-              <div className="mt-6 rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden flex flex-col">
+              <div className="rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden flex flex-col">
                 <div className="flex items-center justify-between p-4 border-b border-border/50 bg-red-50 dark:bg-red-950/20">
                   <h3 className="text-sm font-semibold flex items-center gap-2 text-red-600 dark:text-red-400">
                     Активные долги
@@ -2360,11 +2343,26 @@ const HomePage: React.FC = () => {
               </div>
             )}
 
+            {currentReport && shiftStarted && (
+              <CashStateWidget
+                report={currentReport}
+                onCloseCash={() => setIsCloseCashModalOpen(true)}
+                onPayout={() => setIsPayoutModalOpen(true)}
+                onTransferToSafe={() => setIsTransferSafeModalOpen(true)}
+              />
+            )}
+
             {/* Виджет сертификатов */}
             <CertificatesWidget
               canCreateRecords={shiftStarted}
               selectedDate={selectedDate}
               onUseCertificate={handleUseCertificate}
+            />
+
+            {/* Виджет "Записи на мойку" */}
+            <AppointmentsWidget
+              onStartAppointment={handleAppointmentConversion}
+              canCreateRecords={shiftStarted}
             />
           </div>
         </div>

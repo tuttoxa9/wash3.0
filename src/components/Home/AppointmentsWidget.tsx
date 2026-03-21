@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Loader2, CheckCircle, Clock, ArrowRight, X, Plus } from "lucide-react";
+import { Calendar, Loader2, CheckCircle, Clock, ArrowRight, X, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { useAppContext } from "@/lib/context/AppContext";
 import { appointmentService } from "@/lib/services/supabaseService";
 import type { Appointment } from "@/lib/types";
@@ -22,6 +22,7 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Загрузка записей на сегодня и завтра
   useEffect(() => {
@@ -197,9 +198,16 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({
 
   return (
     <div className="rounded-xl sm:rounded-2xl bg-card border border-border/40 shadow-sm overflow-hidden max-h-[calc(100vh-300px)] sm:max-h-[calc(100vh-350px)]">
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/40 bg-gradient-to-r from-muted/20 to-muted/10">
+      <div
+        className="flex items-center justify-between p-3 sm:p-4 border-b border-border/40 bg-gradient-to-r from-muted/20 to-muted/10 cursor-pointer hover:bg-muted/30 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <div className="flex items-center gap-2 sm:gap-3">
-
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
           <h3 className="text-xs sm:text-sm font-semibold flex items-center gap-2 sm:gap-3">
             <span className="hidden sm:inline">Записи на мойку</span>
             <span className="sm:hidden">Записи</span>
@@ -208,6 +216,7 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({
         <a
           href={canCreateRecords ? "/records" : "#"}
           onClick={(e) => {
+            e.stopPropagation(); // Предотвращаем сворачивание/разворачивание при клике на ссылку
             if (!canCreateRecords) {
               e.preventDefault();
               toast.info("Сначала выберите работников и начните смену");
@@ -226,6 +235,7 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({
         </a>
       </div>
 
+      {isExpanded && (
       <div className="overflow-y-auto">
         {loading ? (
           <div className="flex flex-col justify-center items-center py-8 sm:py-12">
@@ -282,6 +292,7 @@ const AppointmentsWidget: React.FC<AppointmentsWidgetProps> = ({
           </>
         )}
       </div>
+      )}
     </div>
   );
 };
