@@ -178,13 +178,13 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
 
         const newBalance = state.safeBalance + netSafeChange;
 
-        const success = await settingsService.processSafeOperations(newSafeTransactions, newBalance);
+        const result = await settingsService.processSafeOperations(newSafeTransactions, newBalance);
 
-        if (success) {
+        if (result.success) {
           for (const tx of newSafeTransactions) {
             dispatch({ type: "ADD_SAFE_TRANSACTION", payload: tx });
           }
-          dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
+          dispatch({ type: "SET_SAFE_BALANCE", payload: result.newBalance ?? newBalance });
 
           toast.success(netSafeChange < 0
               ? `Сейф: выплачено еще ${Math.abs(netSafeChange).toFixed(2)} BYN`
