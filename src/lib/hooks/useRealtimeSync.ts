@@ -31,10 +31,6 @@ export function useRealtimeSync() {
             if (key === "realtimeEnabled") {
               const isEnabled = data?.isEnabled ?? true;
               dispatch({ type: "SET_REALTIME_ENABLED", payload: isEnabled });
-            } else if (key === "safeBalance" && state.isRealtimeEnabled) {
-              dispatch({ type: "SET_SAFE_BALANCE", payload: data?.balance ?? 0 });
-            } else if (key === "safeTransactions" && state.isRealtimeEnabled) {
-              dispatch({ type: "SET_SAFE_TRANSACTIONS", payload: data?.transactions ?? [] });
             }
           }
         }

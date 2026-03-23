@@ -63,7 +63,8 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
       // 2. Рассчитываем новый баланс
       const newBalance = state.safeBalance + numAmount;
 
-      const successSafe = await settingsService.processSafeOperations([transaction], newBalance);
+      const result = await settingsService.processSafeOperations([transaction], newBalance);
+      const successSafe = result.success;
 
       // 3. Обновляем отчет (cashState)
       const updatedReport: DailyReport = {
@@ -77,7 +78,7 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
 
       if (successSafe && successReport) {
         dispatch({ type: "ADD_SAFE_TRANSACTION", payload: transaction });
-        dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
+        dispatch({ type: "SET_SAFE_BALANCE", payload: result.newBalance ?? newBalance });
         dispatch({ type: "SET_DAILY_REPORT", payload: { date: report.date as string, report: updatedReport } });
 
         toast.success(`Перенесено ${numAmount.toFixed(2)} BYN в сейф`);

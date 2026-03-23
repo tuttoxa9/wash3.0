@@ -779,10 +779,21 @@ export const settingsService = {
 
   async processSafeOperations(
     newTransactions: any[],
-    newBalance: number
-  ): Promise<boolean> {
-    // Получаем текущие транзакции для обновления списка
+    _clientNewBalance?: number // устаревший параметр, оставляем для совместимости или игнорируем
+  ): Promise<{ success: boolean; newBalance?: number }> {
+    // Получаем актуальный баланс и транзакции из БД, чтобы избежать гонки (race condition)
+    // когда клиент отправляет устаревший state.safeBalance
     const currentTransactions = await this.getSafeTransactions();
+    const currentBalance = await this.getSafeBalance();
+
+    // Вычисляем дельту на основе новых транзакций
+    let delta = 0;
+    for (const tx of newTransactions) {
+      if (tx.type === "in") delta += tx.amount;
+      if (tx.type === "out") delta -= tx.amount;
+    }
+
+    const actualNewBalance = currentBalance + delta;
 
     // Переворачиваем массив новых транзакций (чтобы последняя добавленная оставалась в начале),
     // и объединяем с существующими
@@ -793,14 +804,14 @@ export const settingsService = {
       .from("settings")
       .upsert([
         { key: "safeTransactions", data: { transactions: updatedTransactions } },
-        { key: "safeBalance", data: { balance: newBalance } }
+        { key: "safeBalance", data: { balance: actualNewBalance } }
       ], { onConflict: "key" });
 
     if (error) {
       logSupabaseError("settings.processSafeOperations", error);
-      return false;
+      return { success: false };
     }
-    return true;
+    return { success: true, newBalance: actualNewBalance };
   },
 
   async saveSalaryCalculationMethod(
