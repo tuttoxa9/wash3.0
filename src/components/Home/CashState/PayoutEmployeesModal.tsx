@@ -176,19 +176,23 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
            return;
         }
 
-        for (const tx of newSafeTransactions) {
-          await settingsService.addSafeTransaction(tx);
-          dispatch({ type: "ADD_SAFE_TRANSACTION", payload: tx });
-        }
-
         const newBalance = state.safeBalance + netSafeChange;
-        await settingsService.updateSafeBalance(newBalance);
-        dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
 
-        toast.success(netSafeChange < 0
-            ? `Сейф: выплачено еще ${Math.abs(netSafeChange).toFixed(2)} BYN`
-            : `Сейф: возвращено ${netSafeChange.toFixed(2)} BYN`);
-        onClose();
+        const success = await settingsService.processSafeOperations(newSafeTransactions, newBalance);
+
+        if (success) {
+          for (const tx of newSafeTransactions) {
+            dispatch({ type: "ADD_SAFE_TRANSACTION", payload: tx });
+          }
+          dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
+
+          toast.success(netSafeChange < 0
+              ? `Сейф: выплачено еще ${Math.abs(netSafeChange).toFixed(2)} BYN`
+              : `Сейф: возвращено ${netSafeChange.toFixed(2)} BYN`);
+          onClose();
+        } else {
+          throw new Error("Ошибка при обновлении сейфа");
+        }
       }
     } catch (error) {
       console.error(error);

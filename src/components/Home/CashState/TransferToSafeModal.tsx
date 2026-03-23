@@ -60,11 +60,10 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
         reportId: report.id
       };
 
-      const successTx = await settingsService.addSafeTransaction(transaction);
-
-      // 2. Обновляем баланс сейфа
+      // 2. Рассчитываем новый баланс
       const newBalance = state.safeBalance + numAmount;
-      const successBal = await settingsService.updateSafeBalance(newBalance);
+
+      const successSafe = await settingsService.processSafeOperations([transaction], newBalance);
 
       // 3. Обновляем отчет (cashState)
       const updatedReport: DailyReport = {
@@ -76,7 +75,7 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
       };
       const successReport = await dailyReportService.updateReport(updatedReport);
 
-      if (successTx && successBal && successReport) {
+      if (successSafe && successReport) {
         dispatch({ type: "ADD_SAFE_TRANSACTION", payload: transaction });
         dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
         dispatch({ type: "SET_DAILY_REPORT", payload: { date: report.date as string, report: updatedReport } });

@@ -777,6 +777,32 @@ export const settingsService = {
     return true;
   },
 
+  async processSafeOperations(
+    newTransactions: any[],
+    newBalance: number
+  ): Promise<boolean> {
+    // Получаем текущие транзакции для обновления списка
+    const currentTransactions = await this.getSafeTransactions();
+
+    // Переворачиваем массив новых транзакций (чтобы последняя добавленная оставалась в начале),
+    // и объединяем с существующими
+    const updatedTransactions = [...newTransactions].reverse().concat(currentTransactions);
+
+    // Выполняем batch upsert для обеих записей одновременно
+    const { error } = await supabase
+      .from("settings")
+      .upsert([
+        { key: "safeTransactions", data: { transactions: updatedTransactions } },
+        { key: "safeBalance", data: { balance: newBalance } }
+      ], { onConflict: "key" });
+
+    if (error) {
+      logSupabaseError("settings.processSafeOperations", error);
+      return false;
+    }
+    return true;
+  },
+
   async saveSalaryCalculationMethod(
     method: string,
     date: string,
