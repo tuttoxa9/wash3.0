@@ -170,11 +170,10 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId, 
           comment: finalComment,
         };
 
-        const successTx = await settingsService.addSafeTransaction(transaction);
         const newBalance = state.safeBalance - diff; // if diff > 0 (pay more), balance decreases. If diff < 0 (return), balance increases.
-        const successBal = await settingsService.updateSafeBalance(newBalance);
+        const successSafe = await settingsService.processSafeOperations([transaction], newBalance);
 
-        if (successTx && successBal) {
+        if (successSafe) {
           dispatch({ type: "ADD_SAFE_TRANSACTION", payload: transaction });
           dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
           toast.success(diff > 0

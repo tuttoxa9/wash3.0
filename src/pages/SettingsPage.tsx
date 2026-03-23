@@ -1645,16 +1645,14 @@ const SafeSettings: React.FC = () => {
         comment: comment.trim(),
       };
 
-      const successTx = await settingsService.addSafeTransaction(transaction);
-
       const newBalance =
         transactionType === "in"
           ? state.safeBalance + numAmount
           : state.safeBalance - numAmount;
 
-      const successBal = await settingsService.updateSafeBalance(newBalance);
+      const successSafe = await settingsService.processSafeOperations([transaction], newBalance);
 
-      if (successTx && successBal) {
+      if (successSafe) {
         dispatch({ type: "ADD_SAFE_TRANSACTION", payload: transaction });
         dispatch({ type: "SET_SAFE_BALANCE", payload: newBalance });
         toast.success(

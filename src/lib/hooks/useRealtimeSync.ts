@@ -16,16 +16,26 @@ export function useRealtimeSync() {
   const { state, dispatch } = useAppContext();
 
   useEffect(() => {
-    // Специальная подписка на саму таблицу settings, чтобы моментально узнавать об отключении/включении Realtime
+    // Специальная подписка на саму таблицу settings, чтобы моментально узнавать об отключении/включении Realtime,
+    // а также о транзакциях и балансе сейфа.
     const settingsSubscription = supabase
       .channel("settings_realtime_changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "settings", filter: "key=eq.realtimeEnabled" },
+        { event: "*", schema: "public", table: "settings" },
         (payload) => {
-          if (payload.new && "data" in payload.new) {
-            const isEnabled = (payload.new as any).data?.isEnabled ?? true;
-            dispatch({ type: "SET_REALTIME_ENABLED", payload: isEnabled });
+          if (payload.new && "key" in payload.new) {
+            const key = (payload.new as any).key;
+            const data = (payload.new as any).data;
+
+            if (key === "realtimeEnabled") {
+              const isEnabled = data?.isEnabled ?? true;
+              dispatch({ type: "SET_REALTIME_ENABLED", payload: isEnabled });
+            } else if (key === "safeBalance" && state.isRealtimeEnabled) {
+              dispatch({ type: "SET_SAFE_BALANCE", payload: data?.balance ?? 0 });
+            } else if (key === "safeTransactions" && state.isRealtimeEnabled) {
+              dispatch({ type: "SET_SAFE_TRANSACTIONS", payload: data?.transactions ?? [] });
+            }
           }
         }
       )
