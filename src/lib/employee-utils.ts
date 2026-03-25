@@ -14,36 +14,21 @@ export interface MinimumPaymentSettings {
 
 /**
  * Определяет роль сотрудника на указанную дату.
- * Приоритет отдается сохраненным ролям (dayRoles), если их нет,
- * и дата сегодняшняя - берется текущая роль из профиля.
- * Иначе - washer.
+ * КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используются только сохраненные роли (dayRoles).
+ * Больше НЕЛЬЗЯ использовать текущую роль из профиля для исторических дат,
+ * чтобы избежать некорректного пересчета прошлых смен.
  */
 export function determineEmployeeRole(
   empId: string,
   dateStr: string,
   dayRoles: Record<string, any>,
-  employees: Employee[],
 ): EmployeeRole {
   let role: EmployeeRole = "washer";
 
   if (dayRoles && dayRoles[empId]) {
     role = dayRoles[empId] as EmployeeRole;
-  } else {
-    // В изолированной утилите вместо date-fns используем нативные Date
-    const today = new Date();
-    const todayStr = [
-      today.getFullYear(),
-      String(today.getMonth() + 1).padStart(2, "0"),
-      String(today.getDate()).padStart(2, "0"),
-    ].join("-");
-
-    const isToday = dateStr === todayStr;
-
-    if (isToday) {
-      const emp = employees.find((e) => e.id === empId);
-      if (emp?.role) role = emp.role;
-    }
   }
+
   return role;
 }
 
