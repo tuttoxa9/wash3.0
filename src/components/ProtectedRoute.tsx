@@ -1,5 +1,7 @@
 import { useAuth } from "@/lib/context/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
+import { AppProvider } from "@/lib/context/AppContext";
+import { NotificationProvider } from "@/lib/context/NotificationContext";
 
 const ProtectedRoute = () => {
   const { user, loading } = useAuth();
@@ -16,7 +18,11 @@ const ProtectedRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <AppProvider>
+      <Outlet />
+    </AppProvider>
+  );
 };
 
 export default ProtectedRoute;

@@ -49,6 +49,16 @@
     <!-- SEO and sharing -->
     <meta name="description" content="Система управления автомойкой Detail Lab - запись клиентов, отчеты, управление сотрудниками" />
     <meta name="keywords" content="автомойка, детейлинг, запись клиентов, управление автомойкой" />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('appTheme') || 'black';
+          document.documentElement.classList.add(theme);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
