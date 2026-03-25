@@ -126,10 +126,19 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
           ? record.date
           : format(record.date, "yyyy-MM-dd");
 
-      const employeeRole = determineEmployeeRole(employeeId, recordDate, dailyRoles, state.employees);
-      return calculateEmployeeShare(record, employeeId, employeeRole, state.minimumPaymentSettings as any);
+      const employeeRole = determineEmployeeRole(
+        employeeId,
+        recordDate,
+        dailyRoles[recordDate] || {},
+      );
+      return calculateEmployeeShare(
+        record,
+        employeeId,
+        employeeRole,
+        state.minimumPaymentSettings as any,
+      );
     },
-    [dailyRoles, state.employees, state.minimumPaymentSettings],
+    [dailyRoles, state.minimumPaymentSettings],
   );
 
   // Группировка записей по дням
@@ -200,7 +209,6 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
           empId,
           dateStr,
           dayRoles,
-          state.employees,
         );
 
         const minKey = `min_${empId}`;

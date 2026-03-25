@@ -271,7 +271,6 @@ const GeneralRevenueReport: React.FC = () => {
               empId,
               dateStr,
               dayRoles,
-              state.employees,
             );
 
             const minKey = `min_${empId}`;
