@@ -7,6 +7,7 @@ import { dailyReportService, settingsService } from "@/lib/services/supabaseServ
 import { useAppContext } from "@/lib/context/AppContext";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
+import { generateId } from "@/lib/utils";
 
 interface Props {
   isOpen: boolean;
@@ -52,7 +53,7 @@ export default function TransferToSafeModal({ isOpen, onClose, report }: Props) 
     try {
       // 1. Создаем транзакцию для сейфа
       const transaction = {
-        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+        id: generateId(),
         date: new Date().toISOString(),
         amount: numAmount,
         type: "in" as const,

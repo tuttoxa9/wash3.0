@@ -26,6 +26,7 @@ import type { PaymentMethod, Organization } from "@/lib/types";
 import { calculateEmployeeShare } from "@/lib/employee-utils";
 import { Packer } from "docx";
 import { saveAs } from "file-saver";
+import { generateId } from "@/lib/utils";
 import {
   AlertCircle,
   ArrowRight,
@@ -432,7 +433,7 @@ const HomePage: React.FC = () => {
           // Если за текущую, то долг уже перешел в totalCash/totalCard текущего отчета, так что дополнительная проводка не нужна
           if (reportId !== selectedDate) {
             const modification = {
-              id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+              id: generateId(),
               amount: recordToUpdate.price, // Внесение суммы
               reason: `Закрытие долга за ${format(parseISO(reportId), "dd.MM")} - ${recordToUpdate.carInfo}`,
               createdAt: new Date().toISOString(),

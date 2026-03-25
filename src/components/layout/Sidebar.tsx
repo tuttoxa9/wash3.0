@@ -30,6 +30,7 @@ import ChangelogModal from "../ui/ChangelogModal";
 import HelpModal from "../ui/HelpModal";
 import { CURRENT_VERSION } from "@/lib/changelog";
 import { toast } from "sonner";
+import { generateId } from "@/lib/utils";
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -59,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
 
     const newNote = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       text: newNoteText.trim(),
       createdAt: new Date().toISOString(),
     };

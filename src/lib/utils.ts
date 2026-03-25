@@ -28,6 +28,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Генерирует уникальный идентификатор (ID).
+ * Использует crypto.randomUUID() для обеспечения криптографической стойкости.
+ */
+export function generateId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+}
+
 // Генерация CSV из DailyReport
 export function generateDailyReportCsv(
   report: DailyReport,

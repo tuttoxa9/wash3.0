@@ -14,6 +14,7 @@ import type {
   ThemeMode,
 } from "@/lib/types";
 import { format, parseISO } from "date-fns";
+import { generateId } from "@/lib/utils";
 import {
   AlertTriangle,
   Building,
@@ -1638,7 +1639,7 @@ const SafeSettings: React.FC = () => {
     setLoading(true);
     try {
       const transaction = {
-        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+        id: generateId(),
         date: new Date().toISOString(),
         amount: numAmount,
         type: transactionType,

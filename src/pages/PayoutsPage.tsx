@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { dailyReportService, settingsService } from "@/lib/services/supabaseService";
 import { createSalaryCalculator } from "@/components/SalaryCalculator";
 import Modal from "@/components/ui/modal";
+import { generateId } from "@/lib/utils";
 
 interface PayoutModalProps {
   isOpen: boolean;
@@ -163,7 +164,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({ isOpen, onClose, employeeId, 
         const finalComment = useCustomComment && customComment.trim() ? customComment.trim() : defaultComment;
 
         const transaction = {
-          id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+          id: generateId(),
           date: new Date().toISOString(),
           amount: Math.abs(diff),
           type: diff > 0 ? "out" : "in" as const,

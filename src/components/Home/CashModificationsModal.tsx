@@ -5,6 +5,7 @@ import { useAppContext } from "@/lib/context/AppContext";
 import { dailyReportService } from "@/lib/services/supabaseService";
 import type { DailyReport } from "@/lib/types";
 import { toast } from "sonner";
+import { generateId } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface CashModificationsModalProps {
@@ -51,7 +52,7 @@ const CashModificationsModal: React.FC<CashModificationsModalProps> = ({
     try {
       const amountValue = Number(formData.amount);
       const modification = {
-        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substring(2),
+        id: generateId(),
         amount: formData.type === "expense" ? -amountValue : amountValue,
         reason: formData.reason.trim(),
         createdAt: new Date().toISOString(),

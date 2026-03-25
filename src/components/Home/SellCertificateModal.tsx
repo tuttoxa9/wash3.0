@@ -4,6 +4,7 @@ import Modal from "@/components/ui/modal";
 import { useAppContext } from "@/lib/context/AppContext";
 import { certificateService, dailyReportService } from "@/lib/services/supabaseService";
 import { toast } from "sonner";
+import { generateId } from "@/lib/utils";
 
 interface SellCertificateModalProps {
   onClose: () => void;
@@ -58,7 +59,7 @@ const SellCertificateModal: React.FC<SellCertificateModalProps> = ({
       const currentReport = state.dailyReports[selectedDate];
       if (currentReport) {
         const modification = {
-          id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substring(2),
+          id: generateId(),
           amount: Number(formData.amount), // Внесение (плюс)
           reason: `Продажа сертификата: ${formData.service.trim()}`,
           method: formData.paymentMethod,

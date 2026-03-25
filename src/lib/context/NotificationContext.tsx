@@ -1,5 +1,6 @@
 import type React from "react";
 import { type ReactNode, createContext, useContext, useState } from "react";
+import { generateId } from "@/lib/utils";
 
 export interface Notification {
   id: string;
@@ -46,7 +47,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   ) => {
     const newNotification: Notification = {
       ...notification,
-      id: Math.random().toString(36).substr(2, 9),
+      id: generateId(),
       timestamp: new Date(),
     };
     setNotifications((prev) => [newNotification, ...prev]);

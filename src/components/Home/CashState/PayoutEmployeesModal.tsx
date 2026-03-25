@@ -7,6 +7,7 @@ import { dailyReportService, settingsService } from "@/lib/services/supabaseServ
 import { useAppContext } from "@/lib/context/AppContext";
 import { createSalaryCalculator } from "@/components/SalaryCalculator";
 import { toast } from "sonner";
+import { generateId } from "@/lib/utils";
 
 interface Props {
   isOpen: boolean;
@@ -152,7 +153,7 @@ export default function PayoutEmployeesModal({ isOpen, onClose, report, employee
                netSafeChange -= diff; // If diff > 0, we pay more out (negative change to balance).
 
                newSafeTransactions.push({
-                 id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+                 id: generateId(),
                  date: new Date().toISOString(),
                  amount: Math.abs(diff),
                  type: diff > 0 ? "out" : "in",
