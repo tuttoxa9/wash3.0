@@ -1,6 +1,5 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/layout/Layout";
-import { AppProvider } from "@/lib/context/AppContext";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { NotificationProvider } from "@/lib/context/NotificationContext";
 import HomePage from "@/pages/HomePage";
@@ -52,11 +51,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <AuthProvider>
-      <AppProvider>
-        <NotificationProvider>
-          <RouterProvider router={router} />
-        </NotificationProvider>
-      </AppProvider>
+      <NotificationProvider>
+        <RouterProvider router={router} />
+      </NotificationProvider>
     </AuthProvider>
   );
 }
