@@ -258,7 +258,7 @@ const sections: HelpSection[] = [
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
           <h3 className="text-xl font-bold text-foreground mb-3">Движение наличных и по карте</h3>
-          <p className="mb-4">Иногда в кассе происходят изменения, не связанные напрямую с мойкой машин. Например, утренний размен, инкассация боссу, покупка химии или тряпок.</p>
+          <p className="mb-4">Иногда в кассе происходят изменения, не связанные напрямую с мойкой машин.</p>
 
           <div className="bg-card border border-border/50 rounded-2xl overflow-hidden mb-6">
             <div className="p-4 border-b border-border/50">
@@ -276,13 +276,13 @@ const sections: HelpSection[] = [
                   <h5 className="font-bold text-green-600 dark:text-green-500 mb-1 flex items-center gap-1">
                     <PlusCircle className="w-4 h-4" /> Внесение
                   </h5>
-                  <p className="text-xs text-muted-foreground">Добавление денег в кассу. Например, утренний размен или возврат сдачи.</p>
+                  <p className="text-xs text-muted-foreground">Добавление денег в кассу.</p>
                 </div>
                 <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
                   <h5 className="font-bold text-red-600 dark:text-red-500 mb-1 flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" /> Изъятие
                   </h5>
-                  <p className="text-xs text-muted-foreground">Выдача денег из кассы. Например, покупка расходников. Обязательно указывайте комментарий.</p>
+                  <p className="text-xs text-muted-foreground">Выдача денег из кассы. Обязательно указывайте комментарий.</p>
                 </div>
               </div>
             </div>
