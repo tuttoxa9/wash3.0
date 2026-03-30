@@ -7,12 +7,11 @@ import {
   Clock,
   PlusCircle,
   CreditCard,
-  Gift,
   Wallet,
   AlertCircle,
   Calculator,
   ArrowLeft,
-  Info
+  Banknote
 } from "lucide-react";
 
 interface HelpSection {
@@ -31,8 +30,8 @@ interface HelpModalProps {
 const sections: HelpSection[] = [
   {
     id: "shift",
-    title: "Открытие и закрытие смены",
-    description: "Начало рабочего дня, выбор сотрудников, настройка ролей",
+    title: "Рабочая смена",
+    description: "Открытие и закрытие дня, выбор персонала и ролей",
     icon: <Clock className="w-5 h-5 text-blue-500" />,
     content: (
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
@@ -43,21 +42,15 @@ const sections: HelpSection[] = [
           <div className="bg-muted/30 border border-border/50 rounded-2xl p-5 space-y-3">
             <h4 className="font-bold text-foreground flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">1</span>
-              Выберите дату
+              Дата смены
             </h4>
-            <p className="pl-8 text-muted-foreground">По умолчанию стоит сегодняшний день. Если нужно внести данные за прошлый день, нажмите на дату и выберите нужную в календаре.</p>
+            <p className="pl-8 text-muted-foreground">По умолчанию стоит сегодняшний день. Для внесения данных за прошедший период выберите нужную дату в календаре.</p>
 
             <h4 className="font-bold text-foreground flex items-center gap-2 mt-4">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">2</span>
-              Состав смены
+              Состав и роли
             </h4>
-            <p className="pl-8 text-muted-foreground">Отметьте галочками сотрудников, которые сегодня работают.</p>
-
-            <h4 className="font-bold text-foreground flex items-center gap-2 mt-4">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs">3</span>
-              Настройка ролей
-            </h4>
-            <p className="pl-8 text-muted-foreground">Укажите роль и выберите, нужно ли учитывать минимальную оплату за выход.</p>
+            <p className="pl-8 text-muted-foreground">Отметьте сотрудников, которые сегодня работают, укажите их роли и необходимость учета минимальной оплаты за выход.</p>
           </div>
         </div>
 
@@ -66,9 +59,9 @@ const sections: HelpSection[] = [
             <AlertCircle className="w-5 h-5" /> Важное предупреждение
           </h4>
           <p className="text-amber-600/90 text-sm">
-            Если вы ошиблись при открытии смены, нажмите кнопку <strong>«Изменить состав»</strong>.
+            Если вы ошиблись при открытии смены, используйте кнопку <strong>«Изменить состав»</strong>.
             <br/><br/>
-            <strong>Внимание:</strong> Если снять галочки со всех сотрудников и сохранить — текущая смена и все добавленные за этот день услуги будут <strong>ПОЛНОСТЬЮ УДАЛЕНЫ</strong>. Для этого потребуется пароль от настроек.
+            <strong>Внимание:</strong> Если снять галочки со всех сотрудников и сохранить — текущая смена и все данные за этот день будут <strong>ПОЛНОСТЬЮ УДАЛЕНЫ</strong>. Потребуется пароль от настроек.
           </p>
         </div>
       </div>
@@ -76,336 +69,134 @@ const sections: HelpSection[] = [
   },
 
   {
-    id: "cash-safe",
-    title: "Касса, Выплаты и Сейф",
-    description: "Сверка наличных в конце дня, выдача зарплаты, перенос остатка",
-    icon: <Wallet className="w-5 h-5 text-green-500" />,
-    content: (
-      <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
-        <div>
-          <h3 className="text-xl font-bold text-foreground mb-3">Учет наличных средств</h3>
-          <p className="mb-4">Новый виджет <strong>«Состояние кассы»</strong> на главной странице (справа) помогает отслеживать все наличные деньги в реальном времени. Он показывает сумму на начало дня и то, сколько денег ожидается в кассе с учетом всех оплат наличными.</p>
-
-          <div className="space-y-4">
-            <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
-              <h4 className="font-semibold text-foreground mb-2">1. Сверка кассы</h4>
-              <p>В конце смены нажмите кнопку <strong>«Сверить кассу»</strong> в виджете. Пересчитайте все физические деньги в ящике и введите эту сумму. Система автоматически покажет, сошлась ли касса, или есть излишек или недостача.</p>
-            </div>
-
-            <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
-              <h4 className="font-semibold text-foreground mb-2">2. Расчет сотрудников</h4>
-              <p>После сверки кассы нажмите <strong>«Рассчитать сотрудников»</strong>. Вы можете выдать зарплату из кассы смены или из глобального сейфа. Откроется список всех сотрудников. Вы можете:</p>
-              <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
-                <li>Нажать кнопку <strong>«Всё»</strong>, чтобы выдать сотруднику ровно ту сумму, которую он заработал за сегодня.</li>
-                <li>Ввести любую другую сумму вручную.</li>
-                <li>При выборе источника "Касса" деньги будут вычтены из фактического остатка вашей кассы.</li>
-                <li>При выборе источника "Сейф" деньги будут списаны из глобального сейфа, а касса смены останется нетронутой.</li>
-              </ul>
-              <p className="mt-2 text-xs">Также выдать деньги сотрудникам в любое время можно в разделе <strong>«Выплаты»</strong> в главном меню.</p>
-            </div>
-
-            <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
-              <h4 className="font-semibold text-foreground mb-2">3. Перенос в сейф</h4>
-              <p>Оставшиеся в кассе деньги можно перенести в глобальный сейф, нажав кнопку <strong>«В сейф»</strong>. Глобальный сейф находится в настройках. Там хранится весь баланс и история всех операций.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
     id: "services",
-    title: "Добавление услуг",
+    title: "Учет услуг",
     description: "Как правильно записывать автомобили и исполнителей",
     icon: <PlusCircle className="w-5 h-5 text-green-500" />,
     content: (
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
           <h3 className="text-xl font-bold text-foreground mb-4">Создание новой записи</h3>
-          <p className="mb-5 text-muted-foreground">Для добавления услуги нажмите основную синюю кнопку <strong>«Добавить услугу»</strong> в верхней панели или кнопку с плюсиком (+) прямо на карточке конкретного сотрудника.</p>
+          <p className="mb-5 text-muted-foreground">Нажмите основную синюю кнопку <strong>«Добавить услугу»</strong> или кнопку с плюсиком (+) на карточке конкретного сотрудника.</p>
 
           <div className="grid gap-4">
-
             <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
               <h4 className="font-bold text-foreground mb-1 text-base">Машина и Услуга</h4>
-              <p className="text-muted-foreground">Укажите марку или номер автомобиля и краткое название оказанной услуги.</p>
+              <p className="text-muted-foreground">Укажите марку или номер автомобиля и краткое название услуги.</p>
             </div>
 
             <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
-              <h4 className="font-bold text-foreground mb-1 text-base">Исполнители и Сумма</h4>
+              <h4 className="font-bold text-foreground mb-1 text-base">Исполнители</h4>
               <p className="text-muted-foreground">
-                Укажите полную стоимость услуги для клиента. Затем выберите одного или нескольких сотрудников.
-                Если выбрано несколько человек, выручка с этой услуги (и начисленная зарплата) автоматически разделится между ними поровну.
+                Введите полную стоимость услуги. При выборе нескольких сотрудников выручка и зарплата автоматически разделятся между ними поровну.
               </p>
             </div>
-
-            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
-              <h4 className="font-bold text-foreground mb-1 text-base">Способ оплаты</h4>
-              <p className="text-muted-foreground">Выберите, как клиент рассчитался: Наличные, Карта, Безнал (Организация), Сертификат или Долг. От этого зависит, куда поступят деньги в отчетах.</p>
-            </div>
-
           </div>
         </div>
       </div>
     ),
   },
+
   {
     id: "payments",
-    title: "Способы оплаты и Безнал",
-    description: "Разница между наличными, картой и организациями",
+    title: "Оплата и Долги",
+    description: "Наличные, карты, безнал, сертификаты и должники",
     icon: <CreditCard className="w-5 h-5 text-indigo-500" />,
     content: (
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
-          <h3 className="text-xl font-bold text-foreground mb-3">Разделение выручки</h3>
-          <p className="mb-4">В системе поддерживается несколько способов оплаты. Они по-разному влияют на кассу и на зарплату сотрудников.</p>
-
-          <div className="space-y-4">
-            <div className="flex gap-4 p-4 bg-muted/20 border border-border/50 rounded-2xl">
-              <div className="mt-1">
-                <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
-                  <CreditCard className="w-4 h-4" />
-                </div>
-              </div>
-              <div>
-                <h4 className="font-bold text-foreground text-base">Наличные и Карта</h4>
-                <p className="text-muted-foreground mt-1">Обычная оплата от физических лиц. Эти суммы моментально попадают в общую кассу дня, и с них сразу же начисляется процент сотрудникам.</p>
-              </div>
+          <h3 className="text-xl font-bold text-foreground mb-3">Способы оплаты</h3>
+          <div className="space-y-3">
+            <div className="p-4 bg-muted/20 border border-border/50 rounded-2xl">
+              <h4 className="font-bold text-foreground text-base">Наличные и Карта</h4>
+              <p className="text-muted-foreground mt-1">Обычная оплата от физлиц. Наличные сразу попадают в "Состояние кассы".</p>
             </div>
 
-            <div className="flex gap-4 p-4 bg-muted/20 border border-border/50 rounded-2xl">
-              <div className="mt-1">
-                <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500">
-                  <Wallet className="w-4 h-4" />
-                </div>
-              </div>
-              <div>
-                <h4 className="font-bold text-foreground text-base">Безналичные. Организации.</h4>
-                <p className="text-muted-foreground mt-1">При выборе "Безнал" необходимо указать организацию из выпадающего списка. Список организаций настраивается в разделе "Настройки".</p>
-                <div className="mt-3 p-3 bg-background rounded-xl border border-border/50 text-xs">
-                  <strong>Как считаются деньги:</strong> Если в настройках организации включена галочка <em>"Учитывать в общей сумме"</em>, то оплата приплюсуется к большой цифре "Всего" за день. В противном случае она будет выведена отдельно. Зарплата работникам начисляется в любом случае.
-                </div>
-              </div>
+            <div className="p-4 bg-muted/20 border border-border/50 rounded-2xl">
+              <h4 className="font-bold text-foreground text-base">Безналичные (Организации)</h4>
+              <p className="text-muted-foreground mt-1">Выберите организацию из списка (настраивается в Настройках). Если включено «Учитывать в общей сумме», оплата добавится к выручке дня.</p>
+            </div>
+
+            <div className="p-4 bg-muted/20 border border-border/50 rounded-2xl">
+              <h4 className="font-bold text-foreground text-base">Сертификаты</h4>
+              <p className="text-muted-foreground mt-1"><strong>Продажа:</strong> Деньги сразу в кассу, ЗП не начисляется. <strong>Использование:</strong> Выберите способ оплаты «Сертификат», деньги в кассу не идут, ЗП сотрудникам начисляется.</p>
+            </div>
+
+            <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-2xl">
+              <h4 className="font-bold text-red-600 dark:text-red-500 text-base">Долги</h4>
+              <p className="text-muted-foreground mt-1">Выберите способ оплаты «Долг». Зарплата сотрудникам начислится сразу. Когда клиент принесет деньги, найдите его в виджете «Активные долги» и нажмите галочку — сумма добавится в кассу текущей смены.</p>
             </div>
           </div>
         </div>
       </div>
     ),
   },
-  {
-    id: "certificates",
-    title: "Работа с сертификатами",
-    description: "Продажа новых сертификатов и их погашение",
-    icon: <Gift className="w-5 h-5 text-purple-500" />,
-    content: (
-      <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
-        <div>
-          <h3 className="text-xl font-bold text-foreground mb-4">Жизненный цикл сертификата</h3>
 
-          <div className="relative pl-6 border-l-2 border-purple-500/30 space-y-8 pb-4">
-            <div className="relative">
-              <div className="absolute -left-[35px] top-0 w-8 h-8 rounded-full bg-card border-2 border-purple-500 flex items-center justify-center text-purple-500 font-bold text-sm">
-                1
-              </div>
-              <h4 className="font-bold text-lg text-foreground mb-2">Продажа сертификата</h4>
-              <p className="text-muted-foreground mb-3">
-                Используйте виджет <strong>"Сертификаты"</strong>. Нажмите кнопку "Продать".
-              </p>
-              <div className="bg-purple-500/5 p-4 rounded-xl border border-purple-500/20 text-purple-700 dark:text-purple-300">
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>Деньги <strong>сразу попадают в кассу</strong>.</li>
-                  <li>Эта сумма <strong>НЕ влияет на зарплату</strong> сотрудников, так как физическая услуга еще не была оказана.</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="absolute -left-[35px] top-0 w-8 h-8 rounded-full bg-card border-2 border-purple-500 flex items-center justify-center text-purple-500 font-bold text-sm">
-                2
-              </div>
-              <h4 className="font-bold text-lg text-foreground mb-2">Использование. Оказание услуги.</h4>
-              <p className="text-muted-foreground mb-3">
-                Когда клиент приезжает по купленному ранее сертификату:
-              </p>
-              <div className="space-y-2 mb-3">
-                <div className="flex items-center gap-2">
-                  <ChevronRight className="w-4 h-4 text-purple-500" />
-                  <span>В виджете "Сертификаты" найдите нужный и нажмите галочку "Использовать".</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ChevronRight className="w-4 h-4 text-purple-500" />
-                  <span><strong>ИЛИ</strong> просто добавьте услугу обычным способом и выберите оплату "Сертификат".</span>
-                </div>
-              </div>
-              <div className="bg-purple-500/5 p-4 rounded-xl border border-purple-500/20 text-purple-700 dark:text-purple-300">
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>При использовании <strong>деньги в кассу НЕ добавляются</strong>.</li>
-                  <li>Услуга записывается сотруднику в статистику и с нее <strong>начисляется зарплата</strong>.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-  },
   {
-    id: "cash",
-    title: "Касса. Изъятия и Внесения",
-    description: "Размен, инкассация, покупка расходников",
+    id: "cash-safe",
+    title: "Касса, Сейф и Расходы",
+    description: "Учет наличных, сверка и операции с сейфом",
     icon: <Wallet className="w-5 h-5 text-amber-500" />,
     content: (
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
-          <h3 className="text-xl font-bold text-foreground mb-3">Движение наличных и по карте</h3>
-          <p className="mb-4">Иногда в кассе происходят изменения, не связанные напрямую с мойкой машин.</p>
-
-          <div className="bg-card border border-border/50 rounded-2xl overflow-hidden mb-6">
-            <div className="p-4 border-b border-border/50">
-              <h4 className="font-bold flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                Как добавить операцию
-              </h4>
-            </div>
-            <div className="p-5">
-              <p className="text-muted-foreground mb-4">
-                На Главной странице в блоке «Итого» нажмите на плитку <strong>«Наличные»</strong>. Откроется окно управления кассой.
-              </p>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-xl">
-                  <h5 className="font-bold text-green-600 dark:text-green-500 mb-1 flex items-center gap-1">
-                    <PlusCircle className="w-4 h-4" /> Внесение
-                  </h5>
-                  <p className="text-xs text-muted-foreground">Добавление денег в кассу.</p>
-                </div>
-                <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
-                  <h5 className="font-bold text-red-600 dark:text-red-500 mb-1 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" /> Изъятие
-                  </h5>
-                  <p className="text-xs text-muted-foreground">Выдача денег из кассы. Обязательно указывайте комментарий.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-primary/5 border border-primary/20 p-5 rounded-2xl flex gap-3 items-start">
-            <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-bold text-primary mb-1">
-                Важно понимать
-              </h4>
-              <p className="text-primary/80 text-xs">
-                Эти суммы изменяют только итоговую цифру "Наличных" в интерфейсе, чтобы она совпадала с физическими деньгами в кассе администратора. Они <strong>никак не влияют на зарплаты</strong> сотрудников и общую сумму оказанных за день услуг.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: "debts",
-    title: "Долги",
-    description: "Оформление долга клиента и его последующее закрытие",
-    icon: <AlertCircle className="w-5 h-5 text-red-500" />,
-    content: (
-      <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
-        <div>
-          <h3 className="text-xl font-bold text-foreground mb-4">Работа с должниками</h3>
-          <p className="mb-6 text-muted-foreground">Если постоянный клиент помыл машину, но обещал занести деньги позже, используйте функционал долгов.</p>
+          <h3 className="text-xl font-bold text-foreground mb-3">Движение наличных</h3>
+          <p className="mb-4">Виджет <strong>«Состояние кассы»</strong> на главной странице показывает сумму на начало дня и ожидаемый остаток с учетом всех оплат наличными.</p>
 
           <div className="space-y-4">
-            <div className="flex gap-4">
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 rounded-full bg-card border-2 border-border flex items-center justify-center font-bold text-muted-foreground z-10">1</div>
-                <div className="w-px h-full bg-border/50 my-1"></div>
-              </div>
-              <div className="pb-6 pt-1">
-                <h4 className="font-bold text-foreground text-base">Оформление долга</h4>
-                <p className="text-muted-foreground mt-1 mb-2">При добавлении услуги выберите способ оплаты <strong>«Долг»</strong>. Обязательно напишите в комментарии имя клиента и номер телефона.</p>
-                <div className="bg-muted/30 p-3 rounded-lg text-xs">
-                  Сотрудникам сразу <strong>начислится зарплата</strong> за эту машину. Но деньги в кассу не попадут.
-                </div>
-              </div>
+            <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
+              <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2"><Banknote className="w-4 h-4"/> Сверка кассы</h4>
+              <p>В конце смены нажмите <strong>«Сверить кассу»</strong>. Введите физическую сумму в ящике. Система покажет излишек или недостачу.</p>
             </div>
 
-            <div className="flex gap-4">
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 rounded-full bg-card border-2 border-border flex items-center justify-center font-bold text-muted-foreground z-10">2</div>
-                <div className="w-px h-full bg-border/50 my-1"></div>
-              </div>
-              <div className="pb-6 pt-1">
-                <h4 className="font-bold text-foreground text-base">Контроль</h4>
-                <p className="text-muted-foreground mt-1">Все неоплаченные долги за любые даты висят на Главной странице в виджете <strong>"Активные долги"</strong>.</p>
-              </div>
+            <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
+              <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2"><PlusCircle className="w-4 h-4"/> Внесения и Изъятия</h4>
+              <p>Нажмите на плитку <strong>«Наличные»</strong> в блоке «Итого». Используйте <em>Внесение</em> для размена и <em>Изъятие</em> для покупки расходников или инкассации. Эти операции не влияют на зарплату.</p>
             </div>
 
-            <div className="flex gap-4">
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 rounded-full bg-card border-2 border-green-500 flex items-center justify-center font-bold text-green-500 z-10">3</div>
-              </div>
-              <div className="pt-1">
-                <h4 className="font-bold text-foreground text-base">Закрытие долга</h4>
-                <p className="text-muted-foreground mt-1">Когда клиент принес деньги, найдите его в виджете "Активные долги" и нажмите зеленую галочку. Выберите, как он отдал деньги (Наличные или Карта).</p>
-                <div className="bg-green-500/10 border border-green-500/20 p-3 rounded-lg text-xs mt-2 text-green-700 dark:text-green-400">
-                  Эта сумма автоматически добавится в кассу <strong>текущей открытой смены</strong> (в виде кассового внесения), чтобы ваши деньги сошлись здесь и сейчас.
-                </div>
-              </div>
+            <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
+              <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2"><Wallet className="w-4 h-4"/> Глобальный сейф</h4>
+              <p>Излишки из кассы можно перенести в глобальный сейф кнопкой <strong>«В сейф»</strong>. Сейф находится в Настройках и хранит весь баланс предприятия.</p>
             </div>
           </div>
         </div>
       </div>
     ),
   },
+
   {
     id: "salary",
-    title: "Расчет зарплат",
-    description: "Наглядное объяснение процентов, минималки и премий",
+    title: "Зарплаты и Выплаты",
+    description: "Расчет процентов, минималка и выдача денег",
     icon: <Calculator className="w-5 h-5 text-emerald-500" />,
     content: (
       <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
         <div>
-          <h3 className="text-xl font-bold text-foreground mb-2">Формирование заработной платы</h3>
-          <p className="mb-6 text-muted-foreground">Зарплата считается автоматически. Базовые ставки и проценты задаются администратором в разделе "Настройки".</p>
-
+          <h3 className="text-xl font-bold text-foreground mb-3">Как считается зарплата</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-
-            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
-              <h4 className="font-bold text-foreground mb-2">Проценты</h4>
-              <p className="text-muted-foreground text-sm">
-                Базовый расчет зарплаты. Программа берет стоимость оказанной услуги, делит её поровну между всеми исполнителями, а затем умножает на процент сотрудника. Процент зависит от его роли.
-              </p>
+            <div className="bg-card border border-border/50 rounded-2xl p-4 shadow-sm">
+              <h4 className="font-bold text-foreground mb-1">Проценты</h4>
+              <p className="text-muted-foreground text-xs">Стоимость услуги делится между исполнителями и умножается на их персональный процент.</p>
             </div>
-
-            <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm">
-              <h4 className="font-bold text-foreground mb-2">Минимальная оплата</h4>
-              <p className="text-muted-foreground text-sm">
-                Гарантированный оклад за выход. Если сотрудник заработал на своих процентах за день меньше установленной минималки, программа автоматически дотянет его зарплату до этой суммы.
-              </p>
+            <div className="bg-card border border-border/50 rounded-2xl p-4 shadow-sm">
+              <h4 className="font-bold text-foreground mb-1">Минималка</h4>
+              <p className="text-muted-foreground text-xs">Гарантированный оклад за выход. Система дотянет ЗП до этой суммы, если проценты за день меньше.</p>
             </div>
-
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-muted/20 border border-border/50 rounded-2xl p-5 flex gap-4 items-start">
-              <div className="mt-1 font-bold text-foreground text-lg">*</div>
-              <div>
-                <h4 className="font-bold text-foreground mb-1">Ручная ЗП. Премии и Штрафы.</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Если вы хотите заплатить сотруднику другую сумму, нажмите на его карточку на Главной странице и введите <strong>«Ручную ЗП»</strong>. На карточке появится звездочка. Это значение <strong>перекроет все автоматические расчеты</strong>.
-                </p>
-              </div>
-            </div>
+          <div className="bg-muted/20 border border-border/50 rounded-2xl p-4 mb-6">
+            <h4 className="font-bold text-foreground mb-1">Ручная ЗП (Премии/Штрафы)</h4>
+            <p className="text-muted-foreground text-xs">Нажмите на карточку сотрудника и введите сумму вручную. Это значение перекроет все автоматические расчеты.</p>
+          </div>
 
-            <div className="bg-muted/20 border border-border/50 rounded-2xl p-5 flex gap-4 items-start">
-              <Clock className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-bold text-foreground mb-1 text-sm">Почасовая разбивка</h4>
-                <p className="text-muted-foreground text-sm">
-                  В течение рабочего времени на карточках сотрудников отображается предварительный расчет. Это информативная цифра, показывающая, сколько сотрудник заработал к текущему часу. После 21:00 она превратится в окончательную ЗП за день.
-                </p>
-              </div>
-            </div>
+          <h3 className="text-xl font-bold text-foreground mb-3">Выдача денег</h3>
+          <p className="mb-4 text-muted-foreground">Нажмите <strong>«Рассчитать сотрудников»</strong> в виджете кассы или перейдите в раздел <strong>«Выплаты»</strong> в меню.</p>
+          <div className="bg-primary/5 border border-primary/20 p-5 rounded-2xl">
+            <ul className="list-disc pl-5 space-y-2 text-xs">
+              <li><strong>Источник «Касса»:</strong> Деньги вычитаются из фактического остатка кассы дня.</li>
+              <li><strong>Источник «Сейф»:</strong> Деньги списываются из глобального сейфа, касса смены не меняется.</li>
+              <li>Кнопка <strong>«Всё»</strong> позволяет выдать ровно заработанную за день сумму в один клик.</li>
+            </ul>
           </div>
         </div>
       </div>
