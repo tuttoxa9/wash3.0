@@ -147,7 +147,7 @@ const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
                 onChange={() => setPaymentType("card")}
               />
               <CreditCard className="w-6 h-6 mb-2" />
-              <span className="text-sm font-medium">Перевод</span>
+              <span className="text-sm font-medium">Карта</span>
             </label>
             <label
               className={`col-span-2 sm:col-span-1 flex flex-col items-center justify-center p-4 border rounded-xl cursor-pointer transition-all ${
