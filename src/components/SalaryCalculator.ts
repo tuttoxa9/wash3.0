@@ -170,11 +170,14 @@ export class SalaryCalculator {
     // 4. Общий доход от процентов
     const totalPercentageEarnings = baseCashBonus + washBonus + drycleanBonus;
 
+    // Округление общей суммы процентов до 5 в меньшую сторону
+    const roundedPercentageEarnings = Math.floor(totalPercentageEarnings / 5) * 5;
+
     // 5. Итоговая сумма (не меньше минималки)
     const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
     const finalAmount = respectMinimum
-      ? Math.max(totalPercentageEarnings, this.settings.minimumPaymentAdmin)
-      : totalPercentageEarnings;
+      ? Math.max(roundedPercentageEarnings, this.settings.minimumPaymentAdmin)
+      : roundedPercentageEarnings;
 
     return {
       employeeId,
@@ -218,11 +221,14 @@ export class SalaryCalculator {
     // 3. Общий доход от процентов
     const percentageEarnings = washEarnings + drycleanEarnings;
 
+    // Округление общей суммы процентов до 5 в меньшую сторону
+    const roundedPercentageEarnings = Math.floor(percentageEarnings / 5) * 5;
+
     // 4. Итоговая сумма (не меньше минималки)
     const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
     const finalAmount = respectMinimum
-      ? Math.max(percentageEarnings, this.settings.minimumPaymentWasher)
-      : percentageEarnings;
+      ? Math.max(roundedPercentageEarnings, this.settings.minimumPaymentWasher)
+      : roundedPercentageEarnings;
 
     return {
       employeeId,
