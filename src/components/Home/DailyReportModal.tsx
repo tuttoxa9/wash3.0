@@ -55,13 +55,28 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
 
   // Формирование текстового представления способа оплаты для таблицы
   const getPaymentMethodDisplay = (
-    type: string,
-    organizationId?: string,
-  ): string => {
-    if (type === "cash") return "Наличные";
-    if (type === "card") return "Карта";
-    if (type === "organization" && organizationId)
-      return getOrganizationName(organizationId);
+    method: PaymentMethod
+  ): React.ReactNode => {
+    if (method.type === "cash") return "Наличные";
+    if (method.type === "card") return "Карта";
+    if (method.type === "certificate") return "Сертификат";
+    if (method.type === "organization" && method.organizationId)
+      return getOrganizationName(method.organizationId);
+    if (method.type === "debt") {
+      if (method.isClosed) {
+        const actualMethodText = method.actualMethod === "cash" ? "Наличные" : method.actualMethod === "card" ? "Карта" : method.actualMethod === "organization" ? "Безнал" : "Неизвестно";
+        return (
+          <span className="text-green-600 dark:text-green-400 font-medium">
+            Долг (Закрыт: {actualMethodText})
+          </span>
+        );
+      }
+      return (
+        <span className="text-red-500 font-bold">
+          Долг {method.comment ? `(${method.comment})` : ""}
+        </span>
+      );
+    }
     return "Неизвестный";
   };
 
@@ -649,19 +664,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                           {record.price.toFixed(2)} BYN
                         </td>
                         <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-card-foreground text-xs sm:text-sm">
-                          {record.paymentMethod.type === "debt" ? (
-                            <span className="text-red-500 font-bold">
-                              Долг{" "}
-                              {record.paymentMethod.comment
-                                ? `(${record.paymentMethod.comment})`
-                                : ""}
-                            </span>
-                          ) : (
-                            getPaymentMethodDisplay(
-                              record.paymentMethod.type,
-                              record.paymentMethod.organizationId,
-                            )
-                          )}
+                          {getPaymentMethodDisplay(record.paymentMethod)}
                         </td>
                         <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-[10px] sm:text-xs text-muted-foreground">
                           {record.employeeIds
@@ -843,19 +846,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                       </div>
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-muted-foreground truncate flex-1 min-w-0 pr-2">
-                          {record.paymentMethod.type === "debt" ? (
-                            <span className="text-red-500 font-bold uppercase tracking-tighter">
-                              Долг{" "}
-                              {record.paymentMethod.comment
-                                ? `(${record.paymentMethod.comment})`
-                                : ""}
-                            </span>
-                          ) : (
-                            getPaymentMethodDisplay(
-                              record.paymentMethod.type,
-                              record.paymentMethod.organizationId,
-                            )
-                          )}
+                          {getPaymentMethodDisplay(record.paymentMethod)}
                         </span>
                         <div className="flex gap-1 shrink-0">
                           <button

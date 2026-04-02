@@ -394,7 +394,12 @@ const HomePage: React.FC = () => {
         if (rec.id === recordId) {
           return {
             ...rec,
-            paymentMethod,
+            paymentMethod: {
+              ...rec.paymentMethod,
+              isClosed: true,
+              closedAt: new Date().toISOString(),
+              actualMethod: paymentMethod.type as "cash" | "card" | "organization"
+            },
           };
         }
         return rec;
@@ -416,53 +421,116 @@ const HomePage: React.FC = () => {
         await carWashService.update(recordToUpdate);
       }
 
+      // Вычисляем точные выплаты сотрудникам за этот долг
+      let employeePayouts: Record<string, number> = {};
+
+      if (recordToUpdate && recordToUpdate.paymentMethod.isSalaryPaidForDebt === false) {
+        // Симулируем ЗП старого дня БЕЗ этого долга (он и так исключен калькулятором, т.к isSalaryPaidForDebt === false)
+        const calcWithoutDebt = createSalaryCalculator(
+          state.minimumPaymentSettings,
+          report.records,
+          report.dailyEmployeeRoles || {},
+          state.employees
+        );
+        const salariesWithoutDebt = calcWithoutDebt.calculateSalaries();
+
+        // Симулируем ЗП старого дня С этим долгом (как будто он выплачен в тот день)
+        const simRecords = report.records.map(r => r.id === recordId ? { ...r, paymentMethod: { ...r.paymentMethod, isSalaryPaidForDebt: true } } : r);
+        const calcWithDebt = createSalaryCalculator(
+          state.minimumPaymentSettings,
+          simRecords,
+          report.dailyEmployeeRoles || {},
+          state.employees
+        );
+        const salariesWithDebt = calcWithDebt.calculateSalaries();
+
+        // Вычисляем дельту
+        salariesWithDebt.forEach(swd => {
+          const swod = salariesWithoutDebt.find(s => s.employeeId === swd.employeeId);
+          const diff = swd.calculatedSalary - (swod ? swod.calculatedSalary : 0);
+          if (diff > 0) {
+            employeePayouts[swd.employeeId] = diff;
+          }
+        });
+      }
+
       const success = await dailyReportService.updateReport(updatedReport);
       if (success) {
         toast.success("Долг закрыт");
         loadActiveDebts();
 
-        // Проверяем: нужно ли создать кассовую проводку в текущей смене
-        // Условие: оплата налом или картой, и долг не относится к сегодняшней смене (либо мы всё равно хотим учесть это в кассе текущей смены)
-        if (
-          (paymentMethod.type === "cash" || paymentMethod.type === "card") &&
-          currentReport &&
-          recordToUpdate
-        ) {
-          // Если долг был за прошлую дату, добавляем в текущую открытую смену, чтобы сошлась физическая касса
-          // Если за текущую, то долг уже перешел в totalCash/totalCard текущего отчета, так что дополнительная проводка не нужна
-          if (reportId !== selectedDate) {
-            const modification = {
-              id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
-              amount: recordToUpdate.price, // Внесение суммы
-              reason: `Закрытие долга за ${format(parseISO(reportId), "dd.MM")} - ${recordToUpdate.carInfo}`,
-              createdAt: new Date().toISOString(),
-              method: paymentMethod.type as "cash" | "card",
-            };
+        let updatedCurrentReport = currentReport ? { ...currentReport } : null;
 
-            const updatedCurrentReport = {
-              ...currentReport,
-              cashModifications: [
-                ...(currentReport.cashModifications || []),
-                modification,
-              ],
-            };
-
-            await dailyReportService.updateReport(updatedCurrentReport);
-            dispatch({
-              type: "SET_DAILY_REPORT",
-              payload: { date: selectedDate, report: updatedCurrentReport },
-            });
-            toast.success(`Внесено в кассу текущей смены (${paymentMethod.type === "cash" ? "Наличные" : "Карта"})`);
-          }
+        // Если долг закрывают за ТЕКУЩИЙ день (т.е вкладка открыта на этот же день),
+        // обновляем updatedCurrentReport чтобы он содержал isClosed = true (из updatedReport)
+        if (reportId === selectedDate && updatedCurrentReport) {
+           updatedCurrentReport = { ...updatedReport };
         }
 
-        // Если закрываем долг за текущую выбранную дату, обновляем состояние
-        if (reportId === selectedDate) {
-          dispatch({
-            type: "SET_DAILY_REPORT",
-            payload: { date: reportId, report: updatedReport },
-          });
+        // Если мы находимся в открытой смене (есть currentReport), и закрываем старый долг (reportId !== selectedDate)
+        // ИЛИ мы закрываем текущий долг (reportId === selectedDate) И у него есть employeePayouts (зарплата не начислялась)
+        // То мы должны начислить эти выплаты и, при необходимости, добавить движение средств
+        if (updatedCurrentReport && recordToUpdate) {
+            let needsUpdate = false;
+
+            // 1. Добавление движения средств в текущую кассу (только для СТАРЫХ долгов)
+            // Если закрыли нал/карта, то деньги физически пришли сегодня
+            if (
+              (paymentMethod.type === "cash" || paymentMethod.type === "card") &&
+              reportId !== selectedDate
+            ) {
+              const modification = {
+                id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+                amount: recordToUpdate.price, // Внесение суммы
+                reason: `Закрытие долга за ${format(parseISO(reportId), "dd.MM")} - ${recordToUpdate.carInfo}`,
+                createdAt: new Date().toISOString(),
+                method: paymentMethod.type as "cash" | "card",
+              };
+
+              updatedCurrentReport = {
+                ...updatedCurrentReport,
+                cashModifications: [
+                  ...(updatedCurrentReport.cashModifications || []),
+                  modification,
+                ],
+              };
+              needsUpdate = true;
+              toast.success(`Внесено в кассу текущей смены (${paymentMethod.type === "cash" ? "Наличные" : "Карта"})`);
+            }
+
+            // 2. Выплаты зарплаты (если долг новый, т.е isSalaryPaidForDebt === false)
+            if (Object.keys(employeePayouts).length > 0) {
+              const repaidDebt = {
+                originalRecordId: recordToUpdate.id,
+                originalDate: reportId,
+                carInfo: recordToUpdate.carInfo,
+                service: recordToUpdate.service,
+                price: recordToUpdate.price,
+                employeePayouts,
+              };
+
+              updatedCurrentReport = {
+                ...updatedCurrentReport,
+                repaidDebts: [...(updatedCurrentReport.repaidDebts || []), repaidDebt],
+              };
+              needsUpdate = true;
+            }
+
+            if (needsUpdate || reportId === selectedDate) {
+              await dailyReportService.updateReport(updatedCurrentReport);
+              dispatch({
+                type: "SET_DAILY_REPORT",
+                payload: { date: selectedDate, report: updatedCurrentReport },
+              });
+            }
+        } else if (reportId === selectedDate) {
+            // Если нет открытой смены (currentReport === null), но мы редактируем текущий день
+             dispatch({
+                type: "SET_DAILY_REPORT",
+                payload: { date: reportId, report: updatedReport },
+              });
         }
+
         setIsCloseDebtModalOpen(false);
         setDebtToClose(null);
       } else {
@@ -2103,6 +2171,7 @@ const HomePage: React.FC = () => {
                         employeeRoles,
                         state.employees,
                         minimumOverride,
+                        currentReport.repaidDebts || []
                       );
 
                       const calculatedResults =
@@ -2168,81 +2237,148 @@ const HomePage: React.FC = () => {
 
                                   const hourlyRate = calculateHourlyRate();
 
+                                  const employeeDebtPayouts = (currentReport.repaidDebts || []).filter(debt => debt.employeePayouts[result.employeeId]);
+
                                   return (
-                                    <div
-                                      key={result.employeeId}
-                                      className="flex justify-between items-center text-sm"
-                                    >
-                                      <div className="flex flex-col min-w-0 pr-2">
+                                    <div key={result.employeeId} className="flex flex-col gap-1">
+                                      <div className="flex justify-between items-center text-sm">
+                                        <div className="flex flex-col min-w-0 pr-2">
+                                          <span
+                                            className={`font-medium truncate ${
+                                              result.isManual
+                                                ? "text-orange-500"
+                                                : "text-card-foreground"
+                                            }`}
+                                          >
+                                            {result.employeeName}
+                                            <span className="text-xs text-muted-foreground font-normal ml-1">
+                                              ({result.role === "admin" ? "Админ" : "Мойщик"})
+                                            </span>
+                                            {result.isManual && " *"}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground">
+                                            {(() => {
+                                              const now = new Date();
+                                              const currentHour = now.getHours();
+                                              const currentMinute =
+                                                now.getMinutes();
+                                              const currentTimeInMinutes =
+                                                currentHour * 60 + currentMinute;
+                                              const workStartMinutes = 9 * 60;
+                                              const workEndMinutes = 21 * 60;
+
+                                              if (
+                                                currentTimeInMinutes <
+                                                  workStartMinutes ||
+                                                currentTimeInMinutes >=
+                                                  workEndMinutes
+                                              ) {
+                                                return `${hourlyRate.toFixed(2)} BYN/час`;
+                                              }
+
+                                              const workedMinutes = Math.max(
+                                                0,
+                                                currentTimeInMinutes -
+                                                  workStartMinutes,
+                                              );
+                                              const workedHours =
+                                                workedMinutes / 60;
+
+                                              if (workedHours < 1) {
+                                                return `${hourlyRate.toFixed(2)} BYN/час`;
+                                              }
+
+                                              return `${hourlyRate.toFixed(2)} BYN/час за ${workedHours.toFixed(1)}ч`;
+                                            })()}
+                                          </span>
+                                        </div>
                                         <span
-                                          className={`font-medium truncate ${
-                                            result.isManual
-                                              ? "text-orange-500"
-                                              : "text-card-foreground"
+                                          className={`font-bold shrink-0 text-base ${
+                                            result.isManual ? "text-orange-500" : "text-primary"
                                           }`}
                                         >
-                                          {result.employeeName}
-                                          <span className="text-xs text-muted-foreground font-normal ml-1">
-                                            ({result.role === "admin" ? "Админ" : "Мойщик"})
-                                          </span>
-                                          {result.isManual && " *"}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">
-                                          {(() => {
-                                            const now = new Date();
-                                            const currentHour = now.getHours();
-                                            const currentMinute =
-                                              now.getMinutes();
-                                            const currentTimeInMinutes =
-                                              currentHour * 60 + currentMinute;
-                                            const workStartMinutes = 9 * 60;
-                                            const workEndMinutes = 21 * 60;
-
-                                            if (
-                                              currentTimeInMinutes <
-                                                workStartMinutes ||
-                                              currentTimeInMinutes >=
-                                                workEndMinutes
-                                            ) {
-                                              return `${hourlyRate.toFixed(2)} BYN/час`;
-                                            }
-
-                                            const workedMinutes = Math.max(
-                                              0,
-                                              currentTimeInMinutes -
-                                                workStartMinutes,
-                                            );
-                                            const workedHours =
-                                              workedMinutes / 60;
-
-                                            if (workedHours < 1) {
-                                              return `${hourlyRate.toFixed(2)} BYN/час`;
-                                            }
-
-                                            return `${hourlyRate.toFixed(2)} BYN/час за ${workedHours.toFixed(1)}ч`;
-                                          })()}
+                                          {loading.dailyReport && !currentReport ? (
+                                            <Skeleton className="h-6 w-16" />
+                                          ) : (
+                                            <>
+                                              {result.calculatedSalary.toFixed(2)}{" "}
+                                              BYN
+                                            </>
+                                          )}
                                         </span>
                                       </div>
-                                      <span
-                                        className={`font-bold shrink-0 text-base ${
-                                          result.isManual ? "text-orange-500" : "text-primary"
-                                        }`}
-                                      >
-                                        {loading.dailyReport && !currentReport ? (
-                                          <Skeleton className="h-6 w-16" />
-                                        ) : (
-                                          <>
-                                            {result.calculatedSalary.toFixed(2)}{" "}
-                                            BYN
-                                          </>
-                                        )}
-                                      </span>
+                                      {employeeDebtPayouts.length > 0 && !result.isManual && (
+                                        <div className="pl-2 border-l-2 border-primary/20 space-y-0.5 mt-0.5">
+                                          {employeeDebtPayouts.map((debt, idx) => (
+                                            <div key={idx} className="text-[10px] text-muted-foreground flex justify-between items-center">
+                                              <span className="truncate pr-2">+ {debt.employeePayouts[result.employeeId].toFixed(2)} BYN (Возврат долга: {format(parseISO(debt.originalDate), "dd.MM")} - {debt.carInfo})</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
                                     </div>
                                   );
                                 })}
                               </div>
                             </div>
                           )}
+
+                          {/* Выплаты по закрытым долгам для сотрудников вне смены */}
+                          {currentReport.repaidDebts && (() => {
+                            const offShiftDebts: Array<{
+                              employeeId: string;
+                              employeeName: string;
+                              debts: Array<{ amount: number, info: string, date: string }>;
+                              total: number;
+                            }> = [];
+
+                            state.employees.forEach(emp => {
+                              if (!shiftEmployees.includes(emp.id)) {
+                                const debts = currentReport.repaidDebts!.filter(d => d.employeePayouts[emp.id]).map(d => ({
+                                  amount: d.employeePayouts[emp.id],
+                                  info: d.carInfo,
+                                  date: d.originalDate
+                                }));
+
+                                if (debts.length > 0) {
+                                  const total = debts.reduce((sum, d) => sum + d.amount, 0);
+                                  offShiftDebts.push({
+                                    employeeId: emp.id,
+                                    employeeName: emp.name,
+                                    debts,
+                                    total
+                                  });
+                                }
+                              }
+                            });
+
+                            if (offShiftDebts.length === 0) return null;
+
+                            return (
+                              <div className="mt-4 pt-4 border-t border-dashed border-border/60">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                                  Выплаты по долгам (сотрудники вне смены)
+                                </p>
+                                <div className="space-y-3">
+                                  {offShiftDebts.map(item => (
+                                    <div key={item.employeeId} className="flex flex-col gap-1">
+                                      <div className="flex justify-between items-center text-sm">
+                                        <span className="font-medium text-foreground">{item.employeeName}</span>
+                                        <span className="font-bold text-primary">{item.total.toFixed(2)} BYN</span>
+                                      </div>
+                                      <div className="pl-2 border-l-2 border-primary/20 space-y-0.5">
+                                        {item.debts.map((debt, idx) => (
+                                          <div key={idx} className="text-[10px] text-muted-foreground flex justify-between items-center">
+                                            <span className="truncate pr-2">+ {debt.amount.toFixed(2)} BYN (Возврат долга: {format(parseISO(debt.date), "dd.MM")} - {debt.info})</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })()}
 
                           <div className="mt-auto pt-4 border-t border-border/40 flex justify-between items-center bg-accent/5 p-3 rounded-lg border border-border/40">
                             <span className="font-bold text-lg text-foreground">

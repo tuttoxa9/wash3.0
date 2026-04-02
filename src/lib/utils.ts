@@ -75,7 +75,14 @@ export function generateDailyReportCsv(
     let paymentStr = "Наличные";
     if (record.paymentMethod.type === "card") paymentStr = "Карта";
     else if (record.paymentMethod.type === "organization") paymentStr = escapeCsv(getOrgName(record.paymentMethod.organizationId));
-    else if (record.paymentMethod.type === "debt") paymentStr = escapeCsv(`Долг ${record.paymentMethod.comment || ""}`.trim());
+    else if (record.paymentMethod.type === "debt") {
+      if (record.paymentMethod.isClosed) {
+         const actualMethodText = record.paymentMethod.actualMethod === "cash" ? "Наличные" : record.paymentMethod.actualMethod === "card" ? "Карта" : record.paymentMethod.actualMethod === "organization" ? "Безнал" : "Неизвестно";
+         paymentStr = escapeCsv(`Долг (Закрыт: ${actualMethodText})`);
+      } else {
+         paymentStr = escapeCsv(`Долг ${record.paymentMethod.comment || ""}`.trim());
+      }
+    }
     else if (record.paymentMethod.type === "certificate") paymentStr = "Сертификат";
 
     const emps = escapeCsv(record.employeeIds
@@ -488,6 +495,7 @@ export function generateDailyReportDocx(
     localEmployeeRoles,
     workingEmployees,
     minimumOverride,
+    report.repaidDebts || []
   );
 
   const salaryResults = salaryCalculator.calculateSalaries();
@@ -1053,7 +1061,12 @@ export function generateDailyReportDocx(
           paymentMethod =
             record.paymentMethod.organizationName || "Организация";
         } else if (record.paymentMethod.type === "debt") {
-          paymentMethod = "Долг";
+          if (record.paymentMethod.isClosed) {
+            const actualMethodText = record.paymentMethod.actualMethod === "cash" ? "Наличные" : record.paymentMethod.actualMethod === "card" ? "Карта" : record.paymentMethod.actualMethod === "organization" ? "Безнал" : "Неизвестно";
+            paymentMethod = `Долг (Закрыт: ${actualMethodText})`;
+          } else {
+            paymentMethod = "Долг";
+          }
         } else if (record.paymentMethod.type === "certificate") {
           paymentMethod = "Сертификат";
         }
