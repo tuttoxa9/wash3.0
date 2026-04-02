@@ -957,9 +957,10 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                     {(() => {
                       const orgSum =
                         currentReport.records?.reduce((sum, record) => {
+                          const isOrg = record.paymentMethod.type === "organization" || (record.paymentMethod.type === "debt" && record.paymentMethod.isClosed && record.paymentMethod.actualMethod === "organization");
                           return (
                             sum +
-                            (record.paymentMethod.type === "organization"
+                            (isOrg
                               ? record.price
                               : 0)
                           );
@@ -990,7 +991,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                         currentReport.records?.reduce((sum, record) => {
                           return (
                             sum +
-                            (record.paymentMethod.type === "debt"
+                            (record.paymentMethod.type === "debt" && !record.paymentMethod.isClosed
                               ? record.price
                               : 0)
                           );

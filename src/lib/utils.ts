@@ -130,7 +130,8 @@ export function generateDailyReportCsv(
     const org = organizations.find((o) => o.id === orgId);
     if (!org) return;
     const orgSum = report.records.reduce((sum, r) => {
-      return sum + ((r.paymentMethod.type === "organization" && r.paymentMethod.organizationId === orgId) ? r.price : 0);
+      const isOrg = r.paymentMethod.type === "organization" || (r.paymentMethod.type === "debt" && r.paymentMethod.isClosed && r.paymentMethod.actualMethod === "organization");
+      return sum + ((isOrg && r.paymentMethod.organizationId === orgId) ? r.price : 0);
     }, 0);
     if (orgSum > 0) {
       csvContent += `Безнал (${escapeCsv(org.name)}):;${orgSum.toFixed(2)}\n`;
@@ -139,7 +140,7 @@ export function generateDailyReportCsv(
 
   // Остальной Безнал
   const totalRestOrg = report.records.reduce((sum, r) => {
-    const isOrg = r.paymentMethod.type === "organization";
+    const isOrg = r.paymentMethod.type === "organization" || (r.paymentMethod.type === "debt" && r.paymentMethod.isClosed && r.paymentMethod.actualMethod === "organization");
     const isSeparated = r.paymentMethod.organizationId && organizationsInTotal.includes(r.paymentMethod.organizationId);
     return sum + ((isOrg && !isSeparated) ? r.price : 0);
   }, 0);
@@ -149,7 +150,7 @@ export function generateDailyReportCsv(
   }
 
   const totalDebt = report.records.reduce(
-    (sum, r) => sum + (r.paymentMethod.type === "debt" ? r.price : 0),
+    (sum, r) => sum + (r.paymentMethod.type === "debt" && !r.paymentMethod.isClosed ? r.price : 0),
     0
   );
   if (totalDebt > 0) {
@@ -517,18 +518,18 @@ export function generateDailyReportDocx(
 
   if (report.records) {
     report.records.forEach((record) => {
-      if (record.paymentMethod.type === "cash") {
+      if (record.paymentMethod.type === "cash" || (record.paymentMethod.type === "debt" && record.paymentMethod.isClosed && record.paymentMethod.actualMethod === "cash")) {
         totalCash += record.price;
-      } else if (record.paymentMethod.type === "card") {
+      } else if (record.paymentMethod.type === "card" || (record.paymentMethod.type === "debt" && record.paymentMethod.isClosed && record.paymentMethod.actualMethod === "card")) {
         totalCard += record.price;
-      } else if (record.paymentMethod.type === "organization") {
+      } else if (record.paymentMethod.type === "organization" || (record.paymentMethod.type === "debt" && record.paymentMethod.isClosed && record.paymentMethod.actualMethod === "organization")) {
         if (record.paymentMethod.organizationId && organizationsInTotal.includes(record.paymentMethod.organizationId)) {
           const orgId = record.paymentMethod.organizationId;
           separateOrgTotals[orgId] = (separateOrgTotals[orgId] || 0) + record.price;
         } else {
           totalOrganizations += record.price;
         }
-      } else if (record.paymentMethod.type === "debt") {
+      } else if (record.paymentMethod.type === "debt" && !record.paymentMethod.isClosed) {
         totalDebt += record.price;
       } else if (record.paymentMethod.type === "certificate") {
         totalCertificate += record.price;
@@ -967,18 +968,18 @@ export function generateDailyReportDocx(
 
     employeeRecords.forEach((record) => {
       const share = record.price / record.employeeIds.length;
-      if (record.paymentMethod.type === "cash") {
+      if (record.paymentMethod.type === "cash" || (record.paymentMethod.type === "debt" && record.paymentMethod.isClosed && record.paymentMethod.actualMethod === "cash")) {
         empCash += share;
-      } else if (record.paymentMethod.type === "card") {
+      } else if (record.paymentMethod.type === "card" || (record.paymentMethod.type === "debt" && record.paymentMethod.isClosed && record.paymentMethod.actualMethod === "card")) {
         empCard += share;
-      } else if (record.paymentMethod.type === "organization") {
+      } else if (record.paymentMethod.type === "organization" || (record.paymentMethod.type === "debt" && record.paymentMethod.isClosed && record.paymentMethod.actualMethod === "organization")) {
         if (record.paymentMethod.organizationId && organizationsInTotal.includes(record.paymentMethod.organizationId)) {
           const orgId = record.paymentMethod.organizationId;
           empSeparateOrgs[orgId] = (empSeparateOrgs[orgId] || 0) + share;
         } else {
           empOrganizations += share;
         }
-      } else if (record.paymentMethod.type === "debt") {
+      } else if (record.paymentMethod.type === "debt" && !record.paymentMethod.isClosed) {
         empDebt += share;
       } else if (record.paymentMethod.type === "certificate") {
         empCertificate += share;
