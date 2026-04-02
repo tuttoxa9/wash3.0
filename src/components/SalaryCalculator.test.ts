@@ -129,7 +129,7 @@ describe("SalaryCalculator", () => {
         carInfo: "A123BC",
         service: "Wash",
         serviceType: "wash",
-        price: 40000, // Total revenue 40000
+        price: 40060, // Total revenue 40060
         paymentMethod: { type: "cash" },
         employeeIds: ["w1"],
       },
@@ -145,11 +145,12 @@ describe("SalaryCalculator", () => {
     const a1Result = results.find((r) => r.employeeId === "a1");
 
     // Admin 1 (a1) has no personal wash revenue.
-    // Total revenue = 40000.
-    // Base cash bonus = 40000 * 5% = 2000.
+    // Total revenue = 40060.
+    // Base cash bonus = 40060 * 5% = 2003.
+    // With rounding to 5: floor(2003 / 5) * 5 = 2000
     // 2000 > 1500, so salary should be 2000.
     expect(a1Result?.calculatedSalary).toBe(2000);
-    expect(a1Result?.breakdown.adminCashBonus).toBe(2000);
+    expect(a1Result?.breakdown.adminCashBonus).toBe(2003);
   });
 
   it("should split admin cash bonus between multiple admins", () => {
@@ -251,7 +252,7 @@ describe("SalaryCalculator", () => {
     expect(w1Result?.calculatedSalary).toBe(5000);
   });
 
-  it("should respect minimum guarantee override", () => {
+  it("should respect minimum guarantee override and floor rounding", () => {
     const records: CarWashRecord[] = [
       {
         id: "1",
@@ -260,7 +261,7 @@ describe("SalaryCalculator", () => {
         carInfo: "A123BC",
         service: "Wash",
         serviceType: "wash",
-        price: 1000,
+        price: 1020, // 1020 * 40% = 408
         paymentMethod: { type: "cash" },
         employeeIds: ["w1"],
       },
@@ -279,8 +280,8 @@ describe("SalaryCalculator", () => {
     const results = calculator.calculateSalaries();
     const w1Result = results.find((r) => r.employeeId === "w1");
 
-    // 1000 * 40% = 400. Minimum is disabled, so should be 400.
-    expect(w1Result?.calculatedSalary).toBe(400);
+    // 1020 * 40% = 408. Floor to 5 = 405. Minimum is disabled, so should be 405.
+    expect(w1Result?.calculatedSalary).toBe(405);
     expect(w1Result?.breakdown.minimumGuaranteed).toBe(0);
   });
 
