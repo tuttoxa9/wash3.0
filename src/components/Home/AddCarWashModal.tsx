@@ -169,6 +169,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
         paymentMethod = {
           type: "debt",
           comment: paymentMethod.comment,
+          isSalaryPaidForDebt: false, // Зарплата за новые долги не начисляется в день создания
         };
       }
 

@@ -28,6 +28,10 @@ export interface PaymentMethod {
   organizationId?: string; // ID организации (если type === 'organization')
   organizationName?: string; // Имя организации (для удобства отображения)
   comment?: string; // Комментарий (например, кто должен денег)
+  isClosed?: boolean; // Долг закрыт? (для type === 'debt')
+  closedAt?: string; // Дата закрытия долга (ISO string)
+  actualMethod?: "cash" | "card" | "organization"; // Фактический способ оплаты после закрытия долга
+  isSalaryPaidForDebt?: boolean; // Флаг: начислена ли зарплата за этот долг в день его создания (true для старых долгов)
 }
 
 // Тип для записи о помывке автомобиля
@@ -83,6 +87,14 @@ export interface DailyReport {
     createdAt: string; // Время создания
     method?: "cash" | "card"; // Тип оплаты (наличные или карта). По умолчанию "cash" для старых записей
   }[]; // Изменения суммы наличных/безнала (изъятия/внесения)
+  repaidDebts?: {
+    originalRecordId: string; // ID оригинальной записи (машины)
+    originalDate: string; // Когда был создан долг
+    carInfo: string; // Информация об авто
+    service: string; // Название услуги
+    price: number; // Сумма долга
+    employeePayouts: Record<string, number>; // employeeId -> сколько денег ему причитается
+  }[]; // Закрытые в эту смену долги (для выплаты зарплат)
 }
 
 // Тип для проданного сертификата

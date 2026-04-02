@@ -33,6 +33,7 @@ export class SalaryCalculator {
   private employeeRoles: Record<string, EmployeeRole>;
   private employees: Array<{ id: string; name: string }>;
   private minimumOverride: MinimumOverrideMap;
+  private repaidDebts: Array<{ employeePayouts: Record<string, number> }>;
 
   constructor(
     settings: MinimumPaymentSettings,
@@ -40,12 +41,14 @@ export class SalaryCalculator {
     employeeRoles: Record<string, EmployeeRole>,
     employees: Array<{ id: string; name: string }>,
     minimumOverride: MinimumOverrideMap = {},
+    repaidDebts: Array<{ employeePayouts: Record<string, number> }> = []
   ) {
     this.settings = settings;
     this.records = records;
     this.employeeRoles = employeeRoles;
     this.employees = employees;
     this.minimumOverride = minimumOverride;
+    this.repaidDebts = repaidDebts;
   }
 
   // Основной метод для расчёта зарплат всех сотрудников
@@ -100,8 +103,9 @@ export class SalaryCalculator {
   ): SalaryCalculationResult {
     const personalRevenue = this.calculatePersonalRevenue(employeeId);
 
+    let result: SalaryCalculationResult;
     if (role === "admin") {
-      return this.calculateAdminSalary(
+      result = this.calculateAdminSalary(
         employeeId,
         employeeName,
         totalRevenue,
@@ -109,12 +113,27 @@ export class SalaryCalculator {
         adminCount,
       );
     } else {
-      return this.calculateWasherSalary(
+      result = this.calculateWasherSalary(
         employeeId,
         employeeName,
         personalRevenue,
       );
     }
+
+    // Добавляем выплаты по закрытым долгам
+    let debtPayouts = 0;
+    this.repaidDebts.forEach((debt) => {
+      if (debt.employeePayouts[employeeId]) {
+        debtPayouts += debt.employeePayouts[employeeId];
+      }
+    });
+
+    if (debtPayouts > 0) {
+      result.calculatedSalary += debtPayouts;
+      result.breakdown.finalAmount += debtPayouts;
+    }
+
+    return result;
   }
 
   // Расчёт зарплаты админа
@@ -228,6 +247,9 @@ export class SalaryCalculator {
     let personalRevenue = 0;
 
     this.records.forEach((record) => {
+      if (record.paymentMethod.type === "debt" && record.paymentMethod.isSalaryPaidForDebt === false) {
+        return; // Игнорируем новые долги, по которым зарплата не должна начисляться в день создания
+      }
       if (record.employeeIds.includes(employeeId)) {
         // Доля сотрудника от стоимости машины
         const employeeShare = record.price / record.employeeIds.length;
@@ -246,6 +268,9 @@ export class SalaryCalculator {
     let personalRevenue = 0;
 
     this.records.forEach((record) => {
+      if (record.paymentMethod.type === "debt" && record.paymentMethod.isSalaryPaidForDebt === false) {
+        return; // Игнорируем новые долги, по которым зарплата не должна начисляться в день создания
+      }
       // Если тип услуги не указан, считаем мойкой для обратной совместимости
       const recordServiceType = record.serviceType || "wash";
 
@@ -264,7 +289,12 @@ export class SalaryCalculator {
 
   // Расчёт общей выручки
   private calculateTotalRevenue(): number {
-    return this.records.reduce((total, record) => total + record.price, 0);
+    return this.records.reduce((total, record) => {
+      if (record.paymentMethod.type === "debt" && record.paymentMethod.isSalaryPaidForDebt === false) {
+        return total; // Игнорируем новые долги
+      }
+      return total + record.price;
+    }, 0);
   }
 
   // Подсчёт количества админов
@@ -325,6 +355,7 @@ export function createSalaryCalculator(
   employeeRoles: Record<string, EmployeeRole>,
   employees: Array<{ id: string; name: string }>,
   minimumOverride: MinimumOverrideMap = {},
+  repaidDebts: Array<{ employeePayouts: Record<string, number> }> = []
 ): SalaryCalculator {
   return new SalaryCalculator(
     settings,
@@ -332,5 +363,6 @@ export function createSalaryCalculator(
     employeeRoles,
     employees,
     minimumOverride,
+    repaidDebts
   );
 }
