@@ -346,7 +346,7 @@ const HomePage: React.FC = () => {
 
       reports.forEach((report) => {
         report.records.forEach((record) => {
-          if (record.paymentMethod.type === "debt") {
+          if (record.paymentMethod.type === "debt" && !record.paymentMethod.isClosed) {
             debts.push({
               reportId: report.id,
               record,
@@ -425,12 +425,22 @@ const HomePage: React.FC = () => {
       let employeePayouts: Record<string, number> = {};
 
       if (recordToUpdate && recordToUpdate.paymentMethod.isSalaryPaidForDebt === false) {
+
+        // Восстанавливаем историческую карту флагов минималки (min_<id>)
+        const localEmployeeRoles = report.dailyEmployeeRoles || {};
+        const minimumOverride = report.employeeIds.reduce<Record<string, boolean>>((acc, empId) => {
+          const val = (localEmployeeRoles as any)?.[`min_${empId}`];
+          acc[empId] = val !== false; // по умолчанию учитываем минималку
+          return acc;
+        }, {});
+
         // Симулируем ЗП старого дня БЕЗ этого долга (он и так исключен калькулятором, т.к isSalaryPaidForDebt === false)
         const calcWithoutDebt = createSalaryCalculator(
           state.minimumPaymentSettings,
           report.records,
-          report.dailyEmployeeRoles || {},
-          state.employees
+          localEmployeeRoles,
+          state.employees,
+          minimumOverride
         );
         const salariesWithoutDebt = calcWithoutDebt.calculateSalaries();
 
@@ -439,8 +449,9 @@ const HomePage: React.FC = () => {
         const calcWithDebt = createSalaryCalculator(
           state.minimumPaymentSettings,
           simRecords,
-          report.dailyEmployeeRoles || {},
-          state.employees
+          localEmployeeRoles,
+          state.employees,
+          minimumOverride
         );
         const salariesWithDebt = calcWithDebt.calculateSalaries();
 

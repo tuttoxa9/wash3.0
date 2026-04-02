@@ -1351,7 +1351,7 @@ const DebtsManagement: React.FC = () => {
 
       reports.forEach((report) => {
         report.records.forEach((record) => {
-          if (record.paymentMethod.type === "debt") {
+          if (record.paymentMethod.type === "debt" && !record.paymentMethod.isClosed) {
             debts.push({
               reportId: report.id,
               record,
