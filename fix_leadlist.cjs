@@ -1,5 +1,5 @@
 const fs = require('fs');
-const file = '/tmp/crmbelautocenter2_reference/src/components/leads/LeadDetails.tsx';
+const file = '/tmp/crmbelautocenter2_reference/src/components/leads/LeadList.tsx';
 let content = fs.readFileSync(file, 'utf8');
 
 content = content.replace(/bg-white/g, "bg-card");
@@ -7,12 +7,8 @@ content = content.replace(/text-zinc-800/g, "text-foreground");
 content = content.replace(/text-zinc-900/g, "text-foreground");
 content = content.replace(/text-zinc-500/g, "text-muted-foreground");
 content = content.replace(/text-zinc-400/g, "text-muted-foreground/70");
-content = content.replace(/text-zinc-600/g, "text-muted-foreground");
 content = content.replace(/bg-zinc-50/g, "bg-muted/10");
 content = content.replace(/bg-zinc-100/g, "bg-muted/30");
-content = content.replace(/bg-zinc-200\/50/g, "bg-muted/50");
 content = content.replace(/border-zinc-200/g, "border-border/50");
-content = content.replace(/border-zinc-100/g, "border-border/20");
-content = content.replace(/ring-zinc-100/g, "ring-border/20");
 
 fs.writeFileSync(file, content);
