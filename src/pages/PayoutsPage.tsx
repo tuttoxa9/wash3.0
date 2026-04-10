@@ -2,7 +2,8 @@ import React, { useState, useMemo } from "react";
 import { useAppContext } from "@/lib/context/AppContext";
 import { format, isToday } from "date-fns";
 import { Search, Wallet, WalletCards, ArrowUpRight, ArrowDownLeft, Loader2, Info, X, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
-import { parseISO, addDays, subDays } from "date-fns";
+import { parseISO, addDays, subDays, startOfMonth, endOfMonth } from "date-fns";
+import { determineEmployeeRole } from "@/lib/employee-utils";
 import { toast } from "sonner";
 import { dailyReportService, settingsService } from "@/lib/services/supabaseService";
 import { createSalaryCalculator } from "@/components/SalaryCalculator";
@@ -414,6 +415,57 @@ export default function PayoutsPage() {
   }, [currentReport, state.minimumPaymentSettings, state.employees]);
 
 
+  const monthBalances = useMemo(() => {
+    const balances: Record<string, number> = {};
+    const dateObj = parseISO(selectedDate);
+    const start = format(startOfMonth(dateObj), "yyyy-MM-dd");
+    const end = format(endOfMonth(dateObj), "yyyy-MM-dd");
+
+    // We only process if we have the reports, they are preloaded usually but to be safe
+    const monthReports = Object.values(state.dailyReports).filter(r => r.date >= start && r.date <= end);
+
+    state.employees.forEach(emp => {
+      let earned = 0;
+      let paid = 0;
+
+      monthReports.forEach(report => {
+        // Earnings
+        if (report.records && report.dailyEmployeeRoles) {
+          const minimumOverride = report.employeeIds.reduce<Record<string, boolean>>((acc, id) => {
+            const key = `min_${id}` as any;
+            const val = (report.dailyEmployeeRoles as any)[key];
+            acc[id] = val !== false;
+            return acc;
+          }, {});
+
+          const salaryCalculator = createSalaryCalculator(
+            state.minimumPaymentSettings,
+            report.records,
+            report.dailyEmployeeRoles,
+            state.employees,
+            minimumOverride
+          );
+
+          const results = salaryCalculator.calculateSalaries();
+          const empResult = results.find(r => r.employeeId === emp.id);
+          if (empResult) {
+            const manualAmount = report.manualSalaries?.[emp.id];
+            earned += manualAmount !== undefined ? manualAmount : empResult.calculatedSalary;
+          }
+        }
+
+        // Payouts
+        if (report.cashState?.salaryPayouts?.[emp.id]) {
+          paid += Number(report.cashState.salaryPayouts[emp.id]);
+        }
+      });
+
+      balances[emp.id] = earned - paid;
+    });
+
+    return balances;
+  }, [state.dailyReports, selectedDate, state.minimumPaymentSettings, state.employees]);
+
   const filteredEmployees = useMemo(() => {
     let result = state.employees;
 
@@ -497,6 +549,7 @@ export default function PayoutsPage() {
                 const earnedToday = todayEarnings[employee.id] || 0;
                 const paidFromCashToday = currentReport?.cashState?.salaryPayouts?.[employee.id] || 0;
                 const isWorkingToday = currentReport?.employeeIds.includes(employee.id);
+                const monthBalance = monthBalances[employee.id] || 0;
 
                 return (
                   <div
@@ -524,9 +577,16 @@ export default function PayoutsPage() {
                     </div>
 
                     <div className="mt-auto space-y-3">
+                      <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-muted/20 border border-border/50">
+                        <span className="text-muted-foreground">Баланс за месяц:</span>
+                        <span className={`font-bold ${monthBalance > 0 ? "text-green-600" : monthBalance < 0 ? "text-red-500" : "text-foreground"}`}>
+                          {monthBalance > 0 ? "+" : ""}{monthBalance.toFixed(2)} BYN
+                        </span>
+                      </div>
+
                       {earnedToday > 0 && (
                         <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-muted/40 border border-border/50">
-                          <span className="text-muted-foreground">Заработано:</span>
+                          <span className="text-muted-foreground">Заработано сегодня:</span>
                           <span className="font-bold text-foreground">{earnedToday.toFixed(2)} BYN</span>
                         </div>
                       )}

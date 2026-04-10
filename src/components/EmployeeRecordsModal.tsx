@@ -240,8 +240,14 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
 
     // Total Earnings is the sum of all their actual daily salaries over this period
     let totalEarnings = 0;
+    let totalPayouts = 0;
     Object.keys(groupedRecords).forEach((dateStr) => {
       totalEarnings += calculateDaySalary(dateStr);
+
+      const currentReport = state.dailyReports[dateStr];
+      if (currentReport?.cashState?.salaryPayouts?.[employee.id]) {
+        totalPayouts += Number(currentReport.cashState.salaryPayouts[employee.id]);
+      }
     });
 
     // Статистика по способам оплаты
@@ -390,6 +396,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
       totalRecords,
       totalRevenue,
       totalEarnings,
+      totalPayouts,
       averageRevenue,
       averageEarnings,
       paymentStats,
