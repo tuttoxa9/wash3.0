@@ -37,4 +37,5 @@ export interface DailyBreakdownModalProps {
   selectedDateRecords: CarWashRecord[];
   showAnalyticsButton?: boolean;
   onAnalyticsClick?: () => void;
+  onPayoutHistoryClick?: () => void;
 }
