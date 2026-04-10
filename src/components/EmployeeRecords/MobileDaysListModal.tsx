@@ -2,7 +2,7 @@ import type { CarWashRecord, Employee } from "@/lib/types";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, X } from "lucide-react";
+import { BarChart3, X, Wallet } from "lucide-react";
 import type React from "react";
 
 interface MobileDaysListModalProps {
@@ -18,6 +18,7 @@ interface MobileDaysListModalProps {
   ) => number;
   onDayClick: (date: string, dayRecords: CarWashRecord[]) => void;
   onAnalyticsClick: () => void;
+  onPayoutHistoryClick?: () => void;
 }
 
 const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
@@ -30,6 +31,7 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
   calculateEmployeeEarnings,
   onDayClick,
   onAnalyticsClick,
+  onPayoutHistoryClick,
 }) => {
   if (!isOpen) return null;
 
@@ -63,6 +65,17 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
                 <p className="text-sm text-muted-foreground">{periodLabel}</p>
               </div>
               <div className="flex items-center gap-2">
+                {onPayoutHistoryClick && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onPayoutHistoryClick}
+                    className="px-2 py-1.5 rounded-md font-medium text-sm transition-colors bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center"
+                    title="История выплат"
+                  >
+                    <Wallet className="w-4 h-4" />
+                  </motion.button>
+                )}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -70,7 +83,7 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
                   className="px-3 py-1.5 rounded-md font-medium text-sm transition-colors bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/30"
                 >
                   <BarChart3 className="w-4 h-4 mr-1 inline" />
-                  Аналитика
+                  <span className="hidden sm:inline">Аналитика</span>
                 </motion.button>
                 <button
                   onClick={onClose}

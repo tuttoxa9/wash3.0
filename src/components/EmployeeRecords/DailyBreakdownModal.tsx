@@ -2,7 +2,7 @@ import { useAppContext } from "@/lib/context/AppContext";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, Calendar, X } from "lucide-react";
+import { BarChart3, Calendar, X, Wallet } from "lucide-react";
 import type React from "react";
 import type { DailyBreakdownModalProps } from "./types";
 import { getPaymentMethodColor, getPaymentMethodLabel } from "./utils";
@@ -21,6 +21,7 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
   selectedDateRecords,
   showAnalyticsButton = false,
   onAnalyticsClick,
+  onPayoutHistoryClick,
 }) => {
   const { state } = useAppContext();
 
@@ -124,6 +125,17 @@ const DailyBreakdownModal: React.FC<DailyBreakdownModalProps> = ({
                 )}
               </div>
               <div className="flex items-center gap-2">
+                {onPayoutHistoryClick && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onPayoutHistoryClick}
+                    className="px-2 py-1.5 rounded-md font-medium text-sm transition-colors bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center"
+                    title="История выплат"
+                  >
+                    <Wallet className="w-4 h-4" />
+                  </motion.button>
+                )}
                 {showAnalyticsButton && onAnalyticsClick && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}

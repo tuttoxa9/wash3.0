@@ -1,0 +1,168 @@
+import { useAppContext } from "@/lib/context/AppContext";
+import { format, parseISO } from "date-fns";
+import { ru } from "date-fns/locale";
+import { AnimatePresence, motion } from "framer-motion";
+import { X, Wallet, ShieldCheck, Info } from "lucide-react";
+import type React from "react";
+import type { Employee } from "@/lib/types";
+
+interface PayoutHistoryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  employee: Employee;
+  payouts: Array<{ date: string; amount: number; source: "cash" | "safe" }>;
+  periodLabel: string;
+}
+
+const PayoutHistoryModal: React.FC<PayoutHistoryModalProps> = ({
+  isOpen,
+  onClose,
+  employee,
+  payouts,
+  periodLabel,
+}) => {
+  const { state } = useAppContext();
+
+  if (!isOpen) return null;
+
+  const totalPayouts = payouts.reduce((sum, p) => sum + p.amount, 0);
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 z-[70]"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className={`w-full max-w-lg max-h-[85vh] rounded-xl shadow-xl overflow-hidden flex flex-col ${
+            state.theme === "dark"
+              ? "bg-slate-900 border border-slate-700"
+              : state.theme === "black"
+                ? "bg-black border border-gray-800"
+                : "bg-white border border-gray-200"
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div
+            className={`p-4 border-b flex items-center justify-between ${
+              state.theme === "dark"
+                ? "border-slate-700"
+                : state.theme === "black"
+                  ? "border-gray-800"
+                  : "border-gray-200"
+            }`}
+          >
+            <div>
+              <h2
+                className={`text-lg font-bold flex items-center gap-2 ${
+                  state.theme === "dark"
+                    ? "text-white"
+                    : state.theme === "black"
+                      ? "text-gray-100"
+                      : "text-gray-900"
+                }`}
+              >
+                <Wallet className="w-5 h-5 text-primary" />
+                История выплат
+              </h2>
+              <p
+                className={`text-sm mt-0.5 ${
+                  state.theme === "dark"
+                    ? "text-gray-400"
+                    : state.theme === "black"
+                      ? "text-gray-500"
+                      : "text-gray-500"
+                }`}
+              >
+                {employee.name} • {periodLabel}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className={`p-2 rounded-full transition-colors ${
+                state.theme === "dark"
+                  ? "hover:bg-slate-800 text-gray-400"
+                  : state.theme === "black"
+                    ? "hover:bg-gray-800 text-gray-500"
+                    : "hover:bg-gray-100 text-gray-500"
+              }`}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="overflow-y-auto p-4 flex-1">
+            {payouts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <Wallet className="w-12 h-12 text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground font-medium">Нет выплат за этот период</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {payouts.map((payout, index) => (
+                  <div
+                    key={`${payout.date}-${index}`}
+                    className={`p-3 rounded-lg flex items-center justify-between border ${
+                      state.theme === "dark"
+                        ? "bg-slate-800/50 border-slate-700"
+                        : state.theme === "black"
+                          ? "bg-gray-900/50 border-gray-800"
+                          : "bg-muted/30 border-border/50"
+                    }`}
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium text-foreground">
+                        {format(parseISO(payout.date), "dd MMMM yyyy", { locale: ru })}
+                      </span>
+                      <span className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                        {payout.source === "cash" ? (
+                          <>
+                            <Wallet className="w-3 h-3" /> Выдано из кассы
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheck className="w-3 h-3" /> Выдано из сейфа
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-foreground">
+                        {payout.amount.toFixed(2)} BYN
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer summary */}
+          <div
+            className={`p-4 border-t flex justify-between items-center ${
+              state.theme === "dark"
+                ? "border-slate-700 bg-slate-800/50"
+                : state.theme === "black"
+                  ? "border-gray-800 bg-gray-900/50"
+                  : "border-gray-200 bg-muted/20"
+            }`}
+          >
+            <span className="font-medium text-muted-foreground">Всего выплачено:</span>
+            <span className="font-bold text-lg text-foreground">{totalPayouts.toFixed(2)} BYN</span>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+export default PayoutHistoryModal;

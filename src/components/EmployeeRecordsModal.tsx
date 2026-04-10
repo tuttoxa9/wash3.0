@@ -11,6 +11,7 @@ import MobileDayDetailsModal from "./EmployeeRecords/MobileDayDetailsModal";
 // Import sub-components
 import MobileDaysListModal from "./EmployeeRecords/MobileDaysListModal";
 import PaymentMethodDetailModal from "./EmployeeRecords/PaymentMethodDetailModal";
+import PayoutHistoryModal from "./EmployeeRecords/PayoutHistoryModal";
 import { createSalaryCalculator } from "./SalaryCalculator";
 
 interface EmployeeRecordsModalProps {
@@ -47,6 +48,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileDaysList, setShowMobileDaysList] = useState(false);
   const [showMobileDayDetails, setShowMobileDayDetails] = useState(false);
+  const [showPayoutHistory, setShowPayoutHistory] = useState(false);
 
   // Проверка размера экрана
   useEffect(() => {
@@ -229,6 +231,52 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     [groupedRecords],
   );
 
+  const payoutHistory = useMemo(() => {
+    const history: Array<{ date: string; amount: number; source: "cash" | "safe" }> = [];
+
+    // Из кассы
+    Object.keys(groupedRecords).forEach((dateStr) => {
+      const currentReport = state.dailyReports[dateStr];
+      if (currentReport?.cashState?.salaryPayouts?.[employee.id]) {
+        history.push({
+          date: dateStr,
+          amount: Number(currentReport.cashState.salaryPayouts[employee.id]),
+          source: "cash",
+        });
+      }
+    });
+
+    // Из сейфа
+    // Фильтруем транзакции по диапазону дат groupedRecords, если groupedRecords не пустой
+    const dates = Object.keys(groupedRecords);
+    if (dates.length > 0) {
+      const minDate = dates.reduce((a, b) => a < b ? a : b);
+      const maxDate = dates.reduce((a, b) => a > b ? a : b);
+
+      const safeTxs = state.safeTransactions.filter(tx => {
+        // Транзакция выдачи денег
+        if (tx.type !== "out") return false;
+        // Проверяем, относится ли она к этому сотруднику
+        if (!tx.comment.includes(employee.name)) return false;
+
+        // Проверяем диапазон дат. Берем первые 10 символов (YYYY-MM-DD)
+        const txDateStr = tx.date.substring(0, 10);
+        return txDateStr >= minDate && txDateStr <= maxDate;
+      });
+
+      safeTxs.forEach(tx => {
+        history.push({
+          date: tx.date.substring(0, 10),
+          amount: tx.amount,
+          source: "safe",
+        });
+      });
+    }
+
+    // Сортируем по убыванию даты
+    return history.sort((a, b) => b.date.localeCompare(a.date));
+  }, [groupedRecords, state.dailyReports, state.safeTransactions, employee]);
+
   // Детальная статистика
   const statistics = useMemo(() => {
     const totalRecords = records.length;
@@ -243,12 +291,9 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
     let totalPayouts = 0;
     Object.keys(groupedRecords).forEach((dateStr) => {
       totalEarnings += calculateDaySalary(dateStr);
-
-      const currentReport = state.dailyReports[dateStr];
-      if (currentReport?.cashState?.salaryPayouts?.[employee.id]) {
-        totalPayouts += Number(currentReport.cashState.salaryPayouts[employee.id]);
-      }
     });
+
+    totalPayouts = payoutHistory.reduce((sum, item) => sum + item.amount, 0);
 
     // Статистика по способам оплаты
     const paymentStats = records.reduce(
@@ -434,6 +479,10 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
               setShowMobileDaysList(false);
               setShowAnalytics(true);
             }}
+            onPayoutHistoryClick={() => {
+              setShowMobileDaysList(false);
+              setShowPayoutHistory(true);
+            }}
           />
 
           {/* Мобильное модальное окно с деталями дня */}
@@ -463,6 +512,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
           selectedDateRecords={selectedDateRecords}
           showAnalyticsButton={true}
           onAnalyticsClick={() => setShowAnalytics(true)}
+          onPayoutHistoryClick={() => setShowPayoutHistory(true)}
         />
       )}
 
@@ -489,6 +539,21 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
         paymentMethod={selectedPaymentMethod}
         records={paymentMethodRecords}
         employee={employee}
+        periodLabel={periodLabel}
+      />
+
+      <PayoutHistoryModal
+        isOpen={showPayoutHistory}
+        onClose={() => {
+          setShowPayoutHistory(false);
+          if (isMobile) {
+            setShowMobileDaysList(true);
+          } else {
+             // on desktop we usually just close the overlay, it will go back to breakdown
+          }
+        }}
+        employee={employee}
+        payouts={payoutHistory}
         periodLabel={periodLabel}
       />
     </>
