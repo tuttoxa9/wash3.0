@@ -93,9 +93,79 @@ const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
           {/* Компактное содержимое */}
           <div className="overflow-y-auto max-h-[calc(75vh-80px)] p-3">
             {/* Основные показатели - компактные */}
-            <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
               <div
                 className={`p-2 rounded-md text-center ${
+                  state.theme === "dark"
+                    ? "bg-slate-800"
+                    : state.theme === "black"
+                      ? "bg-gray-900"
+                      : "bg-gray-50"
+                }`}
+              >
+                <div
+                  className={`text-lg font-bold ${
+                    state.theme === "dark"
+                      ? "text-white"
+                      : state.theme === "black"
+                        ? "text-gray-100"
+                        : "text-gray-900"
+                  }`}
+                >
+                  {statistics.totalPayouts.toFixed(2)}
+                </div>
+                <div
+                  className={`text-xs ${
+                    state.theme === "dark"
+                      ? "text-gray-400"
+                      : state.theme === "black"
+                        ? "text-gray-500"
+                        : "text-gray-600"
+                  }`}
+                >
+                  Выплачено
+                </div>
+              </div>
+
+              <div
+                className={`p-2 rounded-md text-center ${
+                  state.theme === "dark"
+                    ? "bg-slate-800"
+                    : state.theme === "black"
+                      ? "bg-gray-900"
+                      : "bg-gray-50"
+                }`}
+              >
+                <div
+                  className={`text-lg font-bold ${
+                    (statistics.totalEarnings - statistics.totalPayouts) > 0
+                      ? "text-green-500"
+                      : (statistics.totalEarnings - statistics.totalPayouts) < 0
+                        ? "text-red-500"
+                        : state.theme === "dark"
+                          ? "text-white"
+                          : state.theme === "black"
+                            ? "text-gray-100"
+                            : "text-gray-900"
+                  }`}
+                >
+                  {((statistics.totalEarnings - statistics.totalPayouts) > 0 ? "+" : "")}{(statistics.totalEarnings - statistics.totalPayouts).toFixed(2)}
+                </div>
+                <div
+                  className={`text-xs ${
+                    state.theme === "dark"
+                      ? "text-gray-400"
+                      : state.theme === "black"
+                        ? "text-gray-500"
+                        : "text-gray-600"
+                  }`}
+                >
+                  Баланс
+                </div>
+              </div>
+
+              <div
+                className={`p-2 rounded-md text-center hidden sm:block ${
                   state.theme === "dark"
                     ? "bg-slate-800"
                     : state.theme === "black"

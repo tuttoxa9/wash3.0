@@ -50,6 +50,8 @@ interface EarningsReport {
   employeeName: string;
   totalServiceValue: number;
   calculatedEarnings: number;
+  totalPayouts: number;
+  balance: number;
   totalCash: number;
   totalCard: number;
   totalOrganizations: number;
@@ -402,6 +404,8 @@ const ReportsPage: React.FC = () => {
           employeeName: employee.name,
           totalServiceValue: totalVolume,
           calculatedEarnings: 0, // will calculate below
+          totalPayouts: 0,
+          balance: 0,
           totalCash: employee.totalCash,
           totalCard: employee.totalCard,
           totalOrganizations: employee.totalOrganizations,
@@ -420,6 +424,7 @@ const ReportsPage: React.FC = () => {
         });
       } else if (methodToUse === "minimumWithPercentage") {
         const totalEarningsByEmployee: Record<string, number> = {};
+        const totalPayoutsByEmployee: Record<string, number> = {};
         const isEmployeeManualMap: Record<string, boolean> = {};
         const aggregatedMinimumFlags: Record<string, boolean> = {};
 
@@ -502,11 +507,20 @@ const ReportsPage: React.FC = () => {
             totalEarningsByEmployee[res.employeeId] =
               (totalEarningsByEmployee[res.employeeId] || 0) + salary;
           });
+
+          // Считаем выплаты из кассы за этот день для всех сотрудников
+          if (dayReport?.cashState?.salaryPayouts) {
+            Object.entries(dayReport.cashState.salaryPayouts).forEach(([empId, amount]) => {
+              totalPayoutsByEmployee[empId] = (totalPayoutsByEmployee[empId] || 0) + Number(amount);
+            });
+          }
         });
 
-        // Update results with summed calculated earnings
+        // Update results with summed calculated earnings and payouts
         results.forEach((r) => {
           r.calculatedEarnings = totalEarningsByEmployee[r.employeeId] || 0;
+          r.totalPayouts = totalPayoutsByEmployee[r.employeeId] || 0;
+          r.balance = r.calculatedEarnings - r.totalPayouts;
           r.isManual = isEmployeeManualMap[r.employeeId];
         });
 
@@ -1009,6 +1023,12 @@ const ReportsPage: React.FC = () => {
                     <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
                       ЗП
                     </th>
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
+                      Выплачено
+                    </th>
+                    <th className="font-medium text-right text-xs md:text-sm px-2 md:px-4 py-2">
+                      Баланс
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -1022,6 +1042,8 @@ const ReportsPage: React.FC = () => {
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-12 ml-auto" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
+                          <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
                           <td className="px-2 md:px-4 py-3"><Skeleton className="h-4 w-16 ml-auto" /></td>
                         </tr>
@@ -1137,12 +1159,20 @@ const ReportsPage: React.FC = () => {
                             )}
                           </div>
                         </td>
+                        <td className="px-2 md:px-4 py-2 text-right text-xs md:text-sm">
+                          {report.totalPayouts.toFixed(2)}
+                        </td>
+                        <td className={`px-2 md:px-4 py-2 text-right font-medium text-xs md:text-sm ${
+                          report.balance > 0 ? "text-green-600" : report.balance < 0 ? "text-red-500" : "text-muted-foreground"
+                        }`}>
+                          {report.balance > 0 ? "+" : ""}{report.balance.toFixed(2)}
+                        </td>
                       </tr>
                     );
                   })}
                   {!loading && earningsReport.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
+                      <td colSpan={10} className="px-2 md:px-4 py-4 md:py-6 text-center text-muted-foreground text-sm">
                         Нет данных для выбранного периода и фильтра
                       </td>
                     </tr>
@@ -1171,6 +1201,34 @@ const ReportsPage: React.FC = () => {
                       );
                       return totalSalarySum.toFixed(2);
                     })()} BYN
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-2 text-muted-foreground text-sm">
+                  <div>Итого выплачено:</div>
+                  <div>
+                    {(() => {
+                      const totalPayoutsSum = earningsReport.reduce(
+                        (sum, report) => sum + report.totalPayouts,
+                        0,
+                      );
+                      return totalPayoutsSum.toFixed(2);
+                    })()} BYN
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-2 pt-2 border-t text-sm">
+                  <div className="font-medium">Общий баланс:</div>
+                  <div className="font-bold">
+                    {(() => {
+                      const totalBalance = earningsReport.reduce(
+                        (sum, report) => sum + report.balance,
+                        0,
+                      );
+                      return (
+                        <span className={totalBalance > 0 ? "text-green-600" : totalBalance < 0 ? "text-red-500" : ""}>
+                          {totalBalance > 0 ? "+" : ""}{totalBalance.toFixed(2)} BYN
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

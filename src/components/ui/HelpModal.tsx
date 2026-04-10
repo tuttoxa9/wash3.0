@@ -193,6 +193,7 @@ const sections: HelpSection[] = [
           <p className="mb-4 text-muted-foreground">Нажмите <strong>«Рассчитать сотрудников»</strong> в виджете кассы или перейдите в раздел <strong>«Выплаты»</strong> в меню.</p>
           <div className="bg-primary/5 border border-primary/20 p-5 rounded-2xl">
             <ul className="list-disc pl-5 space-y-2 text-xs">
+              <li><strong>Баланс за месяц:</strong> На странице выплат отображается актуальный долг перед сотрудником (или переплата) с учетом заработанного и выплаченного с 1-го числа.</li>
               <li><strong>Источник «Касса»:</strong> Деньги вычитаются из фактического остатка кассы дня.</li>
               <li><strong>Источник «Сейф»:</strong> Деньги списываются из глобального сейфа, касса смены не меняется.</li>
               <li>Кнопка <strong>«Всё»</strong> позволяет выдать ровно заработанную за день сумму в один клик.</li>
