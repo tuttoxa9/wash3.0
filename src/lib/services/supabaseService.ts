@@ -9,6 +9,7 @@ import type {
   Organization,
   Service,
 } from "../types";
+import { recalculateReportTotals } from "../report-utils";
 
 // Helper to map errors
 const logSupabaseError = (message: string, error: any) => {
@@ -432,14 +433,7 @@ export const dailyReportService = {
       } as DailyReport);
 
     const records = [...current.records, record];
-    const totalCash = records.reduce(
-      (s, r) => s + (r.paymentMethod.type === "cash" ? r.price : 0),
-      0,
-    );
-    const totalCard = records.reduce(
-      (s, r) => s + (r.paymentMethod.type === "card" ? r.price : 0),
-      0,
-    );
+    const { totalCash, totalCard } = recalculateReportTotals({ records });
     const employeeIds = Array.from(
       new Set([
         ...current.employeeIds,
