@@ -287,7 +287,7 @@ function RealtimeSyncWrapper() {
 // Провайдер контекста
 export function AppProvider({ children }: { children: ReactNode }) {
   // Инициализируем начальное состояние с темой из localStorage, если есть
-  let savedTheme = localStorage.getItem("appTheme") as ThemeMode | null;
+  const savedTheme = localStorage.getItem("appTheme") as ThemeMode | null;
 
   // Восстанавливаем метод расчета зарплаты из localStorage
   const savedSalaryMethod = localStorage.getItem(

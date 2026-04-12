@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { Plus, Gift, Trash2 } from "lucide-react";
 import { useAppContext } from "@/lib/context/AppContext";
 import { certificateService, dailyReportService } from "@/lib/services/supabaseService";
