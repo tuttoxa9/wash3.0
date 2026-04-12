@@ -57,7 +57,7 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[100dvh] bg-background overflow-hidden">
+    <div vaul-drawer-wrapper="" className="flex h-[100dvh] bg-background overflow-hidden">
       {/* Боковая панель */}
       <Sidebar
         isMobileOpen={isMobileSidebarOpen}

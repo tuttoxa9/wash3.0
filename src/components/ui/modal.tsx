@@ -36,6 +36,18 @@ const Modal: React.FC<ModalProps> = ({
     }
   }, [clickPosition]);
 
+  // Блокировка скролла
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   // Закрытие модального окна по клику вне его области
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -70,7 +82,9 @@ const Modal: React.FC<ModalProps> = ({
     function handleGlobalKeyDown(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
         if (!isOpen) return;
-        const submitButton = modalRef.current?.querySelector('button[type="submit"]') as HTMLButtonElement;
+        const submitButton = modalRef.current?.querySelector(
+          'button[type="submit"]',
+        ) as HTMLButtonElement;
         if (submitButton && !submitButton.disabled) {
           submitButton.click();
         }
@@ -98,10 +112,10 @@ const Modal: React.FC<ModalProps> = ({
         >
           {/* Фоновое затемнение с постепенным блюром */}
           <motion.div
-            className="absolute inset-0 bg-black/40 dark:bg-black/60"
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           />
 
