@@ -3,13 +3,15 @@ import { useNotifications } from "@/lib/context/NotificationContext";
 import { Menu } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Toaster, toast } from "sonner";
 import Sidebar from "./Sidebar";
+import BlurFade from "@/components/ui/blur-fade";
 
 const Layout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { addNotification } = useNotifications();
+  const location = useLocation();
 
   // Перехват всех toast сообщений
   useEffect(() => {
@@ -96,9 +98,9 @@ const Layout: React.FC = () => {
           </div>
 
           {/* Содержимое страницы */}
-          <div className="w-full md:max-w-6xl md:mx-auto min-h-[calc(100vh-120px)]">
+          <BlurFade key={location.pathname} delay={0.1} yOffset={10} className="w-full md:max-w-6xl md:mx-auto min-h-[calc(100vh-120px)]">
             <Outlet />
-          </div>
+          </BlurFade>
         </div>
       </main>
 

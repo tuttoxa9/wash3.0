@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";

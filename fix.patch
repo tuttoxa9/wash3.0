@@ -1,0 +1,54 @@
+--- a/src/components/layout/Layout.tsx
++++ b/src/components/layout/Layout.tsx
+@@ -4,7 +4,7 @@
+ import type React from "react";
+ import { useEffect, useState } from "react";
+-import { Outlet } from "react-router-dom";
++import { Outlet, useLocation } from "react-router-dom";
+ import { Toaster, toast } from "sonner";
+ import Sidebar from "./Sidebar";
+ import BlurFade from "@/components/ui/blur-fade";
+
+ const Layout: React.FC = () => {
+   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+   const { addNotification } = useNotifications();
++  const location = useLocation();
+
+@@ -97,7 +97,7 @@
+
+           {/* Содержимое страницы */}
+-          <BlurFade delay={0.1} yOffset={10} className="w-full md:max-w-6xl md:mx-auto min-h-[calc(100vh-120px)]">
++          <BlurFade key={location.pathname} delay={0.1} yOffset={10} className="w-full md:max-w-6xl md:mx-auto min-h-[calc(100vh-120px)]">
+             <Outlet />
+           </BlurFade>
+--- a/src/components/ui/blur-fade.tsx
++++ b/src/components/ui/blur-fade.tsx
+@@ -1,4 +1,4 @@
+-import { AnimatePresence, Variants, motion, useInView } from "framer-motion";
++import { Variants, motion, useInView } from "framer-motion";
+ import { useRef } from "react";
+
+@@ -32,7 +32,6 @@
+   };
+   const combinedVariants = variant || defaultVariants;
+   return (
+-    <AnimatePresence>
+       <motion.div
+         ref={ref}
+         initial="hidden"
+@@ -47,7 +46,6 @@
+       >
+         {children}
+       </motion.div>
+-    </AnimatePresence>
+   );
+ }
+--- a/src/pages/HomePage.tsx
++++ b/src/pages/HomePage.tsx
+@@ -53,7 +53,6 @@
+ import CertificatesWidget from "@/components/Home/CertificatesWidget";
+ import CashStateWidget from "@/components/Home/CashStateWidget";
+ import TapCard from "@/components/ui/tap-card";
+-import BlurFade from "@/components/ui/blur-fade";
+
+ import CloseCashModal from "@/components/Home/CashState/CloseCashModal";

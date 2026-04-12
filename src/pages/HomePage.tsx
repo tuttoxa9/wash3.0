@@ -52,6 +52,7 @@ import DailyReportModal from "@/components/Home/DailyReportModal";
 import CashModificationsModal from "@/components/Home/CashModificationsModal";
 import CertificatesWidget from "@/components/Home/CertificatesWidget";
 import CashStateWidget from "@/components/Home/CashStateWidget";
+import TapCard from "@/components/ui/tap-card";
 
 import CloseCashModal from "@/components/Home/CashState/CloseCashModal";
 import PayoutEmployeesModal from "@/components/Home/CashState/PayoutEmployeesModal";
@@ -422,7 +423,7 @@ const HomePage: React.FC = () => {
       }
 
       // Вычисляем точные выплаты сотрудникам за этот долг
-      let employeePayouts: Record<string, number> = {};
+      const employeePayouts: Record<string, number> = {};
 
       if (recordToUpdate && recordToUpdate.paymentMethod.isSalaryPaidForDebt === false) {
 
@@ -1530,7 +1531,7 @@ const HomePage: React.FC = () => {
                   }
 
                   return (
-                    <div
+                    <TapCard
                       key={employee.id}
                       className={`relative group rounded-xl p-4 cursor-pointer transition-all duration-200 border bg-background hover:bg-accent/5 w-full flex flex-col gap-3 ${
                         isManualSalary
@@ -1635,7 +1636,7 @@ const HomePage: React.FC = () => {
                           {loading.dailyReport && !currentReport ? <Skeleton className="h-6 w-14 mr-1" /> : `${dailySalary.toFixed(2)} BYN`} {isManualSalary && "*"}
                         </span>
                       </div>
-                    </div>
+                    </TapCard>
                   );
                 })}
               </div>
@@ -1847,7 +1848,7 @@ const HomePage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3 mb-5 flex-1">
                   {/* Наличные */}
-                  <div
+                  <TapCard
                     className={`relative flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border bg-muted/20 border-border/50 hover:bg-accent/30 ${!shiftStarted ? "opacity-60 cursor-not-allowed" : ""}`}
                     onClick={(e) => {
                       if (!shiftStarted) {
@@ -1894,10 +1895,10 @@ const HomePage: React.FC = () => {
                         По услугам: {currentReport.totalCash.toFixed(2)} BYN
                       </span>
                     )}
-                  </div>
+                  </TapCard>
 
                   {/* Карта */}
-                  <div
+                  <TapCard
                     className={`relative flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
                       paymentFilter === "card"
                         ? "bg-primary/5 border-primary/30"
@@ -1946,10 +1947,10 @@ const HomePage: React.FC = () => {
                         По услугам: {(currentReport.records?.reduce((sum, rec) => sum + (rec.paymentMethod.type === "card" ? rec.price : 0), 0) || 0).toFixed(2)} BYN
                       </span>
                     )}
-                  </div>
+                  </TapCard>
 
                   {/* Безналичные */}
-                  <div
+                  <TapCard
                     className={`flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
                       paymentFilter === "organization"
                         ? "bg-primary/5 border-primary/30"
@@ -1995,7 +1996,7 @@ const HomePage: React.FC = () => {
                         </>
                       )}
                     </span>
-                  </div>
+                  </TapCard>
 
                   {/* Организации (разделённые) */}
                   {state.organizationsInTotal?.map((orgId) => {
@@ -2013,7 +2014,7 @@ const HomePage: React.FC = () => {
                       }, 0) || 0;
 
                     return (
-                      <div
+                      <TapCard
                         key={`total-org-${orgId}`}
                         className={`flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
                           paymentFilter === "organization"
@@ -2046,7 +2047,7 @@ const HomePage: React.FC = () => {
                             </>
                           )}
                         </span>
-                      </div>
+                      </TapCard>
                     );
                   })}
                 </div>
@@ -2064,7 +2065,7 @@ const HomePage: React.FC = () => {
                     if (totalCertificate <= 0) return null;
 
                     return (
-                      <div
+                      <TapCard
                         className={`flex flex-col justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 border col-span-2 sm:col-span-1 ${
                           paymentFilter === "certificate"
                             ? "bg-purple-500/10 border-purple-500/30"
@@ -2096,12 +2097,12 @@ const HomePage: React.FC = () => {
                             </>
                           )}
                         </span>
-                      </div>
+                      </TapCard>
                     );
                   })()}
 
                 {/* Всего */}
-                <div
+                <TapCard
                   className={`mt-auto pt-5 border-t border-border/50 flex justify-between items-center cursor-pointer transition-all duration-200 p-4 rounded-xl border bg-primary/5 hover:bg-primary/10 border-primary/20 ${
                     !shiftStarted ? "opacity-60 cursor-not-allowed" : ""
                   }`}
@@ -2137,7 +2138,7 @@ const HomePage: React.FC = () => {
                       </>
                     )}
                   </span>
-                </div>
+                </TapCard>
               </div>
 
               {/* Заработок сотрудников */}
