@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Receipt, X, Loader2, Save, Edit, Trash2, FileDown, Eye, Check } from "lucide-react";
-import Modal from "@/components/ui/modal";
+import BottomSheet from "@/components/ui/BottomSheet";
 import { useAppContext } from "@/lib/context/AppContext";
 import { carWashService, dailyReportService } from "@/lib/services/supabaseService";
 import type { CarWashRecord, DailyReport, Employee, Organization, PaymentMethod } from "@/lib/types";
@@ -12,6 +12,7 @@ import type { EmployeeRole, MinimumPaymentSettings } from "@/lib/types";
 import { recalculateReportTotals } from "@/lib/report-utils";
 
 interface DailyReportModalProps {
+  isOpen: boolean;
   onClose: () => void;
   currentReport: DailyReport | null;
   employees: Employee[];
@@ -29,6 +30,7 @@ interface DailyReportModalProps {
 }
 
 const DailyReportModal: React.FC<DailyReportModalProps> = ({
+  isOpen,
   onClose,
   currentReport,
   employees,
@@ -283,14 +285,9 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
     }) || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      {/* Оверлей */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-
-      {/* Модальное окно снизу */}
-      <div className="relative w-full max-w-7xl bg-card rounded-t-xl sm:rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[95vh] sm:max-h-[98vh] lg:h-[75vh] lg:max-h-none overflow-hidden border border-border">
-        <div className="p-3 sm:p-4 md:p-6 lg:flex lg:flex-col lg:h-full">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
+    <BottomSheet isOpen={isOpen} onClose={onClose} fullHeight disableScroll className="md:max-w-6xl w-[98vw]">
+        <div className="p-3 sm:p-4 md:p-6 flex flex-col h-full overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6 shrink-0">
             <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-card-foreground">
               <span className="hidden sm:inline">Ежедневная ведомость - </span>
               <span className="sm:hidden">Ведомость - </span>
@@ -326,7 +323,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
           </div>
 
           {/* Фильтры по методу оплаты */}
-          <div className="segmented-control mb-4">
+          <div className="segmented-control mb-4 shrink-0">
             <button
               onClick={() => onPaymentFilterChange("all")}
               className={paymentFilter === "all" ? "active" : ""}
@@ -366,7 +363,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
           </div>
 
           {/* Десктопная версия таблицы */}
-          <div className="hidden sm:block overflow-x-auto max-h-[75vh] lg:flex-1 lg:max-h-none lg:overflow-y-auto">
+          <div className="hidden sm:block overflow-x-auto overflow-y-auto flex-1 min-h-0 custom-scrollbar border border-border/40 rounded-xl mb-4 shadow-sm relative">
             <table className="w-full bg-card min-w-[800px]">
               <thead className="sticky top-0 bg-card z-10">
                 <tr className="border-b border-border bg-muted/30">
@@ -713,7 +710,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
           </div>
 
           {/* Мобильная версия таблицы - компактная */}
-          <div className="sm:hidden max-h-[70vh] overflow-y-auto p-2 space-y-2">
+          <div className="sm:hidden flex-1 overflow-y-auto p-1 space-y-2 min-h-0 mb-4 custom-scrollbar">
             {filteredRecords.length > 0 ? (
               filteredRecords.map((record, index) => {
                 const isEditing = editingRecordId === record.id;
@@ -880,7 +877,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
 
           {/* Итоги - компактный дизайн */}
           {currentReport && (
-            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border bg-muted/5 -mx-3 sm:-mx-4 md:-mx-6 px-3 sm:px-4 md:px-6 pb-2">
+            <div className="pt-3 sm:pt-4 border-t border-border shrink-0 bg-card z-10 pb-1">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                 <div
                   className={`text-center p-2 sm:p-2.5 md:p-3 rounded-md sm:rounded-lg cursor-pointer transition-colors ${
@@ -1052,8 +1049,7 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </BottomSheet>
   );
 };
 

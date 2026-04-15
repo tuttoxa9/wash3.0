@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 
 interface AddCarWashModalProps {
+  isOpen: boolean;
   onClose: () => void;
   selectedDate: string;
   prefilledData?: Appointment | null;
@@ -19,6 +20,7 @@ interface AddCarWashModalProps {
 }
 
 const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
+  isOpen,
   onClose,
   selectedDate,
   prefilledData,
@@ -279,7 +281,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
 
   return (
     <Modal
-      isOpen={true}
+      isOpen={isOpen}
       onClose={onClose}
       clickPosition={clickPosition}
       className="max-w-lg"

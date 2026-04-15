@@ -1,9 +1,9 @@
 import { useAppContext } from "@/lib/context/AppContext";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
-import { AnimatePresence, motion } from "framer-motion";
 import { X, Wallet, ShieldCheck, Info } from "lucide-react";
 import type React from "react";
+import LegacyModal from "@/components/ui/LegacyModal";
 import type { Employee } from "@/lib/types";
 
 interface PayoutHistoryModalProps {
@@ -28,28 +28,8 @@ const PayoutHistoryModal: React.FC<PayoutHistoryModalProps> = ({
   const totalPayouts = payouts.reduce((sum, p) => sum + p.amount, 0);
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 z-[70]"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className={`w-full max-w-lg max-h-[85vh] rounded-xl shadow-xl overflow-hidden flex flex-col ${
-            state.theme === "dark"
-              ? "bg-slate-900 border border-slate-700"
-              : state.theme === "black"
-                ? "bg-black border border-gray-800"
-                : "bg-white border border-gray-200"
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
+    <LegacyModal isOpen={isOpen} onClose={onClose} className="md:max-w-[400px]">
+      <div className="flex flex-col max-h-[85dvh]">
           {/* Header */}
           <div
             className={`p-4 border-b flex items-center justify-between ${
@@ -159,9 +139,8 @@ const PayoutHistoryModal: React.FC<PayoutHistoryModalProps> = ({
             <span className="font-medium text-muted-foreground">Всего выплачено:</span>
             <span className="font-bold text-lg text-foreground">{totalPayouts.toFixed(2)} BYN</span>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </LegacyModal>
   );
 };
 

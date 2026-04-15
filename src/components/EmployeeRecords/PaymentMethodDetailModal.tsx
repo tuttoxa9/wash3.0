@@ -1,8 +1,9 @@
 import { useAppContext } from "@/lib/context/AppContext";
 import { format, parseISO } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ArrowLeft, X } from "lucide-react";
 import type React from "react";
+import LegacyModal from "@/components/ui/LegacyModal";
 import type { PaymentMethodDetailModalProps } from "./types";
 import { getPaymentMethodLabel } from "./utils";
 
@@ -19,28 +20,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 z-[70]"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className={`w-full max-w-4xl max-h-[75vh] rounded-lg shadow-lg overflow-hidden ${
-            state.theme === "dark"
-              ? "bg-slate-900 border border-slate-700"
-              : state.theme === "black"
-                ? "bg-black border border-gray-800"
-                : "bg-white border border-gray-200"
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
+    <LegacyModal isOpen={isOpen} onClose={onClose} className="md:max-w-xl">
           {/* Компактный заголовок */}
           <div
             className={`p-3 border-b flex items-center justify-between ${
@@ -362,9 +342,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
               ))}
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+    </LegacyModal>
   );
 };
 

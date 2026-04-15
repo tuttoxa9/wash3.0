@@ -7,7 +7,7 @@ import { Outlet } from "react-router-dom";
 import { Toaster, toast } from "sonner";
 import Sidebar from "./Sidebar";
 
-const Layout: React.FC = () => {
+const LayoutInner: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { addNotification } = useNotifications();
 
@@ -55,65 +55,75 @@ const Layout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[100dvh] bg-background overflow-hidden">
-      {/* Боковая панель */}
-      <Sidebar
-        isMobileOpen={isMobileSidebarOpen}
-        toggleMobileSidebar={toggleMobileSidebar}
-      />
+    <div className="h-[100dvh] bg-black overflow-hidden relative">
+      {/* Scalable wrapper — масштабируется при открытии bottom sheet */}
+      <div
+        vaul-drawer-wrapper=""
+        className="flex h-full bg-background bottom-sheet-bg-layer"
+      >
+        {/* Боковая панель */}
+        <Sidebar
+          isMobileOpen={isMobileSidebarOpen}
+          toggleMobileSidebar={toggleMobileSidebar}
+        />
 
-      {/* Основной контент */}
-      <main className="flex-1 overflow-auto mobile-main-content">
-        {/* Шапка для мобильных устройств */}
-        <div className="md:hidden sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/20 mobile-header overflow-hidden">
-          <div className="flex items-center justify-between p-3 sm:p-4">
-            <div className="w-10">
+        {/* Основной контент */}
+        <main className="flex-1 overflow-auto mobile-main-content">
+          {/* Шапка для мобильных устройств */}
+          <div className="md:hidden sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/20 mobile-header overflow-hidden">
+            <div className="flex items-center justify-between p-3 sm:p-4">
+              <div className="w-10">
+                <NotificationPanel />
+              </div>
+
+              <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center group">
+                <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/30 black:bg-blue-500/50 blur-[20px] rounded-full scale-[1.3] z-[-1] pointer-events-none translate-y-1 opacity-100 dark:opacity-40 transition-opacity duration-1000 ease-in"></div>
+                <div className="bg-transparent dark:bg-transparent black:bg-zinc-950 px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-transparent dark:border-transparent black:border-zinc-800/50 transition-colors select-none pointer-events-none relative z-10">
+                  <img src="/logo.png" alt="Detail Lab" className="h-5 sm:h-6 w-auto object-contain select-none pointer-events-none" draggable="false" />
+                </div>
+              </div>
+
+              <button
+                onClick={toggleMobileSidebar}
+                className="mobile-button p-2 rounded-xl hover:bg-secondary touch-manipulation active:scale-95 transition-transform w-10 h-10 flex items-center justify-center"
+                aria-label="Открыть меню"
+              >
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Контент с отступами */}
+          <div className="p-3 sm:p-4 md:p-6">
+            {/* Шапка для десктопа */}
+            <div className="hidden md:flex justify-end mb-4">
               <NotificationPanel />
             </div>
 
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center group">
-              <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/30 black:bg-blue-500/50 blur-[20px] rounded-full scale-[1.3] z-[-1] pointer-events-none translate-y-1 opacity-100 dark:opacity-40 transition-opacity duration-1000 ease-in"></div>
-              <div className="bg-transparent dark:bg-transparent black:bg-zinc-950 px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-transparent dark:border-transparent black:border-zinc-800/50 transition-colors select-none pointer-events-none relative z-10">
-                <img src="/logo.png" alt="Detail Lab" className="h-5 sm:h-6 w-auto object-contain select-none pointer-events-none" draggable="false" />
-              </div>
+            {/* Содержимое страницы */}
+            <div className="w-full md:max-w-6xl md:mx-auto min-h-[calc(100vh-120px)]">
+              <Outlet />
             </div>
-
-            <button
-              onClick={toggleMobileSidebar}
-              className="mobile-button p-2 rounded-xl hover:bg-secondary touch-manipulation active:scale-95 transition-transform w-10 h-10 flex items-center justify-center"
-              aria-label="Открыть меню"
-            >
-              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
           </div>
-        </div>
+        </main>
 
-        {/* Контент с отступами */}
-        <div className="p-3 sm:p-4 md:p-6">
-          {/* Шапка для десктопа */}
-          <div className="hidden md:flex justify-end mb-4">
-            <NotificationPanel />
-          </div>
-
-          {/* Содержимое страницы */}
-          <div className="w-full md:max-w-6xl md:mx-auto min-h-[calc(100vh-120px)]">
-            <Outlet />
-          </div>
-        </div>
-      </main>
-
-      {/* Тостер для уведомлений - скрытые уведомления */}
-      <Toaster
-        position="top-right"
-        richColors
-        visibleToasts={0}
-        toastOptions={{
-          duration: 1,
-          style: { display: "none" },
-        }}
-      />
+        {/* Тостер для уведомлений - скрытые уведомления */}
+        <Toaster
+          position="top-right"
+          richColors
+          visibleToasts={0}
+          toastOptions={{
+            duration: 1,
+            style: { display: "none" },
+          }}
+        />
+      </div>
     </div>
   );
+};
+
+const Layout: React.FC = () => {
+  return <LayoutInner />;
 };
 
 export default Layout;

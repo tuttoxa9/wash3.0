@@ -1,9 +1,9 @@
 import type { CarWashRecord, Employee } from "@/lib/types";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
-import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, X, Wallet } from "lucide-react";
 import type React from "react";
+import LegacyModal from "@/components/ui/LegacyModal";
 
 interface MobileDaysListModalProps {
   isOpen: boolean;
@@ -40,22 +40,8 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
   // Wait, in parent I passed calculateEmployeeEarnings={calculateDaySalary}
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 z-[60]"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="w-full max-w-md h-[75vh] rounded-lg shadow-lg overflow-hidden bg-background border border-border flex flex-col"
-          onClick={(e) => e.stopPropagation()}
-        >
+    <LegacyModal isOpen={isOpen} onClose={onClose} fullScreen>
+      <div className="flex flex-col h-full overflow-hidden">
           <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
@@ -140,9 +126,8 @@ const MobileDaysListModal: React.FC<MobileDaysListModalProps> = ({
               })}
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </LegacyModal>
   );
 };
 

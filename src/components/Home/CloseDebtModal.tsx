@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import { calculateEmployeeShare } from "@/lib/employee-utils";
 
 interface CloseDebtModalProps {
+  isOpen: boolean;
   onClose: () => void;
   onSubmit: (paymentMethod: PaymentMethod) => Promise<void>;
   clickPosition?: { x: number; y: number } | null;
@@ -16,6 +17,7 @@ interface CloseDebtModalProps {
 }
 
 const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
+  isOpen,
   onClose,
   onSubmit,
   clickPosition,
@@ -48,10 +50,11 @@ const CloseDebtModal: React.FC<CloseDebtModalProps> = ({
 
   return (
     <Modal
-      isOpen={true}
+      isOpen={isOpen}
       onClose={onClose}
       title="Закрытие долга"
       clickPosition={clickPosition}
+      className="md:max-w-lg"
     >
       <div className="space-y-5 px-1 py-2">
         {record && (

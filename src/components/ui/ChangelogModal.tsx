@@ -25,10 +25,10 @@ const getBadgeStyle = (type: ChangeType) => {
 };
 
 const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+  
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="История обновлений">
+    <Modal isOpen={isOpen} onClose={onClose} title="История обновлений" className="md:max-w-3xl">
       <div className="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1 sm:pr-3 pb-4">
         {changelog.map((release, idx) => (
           <div

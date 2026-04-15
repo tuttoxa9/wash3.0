@@ -66,6 +66,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { recalculateReportTotals } from "@/lib/report-utils";
 
+function useDelayedUnmount(isMounted: boolean, delayTime: number) {
+  const [shouldRender, setShouldRender] = useState(false);
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    if (isMounted) {
+      setShouldRender(true);
+    } else if (shouldRender) {
+      timeoutId = setTimeout(() => setShouldRender(false), delayTime);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [isMounted, delayTime, shouldRender]);
+  return shouldRender;
+}
+
 const HomePage: React.FC = () => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState({
@@ -218,6 +232,16 @@ const HomePage: React.FC = () => {
     reportId: string;
     recordId: string;
   } | null>(null);
+
+  // Обработка задержки размонтирования для анимаций закрытия (Vaul Drawer)
+  const renderModalOpen = useDelayedUnmount(isModalOpen, 300);
+  const renderEmployeeModal = useDelayedUnmount(employeeModalOpen, 300);
+  const renderCashModifications = useDelayedUnmount(isCashModificationsModalOpen, 300);
+  const renderCloseCash = useDelayedUnmount(isCloseCashModalOpen, 300);
+  const renderPayout = useDelayedUnmount(isPayoutModalOpen, 300);
+  const renderTransferSafe = useDelayedUnmount(isTransferSafeModalOpen, 300);
+  const renderDailyReport = useDelayedUnmount(dailyReportModalOpen, 300);
+  const renderCloseDebt = useDelayedUnmount(isCloseDebtModalOpen, 300);
 
   // Проверяем, является ли выбранная дата текущей
   const isCurrentDate = isToday(parseISO(selectedDate));
@@ -1357,11 +1381,12 @@ const HomePage: React.FC = () => {
     >
 
       {/* Модальное окно закрытия долга */}
-      {isCloseDebtModalOpen && debtToClose && (
+      {renderCloseDebt && debtToClose && (
         <CloseDebtModal
+          isOpen={isCloseDebtModalOpen}
           onClose={() => {
             setIsCloseDebtModalOpen(false);
-            setDebtToClose(null);
+            setTimeout(() => setDebtToClose(null), 350); // delay nulling to keep it rendered during animation
           }}
           onSubmit={handleCloseDebt}
           clickPosition={clickPosition}
@@ -2516,8 +2541,9 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* Модальные окна */}
-      {isModalOpen && (
+      {renderModalOpen && (
         <AddCarWashModal
+          isOpen={isModalOpen}
           onClose={toggleModal}
           selectedDate={selectedDate}
           prefilledData={appointmentToConvert}
@@ -2531,8 +2557,9 @@ const HomePage: React.FC = () => {
         />
       )}
 
-      {employeeModalOpen && selectedEmployeeId && (
+      {renderEmployeeModal && selectedEmployeeId && (
         <EmployeeDetailModal
+          isOpen={employeeModalOpen}
           employeeId={selectedEmployeeId}
           onClose={() => {
             setEmployeeModalOpen(false);
@@ -2546,8 +2573,9 @@ const HomePage: React.FC = () => {
         />
       )}
 
-      {isCashModificationsModalOpen && shiftStarted && currentReport && (
+      {renderCashModifications && shiftStarted && currentReport && (
         <CashModificationsModal
+          isOpen={isCashModificationsModalOpen}
           onClose={() => setIsCashModificationsModalOpen(false)}
           currentReport={currentReport}
           selectedDate={selectedDate}
@@ -2626,7 +2654,7 @@ const HomePage: React.FC = () => {
       )}
 
 
-      {isCloseCashModalOpen && currentReport && (
+      {renderCloseCash && currentReport && (
         <CloseCashModal
           isOpen={isCloseCashModalOpen}
           onClose={() => setIsCloseCashModalOpen(false)}
@@ -2634,7 +2662,7 @@ const HomePage: React.FC = () => {
         />
       )}
 
-      {isPayoutModalOpen && currentReport && (
+      {renderPayout && currentReport && (
         <PayoutEmployeesModal
           isOpen={isPayoutModalOpen}
           onClose={() => setIsPayoutModalOpen(false)}
@@ -2643,7 +2671,7 @@ const HomePage: React.FC = () => {
         />
       )}
 
-      {isTransferSafeModalOpen && currentReport && (
+      {renderTransferSafe && currentReport && (
         <TransferToSafeModal
           isOpen={isTransferSafeModalOpen}
           onClose={() => setIsTransferSafeModalOpen(false)}
@@ -2651,9 +2679,9 @@ const HomePage: React.FC = () => {
         />
       )}
 
-
-      {dailyReportModalOpen && shiftStarted && (
+      {renderDailyReport && shiftStarted && (
         <DailyReportModal
+          isOpen={dailyReportModalOpen}
           onClose={() => setDailyReportModalOpen(false)}
           currentReport={currentReport}
           employees={state.employees}

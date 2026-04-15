@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import BottomSheet from "./BottomSheet";
 import {
   HelpCircle,
   Search,
@@ -280,12 +281,11 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     }
   }, [filteredSections, isMobile, activeSectionId]);
 
-  if (!isOpen) return null;
-
   const activeSection = activeSectionId ? sections.find(s => s.id === activeSectionId) : null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-background/95 backdrop-blur-md">
+    <BottomSheet isOpen={isOpen} onClose={onClose} fullHeight className="!max-h-[95dvh] md:max-w-5xl">
+      <div className="flex flex-col h-full bg-background">
 
       {/* HEADER */}
       <div className="flex items-center justify-between p-4 md:px-6 md:py-4 border-b border-border/40 bg-card shrink-0 z-10">
@@ -431,7 +431,8 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
         </div>
       </div>
-    </div>
+      </div>
+    </BottomSheet>
   );
 };
 
