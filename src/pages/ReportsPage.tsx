@@ -468,7 +468,6 @@ const ReportsPage: React.FC = () => {
               empId,
               dateStr,
               dayRoles,
-              state.employees,
             );
 
             // Minimum flag logic for this day

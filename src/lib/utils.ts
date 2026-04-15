@@ -5,7 +5,6 @@ import type {
   Employee,
   EmployeeRole,
 } from "@/lib/types";
-import { determineEmployeeRole } from "./employee-utils";
 import { type ClassValue, clsx } from "clsx";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -169,13 +168,6 @@ export function generateDailyReportCsv(
 
   return csvContent;
 }
-
-/**
- * Определяет роль сотрудника на конкретную дату.
- * КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Для исторических дат НЕЛЬЗЯ использовать текущую роль из профиля.
- * Это предотвращает пересчет прошлых смен по повышенным процентам для повышенных сотрудников.
- */
-
 
 // Функция для генерации docx файла с отчетом за период (неделя или месяц)
 export const generatePeriodReportDocx = (

@@ -5,7 +5,7 @@ import { useAppContext } from "@/lib/context/AppContext";
 import { carWashService, dailyReportService } from "@/lib/services/supabaseService";
 import type { CarWashRecord, DailyReport, Employee, Organization, PaymentMethod } from "@/lib/types";
 import { createSalaryCalculator } from "@/components/SalaryCalculator";
-import { calculateEmployeeShare } from "@/lib/employee-utils";
+import { determineEmployeeRole, calculateEmployeeShare } from "@/lib/employee-utils";
 import { toast } from "sonner";
 import type { EmployeeRole, MinimumPaymentSettings } from "@/lib/types";
 
@@ -211,8 +211,21 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                       </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-right font-bold text-primary text-xs sm:text-sm">
                         {(() => {
-                          const role = employeeRoles[employeeId] || employees.find(e => e.id === employeeId)?.role || 'washer';
-                          return calculateEmployeeShare(record, employeeId, role, minimumPaymentSettings).toFixed(2);
+                          const recordDate =
+                            typeof record.date === "string"
+                              ? record.date
+                              : "";
+                          const role = determineEmployeeRole(
+                            employeeId,
+                            recordDate,
+                            currentReport.dailyEmployeeRoles || employeeRoles,
+                          );
+                          return calculateEmployeeShare(
+                            record,
+                            employeeId,
+                            role,
+                            minimumPaymentSettings,
+                          ).toFixed(2);
                         })()} BYN
                       </td>
                       <td className="py-2 sm:py-3 md:py-4 px-2 sm:px-3 md:px-4 text-card-foreground text-xs sm:text-sm">

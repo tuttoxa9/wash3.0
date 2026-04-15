@@ -4,11 +4,11 @@ import { determineEmployeeRole, calculateEmployeeShare, type MinimumPaymentSetti
 describe("employee-utils", () => {
   describe("determineEmployeeRole", () => {
     test("should use dayRoles if available", () => {
-      const role = determineEmployeeRole("1", "2024-01-01", { "1": "admin" }, []);
+      const role = determineEmployeeRole("1", "2024-01-01", { "1": "admin" });
       expect(role).toBe("admin");
     });
     test("should return washer by default", () => {
-      const role = determineEmployeeRole("1", "2024-01-01", {}, []);
+      const role = determineEmployeeRole("1", "2024-01-01", {});
       expect(role).toBe("washer");
     });
   });
