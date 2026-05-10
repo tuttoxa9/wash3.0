@@ -435,6 +435,46 @@ const HomePage: React.FC = () => {
     }
   };
 
+  const handleDeleteWrap = async (reportId: string, recordId: string) => {
+    if (!confirm("Вы уверены, что хотите удалить эту оклейку? Это действие отменит продажу и пересчитает выручку.")) return;
+    
+    try {
+      const successDB = await carWashService.delete(recordId);
+
+      if (successDB) {
+        const report = await dailyReportService.getByDate(reportId);
+        if (report) {
+          const updatedRecords = report.records.filter((rec) => rec.id !== recordId);
+          const { totalCash, totalCard } = recalculateReportTotals({ records: updatedRecords });
+
+          const updatedReport = {
+            ...report,
+            records: updatedRecords,
+            totalCash,
+            totalCard,
+          };
+
+          await dailyReportService.updateReport(updatedReport);
+          
+          if (reportId === selectedDate) {
+             dispatch({
+               type: "SET_DAILY_REPORT",
+               payload: { date: selectedDate, report: updatedReport },
+             });
+          }
+        }
+
+        toast.success("Оклейка успешно удалена");
+        loadPendingWraps();
+      } else {
+        throw new Error("Не удалось удалить запись");
+      }
+    } catch (error) {
+      console.error("Error deleting wrap:", error);
+      toast.error("Произошла ошибка при удалении");
+    }
+  };
+
   // Инициировать закрытие долга (открыть модалку)
   const initiateCloseDebt = (
     reportId: string,
@@ -2596,17 +2636,26 @@ const HomePage: React.FC = () => {
                           </div>
                         </div>
 
-                        <button
-                          onClick={(e) => {
-                            setClickPosition({ x: e.clientX, y: e.clientY });
-                            setWrapToExecute({ reportId, record });
-                            setIsWrapExecutionModalOpen(true);
-                          }}
-                          className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition-colors shadow-sm shrink-0"
-                          title="Исполнить оклейку"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                        </button>
+                        <div className="flex gap-2 shrink-0">
+                          <button
+                            onClick={() => handleDeleteWrap(reportId, record.id)}
+                            className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors shadow-sm"
+                            title="Удалить оклейку"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              setClickPosition({ x: e.clientX, y: e.clientY });
+                              setWrapToExecute({ reportId, record });
+                              setIsWrapExecutionModalOpen(true);
+                            }}
+                            className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition-colors shadow-sm"
+                            title="Исполнить оклейку"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
