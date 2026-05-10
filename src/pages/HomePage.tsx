@@ -241,6 +241,10 @@ const HomePage: React.FC = () => {
   const [isCloseDebtModalOpen, setIsCloseDebtModalOpen] = useState(false);
   const [isCashModificationsModalOpen, setIsCashModificationsModalOpen] = useState(false);
 
+  // Состояния для удаления оклейки
+  const [isDeleteWrapConfirmOpen, setIsDeleteWrapConfirmOpen] = useState(false);
+  const [wrapToDelete, setWrapToDelete] = useState<{ reportId: string; recordId: string } | null>(null);
+
   const [isCloseCashModalOpen, setIsCloseCashModalOpen] = useState(false);
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
   const [isTransferSafeModalOpen, setIsTransferSafeModalOpen] = useState(false);
@@ -435,8 +439,16 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleDeleteWrap = async (reportId: string, recordId: string) => {
-    if (!confirm("Вы уверены, что хотите удалить эту оклейку? Это действие отменит продажу и пересчитает выручку.")) return;
+  const initiateDeleteWrap = (reportId: string, recordId: string) => {
+    setWrapToDelete({ reportId, recordId });
+    setIsDeleteWrapConfirmOpen(true);
+  };
+
+  const handleDeleteWrap = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!wrapToDelete) return;
+    
+    const { reportId, recordId } = wrapToDelete;
     
     try {
       const successDB = await carWashService.delete(recordId);
@@ -465,6 +477,8 @@ const HomePage: React.FC = () => {
         }
 
         toast.success("Оклейка успешно удалена");
+        setIsDeleteWrapConfirmOpen(false);
+        setWrapToDelete(null);
         loadPendingWraps();
       } else {
         throw new Error("Не удалось удалить запись");
@@ -2638,7 +2652,7 @@ const HomePage: React.FC = () => {
 
                         <div className="flex gap-2 shrink-0">
                           <button
-                            onClick={() => handleDeleteWrap(reportId, record.id)}
+                            onClick={() => initiateDeleteWrap(reportId, record.id)}
                             className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors shadow-sm"
                             title="Удалить оклейку"
                           >
@@ -2819,6 +2833,52 @@ const HomePage: React.FC = () => {
         </Modal>
       )}
 
+      {isDeleteWrapConfirmOpen && (
+        <Modal
+          isOpen={isDeleteWrapConfirmOpen}
+          onClose={() => {
+            setIsDeleteWrapConfirmOpen(false);
+            setWrapToDelete(null);
+          }}
+          className="max-w-md"
+        >
+          <div className="p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-destructive" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Подтвердите удаление</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Вы уверены, что хотите удалить эту оклейку? Это действие отменит продажу и пересчитает выручку за тот день.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleDeleteWrap} className="space-y-4">
+              <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDeleteWrapConfirmOpen(false);
+                    setWrapToDelete(null);
+                  }}
+                  className="px-4 py-2 rounded-xl border border-input text-sm font-medium hover:bg-secondary/50 transition-colors"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-xl text-sm font-medium hover:bg-destructive/90 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Удалить
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
+      )}
 
       {renderCloseCash && currentReport && (
         <CloseCashModal
