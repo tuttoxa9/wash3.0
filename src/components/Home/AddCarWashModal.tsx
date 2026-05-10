@@ -44,7 +44,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
         time: prefilledData.time,
         carInfo: prefilledData.carInfo,
         service: prefilledData.service,
-        serviceType: "wash" as "wash" | "dryclean",
+        serviceType: "wash" as "wash" | "dryclean" | "wrap_sale",
         price: 0, // Нужно указать цену
         paymentMethod: { type: "cash" } as PaymentMethod,
         employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : [],
@@ -55,7 +55,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
       time: format(new Date(), "HH:mm"),
       carInfo: "",
       service: "",
-      serviceType: "wash" as "wash" | "dryclean",
+      serviceType: "wash" as "wash" | "dryclean" | "wrap_sale",
       price: 0,
       paymentMethod: preselectedCertificateId
         ? { type: "certificate", comment: preselectedCertificateId } as PaymentMethod
@@ -353,6 +353,17 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                 >
                   Химчистка
                 </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData({ ...formData, serviceType: "wrap_sale" })
+                  }
+                  className={
+                    formData.serviceType === "wrap_sale" ? "active" : ""
+                  }
+                >
+                  Оклейка
+                </button>
               </div>
             </div>
 
@@ -539,7 +550,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
             {/* Выбор сотрудников */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                Сотрудники, выполнившие работу
+                {formData.serviceType === "wrap_sale" ? "Сотрудник, продавший услугу" : "Сотрудники, выполнившие работу"}
               </label>
               <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-input rounded-xl">
                 {state.employees.length > 0 ? (

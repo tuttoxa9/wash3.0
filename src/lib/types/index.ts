@@ -24,7 +24,7 @@ export interface Service {
 
 // Тип для способа оплаты
 export interface PaymentMethod {
-  type: "cash" | "card" | "organization" | "debt" | "certificate";
+  type: "cash" | "card" | "organization" | "debt" | "certificate" | "prepaid";
   organizationId?: string; // ID организации (если type === 'organization')
   organizationName?: string; // Имя организации (для удобства отображения)
   comment?: string; // Комментарий (например, кто должен денег)
@@ -41,10 +41,12 @@ export interface CarWashRecord {
   time: string;
   carInfo: string; // Информация об авто, включая гос.номер
   service: string; // Название услуги
-  serviceType?: "wash" | "dryclean"; // Тип услуги: мойка или химчистка
+  serviceType?: "wash" | "dryclean" | "wrap_sale" | "wrap_execution"; // Тип услуги: мойка, химчистка, продажа оклейки, исполнение оклейки
   price: number;
   paymentMethod: PaymentMethod;
   employeeIds: string[]; // ID сотрудников, выполнивших работу (несколько человек могут мыть одну машину, включая админов)
+  relatedRecordId?: string; // ID связанной записи (например, для wrap_execution - ID оригинальной wrap_sale)
+  isExecuted?: boolean; // Флаг для wrap_sale: выполнена ли оклейка
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 
@@ -137,6 +139,8 @@ export interface MinimumPaymentSettings {
   adminCashPercentage: number; // Процент админа от кассы
   adminCarWashPercentage: number; // Процент админа от вымытых машин (мойка)
   adminDrycleanPercentage: number; // Процент админа от вымытых машин (химчистка)
+  adminWrapSalePercentage: number; // Процент админа от продажи оклейки
+  washerWrapExecutionPercentage: number; // Процент мойщика от исполнения оклейки
 }
 
 // Тип для настроек темы

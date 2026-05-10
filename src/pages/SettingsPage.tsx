@@ -1001,6 +1001,49 @@ const SalaryCalculationSettings: React.FC = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
+                    % адм за оклейку (продажа)
+                  </label>
+                  <input
+                    type="number"
+                    value={minimumSettings.adminWrapSalePercentage || 0}
+                    onChange={(e) =>
+                      setMinimumSettings({
+                        ...minimumSettings,
+                        adminWrapSalePercentage: Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
+                    placeholder="5"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
+                    % мойщика за оклейку (исполнение)
+                  </label>
+                  <input
+                    type="number"
+                    value={minimumSettings.washerWrapExecutionPercentage || 0}
+                    onChange={(e) =>
+                      setMinimumSettings({
+                        ...minimumSettings,
+                        washerWrapExecutionPercentage: Number.parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
+                    placeholder="40"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+              </div>
+
               <div className="pt-2">
                 <button
                   onClick={handleSaveMinimumSettings}

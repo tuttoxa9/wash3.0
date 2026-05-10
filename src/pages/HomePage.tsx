@@ -62,6 +62,7 @@ import EmployeeDetailModal from "@/components/Home/EmployeeDetailModal";
 import AddCarWashModal from "@/components/Home/AddCarWashModal";
 import AppointmentsWidget from "@/components/Home/AppointmentsWidget";
 import CloseDebtModal from "@/components/Home/CloseDebtModal";
+import WrapExecutionModal from "@/components/Home/WrapExecutionModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { recalculateReportTotals } from "@/lib/report-utils";
@@ -220,6 +221,22 @@ const HomePage: React.FC = () => {
   >([]);
   const [loadingDebts, setLoadingDebts] = useState(false);
 
+  // Состояние для ожидающих оклеек
+  const [pendingWraps, setPendingWraps] = useState<
+    Array<{
+      reportId: string;
+      record: CarWashRecord;
+    }>
+  >([]);
+  const [loadingWraps, setLoadingWraps] = useState(false);
+
+  // Состояния для модалки исполнения оклейки
+  const [isWrapExecutionModalOpen, setIsWrapExecutionModalOpen] = useState(false);
+  const [wrapToExecute, setWrapToExecute] = useState<{
+    reportId: string;
+    record: CarWashRecord;
+  } | null>(null);
+
   // Состояния для закрытия долга
   const [isCloseDebtModalOpen, setIsCloseDebtModalOpen] = useState(false);
   const [isCashModificationsModalOpen, setIsCashModificationsModalOpen] = useState(false);
@@ -242,6 +259,7 @@ const HomePage: React.FC = () => {
   const renderTransferSafe = useDelayedUnmount(isTransferSafeModalOpen, 300);
   const renderDailyReport = useDelayedUnmount(dailyReportModalOpen, 300);
   const renderCloseDebt = useDelayedUnmount(isCloseDebtModalOpen, 300);
+  const renderWrapExecution = useDelayedUnmount(isWrapExecutionModalOpen, 300);
 
   // Проверяем, является ли выбранная дата текущей
   const isCurrentDate = isToday(parseISO(selectedDate));
@@ -385,6 +403,35 @@ const HomePage: React.FC = () => {
       console.error("Error loading debts:", error);
     } finally {
       setLoadingDebts(false);
+    }
+  };
+
+  // Загрузка ожидающих оклеек
+  const loadPendingWraps = async () => {
+    setLoadingWraps(true);
+    try {
+      const reports = await dailyReportService.getActiveWraps();
+      const wraps: Array<{
+        reportId: string;
+        record: CarWashRecord;
+      }> = [];
+
+      reports.forEach((report) => {
+        report.records.forEach((record) => {
+          if (record.serviceType === "wrap_sale" && !record.isExecuted) {
+            wraps.push({
+              reportId: report.id,
+              record,
+            });
+          }
+        });
+      });
+
+      setPendingWraps(wraps);
+    } catch (error) {
+      console.error("Error loading wraps:", error);
+    } finally {
+      setLoadingWraps(false);
     }
   };
 
@@ -1097,6 +1144,7 @@ const HomePage: React.FC = () => {
 
     loadData();
     loadActiveDebts();
+    loadPendingWraps();
     // При изменении выбранной даты сбрасываем состояние смены
     setIsShiftLocked(false);
     setIsEditingShift(false);
@@ -2515,6 +2563,57 @@ const HomePage: React.FC = () => {
               </div>
             )}
 
+            {/* Ожидающие оклейки */}
+            {pendingWraps.length > 0 && (
+              <div className="rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden flex flex-col">
+                <div className="flex items-center justify-between p-4 border-b border-border/50 bg-blue-50 dark:bg-blue-950/20">
+                  <h3 className="text-sm font-semibold flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                    Ожидают оклейки
+                    <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-xs font-bold">
+                      {pendingWraps.length}
+                    </span>
+                  </h3>
+                </div>
+
+                <div className="overflow-y-auto max-h-[300px]">
+                  {pendingWraps.map(({ reportId, record }) => (
+                    <div
+                      key={record.id}
+                      className="p-4 border-b border-border/50 last:border-b-0 hover:bg-accent/5 transition-colors"
+                    >
+                      <div className="flex justify-between items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="font-bold text-blue-600/80">
+                              {format(parseISO(reportId), "dd.MM")}
+                            </span>
+                            <span className="font-semibold text-foreground truncate">
+                              {record.carInfo}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate mt-1">
+                            {record.service}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={(e) => {
+                            setClickPosition({ x: e.clientX, y: e.clientY });
+                            setWrapToExecute({ reportId, record });
+                            setIsWrapExecutionModalOpen(true);
+                          }}
+                          className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition-colors shadow-sm shrink-0"
+                          title="Исполнить оклейку"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {currentReport && shiftStarted && (
               <CashStateWidget
                 report={currentReport}
@@ -2570,6 +2669,24 @@ const HomePage: React.FC = () => {
           organizations={state.organizations}
           employeeRoles={employeeRoles}
           minimumPaymentSettings={state.minimumPaymentSettings}
+        />
+      )}
+
+      {renderWrapExecution && wrapToExecute && (
+        <WrapExecutionModal
+          isOpen={isWrapExecutionModalOpen}
+          onClose={() => {
+            setIsWrapExecutionModalOpen(false);
+            setWrapToExecute(null);
+          }}
+          selectedDate={selectedDate}
+          originalRecord={wrapToExecute.record}
+          originalReportId={wrapToExecute.reportId}
+          clickPosition={clickPosition}
+          employeeRoles={employeeRoles}
+          onSuccess={() => {
+            loadPendingWraps();
+          }}
         />
       )}
 

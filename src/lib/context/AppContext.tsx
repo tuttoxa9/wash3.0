@@ -47,6 +47,8 @@ const initialState: AppState = {
     adminCashPercentage: 3,
     adminCarWashPercentage: 2,
     adminDrycleanPercentage: 3,
+    adminWrapSalePercentage: 5,
+    washerWrapExecutionPercentage: 40,
   },
   organizationsInTotal: [],
   isRealtimeEnabled: true,

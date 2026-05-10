@@ -9,6 +9,7 @@ export function recalculateReportTotals(
   const records = report.records || [];
   const totalCash = records.reduce(
     (sum, rec) => {
+      if (rec.serviceType === "wrap_execution") return sum;
       if (rec.paymentMethod.type === "cash") return sum + rec.price;
       if (rec.paymentMethod.type === "debt" && rec.paymentMethod.isClosed && rec.paymentMethod.actualMethod === "cash") return sum + rec.price;
       return sum;
@@ -17,6 +18,7 @@ export function recalculateReportTotals(
   );
   const totalCard = records.reduce(
     (sum, rec) => {
+      if (rec.serviceType === "wrap_execution") return sum;
       if (rec.paymentMethod.type === "card") return sum + rec.price;
       if (rec.paymentMethod.type === "debt" && rec.paymentMethod.isClosed && rec.paymentMethod.actualMethod === "card") return sum + rec.price;
       return sum;

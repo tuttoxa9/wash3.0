@@ -8,6 +8,8 @@ export interface MinimumPaymentSettings {
   adminCashPercentage: number;
   adminCarWashPercentage: number;
   adminDrycleanPercentage: number;
+  adminWrapSalePercentage?: number;
+  washerWrapExecutionPercentage?: number;
   showAdminBonusDetail: boolean;
   salaryCalculationMethod?: string;
 }
@@ -59,6 +61,18 @@ export function calculateEmployeeShare(
 ): number {
   if (!record.employeeIds.includes(employeeId)) {
     return 0;
+  }
+
+  if (record.serviceType === "wrap_sale") {
+    const share = record.price / Math.max(1, record.employeeIds.length);
+    const percentage = settings.adminWrapSalePercentage || 5;
+    return share * (percentage / 100);
+  }
+
+  if (record.serviceType === "wrap_execution") {
+    const share = record.price / Math.max(1, record.employeeIds.length);
+    const percentage = settings.washerWrapExecutionPercentage || 40;
+    return share * (percentage / 100);
   }
 
   const share = record.price / record.employeeIds.length;

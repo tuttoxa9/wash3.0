@@ -164,7 +164,11 @@ export const carWashService = {
       service: record.service,
       service_type: record.serviceType || "wash",
       price: record.price,
-      payment_method: record.paymentMethod, // JSONB
+      payment_method: { 
+        ...record.paymentMethod, 
+        relatedRecordId: record.relatedRecordId, 
+        isExecuted: record.isExecuted 
+      }, // JSONB
       participant_ids: Array.isArray((record as any).employeeIds)
         ? (record as any).employeeIds
         : (record as any).washerId
@@ -189,6 +193,8 @@ export const carWashService = {
       serviceType: data.service_type || "wash",
       price: data.price,
       paymentMethod: data.payment_method,
+      relatedRecordId: data.payment_method?.relatedRecordId,
+      isExecuted: data.payment_method?.isExecuted,
       employeeIds: Array.isArray(data.participant_ids)
         ? data.participant_ids
         : [],
@@ -213,6 +219,8 @@ export const carWashService = {
       serviceType: r.service_type || "wash",
       price: r.price,
       paymentMethod: r.payment_method,
+      relatedRecordId: r.payment_method?.relatedRecordId,
+      isExecuted: r.payment_method?.isExecuted,
       employeeIds: Array.isArray(r.participant_ids) ? r.participant_ids : [],
     }));
   },
@@ -276,7 +284,11 @@ export const carWashService = {
       service: rest.service,
       service_type: rest.serviceType || "wash",
       price: rest.price,
-      payment_method: rest.paymentMethod,
+      payment_method: {
+        ...rest.paymentMethod,
+        relatedRecordId: rest.relatedRecordId,
+        isExecuted: rest.isExecuted
+      },
       participant_ids: Array.isArray(rest.employeeIds)
         ? rest.employeeIds
         : (rest as any).washerId
@@ -405,6 +417,29 @@ export const dailyReportService = {
 
     if (error) {
       logSupabaseError("dailyReports.getActiveDebts", error);
+      return [];
+    }
+    return (data || []).map((r: any) => ({
+      id: r.id,
+      date: r.date,
+      employeeIds: r.employee_ids || [],
+      records: r.records || [],
+      totalCash: r.total_cash || 0,
+      totalCard: r.total_non_cash || 0,
+      dailyEmployeeRoles: r.daily_employee_roles || undefined,
+      manualSalaries: r.manual_salaries || {},
+      cashModifications: r.cash_modifications || [],
+    }));
+  },
+  async getActiveWraps(): Promise<DailyReport[]> {
+    // Получаем отчеты, в которых есть записи с типом услуги 'wrap_sale'
+    const { data, error } = await supabase
+      .from("daily_reports")
+      .select("*")
+      .contains("records", '[{"serviceType": "wrap_sale"}]');
+
+    if (error) {
+      logSupabaseError("dailyReports.getActiveWraps", error);
       return [];
     }
     return (data || []).map((r: any) => ({
