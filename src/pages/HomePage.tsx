@@ -2715,6 +2715,7 @@ const HomePage: React.FC = () => {
           preselectedCertificateId={preselectedCertificateId}
           onSuccess={() => {
             loadActiveDebts();
+            loadPendingWraps();
           }}
         />
       )}
