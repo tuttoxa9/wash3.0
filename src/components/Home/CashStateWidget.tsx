@@ -208,58 +208,46 @@ export default function CashStateWidget({
           </h4>
           <div className="grid grid-cols-2 gap-3">
             {/* Начало дня */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <div className="flex items-center justify-between text-muted-foreground mb-1.5">
-                <span className="text-[10px] sm:text-xs font-semibold">Начало дня</span>
-                <Clock className="w-3.5 h-3.5 text-muted-foreground/60" />
-              </div>
-              <div className="flex flex-wrap items-baseline gap-0.5">
-                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
+              <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Начало дня</span>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="font-extrabold text-foreground text-base sm:text-lg leading-none">
                   {startCash.toFixed(2)}
                 </span>
-                <span className="text-[9px] font-bold text-muted-foreground/80">BYN</span>
+                <span className="text-[9px] font-bold text-muted-foreground/50">BYN</span>
               </div>
             </div>
 
-            {/* По услугам */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <div className="flex items-center justify-between text-muted-foreground mb-1.5">
-                <span className="text-[10px] sm:text-xs font-semibold">Услуги (нал)</span>
-                <TrendingUp className="w-3.5 h-3.5 text-green-500/80" />
-              </div>
-              <div className="flex flex-wrap items-baseline gap-0.5">
-                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
+            {/* Нал */}
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
+              <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Нал</span>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="font-extrabold text-foreground text-base sm:text-lg leading-none">
                   {servicesCash.toFixed(2)}
                 </span>
-                <span className="text-[9px] font-bold text-muted-foreground/80">BYN</span>
+                <span className="text-[9px] font-bold text-muted-foreground/50">BYN</span>
               </div>
             </div>
 
             {/* Движение кассы */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <div className="flex items-center justify-between text-muted-foreground mb-1.5">
-                <span className="text-[10px] sm:text-xs font-semibold">Движение</span>
-                <ArrowLeftRight className="w-3.5 h-3.5 text-blue-500/80" />
-              </div>
-              <div className="flex flex-wrap items-baseline gap-0.5">
-                <span className={`font-extrabold text-sm sm:text-base leading-none ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`}>
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
+              <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Движение</span>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className={`font-extrabold text-base sm:text-lg leading-none ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`}>
                   {totalCashMods > 0 ? "+" : ""}{totalCashMods.toFixed(2)}
                 </span>
-                <span className="text-[9px] font-bold text-muted-foreground/80">BYN</span>
+                <span className="text-[9px] font-bold text-muted-foreground/50">BYN</span>
               </div>
             </div>
 
             {/* Ожидалось всего */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <div className="flex items-center justify-between text-muted-foreground mb-1.5">
-                <span className="text-[10px] sm:text-xs font-semibold">Ожидалось всего</span>
-                <Coins className="w-3.5 h-3.5 text-purple-500/80" />
-              </div>
-              <div className="flex flex-wrap items-baseline gap-0.5">
-                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
+              <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ожидалось всего</span>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="font-extrabold text-foreground text-base sm:text-lg leading-none">
                   {expectedGrossCash.toFixed(2)}
                 </span>
-                <span className="text-[9px] font-bold text-muted-foreground/80">BYN</span>
+                <span className="text-[9px] font-bold text-muted-foreground/50">BYN</span>
               </div>
             </div>
           </div>
@@ -314,7 +302,7 @@ export default function CashStateWidget({
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Расход / Изъятие
+              Изъятие
             </button>
             <button
               type="button"
@@ -325,7 +313,7 @@ export default function CashStateWidget({
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Внесение / Сдача
+              Внесение
             </button>
           </div>
 
@@ -361,33 +349,18 @@ export default function CashStateWidget({
               </div>
 
               {/* Сумма */}
-              <div className="grid grid-cols-3 gap-2 items-end">
-                <div className="col-span-2">
-                  <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Сумма (BYN)</span>
-                  <input
-                    type="number"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0.01"
-                    required
-                    className="w-full px-3 py-1.5 border border-border/50 bg-background rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                  />
-                </div>
-                {/* Шаблоны сумм */}
-                <div className="flex gap-1">
-                  {[10, 50].map((val) => (
-                    <button
-                      key={val}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, amount: val.toString() })}
-                      className="px-2 py-1.5 border border-border/50 hover:bg-accent rounded-lg text-[10px] font-semibold text-muted-foreground transition-all flex-1"
-                    >
-                      {val}
-                    </button>
-                  ))}
-                </div>
+              <div>
+                <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Сумма (BYN)</span>
+                <input
+                  type="number"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0.01"
+                  required
+                  className="w-full px-3 py-1.5 border border-border/50 bg-background rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                />
               </div>
 
               {/* Комментарий */}
@@ -397,7 +370,7 @@ export default function CashStateWidget({
                   type="text"
                   value={formData.reason}
                   onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                  placeholder={activeTab === "expense" ? "Покупка химии, обед..." : "Размен, внесение на сдачу..."}
+                  placeholder=""
                   required
                   className="w-full px-3 py-1.5 border border-border/50 bg-background rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 />
