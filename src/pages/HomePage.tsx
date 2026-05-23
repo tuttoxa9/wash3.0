@@ -43,6 +43,7 @@ import {
   Shield,
   Trash2,
   User,
+  Wallet,
   X,
   ChevronDown,
 } from "lucide-react";
@@ -253,6 +254,9 @@ const HomePage: React.FC = () => {
     reportId: string;
     recordId: string;
   } | null>(null);
+
+  const [showSpotlightTour, setShowSpotlightTour] = useState(false);
+  const cashStateWidgetRef = useRef<HTMLDivElement>(null);
 
   // Обработка задержки размонтирования для анимаций закрытия (Vaul Drawer)
   const renderModalOpen = useDelayedUnmount(isModalOpen, 300);
@@ -1231,6 +1235,21 @@ const HomePage: React.FC = () => {
       setLoading((prev) => ({ ...prev, employees: false }));
     }
   }, [state.employees]);
+
+  useEffect(() => {
+    if (shiftStarted && currentReport && !loading.dailyReport) {
+      const tourCompleted = localStorage.getItem("detail_lab_cash_tour_completed");
+      if (!tourCompleted) {
+        const timer = setTimeout(() => {
+          setShowSpotlightTour(true);
+          if (cashStateWidgetRef.current) {
+            cashStateWidgetRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [shiftStarted, currentReport, loading.dailyReport]);
 
   // --- RENDERING SPLIT ---
   // If the shift hasn't started, we render the Morning Lobby (Pre-shift state)
@@ -2555,6 +2574,68 @@ const HomePage: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Состояние кассы (Перенесенный и расширенный блок с презентационным гидом) */}
+          {currentReport && shiftStarted && (
+            <div
+              ref={cashStateWidgetRef}
+              className={`mt-6 relative transition-all duration-500 ${
+                showSpotlightTour
+                  ? "z-50 ring-4 ring-green-500/50 shadow-[0_0_50px_rgba(34,197,94,0.25)] rounded-[2.1rem] scale-[1.005]"
+                  : ""
+              }`}
+            >
+              <CashStateWidget
+                report={currentReport}
+                selectedDate={selectedDate}
+                onCloseCash={() => setIsCloseCashModalOpen(true)}
+                onPayout={() => setIsPayoutModalOpen(true)}
+                onTransferToSafe={() => setIsTransferSafeModalOpen(true)}
+              />
+
+              {showSpotlightTour && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:-translate-y-0 lg:top-full lg:mt-4 z-50 w-[95%] sm:w-full max-w-md p-6 bg-card border border-green-500/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.4)] animate-in fade-in zoom-in-95 duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-full bg-green-500/10 text-green-500 flex-shrink-0 animate-bounce">
+                      <Wallet className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+                        ✨ Обновление: Умная касса!
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                        Для вашего удобства и максимальной информативности блок <b>«Состояние кассы»</b> был обновлен и перенесен сюда, под итоговые показатели смены.
+                      </p>
+                      <div className="mt-3 space-y-2 text-[11px] text-muted-foreground/90">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                          <span><b>Новый дизайн:</b> 4 наглядных показателя кассы смены.</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                          <span><b>Быстрые транзакции:</b> Вносите размен или изымайте расходы прямо в блоке!</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                          <span><b>Лента операций:</b> Полный лог всех действий смены у вас под рукой.</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          localStorage.setItem("detail_lab_cash_tour_completed", "true");
+                          setShowSpotlightTour(false);
+                          toast.success("Отлично! Приятной работы.");
+                        }}
+                        className="mt-5 w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-all shadow-md shadow-green-500/10 text-xs"
+                      >
+                        Отлично, понятно!
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Правая колонка с виджетами */}
@@ -2677,15 +2758,6 @@ const HomePage: React.FC = () => {
               </div>
             )}
 
-            {currentReport && shiftStarted && (
-              <CashStateWidget
-                report={currentReport}
-                onCloseCash={() => setIsCloseCashModalOpen(true)}
-                onPayout={() => setIsPayoutModalOpen(true)}
-                onTransferToSafe={() => setIsTransferSafeModalOpen(true)}
-              />
-            )}
-
             {/* Виджет сертификатов */}
             <CertificatesWidget
               canCreateRecords={shiftStarted}
@@ -2756,7 +2828,6 @@ const HomePage: React.FC = () => {
 
       {renderCashModifications && shiftStarted && currentReport && (
         <CashModificationsModal
-          isOpen={isCashModificationsModalOpen}
           onClose={() => setIsCashModificationsModalOpen(false)}
           currentReport={currentReport}
           selectedDate={selectedDate}
@@ -2922,6 +2993,10 @@ const HomePage: React.FC = () => {
           employeeRoles={employeeRoles}
           minimumPaymentSettings={state.minimumPaymentSettings}
         />
+      )}
+
+      {showSpotlightTour && (
+        <div className="fixed inset-0 z-40 bg-background/60 backdrop-blur-md transition-all duration-300" />
       )}
     </motion.div>
   );
