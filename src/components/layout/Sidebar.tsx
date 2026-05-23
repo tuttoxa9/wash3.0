@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   useEffect(() => {
     const checkHighlight = () => {
       const active = localStorage.getItem("detail_lab_wraps_tour_active") === "true";
-      setIsWrapsHighlightActive(active);
+      setIsWrapsHighlightActive(active && window.innerWidth >= 768);
     };
 
     checkHighlight();
@@ -491,7 +491,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex sidebar z-0 w-64 min-w-[16rem] h-[100dvh] bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-4 border-r border-border/40 shadow-xl overflow-hidden">
+      <aside className={`hidden md:flex sidebar w-64 min-w-[16rem] h-[100dvh] bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-4 border-r border-border/40 shadow-xl overflow-hidden transition-all duration-300 ${
+        isWrapsHighlightActive ? "z-50 ring-4 ring-indigo-500/20 shadow-[0_0_50px_rgba(99,102,241,0.15)] scale-[1.005]" : "z-0"
+      }`}>
         {sidebarContent}
       </aside>
 

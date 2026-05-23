@@ -1241,6 +1241,13 @@ const HomePage: React.FC = () => {
     if (shiftStarted && currentReport && !loading.dailyReport) {
       const tourCompleted = localStorage.getItem("detail_lab_cash_tour_completed");
       if (!tourCompleted) {
+        // На мобильных экранах полностью отключаем туры и подсказки
+        if (window.innerWidth < 768) {
+          localStorage.setItem("detail_lab_cash_tour_completed", "true");
+          localStorage.setItem("detail_lab_wraps_tour_completed", "true");
+          return;
+        }
+
         const timer = setTimeout(() => {
           setShowSpotlightTour(true);
           setTourStep(1);
@@ -1257,7 +1264,13 @@ const HomePage: React.FC = () => {
     const handleTourUpdate = () => {
       const wrapsCompleted = localStorage.getItem("detail_lab_wraps_tour_completed") === "true";
       const wrapsActive = localStorage.getItem("detail_lab_wraps_tour_active") === "true";
-      const cashCompleted = localStorage.getItem("detail_lab_cash_tour_completed") === "true";
+
+      // Если мобильный экран, отключаем отображение оверлея
+      if (window.innerWidth < 768) {
+        setShowSpotlightTour(false);
+        setTourStep(null);
+        return;
+      }
 
       if (wrapsCompleted) {
         setShowSpotlightTour(false);
