@@ -23,6 +23,7 @@ import {
   WalletCards,
   Trash2,
   X,
+  Scissors,
 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
@@ -259,6 +260,17 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           <WalletCards className="w-5 h-5" />
           <span>Выплаты</span>
+        </NavLink>
+
+        <NavLink
+          to="/wraps"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? "active" : ""}`
+          }
+          onClick={() => isMobileOpen && toggleMobileSidebar()}
+        >
+          <Scissors className="w-5 h-5" />
+          <span>Оклейки</span>
         </NavLink>
 
         <NavLink

@@ -47,6 +47,8 @@ export interface CarWashRecord {
   employeeIds: string[]; // ID сотрудников, выполнивших работу (несколько человек могут мыть одну машину, включая админов)
   relatedRecordId?: string; // ID связанной записи (например, для wrap_execution - ID оригинальной wrap_sale)
   isExecuted?: boolean; // Флаг для wrap_sale: выполнена ли оклейка
+  noAdminCommission?: boolean; // Исключить услугу из процента администратора
+  manualWrapperSalary?: number; // Ручная зарплата сотрудников за выполнение оклейки
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 

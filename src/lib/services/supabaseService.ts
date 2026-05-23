@@ -167,7 +167,9 @@ export const carWashService = {
       payment_method: { 
         ...record.paymentMethod, 
         relatedRecordId: record.relatedRecordId, 
-        isExecuted: record.isExecuted 
+        isExecuted: record.isExecuted,
+        noAdminCommission: record.noAdminCommission,
+        manualWrapperSalary: record.manualWrapperSalary
       }, // JSONB
       participant_ids: Array.isArray((record as any).employeeIds)
         ? (record as any).employeeIds
@@ -195,6 +197,8 @@ export const carWashService = {
       paymentMethod: data.payment_method,
       relatedRecordId: data.payment_method?.relatedRecordId,
       isExecuted: data.payment_method?.isExecuted,
+      noAdminCommission: data.payment_method?.noAdminCommission,
+      manualWrapperSalary: data.payment_method?.manualWrapperSalary,
       employeeIds: Array.isArray(data.participant_ids)
         ? data.participant_ids
         : [],
@@ -221,6 +225,8 @@ export const carWashService = {
       paymentMethod: r.payment_method,
       relatedRecordId: r.payment_method?.relatedRecordId,
       isExecuted: r.payment_method?.isExecuted,
+      noAdminCommission: r.payment_method?.noAdminCommission,
+      manualWrapperSalary: r.payment_method?.manualWrapperSalary,
       employeeIds: Array.isArray(r.participant_ids) ? r.participant_ids : [],
     }));
   },
@@ -248,6 +254,10 @@ export const carWashService = {
       serviceType: r.service_type || "wash",
       price: r.price,
       paymentMethod: r.payment_method,
+      relatedRecordId: r.payment_method?.relatedRecordId,
+      isExecuted: r.payment_method?.isExecuted,
+      noAdminCommission: r.payment_method?.noAdminCommission,
+      manualWrapperSalary: r.payment_method?.manualWrapperSalary,
       employeeIds: Array.isArray(r.participant_ids) ? r.participant_ids : [],
     }));
   },
@@ -269,6 +279,10 @@ export const carWashService = {
       serviceType: r.service_type || "wash",
       price: r.price,
       paymentMethod: r.payment_method,
+      relatedRecordId: r.payment_method?.relatedRecordId,
+      isExecuted: r.payment_method?.isExecuted,
+      noAdminCommission: r.payment_method?.noAdminCommission,
+      manualWrapperSalary: r.payment_method?.manualWrapperSalary,
       employeeIds: Array.isArray(r.participant_ids) ? r.participant_ids : [],
     }));
   },
@@ -287,7 +301,9 @@ export const carWashService = {
       payment_method: {
         ...rest.paymentMethod,
         relatedRecordId: rest.relatedRecordId,
-        isExecuted: rest.isExecuted
+        isExecuted: rest.isExecuted,
+        noAdminCommission: record.noAdminCommission,
+        manualWrapperSalary: record.manualWrapperSalary
       },
       participant_ids: Array.isArray(rest.employeeIds)
         ? rest.employeeIds

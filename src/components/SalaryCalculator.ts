@@ -18,8 +18,10 @@ export interface SalaryCalculationResult {
     // Для админа
     adminCashBonus?: number; // % от общей выручки
     adminCarWashBonus?: number; // % от лично помытых машин
+    adminWrapSaleBonus?: number; // % от продажи оклейки
     // Для мойщика
     washerPercentage?: number; // % от лично помытых машин
+    washerWrapExecutionBonus?: number; // Ручная оплата за выполнение оклеек
     // Общее
     minimumGuaranteed: number; // Минимальная гарантия
     finalAmount: number; // Итоговая сумма (max из процентов и минималки)
@@ -136,6 +138,24 @@ export class SalaryCalculator {
     return result;
   }
 
+  // Расчёт выручки для процентов админа (исключая оклейки и noAdminCommission)
+  private calculateAdminCommissionRevenue(): number {
+    return this.records.reduce((total, record) => {
+      if (record.paymentMethod.type === "debt" && record.paymentMethod.isSalaryPaidForDebt === false) {
+        return total; // Игнорируем новые долги
+      }
+      if (
+        record.serviceType === "wrap_sale" || 
+        record.serviceType === "wrap_execution" || 
+        record.noAdminCommission === true ||
+        record.paymentMethod?.noAdminCommission === true
+      ) {
+        return total;
+      }
+      return total + record.price;
+    }, 0);
+  }
+
   // Расчёт зарплаты админа
   private calculateAdminSalary(
     employeeId: string,
@@ -144,12 +164,15 @@ export class SalaryCalculator {
     personalRevenue: number,
     adminCount: number,
   ): SalaryCalculationResult {
-    // 1. Базовый процент от общей выручки (делится между всеми админами)
+    // Выручка для админских процентов
+    const adminRevenue = this.calculateAdminCommissionRevenue();
+
+    // 1. Базовый процент от выручки для админа (делится между всеми админами)
     const baseCashBonus =
       adminCount > 0
-        ? (totalRevenue * (this.settings.adminCashPercentage / 100)) /
+        ? (adminRevenue * (this.settings.adminCashPercentage / 100)) /
           adminCount
-        : totalRevenue * (this.settings.adminCashPercentage / 100);
+        : adminRevenue * (this.settings.adminCashPercentage / 100);
 
     // 2. Процент от машин, которые лично помыл этот админ (мойка)
     const personalWashRevenue = this.calculatePersonalRevenueByType(
@@ -167,31 +190,56 @@ export class SalaryCalculator {
     const drycleanBonus =
       personalDrycleanRevenue * (this.settings.adminDrycleanPercentage / 100);
 
-    // 4. Общий доход от процентов
+    // 4. Общий доход от процентов (мойка + химчистка + базовый админский)
     const totalPercentageEarnings = baseCashBonus + washBonus + drycleanBonus;
 
     // Округление общей суммы процентов до 5 в меньшую сторону
     const roundedPercentageEarnings = Math.floor(totalPercentageEarnings / 5) * 5;
 
-    // 5. Итоговая сумма (не меньше минималки)
+    // 5. Итоговая сумма процентов или минималка (сравнение с гарантией)
     const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
-    const finalAmount = respectMinimum
+    const baseFinalAmount = respectMinimum
       ? Math.max(roundedPercentageEarnings, this.settings.minimumPaymentAdmin)
       : roundedPercentageEarnings;
+
+    // 6. Расчет сдельных начислений по оклейкам (сверх гарантии)
+    // Процент за личные продажи оклеек
+    const adminWrapSaleBonus = this.records
+      .filter((record) => 
+        record.serviceType === "wrap_sale" && 
+        record.employeeIds.includes(employeeId) && 
+        record.noAdminCommission !== true && 
+        record.paymentMethod?.noAdminCommission !== true
+      )
+      .reduce((sum, record) => sum + record.price * (this.settings.adminWrapSalePercentage / 100), 0);
+
+    // Доля за выполнение оклейки
+    const washerWrapExecutionBonus = this.records
+      .filter((record) => record.serviceType === "wrap_execution" && record.employeeIds.includes(employeeId))
+      .reduce((sum, record) => {
+        const manualSalary = record.manualWrapperSalary || record.paymentMethod?.manualWrapperSalary || 0;
+        const share = record.employeeIds.length > 0 ? manualSalary / record.employeeIds.length : 0;
+        return sum + share;
+      }, 0);
+
+    const totalAdditionalEarnings = adminWrapSaleBonus + washerWrapExecutionBonus;
+    const finalAmountWithBonuses = baseFinalAmount + totalAdditionalEarnings;
 
     return {
       employeeId,
       employeeName,
       role: "admin",
       totalPersonalRevenue: personalRevenue,
-      calculatedSalary: finalAmount,
+      calculatedSalary: finalAmountWithBonuses,
       breakdown: {
         adminCashBonus: baseCashBonus,
         adminCarWashBonus: washBonus + drycleanBonus,
+        adminWrapSaleBonus: adminWrapSaleBonus,
+        washerWrapExecutionBonus: washerWrapExecutionBonus,
         minimumGuaranteed: respectMinimum
           ? this.settings.minimumPaymentAdmin
           : 0,
-        finalAmount,
+        finalAmount: finalAmountWithBonuses,
       },
     };
   }
@@ -226,22 +274,34 @@ export class SalaryCalculator {
 
     // 4. Итоговая сумма (не меньше минималки)
     const respectMinimum = this.minimumOverride[employeeId] !== false; // по умолчанию true
-    const finalAmount = respectMinimum
+    const baseFinalAmount = respectMinimum
       ? Math.max(roundedPercentageEarnings, this.settings.minimumPaymentWasher)
       : roundedPercentageEarnings;
+
+    // 5. Расчет доли за выполнение оклейки (сверх гарантии)
+    const washerWrapExecutionBonus = this.records
+      .filter((record) => record.serviceType === "wrap_execution" && record.employeeIds.includes(employeeId))
+      .reduce((sum, record) => {
+        const manualSalary = record.manualWrapperSalary || record.paymentMethod?.manualWrapperSalary || 0;
+        const share = record.employeeIds.length > 0 ? manualSalary / record.employeeIds.length : 0;
+        return sum + share;
+      }, 0);
+
+    const finalAmountWithBonuses = baseFinalAmount + washerWrapExecutionBonus;
 
     return {
       employeeId,
       employeeName,
       role: "washer",
       totalPersonalRevenue: personalRevenue,
-      calculatedSalary: finalAmount,
+      calculatedSalary: finalAmountWithBonuses,
       breakdown: {
         washerPercentage: percentageEarnings,
+        washerWrapExecutionBonus: washerWrapExecutionBonus,
         minimumGuaranteed: respectMinimum
           ? this.settings.minimumPaymentWasher
           : 0,
-        finalAmount,
+        finalAmount: finalAmountWithBonuses,
       },
     };
   }

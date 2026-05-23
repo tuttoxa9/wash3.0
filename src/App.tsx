@@ -8,6 +8,7 @@ import RecordsPage from "@/pages/RecordsPage";
 import ReportsPage from "@/pages/ReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import PayoutsPage from "@/pages/PayoutsPage";
+import WrapsPage from "@/pages/WrapsPage";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
           {
             path: "payouts",
             element: <PayoutsPage />,
+          },
+          {
+            path: "wraps",
+            element: <WrapsPage />,
           },
           {
             path: "settings",
