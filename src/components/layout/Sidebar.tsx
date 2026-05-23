@@ -23,9 +23,10 @@ import {
   WalletCards,
   Trash2,
   X,
+  Scissors,
 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import ChangelogModal from "../ui/ChangelogModal";
 import HelpModal from "../ui/HelpModal";
@@ -48,6 +49,18 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [isChangelogModalOpen, setIsChangelogModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [newNoteText, setNewNoteText] = useState("");
+  const [isWrapsHighlightActive, setIsWrapsHighlightActive] = useState(false);
+
+  useEffect(() => {
+    const checkHighlight = () => {
+      const active = localStorage.getItem("detail_lab_wraps_tour_active") === "true";
+      setIsWrapsHighlightActive(active && window.innerWidth >= 768);
+    };
+
+    checkHighlight();
+    window.addEventListener("detail_lab_tour_update", checkHighlight);
+    return () => window.removeEventListener("detail_lab_tour_update", checkHighlight);
+  }, []);
 
   const currentReport = state.dailyReports[state.currentDate];
   const notes = currentReport?.notes || [];
@@ -262,6 +275,60 @@ const Sidebar: React.FC<SidebarProps> = ({
         </NavLink>
 
         <NavLink
+          to="/wraps"
+          id="sidebar-wraps-link"
+          className={({ isActive }) =>
+            `sidebar-link relative ${isActive ? "active" : ""} ${
+              isWrapsHighlightActive 
+                ? "z-50 ring-4 ring-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.45)] scale-[1.02] bg-secondary/80 border-indigo-500/30 text-indigo-400 font-bold" 
+                : ""
+            }`
+          }
+          onClick={(e) => {
+            if (isWrapsHighlightActive) {
+              e.preventDefault();
+              e.stopPropagation();
+              localStorage.setItem("detail_lab_wraps_tour_completed", "true");
+              localStorage.removeItem("detail_lab_wraps_tour_active");
+              window.dispatchEvent(new Event("detail_lab_tour_update"));
+              toast.success("Приятного пользования!");
+            } else {
+              if (isMobileOpen) toggleMobileSidebar();
+            }
+          }}
+        >
+          <Scissors className={`w-5 h-5 ${isWrapsHighlightActive ? "text-indigo-400 animate-pulse" : ""}`} />
+          <span>Оклейки</span>
+
+          {isWrapsHighlightActive && (
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="absolute left-0 right-0 top-full mt-2 md:left-full md:top-1/2 md:-translate-y-1/2 md:ml-4 md:mt-0 z-[60] w-[260px] md:w-[280px] p-4 bg-zinc-950 border border-indigo-500/30 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.65)] text-foreground pointer-events-auto"
+            >
+              <h4 className="text-xs font-extrabold flex items-center gap-1.5 text-indigo-400 mb-1">
+                ✂️ Новый раздел: Оклейки!
+              </h4>
+              <p className="text-[10px] text-muted-foreground leading-relaxed font-normal normal-case text-left">
+                Мы создали отдельный раздел для сдельного расчета работников. Перейдите в него, чтобы указать фиксированную оплату за выполненные оклейки пост-фактум!
+              </p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  localStorage.setItem("detail_lab_wraps_tour_completed", "true");
+                  localStorage.removeItem("detail_lab_wraps_tour_active");
+                  window.dispatchEvent(new Event("detail_lab_tour_update"));
+                  toast.success("Приятного пользования!");
+                }}
+                className="mt-3 w-full py-1.5 px-3 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-lg text-[10px] transition-all text-center"
+              >
+                Понятно, начать работу!
+              </button>
+            </div>
+          )}
+        </NavLink>
+
+        <NavLink
           to="/settings"
           className={({ isActive }) =>
             `sidebar-link ${isActive ? "active" : ""}`
@@ -424,7 +491,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex sidebar z-0 w-64 min-w-[16rem] h-[100dvh] bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-4 border-r border-border/40 shadow-xl overflow-hidden">
+      <aside className={`hidden md:flex sidebar w-64 min-w-[16rem] h-[100dvh] bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-4 border-r border-border/40 shadow-xl overflow-hidden transition-all duration-300 ${
+        isWrapsHighlightActive ? "z-50 ring-4 ring-indigo-500/20 shadow-[0_0_50px_rgba(99,102,241,0.15)] scale-[1.005]" : "z-0"
+      }`}>
         {sidebarContent}
       </aside>
 
