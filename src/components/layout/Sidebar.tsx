@@ -26,7 +26,7 @@ import {
   Scissors,
 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import ChangelogModal from "../ui/ChangelogModal";
 import HelpModal from "../ui/HelpModal";
