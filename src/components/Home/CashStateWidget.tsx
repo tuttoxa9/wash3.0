@@ -208,47 +208,59 @@ export default function CashStateWidget({
           </h4>
           <div className="grid grid-cols-2 gap-3">
             {/* Начало дня */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <div className="flex items-center justify-between text-muted-foreground mb-2">
-                <span className="text-xs font-medium">Начало дня</span>
-                <Clock className="w-4 h-4 text-muted-foreground/60" />
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <div className="flex items-center justify-between text-muted-foreground mb-1.5">
+                <span className="text-[10px] sm:text-xs font-semibold">Начало дня</span>
+                <Clock className="w-3.5 h-3.5 text-muted-foreground/60" />
               </div>
-              <span className="font-bold text-foreground text-sm sm:text-base whitespace-nowrap">
-                {startCash.toFixed(2)} BYN
-              </span>
+              <div className="flex flex-wrap items-baseline gap-0.5">
+                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
+                  {startCash.toFixed(2)}
+                </span>
+                <span className="text-[9px] font-bold text-muted-foreground/80">BYN</span>
+              </div>
             </div>
 
             {/* По услугам */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <div className="flex items-center justify-between text-muted-foreground mb-2">
-                <span className="text-xs font-medium">Услуги (нал)</span>
-                <TrendingUp className="w-4 h-4 text-green-500/80" />
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <div className="flex items-center justify-between text-muted-foreground mb-1.5">
+                <span className="text-[10px] sm:text-xs font-semibold">Услуги (нал)</span>
+                <TrendingUp className="w-3.5 h-3.5 text-green-500/80" />
               </div>
-              <span className="font-bold text-foreground text-sm sm:text-base whitespace-nowrap">
-                {servicesCash.toFixed(2)} BYN
-              </span>
+              <div className="flex flex-wrap items-baseline gap-0.5">
+                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
+                  {servicesCash.toFixed(2)}
+                </span>
+                <span className="text-[9px] font-bold text-muted-foreground/80">BYN</span>
+              </div>
             </div>
 
             {/* Движение кассы */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <div className="flex items-center justify-between text-muted-foreground mb-2">
-                <span className="text-xs font-medium">Движение</span>
-                <ArrowLeftRight className="w-4 h-4 text-blue-500/80" />
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <div className="flex items-center justify-between text-muted-foreground mb-1.5">
+                <span className="text-[10px] sm:text-xs font-semibold">Движение</span>
+                <ArrowLeftRight className="w-3.5 h-3.5 text-blue-500/80" />
               </div>
-              <span className={`font-bold text-sm sm:text-base whitespace-nowrap ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`}>
-                {totalCashMods > 0 ? "+" : ""}{totalCashMods.toFixed(2)} BYN
-              </span>
+              <div className="flex flex-wrap items-baseline gap-0.5">
+                <span className={`font-extrabold text-sm sm:text-base leading-none ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`}>
+                  {totalCashMods > 0 ? "+" : ""}{totalCashMods.toFixed(2)}
+                </span>
+                <span className="text-[9px] font-bold text-muted-foreground/80">BYN</span>
+              </div>
             </div>
 
             {/* Ожидалось всего */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <div className="flex items-center justify-between text-muted-foreground mb-2">
-                <span className="text-xs font-medium">Ожидалось всего</span>
-                <Coins className="w-4 h-4 text-purple-500/80" />
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <div className="flex items-center justify-between text-muted-foreground mb-1.5">
+                <span className="text-[10px] sm:text-xs font-semibold">Ожидалось всего</span>
+                <Coins className="w-3.5 h-3.5 text-purple-500/80" />
               </div>
-              <span className="font-bold text-foreground text-sm sm:text-base whitespace-nowrap">
-                {expectedGrossCash.toFixed(2)} BYN
-              </span>
+              <div className="flex flex-wrap items-baseline gap-0.5">
+                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
+                  {expectedGrossCash.toFixed(2)}
+                </span>
+                <span className="text-[9px] font-bold text-muted-foreground/80">BYN</span>
+              </div>
             </div>
           </div>
 

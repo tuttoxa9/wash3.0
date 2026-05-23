@@ -2594,7 +2594,7 @@ const HomePage: React.FC = () => {
               />
 
               {showSpotlightTour && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:-translate-y-0 lg:top-full lg:mt-4 z-50 w-[95%] sm:w-full max-w-md p-6 bg-card border border-green-500/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.4)] animate-in fade-in zoom-in-95 duration-300">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 xl:top-0 xl:left-full xl:translate-x-6 xl:translate-y-0 z-50 w-[95%] sm:w-full max-w-md xl:w-[360px] p-6 bg-card border border-green-500/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.4)] animate-in fade-in zoom-in-95 duration-300">
                   <div className="flex items-start gap-4">
                     <div className="p-3 rounded-full bg-green-500/10 text-green-500 flex-shrink-0 animate-bounce">
                       <Wallet className="w-6 h-6" />
