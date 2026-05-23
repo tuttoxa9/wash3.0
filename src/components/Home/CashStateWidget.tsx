@@ -210,44 +210,40 @@ export default function CashStateWidget({
             {/* Начало дня */}
             <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
               <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Начало дня</span>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="font-extrabold text-foreground text-base sm:text-lg leading-none">
+              <div className="mt-2 flex items-baseline">
+                <span className="font-extrabold text-foreground text-base sm:text-lg md:text-xl leading-none">
                   {startCash.toFixed(2)}
                 </span>
-                <span className="text-[9px] font-bold text-muted-foreground/50">BYN</span>
               </div>
             </div>
 
             {/* Нал */}
             <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
               <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Нал</span>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="font-extrabold text-foreground text-base sm:text-lg leading-none">
+              <div className="mt-2 flex items-baseline">
+                <span className="font-extrabold text-foreground text-base sm:text-lg md:text-xl leading-none">
                   {servicesCash.toFixed(2)}
                 </span>
-                <span className="text-[9px] font-bold text-muted-foreground/50">BYN</span>
               </div>
             </div>
 
             {/* Движение кассы */}
             <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
               <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Движение</span>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className={`font-extrabold text-base sm:text-lg leading-none ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`}>
+              <div className="mt-2 flex items-baseline">
+                <span className={`font-extrabold text-base sm:text-lg md:text-xl leading-none ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`}>
                   {totalCashMods > 0 ? "+" : ""}{totalCashMods.toFixed(2)}
                 </span>
-                <span className="text-[9px] font-bold text-muted-foreground/50">BYN</span>
               </div>
             </div>
 
             {/* Ожидалось всего */}
             <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
               <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ожидалось всего</span>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="font-extrabold text-foreground text-base sm:text-lg leading-none">
+              <div className="mt-2 flex items-baseline">
+                <span className="font-extrabold text-foreground text-base sm:text-lg md:text-xl leading-none">
                   {expectedGrossCash.toFixed(2)}
                 </span>
-                <span className="text-[9px] font-bold text-muted-foreground/50">BYN</span>
               </div>
             </div>
           </div>
