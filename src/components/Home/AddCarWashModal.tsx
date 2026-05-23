@@ -50,6 +50,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
         employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : [],
         noAdminCommission: false,
         isIndependentWrap: false,
+        manualWrapperSalary: 0,
       };
     }
 
@@ -65,6 +66,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
       employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : [],
       noAdminCommission: false,
       isIndependentWrap: false,
+      manualWrapperSalary: 0,
     };
   });
 
@@ -190,6 +192,8 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
         return;
       }
 
+      const manualWrapperSalary = Number.parseFloat(formData.manualWrapperSalary?.toString() || "0");
+
       // Создаем новую запись о мойке с корректной структурой
       const newRecord: Omit<CarWashRecord, "id"> = {
         date: selectedDate,
@@ -201,6 +205,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
         paymentMethod,
         employeeIds: isIndependentWrapSale ? [] : formData.employeeIds,
         noAdminCommission: formData.noAdminCommission,
+        manualWrapperSalary: manualWrapperSalary > 0 ? manualWrapperSalary : undefined,
       };
 
       console.log("Отправляем данные записи:", JSON.stringify(newRecord));
@@ -435,6 +440,29 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                 required
               />
             </div>
+
+            {/* Фиксированная зарплата исполнителей (manualWrapperSalary) */}
+            {formData.serviceType !== "wrap_sale" && (
+              <div>
+                <label htmlFor="manualWrapperSalary" className="block text-sm font-medium mb-1">
+                  Фиксированная ЗП исполнителей (BYN, если за услугу платится фикс)
+                </label>
+                <input
+                  type="number"
+                  id="manualWrapperSalary"
+                  name="manualWrapperSalary"
+                  value={formData.manualWrapperSalary || ""}
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  className="w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Если указана, эта сумма разделится поровну между выбранными сотрудниками и начислится сверх смены (как за оклейку), а стандартный процент за эту услугу начисляться не будет.
+                </p>
+              </div>
+            )}
 
             {/* Без админского процента */}
             <div className="flex items-center gap-2 py-1">

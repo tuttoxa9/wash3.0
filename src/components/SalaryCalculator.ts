@@ -213,9 +213,13 @@ export class SalaryCalculator {
       )
       .reduce((sum, record) => sum + record.price * (this.settings.adminWrapSalePercentage / 100), 0);
 
-    // Доля за выполнение оклейки
+    // Доля за выполнение оклейки и сдельных работ (с ручной фикс. зарплатой)
     const washerWrapExecutionBonus = this.records
-      .filter((record) => record.serviceType === "wrap_execution" && record.employeeIds.includes(employeeId))
+      .filter((record) => {
+        const hasManualSalary = (record.manualWrapperSalary !== undefined && record.manualWrapperSalary > 0) || 
+                               (record.paymentMethod?.manualWrapperSalary !== undefined && record.paymentMethod.manualWrapperSalary > 0);
+        return (record.serviceType === "wrap_execution" || hasManualSalary) && record.employeeIds.includes(employeeId);
+      })
       .reduce((sum, record) => {
         const manualSalary = record.manualWrapperSalary || record.paymentMethod?.manualWrapperSalary || 0;
         const share = record.employeeIds.length > 0 ? manualSalary / record.employeeIds.length : 0;
@@ -278,9 +282,13 @@ export class SalaryCalculator {
       ? Math.max(roundedPercentageEarnings, this.settings.minimumPaymentWasher)
       : roundedPercentageEarnings;
 
-    // 5. Расчет доли за выполнение оклейки (сверх гарантии)
+    // 5. Расчет доли за выполнение оклейки и сдельных работ с фиксированной ЗП (сверх гарантии)
     const washerWrapExecutionBonus = this.records
-      .filter((record) => record.serviceType === "wrap_execution" && record.employeeIds.includes(employeeId))
+      .filter((record) => {
+        const hasManualSalary = (record.manualWrapperSalary !== undefined && record.manualWrapperSalary > 0) || 
+                               (record.paymentMethod?.manualWrapperSalary !== undefined && record.paymentMethod.manualWrapperSalary > 0);
+        return (record.serviceType === "wrap_execution" || hasManualSalary) && record.employeeIds.includes(employeeId);
+      })
       .reduce((sum, record) => {
         const manualSalary = record.manualWrapperSalary || record.paymentMethod?.manualWrapperSalary || 0;
         const share = record.employeeIds.length > 0 ? manualSalary / record.employeeIds.length : 0;
@@ -339,6 +347,13 @@ export class SalaryCalculator {
       }
       // Если тип услуги не указан, считаем мойкой для обратной совместимости
       const recordServiceType = record.serviceType || "wash";
+
+      // Исключаем услуги с ручной зарплатой (manualWrapperSalary > 0) из процентного расчета
+      const hasManualSalary = (record.manualWrapperSalary !== undefined && record.manualWrapperSalary > 0) || 
+                             (record.paymentMethod?.manualWrapperSalary !== undefined && record.paymentMethod.manualWrapperSalary > 0);
+      if (hasManualSalary) {
+        return;
+      }
 
       if (
         record.employeeIds.includes(employeeId) &&
