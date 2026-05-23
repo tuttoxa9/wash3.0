@@ -241,20 +241,7 @@ const WrapsPage: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<Date>(() => new Date());
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Spotlight / Подсказка для тура
-  const [showTips, setShowTips] = useState(false);
 
-  useEffect(() => {
-    const completed = localStorage.getItem("detail_lab_wraps_tour_completed");
-    if (!completed) {
-      setShowTips(true);
-    }
-  }, []);
-
-  const handleDismissTips = () => {
-    localStorage.setItem("detail_lab_wraps_tour_completed", "true");
-    setShowTips(false);
-  };
 
   // Собираем все отчеты
   const reportsList = Object.values(state.dailyReports);
@@ -376,41 +363,7 @@ const WrapsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Окно подсказки о новом разделе */}
-      <AnimatePresence>
-        {showTips && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
-            className="p-5 bg-gradient-to-r from-zinc-900 to-indigo-950/20 border border-indigo-500/25 rounded-2xl relative overflow-hidden shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
-          >
-            <div className="absolute inset-0 bg-indigo-500/[0.02] pointer-events-none"></div>
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 text-indigo-400 shrink-0">
-                <HelpCircle className="w-6 h-6 animate-bounce" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-bold text-foreground text-sm flex items-center gap-1.5">
-                  Новый раздел «Оклейки» успешно добавлен!
-                </h3>
-                <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
-                  Поскольку условия по ЗП для оклеек часто согласуются после выполнения, в этом разделе собраны все фактически выполненные оклейки кузова. 
-                  Укажите здесь **фиксированную сумму зарплаты за работу** во встроенном поле. Оплата сразу разделится поровну между всеми исполнителями, 
-                  учтется в их общей зарплате и отобразится во всех финансовых показателях и отчетах.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={handleDismissTips}
-              className="px-4 py-2 bg-indigo-500 text-white font-semibold text-xs rounded-xl hover:bg-indigo-600 active:scale-95 transition-all shadow-lg shadow-indigo-500/15 whitespace-nowrap self-end md:self-center"
-            >
-              Отлично, понятно!
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       {/* Карточки аналитики */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

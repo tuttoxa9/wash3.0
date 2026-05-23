@@ -256,6 +256,7 @@ const HomePage: React.FC = () => {
   } | null>(null);
 
   const [showSpotlightTour, setShowSpotlightTour] = useState(false);
+  const [tourStep, setTourStep] = useState<1 | 2 | null>(null);
   const cashStateWidgetRef = useRef<HTMLDivElement>(null);
 
   // Обработка задержки размонтирования для анимаций закрытия (Vaul Drawer)
@@ -1242,6 +1243,7 @@ const HomePage: React.FC = () => {
       if (!tourCompleted) {
         const timer = setTimeout(() => {
           setShowSpotlightTour(true);
+          setTourStep(1);
           if (cashStateWidgetRef.current) {
             cashStateWidgetRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
           }
@@ -1250,6 +1252,25 @@ const HomePage: React.FC = () => {
       }
     }
   }, [shiftStarted, currentReport, loading.dailyReport]);
+
+  useEffect(() => {
+    const handleTourUpdate = () => {
+      const wrapsCompleted = localStorage.getItem("detail_lab_wraps_tour_completed") === "true";
+      const wrapsActive = localStorage.getItem("detail_lab_wraps_tour_active") === "true";
+      const cashCompleted = localStorage.getItem("detail_lab_cash_tour_completed") === "true";
+
+      if (wrapsCompleted) {
+        setShowSpotlightTour(false);
+        setTourStep(null);
+      } else if (wrapsActive) {
+        setShowSpotlightTour(true);
+        setTourStep(2);
+      }
+    };
+
+    window.addEventListener("detail_lab_tour_update", handleTourUpdate);
+    return () => window.removeEventListener("detail_lab_tour_update", handleTourUpdate);
+  }, []);
 
   // --- RENDERING SPLIT ---
   // If the shift hasn't started, we render the Morning Lobby (Pre-shift state)
@@ -2580,7 +2601,7 @@ const HomePage: React.FC = () => {
             <div
               ref={cashStateWidgetRef}
               className={`mt-6 relative transition-all duration-500 ${
-                showSpotlightTour
+                showSpotlightTour && tourStep === 1
                   ? "z-50 ring-4 ring-green-500/50 shadow-[0_0_50px_rgba(34,197,94,0.25)] rounded-[2.1rem] scale-[1.005]"
                   : ""
               }`}
@@ -2593,7 +2614,7 @@ const HomePage: React.FC = () => {
                 onTransferToSafe={() => setIsTransferSafeModalOpen(true)}
               />
 
-              {showSpotlightTour && (
+              {showSpotlightTour && tourStep === 1 && (
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 xl:top-0 xl:left-full xl:translate-x-6 xl:translate-y-0 z-50 w-[95%] sm:w-full max-w-md xl:w-[360px] p-6 bg-card border border-green-500/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.4)] animate-in fade-in zoom-in-95 duration-300">
                   <div className="flex items-start gap-4">
                     <div className="p-3 rounded-full bg-green-500/10 text-green-500 flex-shrink-0 animate-bounce">
@@ -2623,12 +2644,15 @@ const HomePage: React.FC = () => {
                       <button
                         onClick={() => {
                           localStorage.setItem("detail_lab_cash_tour_completed", "true");
-                          setShowSpotlightTour(false);
-                          toast.success("Отлично! Приятной работы.");
+                          localStorage.setItem("detail_lab_wraps_tour_active", "true");
+                          setTourStep(2);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                          window.dispatchEvent(new Event("detail_lab_tour_update"));
                         }}
-                        className="mt-5 w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-all shadow-md shadow-green-500/10 text-xs"
+                        className="mt-5 w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-all shadow-md shadow-green-500/10 text-xs flex items-center justify-center gap-1"
                       >
-                        Отлично, понятно!
+                        <span>Далее</span>
+                        <span>&rarr;</span>
                       </button>
                     </div>
                   </div>

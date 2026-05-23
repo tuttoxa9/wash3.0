@@ -50,6 +50,20 @@ const LayoutInner: React.FC = () => {
     };
   }, [addNotification]);
 
+  // Автоматически открываем мобильный сайдбар при запуске тура по оклейкам
+  useEffect(() => {
+    const handleTourUpdate = () => {
+      const isWrapsTourActive = localStorage.getItem("detail_lab_wraps_tour_active") === "true";
+      if (isWrapsTourActive && window.innerWidth < 768) {
+        setIsMobileSidebarOpen(true);
+      }
+    };
+
+    handleTourUpdate();
+    window.addEventListener("detail_lab_tour_update", handleTourUpdate);
+    return () => window.removeEventListener("detail_lab_tour_update", handleTourUpdate);
+  }, []);
+
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen((prev) => !prev);
   };
