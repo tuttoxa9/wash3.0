@@ -14,6 +14,7 @@ import { ru } from "date-fns/locale";
 import { toast } from "sonner";
 import EditCarWashModal from "@/components/Home/EditCarWashModal";
 import PasswordAuth from "@/components/ui/PasswordAuth";
+import { calculateEmployeeShare } from "@/lib/employee-utils";
 
 type PeriodType = "day" | "week" | "month" | "custom";
 
@@ -278,26 +279,37 @@ const ServicesPage: React.FC = () => {
                       <td className="px-4 py-3 text-sm">
                         {record.employeeIds.length > 0 ? (
                           <div className="flex flex-col gap-1">
-                            {record.employeeIds.map(empId => {
-                              const emp = state.employees.find((e) => e.id === empId);
-                              const indSal = record.individualSalaries?.[empId] 
-                                || (record.manualWrapperSalary ? record.manualWrapperSalary / record.employeeIds.length : null);
-                              return (
-                                <div key={empId} className="flex items-center justify-between gap-3 text-xs bg-background/50 border border-border/20 px-2 py-1 rounded-md">
-                                  <span className="font-medium text-muted-foreground">{emp ? emp.name : "Неизвестный"}</span>
-                                  {indSal !== null ? (
+                            {(() => {
+                              let totalComputedSalary = 0;
+                              const employeeElements = record.employeeIds.map(empId => {
+                                const emp = state.employees.find((e) => e.id === empId);
+                                let indSal = record.individualSalaries?.[empId] 
+                                  || (record.manualWrapperSalary ? record.manualWrapperSalary / record.employeeIds.length : null);
+                                
+                                if (indSal === null) {
+                                  const role = dailyRoles[recordDateStr]?.[empId] || "washer";
+                                  indSal = calculateEmployeeShare(record, empId, role, state.minimumPaymentSettings);
+                                }
+                                
+                                totalComputedSalary += indSal;
+
+                                return (
+                                  <div key={empId} className="flex items-center justify-between gap-3 text-xs bg-background/50 border border-border/20 px-2 py-1 rounded-md">
+                                    <span className="font-medium text-muted-foreground">{emp ? emp.name : "Неизвестный"}</span>
                                     <span className="font-bold text-foreground">{indSal.toFixed(2)} BYN</span>
-                                  ) : (
-                                    <span className="text-[10px] text-muted-foreground">Процент</span>
-                                  )}
-                                </div>
+                                  </div>
+                                );
+                              });
+
+                              return (
+                                <>
+                                  {employeeElements}
+                                  <div className="mt-1 pt-1 border-t border-border/50 text-[10px] font-bold text-muted-foreground text-right">
+                                    Всего ЗП: {totalComputedSalary.toFixed(2)} BYN
+                                  </div>
+                                </>
                               );
-                            })}
-                            {(record.manualWrapperSalary || record.individualSalaries) && (
-                               <div className="mt-1 pt-1 border-t border-border/50 text-[10px] font-bold text-muted-foreground text-right">
-                                  Всего ЗП: {((record.manualWrapperSalary || 0) + Object.values(record.individualSalaries || {}).reduce((s, v) => s + (v as number || 0), 0) || 0).toFixed(2)} BYN
-                               </div>
-                            )}
+                            })()}
                           </div>
                         ) : (
                           <span className="text-xs text-muted-foreground italic">Нет исполнителей</span>
