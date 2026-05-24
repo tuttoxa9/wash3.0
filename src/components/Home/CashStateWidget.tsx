@@ -206,62 +206,62 @@ export default function CashStateWidget({
           <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
             Финансовые показатели
           </h4>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {/* Начало дня */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
-              <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Начало дня</span>
-              <div className="mt-2 flex items-baseline">
-                <span className="font-extrabold text-foreground text-base sm:text-lg md:text-xl leading-none">
+            <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Начало дня</span>
+              <div className="mt-1 flex items-baseline">
+                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
                   {startCash.toFixed(2)}
                 </span>
               </div>
             </div>
 
             {/* Нал */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
-              <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Нал</span>
-              <div className="mt-2 flex items-baseline">
-                <span className="font-extrabold text-foreground text-base sm:text-lg md:text-xl leading-none">
+            <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Нал</span>
+              <div className="mt-1 flex items-baseline">
+                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
                   {servicesCash.toFixed(2)}
                 </span>
               </div>
             </div>
 
             {/* Движение кассы */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
-              <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Движение</span>
-              <div className="mt-2 flex items-baseline">
-                <span className={`font-extrabold text-base sm:text-lg md:text-xl leading-none ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`}>
+            <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Движение</span>
+              <div className="mt-1 flex items-baseline">
+                <span className={`font-extrabold text-sm sm:text-base leading-none ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`}>
                   {totalCashMods > 0 ? "+" : ""}{totalCashMods.toFixed(2)}
                 </span>
               </div>
             </div>
 
             {/* Ожидалось всего */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
-              <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ожидалось всего</span>
-              <div className="mt-2 flex items-baseline">
-                <span className="font-extrabold text-foreground text-base sm:text-lg md:text-xl leading-none">
+            <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ожидалось</span>
+              <div className="mt-1 flex items-baseline">
+                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
                   {expectedGrossCash.toFixed(2)}
                 </span>
               </div>
             </div>
 
             {/* Выплачено ЗП */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
-              <span className="text-[10px] sm:text-[11px] font-bold text-red-500/80 uppercase tracking-wider">Выплачено ЗП</span>
-              <div className="mt-2 flex items-baseline">
-                <span className="font-extrabold text-red-500 text-base sm:text-lg md:text-xl leading-none">
+            <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <span className="text-[9px] sm:text-[10px] font-bold text-red-500/80 uppercase tracking-wider">Выплачено ЗП</span>
+              <div className="mt-1 flex items-baseline">
+                <span className="font-extrabold text-red-500 text-sm sm:text-base leading-none">
                   -{totalPayouts.toFixed(2)}
                 </span>
               </div>
             </div>
 
             {/* Отложено в сейф */}
-            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
-              <span className="text-[10px] sm:text-[11px] font-bold text-amber-500/80 uppercase tracking-wider">В сейф</span>
-              <div className="mt-2 flex items-baseline">
-                <span className="font-extrabold text-amber-500 text-base sm:text-lg md:text-xl leading-none">
+            <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
+              <span className="text-[9px] sm:text-[10px] font-bold text-amber-500/80 uppercase tracking-wider">В сейф</span>
+              <div className="mt-1 flex items-baseline">
+                <span className="font-extrabold text-amber-500 text-sm sm:text-base leading-none">
                   -{transferredToSafe.toFixed(2)}
                 </span>
               </div>
