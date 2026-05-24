@@ -69,7 +69,15 @@ export function generateDailyReportCsv(
     const time = escapeCsv(record.time);
     const car = escapeCsv(record.carInfo);
     const service = escapeCsv(record.service);
-    const type = record.serviceType === "dryclean" ? "Химчистка" : "Мойка";
+    const type = record.serviceType === "dryclean" 
+      ? "Химчистка" 
+      : record.serviceType === "detailing"
+        ? "Детейлинг"
+        : record.serviceType === "wrap_sale"
+          ? "Продажа оклейки"
+          : record.serviceType === "wrap_execution"
+            ? "Исполнение оклейки"
+            : "Мойка";
     const price = record.price.toFixed(2);
 
     let paymentStr = "Наличные";

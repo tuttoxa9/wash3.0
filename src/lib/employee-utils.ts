@@ -63,6 +63,22 @@ export function calculateEmployeeShare(
     return 0;
   }
 
+  // Если задана индивидуальная ЗП сотрудника, возвращаем ее
+  const individualSalary = record.individualSalaries?.[employeeId];
+  if (typeof individualSalary === "number") {
+    return individualSalary;
+  }
+
+  // Если задана ручная ЗП исполнителей, возвращаем ее долю
+  const manualSalary = record.manualWrapperSalary || 0;
+  if (manualSalary > 0) {
+    return manualSalary / Math.max(1, record.employeeIds.length);
+  }
+
+  if (record.serviceType === "detailing") {
+    return 0;
+  }
+
   if (record.serviceType === "wrap_sale") {
     const share = record.price / Math.max(1, record.employeeIds.length);
     const percentage = settings.adminWrapSalePercentage || 5;

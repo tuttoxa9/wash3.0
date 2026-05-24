@@ -44,12 +44,11 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
         time: prefilledData.time,
         carInfo: prefilledData.carInfo,
         service: prefilledData.service,
-        serviceType: "wash" as "wash" | "dryclean" | "wrap_sale",
+        serviceType: "wash" as "wash" | "dryclean" | "detailing" | "wrap_sale",
         price: 0, // Нужно указать цену
         paymentMethod: { type: "cash" } as PaymentMethod,
         employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : [],
         noAdminCommission: false,
-        isIndependentWrap: false,
         manualWrapperSalary: 0,
       };
     }
@@ -58,14 +57,13 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
       time: format(new Date(), "HH:mm"),
       carInfo: "",
       service: "",
-      serviceType: "wash" as "wash" | "dryclean" | "wrap_sale",
+      serviceType: "wash" as "wash" | "dryclean" | "detailing" | "wrap_sale",
       price: 0,
       paymentMethod: preselectedCertificateId
         ? { type: "certificate", comment: preselectedCertificateId } as PaymentMethod
         : { type: "cash" } as PaymentMethod,
       employeeIds: preselectedEmployeeId ? [preselectedEmployeeId] : [],
       noAdminCommission: false,
-      isIndependentWrap: false,
       manualWrapperSalary: 0,
     };
   });
@@ -156,9 +154,8 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
       return;
     }
 
-    // Проверка наличия хотя бы одного сотрудника (только если это не самостоятельная продажа оклейки)
-    const isIndependentWrapSale = formData.serviceType === "wrap_sale" && formData.isIndependentWrap;
-    if (formData.employeeIds.length === 0 && !isIndependentWrapSale) {
+    // Проверка наличия хотя бы одного сотрудника (только если это не продажа оклейки)
+    if (formData.employeeIds.length === 0 && formData.serviceType !== "wrap_sale") {
       toast.error("Выберите хотя бы одного сотрудника");
       return;
     }
@@ -203,7 +200,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
         serviceType: formData.serviceType,
         price,
         paymentMethod,
-        employeeIds: isIndependentWrapSale ? [] : formData.employeeIds,
+        employeeIds: formData.employeeIds,
         noAdminCommission: formData.noAdminCommission,
         manualWrapperSalary: manualWrapperSalary > 0 ? manualWrapperSalary : undefined,
       };
@@ -243,13 +240,6 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                 await appointmentService.update(updatedAppointment);
 
               if (success) {
-                // Обновляем список записей
-                setAppointments(
-                  appointments.map((app) =>
-                    app.id === appointment.id ? updatedAppointment : app,
-                  ),
-                );
-
                 // Обновляем в глобальном состоянии
                 dispatch({
                   type: "UPDATE_APPOINTMENT",
@@ -363,6 +353,17 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                   }
                 >
                   Химчистка
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData({ ...formData, serviceType: "detailing" })
+                  }
+                  className={
+                    formData.serviceType === "detailing" ? "active" : ""
+                  }
+                >
+                  Детейлинг
                 </button>
                 <button
                   type="button"
@@ -601,93 +602,63 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                 {formData.serviceType === "wrap_sale" ? "Сотрудник, продавший услугу" : "Сотрудники, выполнившие работу"}
               </label>
 
-              {/* Самостоятельная продажа оклейки */}
-              {formData.serviceType === "wrap_sale" && (
-                <div className="flex items-center gap-2 mb-3 bg-muted/30 p-2.5 rounded-xl border border-border/40">
-                  <input
-                    type="checkbox"
-                    id="isIndependentWrap"
-                    checked={formData.isIndependentWrap}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setFormData({
-                        ...formData,
-                        isIndependentWrap: checked,
-                        // Если самостоятельная продажа, очищаем выбранных сотрудников
-                        employeeIds: checked ? [] : (preselectedEmployeeId ? [preselectedEmployeeId] : []),
-                      });
-                    }}
-                    className="rounded border-input text-primary focus:ring-ring"
-                  />
-                  <label htmlFor="isIndependentWrap" className="text-sm font-medium text-foreground cursor-pointer select-none">
-                    Самостоятельная продажа (без админа)
-                  </label>
-                </div>
-              )}
-
-              {/* Список сотрудников рендерится только если это не самостоятельная продажа */}
-              {!(formData.serviceType === "wrap_sale" && formData.isIndependentWrap) ? (
-                <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-input rounded-xl">
-                  {state.employees.length > 0 ? (
-                    // Сортируем сотрудников: сначала те, кто на смене, потом остальные
-                    [...state.employees]
-                      .sort((a, b) => {
-                        const aOnShift = shiftEmployeeIds.includes(a.id);
-                        const bOnShift = shiftEmployeeIds.includes(b.id);
-                        if (aOnShift && !bOnShift) return -1;
-                        if (!aOnShift && bOnShift) return 1;
-                        return 0;
-                      })
-                      .map((employee) => (
-                        <div
-                          key={employee.id}
-                          className="flex items-center gap-2"
+              {/* Список сотрудников */}
+              <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-input rounded-xl">
+                {state.employees.length > 0 ? (
+                  // Сортируем сотрудников: сначала те, кто на смене, потом остальные
+                  [...state.employees]
+                    .sort((a, b) => {
+                      const aOnShift = shiftEmployeeIds.includes(a.id);
+                      const bOnShift = shiftEmployeeIds.includes(b.id);
+                      if (aOnShift && !bOnShift) return -1;
+                      if (!aOnShift && bOnShift) return 1;
+                      return 0;
+                    })
+                    .map((employee) => (
+                      <div
+                        key={employee.id}
+                        className="flex items-center gap-2"
+                      >
+                        <input
+                          type="checkbox"
+                          id={`employee-${employee.id}`}
+                          name="employeeIds"
+                          value={employee.id}
+                          checked={formData.employeeIds.includes(employee.id)}
+                          onChange={handleEmployeeChange}
+                          className="rounded border-input text-primary focus:ring-ring"
+                        />
+                        <label
+                          htmlFor={`employee-${employee.id}`}
+                          className={`flex-1 flex items-center gap-2 text-sm ${shiftEmployeeIds.includes(employee.id) ? "font-medium" : ""}`}
                         >
-                          <input
-                            type="checkbox"
-                            id={`employee-${employee.id}`}
-                            name="employeeIds"
-                            value={employee.id}
-                            checked={formData.employeeIds.includes(employee.id)}
-                            onChange={handleEmployeeChange}
-                            className="rounded border-input text-primary focus:ring-ring"
-                          />
-                          <label
-                            htmlFor={`employee-${employee.id}`}
-                            className={`flex-1 flex items-center gap-2 text-sm ${shiftEmployeeIds.includes(employee.id) ? "font-medium" : ""}`}
-                          >
-                            <span>{employee.name}</span>
-                            {shiftEmployeeIds.includes(employee.id) && (
-                              <span
-                                className={`px-2 py-1 rounded text-xs text-white ${
-                                  employeeRoles[employee.id] === "admin"
-                                    ? "bg-green-500"
-                                    : employeeRoles[employee.id] === "washer"
-                                      ? "bg-blue-500"
-                                      : "bg-gray-500"
-                                }`}
-                              >
-                                {employeeRoles[employee.id] === "admin"
-                                  ? "Админ"
+                          <span>{employee.name}</span>
+                          {shiftEmployeeIds.includes(employee.id) && (
+                            <span
+                              className={`px-2 py-1 rounded text-xs text-white ${
+                                employeeRoles[employee.id] === "admin"
+                                  ? "bg-green-500"
                                   : employeeRoles[employee.id] === "washer"
-                                    ? "Мойщик"
-                                    : "на смене"}
-                              </span>
-                            )}
-                          </label>
-                        </div>
-                      ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground py-2">
-                      Нет доступных сотрудников. Добавьте их в разделе настроек.
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="text-sm text-muted-foreground text-center py-4 bg-muted/10 rounded-xl border border-border/40 border-dashed">
-                  Администратор не выбран (самостоятельная продажа)
-                </div>
-              )}
+                                    ? "bg-blue-500"
+                                    : "bg-gray-500"
+                              }`}
+                            >
+                              {employeeRoles[employee.id] === "admin"
+                                ? "Админ"
+                                : employeeRoles[employee.id] === "washer"
+                                  ? "Мойщик"
+                                  : "на смене"}
+                            </span>
+                          )}
+                        </label>
+                      </div>
+                    ))
+                ) : (
+                  <p className="text-sm text-muted-foreground py-2">
+                    Нет доступных сотрудников. Добавьте их в разделе настроек.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

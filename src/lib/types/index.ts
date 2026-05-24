@@ -41,7 +41,7 @@ export interface CarWashRecord {
   time: string;
   carInfo: string; // Информация об авто, включая гос.номер
   service: string; // Название услуги
-  serviceType?: "wash" | "dryclean" | "wrap_sale" | "wrap_execution"; // Тип услуги: мойка, химчистка, продажа оклейки, исполнение оклейки
+  serviceType?: "wash" | "dryclean" | "wrap_sale" | "wrap_execution" | "detailing"; // Тип услуги: мойка, химчистка, продажа оклейки, исполнение оклейки, детейлинг
   price: number;
   paymentMethod: PaymentMethod;
   employeeIds: string[]; // ID сотрудников, выполнивших работу (несколько человек могут мыть одну машину, включая админов)
@@ -49,6 +49,7 @@ export interface CarWashRecord {
   isExecuted?: boolean; // Флаг для wrap_sale: выполнена ли оклейка
   noAdminCommission?: boolean; // Исключить услугу из процента администратора
   manualWrapperSalary?: number; // Ручная зарплата сотрудников за выполнение оклейки
+  individualSalaries?: Record<string, number>; // Индивидуальные зарплаты исполнителей за эту услугу (employeeId -> amount)
   // Дополнительные поля могут быть добавлены по мере необходимости
 }
 

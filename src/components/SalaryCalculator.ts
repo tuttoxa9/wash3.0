@@ -213,14 +213,21 @@ export class SalaryCalculator {
       )
       .reduce((sum, record) => sum + record.price * (this.settings.adminWrapSalePercentage / 100), 0);
 
-    // Доля за выполнение оклейки и сдельных работ (с ручной фикс. зарплатой)
+    // Доля за выполнение оклейки и сдельных работ (с ручной фикс. или индивидуальной зарплатой)
     const washerWrapExecutionBonus = this.records
       .filter((record) => {
+        const hasIndividual = record.paymentMethod?.individualSalaries !== undefined && 
+                              typeof record.paymentMethod.individualSalaries[employeeId] === "number" &&
+                              record.paymentMethod.individualSalaries[employeeId] > 0;
         const hasManualSalary = (record.manualWrapperSalary !== undefined && record.manualWrapperSalary > 0) || 
                                (record.paymentMethod?.manualWrapperSalary !== undefined && record.paymentMethod.manualWrapperSalary > 0);
-        return (record.serviceType === "wrap_execution" || hasManualSalary) && record.employeeIds.includes(employeeId);
+        return (record.serviceType === "wrap_execution" || hasManualSalary || hasIndividual) && record.employeeIds.includes(employeeId);
       })
       .reduce((sum, record) => {
+        const individualSalary = record.paymentMethod?.individualSalaries?.[employeeId];
+        if (typeof individualSalary === "number") {
+          return sum + individualSalary;
+        }
         const manualSalary = record.manualWrapperSalary || record.paymentMethod?.manualWrapperSalary || 0;
         const share = record.employeeIds.length > 0 ? manualSalary / record.employeeIds.length : 0;
         return sum + share;
@@ -285,11 +292,18 @@ export class SalaryCalculator {
     // 5. Расчет доли за выполнение оклейки и сдельных работ с фиксированной ЗП (сверх гарантии)
     const washerWrapExecutionBonus = this.records
       .filter((record) => {
+        const hasIndividual = record.paymentMethod?.individualSalaries !== undefined && 
+                              typeof record.paymentMethod.individualSalaries[employeeId] === "number" &&
+                              record.paymentMethod.individualSalaries[employeeId] > 0;
         const hasManualSalary = (record.manualWrapperSalary !== undefined && record.manualWrapperSalary > 0) || 
                                (record.paymentMethod?.manualWrapperSalary !== undefined && record.paymentMethod.manualWrapperSalary > 0);
-        return (record.serviceType === "wrap_execution" || hasManualSalary) && record.employeeIds.includes(employeeId);
+        return (record.serviceType === "wrap_execution" || hasManualSalary || hasIndividual) && record.employeeIds.includes(employeeId);
       })
       .reduce((sum, record) => {
+        const individualSalary = record.paymentMethod?.individualSalaries?.[employeeId];
+        if (typeof individualSalary === "number") {
+          return sum + individualSalary;
+        }
         const manualSalary = record.manualWrapperSalary || record.paymentMethod?.manualWrapperSalary || 0;
         const share = record.employeeIds.length > 0 ? manualSalary / record.employeeIds.length : 0;
         return sum + share;
@@ -348,10 +362,13 @@ export class SalaryCalculator {
       // Если тип услуги не указан, считаем мойкой для обратной совместимости
       const recordServiceType = record.serviceType || "wash";
 
-      // Исключаем услуги с ручной зарплатой (manualWrapperSalary > 0) из процентного расчета
+      // Исключаем услуги с ручной зарплатой (manualWrapperSalary > 0) или индивидуальной ЗП из процентного расчета
+      const hasIndividual = record.paymentMethod?.individualSalaries !== undefined && 
+                            typeof record.paymentMethod.individualSalaries[employeeId] === "number" &&
+                            record.paymentMethod.individualSalaries[employeeId] > 0;
       const hasManualSalary = (record.manualWrapperSalary !== undefined && record.manualWrapperSalary > 0) || 
                              (record.paymentMethod?.manualWrapperSalary !== undefined && record.paymentMethod.manualWrapperSalary > 0);
-      if (hasManualSalary) {
+      if (hasManualSalary || hasIndividual) {
         return;
       }
 
