@@ -438,52 +438,89 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                               className="w-full px-2 py-1 border border-input rounded text-sm"
                             />
                           </td>
-                          <td className="py-4 px-4">
-                            <div className="flex gap-1">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setEditFormData({
+                          <td className="py-4 px-4 min-w-[145px]">
+                            <div className="space-y-2">
+                              <div className="flex gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setEditFormData({
+                                      ...editFormData,
+                                      serviceType: "wash",
+                                    })
+                                  }
+                                  className={`px-2 py-1 text-xs rounded flex-1 ${
+                                    editFormData.serviceType === "wash"
+                                      ? "bg-blue-500 text-white"
+                                      : "bg-secondary"
+                                  }`}
+                                >
+                                  Мойка
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setEditFormData({
+                                      ...editFormData,
+                                      serviceType: "dryclean",
+                                    })
+                                  }
+                                  className={`px-2 py-1 text-xs rounded flex-1 ${
+                                    editFormData.serviceType === "dryclean"
+                                      ? "bg-purple-500 text-white"
+                                      : "bg-secondary"
+                                  }`}
+                                >
+                                  Хим
+                                </button>
+                              </div>
+                              <label className="flex items-center gap-1 cursor-pointer select-none text-[10px] font-medium text-muted-foreground hover:text-foreground">
+                                <input
+                                  type="checkbox"
+                                  checked={editFormData.noAdminCommission || false}
+                                  onChange={(e) => setEditFormData({
                                     ...editFormData,
-                                    serviceType: "wash",
-                                  })
-                                }
-                                className={`px-2 py-1 text-xs rounded ${
-                                  editFormData.serviceType === "wash"
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-secondary"
-                                }`}
-                              >
-                                Мойка
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setEditFormData({
-                                    ...editFormData,
-                                    serviceType: "dryclean",
-                                  })
-                                }
-                                className={`px-2 py-1 text-xs rounded ${
-                                  editFormData.serviceType === "dryclean"
-                                    ? "bg-purple-500 text-white"
-                                    : "bg-secondary"
-                                }`}
-                              >
-                                Хим
-                              </button>
+                                    noAdminCommission: e.target.checked
+                                  })}
+                                  className="rounded border-input text-primary w-3.5 h-3.5"
+                                />
+                                <span>Без % админа</span>
+                              </label>
                             </div>
                           </td>
-                          <td className="py-4 px-4">
-                            <input
-                              type="number"
-                              name="price"
-                              value={editFormData.price || 0}
-                              onChange={handleEditFormChange}
-                              step="0.01"
-                              min="0"
-                              className="w-full px-2 py-1 border border-input rounded text-sm text-right"
-                            />
+                          <td className="py-4 px-4 min-w-[120px]">
+                            <div className="space-y-2">
+                              <div>
+                                <label className="block text-[10px] font-medium text-muted-foreground mb-0.5">Стоимость</label>
+                                <input
+                                  type="number"
+                                  name="price"
+                                  value={editFormData.price || 0}
+                                  onChange={handleEditFormChange}
+                                  step="0.01"
+                                  min="0"
+                                  className="w-full px-2 py-1 border border-input rounded text-sm text-right font-medium"
+                                />
+                              </div>
+                              {editFormData.serviceType !== "wrap_sale" && (
+                                <div>
+                                  <label className="block text-[10px] font-medium text-muted-foreground mb-0.5">ЗП раб. (фикс)</label>
+                                  <input
+                                    type="number"
+                                    name="manualWrapperSalary"
+                                    value={editFormData.manualWrapperSalary || ""}
+                                    onChange={(e) => setEditFormData({
+                                      ...editFormData,
+                                      manualWrapperSalary: e.target.value ? Number.parseFloat(e.target.value) || 0 : undefined
+                                    })}
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="0.00"
+                                    className="w-full px-2 py-1 border border-input rounded text-xs text-right font-medium"
+                                  />
+                                </div>
+                              )}
+                            </div>
                           </td>
                           <td className="py-4 px-4">
                             <div className="space-y-2">
@@ -771,6 +808,59 @@ const DailyReportModal: React.FC<DailyReportModalProps> = ({
                             className="w-full px-2 py-1 border border-input rounded text-xs"
                           />
                         </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <label className="block font-medium mb-0.5">
+                            Тип услуги
+                          </label>
+                          <select
+                            name="serviceType"
+                            value={editFormData.serviceType || "wash"}
+                            onChange={handleEditFormChange}
+                            className="w-full px-2 py-1 border border-input rounded text-xs bg-transparent"
+                          >
+                            <option value="wash">Мойка</option>
+                            <option value="dryclean">Химчистка</option>
+                          </select>
+                        </div>
+                        {editFormData.serviceType !== "wrap_sale" && (
+                          <div>
+                            <label className="block font-medium mb-0.5">
+                              ЗП раб. (фикс)
+                            </label>
+                            <input
+                              type="number"
+                              name="manualWrapperSalary"
+                              value={editFormData.manualWrapperSalary || ""}
+                              onChange={(e) => setEditFormData({
+                                ...editFormData,
+                                manualWrapperSalary: e.target.value ? Number.parseFloat(e.target.value) || 0 : undefined
+                              })}
+                              step="0.01"
+                              min="0"
+                              placeholder="0.00"
+                              className="w-full px-2 py-1 border border-input rounded text-xs"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-xs flex items-center gap-1.5 py-1">
+                        <input
+                          type="checkbox"
+                          id={`noAdmin-${record.id}`}
+                          checked={editFormData.noAdminCommission || false}
+                          onChange={(e) => setEditFormData({
+                            ...editFormData,
+                            noAdminCommission: e.target.checked
+                          })}
+                          className="rounded border-input text-primary w-4 h-4"
+                        />
+                        <label htmlFor={`noAdmin-${record.id}`} className="font-medium cursor-pointer select-none">
+                          Без процента админа
+                        </label>
                       </div>
 
                       <div className="text-xs">

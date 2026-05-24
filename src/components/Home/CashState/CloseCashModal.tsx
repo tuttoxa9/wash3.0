@@ -18,6 +18,20 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
   const [loading, setLoading] = useState(false);
   const [actualCash, setActualCash] = useState<string>("");
 
+  const uncalculatedCount = report.records?.filter((record) => {
+    const isUncalculatedType = record.serviceType === "wrap_execution" || record.serviceType === "detailing";
+    const hasExecutors = record.employeeIds && record.employeeIds.length > 0;
+    const hasNoManualSalary = !record.manualWrapperSalary && !record.paymentMethod?.manualWrapperSalary;
+    
+    const individualSalaries = record.paymentMethod?.individualSalaries;
+    const individualSalariesSum = individualSalaries 
+      ? Object.values(individualSalaries).reduce((sum, v) => sum + (v || 0), 0) 
+      : 0;
+    const hasNoIndividualSalaries = individualSalariesSum === 0;
+
+    return isUncalculatedType && hasExecutors && hasNoManualSalary && hasNoIndividualSalaries;
+  }).length || 0;
+
   const cashState = report.cashState;
   const cashMods = (report.cashModifications || []).filter(m => !m.method || m.method === "cash");
   const totalCashMods = cashMods.reduce((sum, mod) => sum + mod.amount, 0);
@@ -35,6 +49,10 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uncalculatedCount > 0) {
+      toast.error("Невозможно закрыть смену: есть нерассчитанные услуги");
+      return;
+    }
     const numActualNetCash = Number.parseFloat(actualCash);
 
     if (Number.isNaN(numActualNetCash) || numActualNetCash < 0) {
@@ -150,6 +168,20 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
           )}
         </div>
 
+        {uncalculatedCount > 0 && (
+          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 mb-6 flex flex-col gap-1.5">
+            <span className="text-sm font-extrabold flex items-center gap-1.5 text-red-400">
+              ⚠️ Блокировка сверки кассы
+            </span>
+            <p className="text-xs leading-relaxed opacity-95">
+              Обнаружено <strong>{uncalculatedCount}</strong> услуг(и) с нулевой зарплатой исполнителей (Детейлинг или Оклейка).
+            </p>
+            <p className="text-xs leading-relaxed opacity-95">
+              Пожалуйста, перейдите в раздел <strong>«Услуги»</strong> в левом меню и укажите ЗП сотрудникам. Кассу нельзя сверить с нулевыми зарплатами исполнителей.
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSave}>
           <div className="mb-6">
             <label className="block text-sm font-medium mb-1.5">
@@ -166,8 +198,9 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
               min="0"
               placeholder="0.00"
               required
+              disabled={uncalculatedCount > 0}
               autoFocus
-              className="w-full px-4 py-3 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-lg font-bold"
+              className="w-full px-4 py-3 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-lg font-bold disabled:opacity-50"
             />
             {actualCash && isDifference && (
               <p className={`text-sm mt-2 font-medium ${difference > 0 ? "text-green-500" : "text-destructive"}`}>
@@ -186,7 +219,7 @@ export default function CloseCashModal({ isOpen, onClose, report }: Props) {
             </button>
             <button
               type="submit"
-              disabled={loading || !actualCash}
+              disabled={loading || !actualCash || uncalculatedCount > 0}
               className="flex-1 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}

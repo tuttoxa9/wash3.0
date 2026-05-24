@@ -334,4 +334,45 @@ describe("SalaryCalculator", () => {
     // 10000 * 40% = 4000.
     expect(unknownResult?.calculatedSalary).toBe(4000);
   });
+
+  it("should calculate custom manual salary and skip regular washer percentages to prevent double payout", () => {
+    const records: CarWashRecord[] = [
+      {
+        id: "1",
+        date: "2023-10-01",
+        time: "10:00",
+        carInfo: "A123BC",
+        service: "Polishing",
+        serviceType: "wash",
+        price: 10000,
+        paymentMethod: { type: "cash" },
+        employeeIds: ["w1", "w2"],
+        manualWrapperSalary: 3000, // 3000 total manual salary split between w1 and w2
+        noAdminCommission: true,
+      },
+    ];
+
+    const calculator = new SalaryCalculator(
+      mockSettings,
+      records,
+      mockRoles,
+      mockEmployees,
+    );
+    const results = calculator.calculateSalaries();
+    const w1Result = results.find((r) => r.employeeId === "w1");
+    const w2Result = results.find((r) => r.employeeId === "w2");
+    const a1Result = results.find((r) => r.employeeId === "a1");
+
+    // w1: minimum guarantee 1000 + 1500 (3000/2) = 2500. Standard percentage (40% of 5000 = 2000) is skipped.
+    expect(w1Result?.calculatedSalary).toBe(2500);
+    expect(w1Result?.breakdown.washerPercentage).toBe(0);
+    expect(w1Result?.breakdown.washerWrapExecutionBonus).toBe(1500);
+
+    // w2: minimum guarantee 1000 + 1500 = 2500.
+    expect(w2Result?.calculatedSalary).toBe(2500);
+
+    // Admin: noAdminCommission = true, so total admin commission revenue is 0.
+    // Admin salary = minimum guaranteed 1500.
+    expect(a1Result?.calculatedSalary).toBe(1500);
+  });
 });
