@@ -154,8 +154,8 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
       return;
     }
 
-    // Проверка наличия хотя бы одного сотрудника (только если это не продажа оклейки)
-    if (formData.employeeIds.length === 0 && formData.serviceType !== "wrap_sale") {
+    // Проверка наличия хотя бы одного сотрудника
+    if (formData.employeeIds.length === 0 && formData.serviceType !== "wrap_sale" && formData.serviceType !== "wrap_execution") {
       toast.error("Выберите хотя бы одного сотрудника");
       return;
     }
@@ -443,11 +443,10 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
             </div>
 
             {/* Фиксированная зарплата исполнителей (manualWrapperSalary) */}
-            {formData.serviceType !== "wrap_sale" && (
-              <div>
-                <label htmlFor="manualWrapperSalary" className="block text-sm font-medium mb-1">
-                  Фиксированная ЗП исполнителей (BYN, если за услугу платится фикс)
-                </label>
+            <div>
+              <label htmlFor="manualWrapperSalary" className="block text-sm font-medium mb-1">
+                Фиксированная ЗП исполнителей (BYN, если за услугу платится фикс)
+              </label>
                 <input
                   type="number"
                   id="manualWrapperSalary"
@@ -463,7 +462,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                   Если указана, эта сумма разделится поровну между выбранными сотрудниками и начислится сверх смены (как за оклейку), а стандартный процент за эту услугу начисляться не будет.
                 </p>
               </div>
-            )}
+            
 
             {/* Без админского процента */}
             <div className="flex items-center gap-2 py-1">
@@ -599,7 +598,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
             {/* Выбор сотрудников */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {formData.serviceType === "wrap_sale" ? "Сотрудник, продавший услугу" : "Сотрудники, выполнившие работу"}
+                Сотрудники, выполнившие работу (или продавшие)
               </label>
 
               {/* Список сотрудников */}

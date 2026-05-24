@@ -168,86 +168,31 @@ const ServicesPage: React.FC = () => {
       </h2>
 
       <div className="card-with-shadow p-4">
-        <h3 className="text-lg font-semibold mb-3">Выбор Периода</h3>
+        <h3 className="text-lg font-semibold mb-3">Выбор Даты</h3>
 
         <div className="space-y-4">
-          <div className="segmented-control mb-4">
-            <button onClick={() => setPeriodType("day")} className={periodType === "day" ? "active" : ""}>День</button>
-            <button onClick={() => setPeriodType("week")} className={periodType === "week" ? "active" : ""}>Неделя</button>
-            <button onClick={() => setPeriodType("month")} className={periodType === "month" ? "active" : ""}>Месяц</button>
-            <button onClick={() => setPeriodType("custom")} className={periodType === "custom" ? "active" : ""}>Период</button>
-          </div>
-
           <div className="flex flex-wrap gap-4">
-            {periodType !== "custom" ? (
-              <div className="w-full sm:w-auto">
-                <label className="block text-sm font-medium mb-1">
-                  {periodType === "day" ? "Дата" : periodType === "week" ? "Неделя" : "Месяц"}
-                </label>
-                <div className="relative" ref={mainDatePickerRef}>
-                  <div
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer"
-                    onClick={() => setActiveDatePicker("main")}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                    <span className="flex-1">
-                      {format(selectedDate, "dd.MM.yyyy")}
-                    </span>
-                  </div>
-                  {activeDatePicker === "main" && (
-                    <input
-                      type="date"
-                      value={format(selectedDate, "yyyy-MM-dd")}
-                      onChange={(e) => handleDateChange(e, "main")}
-                      className="absolute top-12 left-0 z-50 p-2 bg-background border border-border rounded-lg shadow-xl"
-                    />
-                  )}
+            <div className="w-full sm:w-auto">
+              <div className="relative" ref={mainDatePickerRef}>
+                <div
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer"
+                  onClick={() => setActiveDatePicker("main")}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                  <span className="flex-1">
+                    {format(selectedDate, "dd.MM.yyyy")}
+                  </span>
                 </div>
+                {activeDatePicker === "main" && (
+                  <input
+                    type="date"
+                    value={format(selectedDate, "yyyy-MM-dd")}
+                    onChange={(e) => handleDateChange(e, "main")}
+                    className="absolute top-12 left-0 z-50 p-2 bg-background border border-border rounded-lg shadow-xl"
+                  />
+                )}
               </div>
-            ) : (
-              <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Начало</label>
-                  <div className="relative" ref={startDatePickerRef}>
-                    <div
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer"
-                      onClick={() => setActiveDatePicker("start")}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                      <span>{format(startDate, "dd.MM.yyyy")}</span>
-                    </div>
-                    {activeDatePicker === "start" && (
-                      <input
-                        type="date"
-                        value={format(startDate, "yyyy-MM-dd")}
-                        onChange={(e) => handleDateChange(e, "start")}
-                        className="absolute top-12 left-0 z-50 p-2 bg-background border border-border rounded-lg shadow-xl"
-                      />
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Конец</label>
-                  <div className="relative" ref={endDatePickerRef}>
-                    <div
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer"
-                      onClick={() => setActiveDatePicker("end")}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                      <span>{format(endDate, "dd.MM.yyyy")}</span>
-                    </div>
-                    {activeDatePicker === "end" && (
-                      <input
-                        type="date"
-                        value={format(endDate, "yyyy-MM-dd")}
-                        onChange={(e) => handleDateChange(e, "end")}
-                        className="absolute top-12 left-0 z-50 p-2 bg-background border border-border rounded-lg shadow-xl"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
@@ -348,6 +293,11 @@ const ServicesPage: React.FC = () => {
                                 </div>
                               );
                             })}
+                            {(record.manualWrapperSalary || record.individualSalaries) && (
+                               <div className="mt-1 pt-1 border-t border-border/50 text-[10px] font-bold text-muted-foreground text-right">
+                                  Всего ЗП: {((record.manualWrapperSalary || 0) + Object.values(record.individualSalaries || {}).reduce((s, v) => s + (v as number || 0), 0) || 0).toFixed(2)} BYN
+                               </div>
+                            )}
                           </div>
                         ) : (
                           <span className="text-xs text-muted-foreground italic">Нет исполнителей</span>

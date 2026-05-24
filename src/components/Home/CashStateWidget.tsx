@@ -246,6 +246,26 @@ export default function CashStateWidget({
                 </span>
               </div>
             </div>
+
+            {/* Выплачено ЗП */}
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
+              <span className="text-[10px] sm:text-[11px] font-bold text-red-500/80 uppercase tracking-wider">Выплачено ЗП</span>
+              <div className="mt-2 flex items-baseline">
+                <span className="font-extrabold text-red-500 text-base sm:text-lg md:text-xl leading-none">
+                  -{totalPayouts.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            {/* Отложено в сейф */}
+            <div className="bg-muted/10 border border-border/40 rounded-2xl p-4 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200 min-h-[90px]">
+              <span className="text-[10px] sm:text-[11px] font-bold text-amber-500/80 uppercase tracking-wider">В сейф</span>
+              <div className="mt-2 flex items-baseline">
+                <span className="font-extrabold text-amber-500 text-base sm:text-lg md:text-xl leading-none">
+                  -{transferredToSafe.toFixed(2)}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Карточка текущего остатка */}

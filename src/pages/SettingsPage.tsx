@@ -1002,40 +1002,36 @@ const SalaryCalculationSettings: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 pt-2">
-                <div>
+                <div className="opacity-50 relative group">
+                  <div className="absolute -top-2 -right-2 p-1.5 bg-background rounded-full border shadow-sm z-10 text-muted-foreground" title="Настройка отключена">
+                    <Lock className="w-3.5 h-3.5" />
+                  </div>
                   <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
                     % адм за оклейку (продажа)
                   </label>
                   <input
                     type="number"
                     value={minimumSettings.adminWrapSalePercentage || 0}
-                    onChange={(e) =>
-                      setMinimumSettings({
-                        ...minimumSettings,
-                        adminWrapSalePercentage: Number.parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
+                    disabled
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors cursor-not-allowed"
                     placeholder="5"
                     step="0.1"
                     min="0"
                     max="100"
                   />
                 </div>
-                <div>
+                <div className="opacity-50 relative group">
+                  <div className="absolute -top-2 -right-2 p-1.5 bg-background rounded-full border shadow-sm z-10 text-muted-foreground" title="Настройка отключена">
+                    <Lock className="w-3.5 h-3.5" />
+                  </div>
                   <label className="block text-[13px] text-muted-foreground mb-2 font-medium">
                     % мойщика за оклейку (исполнение)
                   </label>
                   <input
                     type="number"
                     value={minimumSettings.washerWrapExecutionPercentage || 0}
-                    onChange={(e) =>
-                      setMinimumSettings({
-                        ...minimumSettings,
-                        washerWrapExecutionPercentage: Number.parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
+                    disabled
+                    className="w-full px-4 py-3 bg-muted/50 text-sm text-foreground border border-input rounded-[12px] focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors cursor-not-allowed"
                     placeholder="40"
                     step="0.1"
                     min="0"
