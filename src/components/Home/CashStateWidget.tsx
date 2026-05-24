@@ -206,12 +206,12 @@ export default function CashStateWidget({
           <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
             Финансовые показатели
           </h4>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             {/* Начало дня */}
             <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Начало дня</span>
-              <div className="mt-1 flex items-baseline">
-                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
+              <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider truncate" title="Начало дня">Начало дня</span>
+              <div className="mt-1 flex items-baseline overflow-hidden">
+                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none truncate" title={startCash.toFixed(2)}>
                   {startCash.toFixed(2)}
                 </span>
               </div>
@@ -219,9 +219,9 @@ export default function CashStateWidget({
 
             {/* Нал */}
             <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Нал</span>
-              <div className="mt-1 flex items-baseline">
-                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
+              <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider truncate" title="Нал">Нал</span>
+              <div className="mt-1 flex items-baseline overflow-hidden">
+                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none truncate" title={servicesCash.toFixed(2)}>
                   {servicesCash.toFixed(2)}
                 </span>
               </div>
@@ -229,9 +229,9 @@ export default function CashStateWidget({
 
             {/* Движение кассы */}
             <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Движение</span>
-              <div className="mt-1 flex items-baseline">
-                <span className={`font-extrabold text-sm sm:text-base leading-none ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`}>
+              <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider truncate" title="Движение">Движение</span>
+              <div className="mt-1 flex items-baseline overflow-hidden">
+                <span className={`font-extrabold text-sm sm:text-base leading-none truncate ${totalCashMods > 0 ? "text-green-500" : totalCashMods < 0 ? "text-red-500" : "text-foreground"}`} title={(totalCashMods > 0 ? "+" : "") + totalCashMods.toFixed(2)}>
                   {totalCashMods > 0 ? "+" : ""}{totalCashMods.toFixed(2)}
                 </span>
               </div>
@@ -239,9 +239,9 @@ export default function CashStateWidget({
 
             {/* Ожидалось всего */}
             <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ожидалось</span>
-              <div className="mt-1 flex items-baseline">
-                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none">
+              <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider truncate" title="Ожидалось">Ожидалось</span>
+              <div className="mt-1 flex items-baseline overflow-hidden">
+                <span className="font-extrabold text-foreground text-sm sm:text-base leading-none truncate" title={expectedGrossCash.toFixed(2)}>
                   {expectedGrossCash.toFixed(2)}
                 </span>
               </div>
@@ -249,9 +249,9 @@ export default function CashStateWidget({
 
             {/* Выплачено ЗП */}
             <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <span className="text-[9px] sm:text-[10px] font-bold text-red-500/80 uppercase tracking-wider">Выплачено ЗП</span>
-              <div className="mt-1 flex items-baseline">
-                <span className="font-extrabold text-red-500 text-sm sm:text-base leading-none">
+              <span className="text-[10px] font-bold text-red-500/80 uppercase tracking-wider truncate" title="Зарплаты">Зарплаты</span>
+              <div className="mt-1 flex items-baseline overflow-hidden">
+                <span className="font-extrabold text-red-500 text-sm sm:text-base leading-none truncate" title={"-" + totalPayouts.toFixed(2)}>
                   -{totalPayouts.toFixed(2)}
                 </span>
               </div>
@@ -259,9 +259,9 @@ export default function CashStateWidget({
 
             {/* Отложено в сейф */}
             <div className="bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col justify-between hover:bg-muted/20 transition-all duration-200">
-              <span className="text-[9px] sm:text-[10px] font-bold text-amber-500/80 uppercase tracking-wider">В сейф</span>
-              <div className="mt-1 flex items-baseline">
-                <span className="font-extrabold text-amber-500 text-sm sm:text-base leading-none">
+              <span className="text-[10px] font-bold text-amber-500/80 uppercase tracking-wider truncate" title="В сейф">В сейф</span>
+              <div className="mt-1 flex items-baseline overflow-hidden">
+                <span className="font-extrabold text-amber-500 text-sm sm:text-base leading-none truncate" title={"-" + transferredToSafe.toFixed(2)}>
                   -{transferredToSafe.toFixed(2)}
                 </span>
               </div>
