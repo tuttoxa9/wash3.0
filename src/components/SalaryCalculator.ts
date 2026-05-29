@@ -211,7 +211,7 @@ export class SalaryCalculator {
         record.noAdminCommission !== true && 
         record.paymentMethod?.noAdminCommission !== true
       )
-      .reduce((sum, record) => sum + record.price * (this.settings.adminWrapSalePercentage / 100), 0);
+      .reduce((sum, record) => sum + record.price * ((this.settings.adminWrapSalePercentage ?? 5) / 100), 0);
 
     // Доля за выполнение оклейки и сдельных работ (с ручной фикс. или индивидуальной зарплатой)
     const washerWrapExecutionBonus = this.records
