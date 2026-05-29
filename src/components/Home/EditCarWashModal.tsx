@@ -144,6 +144,9 @@ const EditCarWashModal: React.FC<EditCarWashModalProps> = ({
     } else if (paymentMethod.type === "organization" && !paymentMethod.organizationId) {
       toast.error("Выберите организацию для оплаты");
       return;
+    } else if (paymentMethod.type === "certificate" && !paymentMethod.comment) {
+      toast.error("Выберите сертификат");
+      return;
     }
 
     const individualSalaries: Record<string, number> = {};
@@ -319,6 +322,27 @@ const EditCarWashModal: React.FC<EditCarWashModalProps> = ({
               <button type="button" onClick={() => handlePaymentTypeChange("debt")} className={formData.paymentMethod.type === "debt" ? "active" : ""}>Долг</button>
               <button type="button" onClick={() => handlePaymentTypeChange("certificate")} className={formData.paymentMethod.type === "certificate" ? "active" : ""}>Сертификат</button>
             </div>
+
+            {formData.paymentMethod.type === "certificate" && (
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Сертификат</label>
+                <select
+                  value={formData.paymentMethod.comment || ""}
+                  onChange={(e) => setFormData({ ...formData, paymentMethod: { ...formData.paymentMethod, comment: e.target.value }})}
+                  className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm"
+                  required
+                >
+                  <option value="" disabled>Выберите сертификат</option>
+                  {(state.certificates || [])
+                    .filter((cert) => cert.status === "active" || formData.paymentMethod.comment === cert.id)
+                    .map((cert) => (
+                      <option key={cert.id} value={cert.id}>
+                        {cert.service} ({cert.amount} BYN) - {new Date(cert.date).toLocaleDateString()}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
 
             {formData.paymentMethod.type === "debt" && (
               <div>
