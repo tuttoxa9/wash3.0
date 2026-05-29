@@ -189,6 +189,16 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
         return;
       }
 
+      // Проверка выбора сертификата
+      if (
+        paymentMethod.type === "certificate" &&
+        !paymentMethod.comment
+      ) {
+        toast.error("Выберите сертификат");
+        setLoading(false);
+        return;
+      }
+
       const manualWrapperSalary = Number.parseFloat(formData.manualWrapperSalary?.toString() || "0");
 
       // Создаем новую запись о мойке с корректной структурой
@@ -530,6 +540,39 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                   Сертификат
                 </button>
               </div>
+
+              {/* Комментарий для долга */}
+              {formData.paymentMethod.type === "certificate" && (
+                <div className="mt-2">
+                  <label htmlFor="certificateSelect" className="block text-sm font-medium mb-1">
+                    Сертификат
+                  </label>
+                  <select
+                    id="certificateSelect"
+                    value={formData.paymentMethod.comment || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        paymentMethod: {
+                          ...formData.paymentMethod,
+                          comment: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full px-4 py-3 bg-muted/50 border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary transition-colors text-[15px]"
+                    required
+                  >
+                    <option value="" disabled>Выберите сертификат</option>
+                    {(state.certificates || [])
+                      .filter((cert) => cert.status === "active" || formData.paymentMethod.comment === cert.id)
+                      .map((cert) => (
+                        <option key={cert.id} value={cert.id}>
+                          {cert.service} ({cert.amount} BYN) - {new Date(cert.date).toLocaleDateString()}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              )}
 
               {/* Комментарий для долга */}
               {formData.paymentMethod.type === "debt" && (
