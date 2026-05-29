@@ -81,13 +81,13 @@ export function calculateEmployeeShare(
 
   if (record.serviceType === "wrap_sale") {
     const share = record.price / Math.max(1, record.employeeIds.length);
-    const percentage = settings.adminWrapSalePercentage || 5;
+    const percentage = settings.adminWrapSalePercentage ?? 5;
     return share * (percentage / 100);
   }
 
   if (record.serviceType === "wrap_execution") {
     const share = record.price / Math.max(1, record.employeeIds.length);
-    const percentage = settings.washerWrapExecutionPercentage || 40;
+    const percentage = settings.washerWrapExecutionPercentage ?? 40;
     return share * (percentage / 100);
   }
 
