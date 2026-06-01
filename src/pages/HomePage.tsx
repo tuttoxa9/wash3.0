@@ -552,7 +552,7 @@ const HomePage: React.FC = () => {
       }
 
       // Вычисляем точные выплаты сотрудникам за этот долг
-      let employeePayouts: Record<string, number> = {};
+      const employeePayouts: Record<string, number> = {};
 
       if (recordToUpdate && recordToUpdate.paymentMethod.isSalaryPaidForDebt === false) {
 

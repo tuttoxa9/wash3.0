@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Plus, X, Loader2, Check, CreditCard, Save } from "lucide-react";
+import type React from "react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, X, Loader2, Check, CreditCard, Save, Pencil } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { useAppContext } from "@/lib/context/AppContext";
 import { carWashService, appointmentService, dailyReportService, certificateService } from "@/lib/services/supabaseService";
@@ -32,6 +33,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
 }) => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
+  const [isCertificateDataLocked, setIsCertificateDataLocked] = useState(false);
 
   // Получаем текущий отчет и его сотрудников
   const currentReport = state.dailyReports[selectedDate] || null;
@@ -149,7 +151,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
     }
 
     const price = Number.parseFloat(formData.price.toString());
-    if (isNaN(price) || price <= 0) {
+    if (Number.isNaN(price) || price <= 0) {
       toast.error("Укажите корректную стоимость");
       return;
     }
@@ -167,9 +169,14 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
       let paymentMethod = { ...formData.paymentMethod };
 
       // Убедимся, что передаются только нужные поля для каждого типа оплаты
-      if (paymentMethod.type === "cash" || paymentMethod.type === "card" || paymentMethod.type === "certificate") {
+      if (paymentMethod.type === "cash" || paymentMethod.type === "card") {
         paymentMethod = {
           type: paymentMethod.type,
+        };
+      } else if (paymentMethod.type === "certificate") {
+        paymentMethod = {
+          type: paymentMethod.type,
+          comment: paymentMethod.comment,
         };
       } else if (paymentMethod.type === "debt") {
         paymentMethod = {
@@ -391,12 +398,24 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
 
             {/* Услуга */}
             <div>
-              <label
-                htmlFor="service"
-                className="block text-sm font-medium mb-1"
-              >
-                Услуга
-              </label>
+              <div className="flex justify-between items-end mb-1">
+                <label
+                  htmlFor="service"
+                  className="block text-sm font-medium"
+                >
+                  Услуга
+                </label>
+                {isCertificateDataLocked && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCertificateDataLocked(false)}
+                    className="text-xs text-primary flex items-center gap-1 hover:underline"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    Редактировать
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 id="service"
@@ -421,7 +440,10 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                     ? "Например: Комплекс"
                     : "Например: Химчистка салона"
                 }
-                className="w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
+                className={`w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring ${
+                  isCertificateDataLocked ? "bg-muted text-muted-foreground opacity-80" : ""
+                }`}
+                disabled={isCertificateDataLocked}
                 required
               />
               <datalist id="services-list">
@@ -447,7 +469,10 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                 placeholder="0.00"
                 step="0.01"
                 min="0"
-                className="w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
+                className={`w-full px-3 py-2 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring ${
+                  isCertificateDataLocked ? "bg-muted text-muted-foreground opacity-80" : ""
+                }`}
+                disabled={isCertificateDataLocked}
                 required
               />
             </div>
@@ -541,7 +566,7 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                 </button>
               </div>
 
-              {/* Комментарий для долга */}
+              {/* Выбор сертификата */}
               {formData.paymentMethod.type === "certificate" && (
                 <div className="mt-2">
                   <label htmlFor="certificateSelect" className="block text-sm font-medium mb-1">
@@ -550,15 +575,21 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
                   <select
                     id="certificateSelect"
                     value={formData.paymentMethod.comment || ""}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
+                    onChange={(e) => {
+                      const selectedCertId = e.target.value;
+                      const selectedCert = (state.certificates || []).find(c => c.id === selectedCertId);
+
+                      setFormData((prev) => ({
+                        ...prev,
+                        service: selectedCert ? selectedCert.service : prev.service,
+                        price: selectedCert ? selectedCert.amount : prev.price,
                         paymentMethod: {
-                          ...formData.paymentMethod,
-                          comment: e.target.value,
+                          ...prev.paymentMethod,
+                          comment: selectedCertId,
                         },
-                      })
-                    }
+                      }));
+                      setIsCertificateDataLocked(true);
+                    }}
                     className="w-full px-4 py-3 bg-muted/50 border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary transition-colors text-[15px]"
                     required
                   >

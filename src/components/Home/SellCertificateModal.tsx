@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { useAppContext } from "@/lib/context/AppContext";
