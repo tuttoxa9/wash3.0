@@ -70,6 +70,25 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
     };
   });
 
+  // Инициализация данных, если передан preselectedCertificateId
+  useEffect(() => {
+    if (preselectedCertificateId && state.certificates) {
+      const selectedCert = state.certificates.find((c) => c.id === preselectedCertificateId);
+      if (selectedCert) {
+        setFormData((prev) => ({
+          ...prev,
+          service: selectedCert.service,
+          price: selectedCert.amount,
+          paymentMethod: {
+            type: "certificate",
+            comment: preselectedCertificateId,
+          },
+        }));
+        setIsCertificateDataLocked(true);
+      }
+    }
+  }, [preselectedCertificateId, state.certificates]);
+
   // Обработка изменений в форме
   const handleChange = (
     e: React.ChangeEvent<
