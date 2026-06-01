@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { CreditCard, BanknotesIcon as Coins, BuildingOfficeIcon as Building2, CheckCircle, X, Check, Loader2, ArrowRight } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { useAppContext } from "@/lib/context/AppContext";

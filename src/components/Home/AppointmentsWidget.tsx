@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import type React from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Loader2, CheckCircle, Clock, ArrowRight, X, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { useAppContext } from "@/lib/context/AppContext";
 import { appointmentService } from "@/lib/services/supabaseService";

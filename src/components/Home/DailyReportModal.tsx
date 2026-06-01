@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { Receipt, X, Loader2, Save, Edit, Trash2, FileDown, Eye, Check } from "lucide-react";
 import BottomSheet from "@/components/ui/BottomSheet";
 import { useAppContext } from "@/lib/context/AppContext";

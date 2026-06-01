@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import type React from "react";
+import { useState, useEffect } from "react";
 import { X, Loader2, Edit3, UserCheck, Check } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import { useAppContext } from "@/lib/context/AppContext";
@@ -158,7 +159,7 @@ const EditCarWashModal: React.FC<EditCarWashModalProps> = ({
     if (requiresSalaries && formData.employeeIds.length > 0) {
         for (const empId of formData.employeeIds) {
             const valStr = salaries[empId] || "0";
-            const val = parseFloat(valStr);
+            const val = Number.parseFloat(valStr);
             if (isNaN(val) || val < 0) {
                 toast.error("Введите корректную сумму зарплаты");
                 return;
@@ -441,7 +442,7 @@ const EditCarWashModal: React.FC<EditCarWashModalProps> = ({
                     <input
                         type="number"
                         value={formData.manualWrapperSalary || ""}
-                        onChange={(e) => setFormData({...formData, manualWrapperSalary: parseFloat(e.target.value) || 0})}
+                        onChange={(e) => setFormData({...formData, manualWrapperSalary: Number.parseFloat(e.target.value) || 0})}
                         placeholder="Общая сумма ЗП на всех..."
                         className="flex-1 px-3 py-1.5 text-sm bg-background border border-input rounded-md"
                     />

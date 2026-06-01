@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import Modal from "./modal";
 import { changelog, type ChangeType } from "@/lib/changelog";
 
