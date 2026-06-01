@@ -263,6 +263,24 @@ const AddCarWashModal: React.FC<AddCarWashModalProps> = ({
             },
           });
 
+          // Если услуга была оплачена сертификатом, отмечаем его как использованный
+          if (paymentMethod.type === "certificate" && paymentMethod.comment) {
+            try {
+              const redeemSuccess = await certificateService.redeem(paymentMethod.comment);
+              if (redeemSuccess) {
+                const usedCert = state.certificates?.find((c) => c.id === paymentMethod.comment);
+                if (usedCert) {
+                  dispatch({
+                    type: "UPDATE_CERTIFICATE",
+                    payload: { ...usedCert, status: "redeemed" },
+                  });
+                }
+              }
+            } catch (error) {
+              console.error("Ошибка при обновлении статуса сертификата:", error);
+            }
+          }
+
           // Если запись была создана из существующей записи на мойку,
           // обновляем статус записи на "completed"
           if (prefilledData) {

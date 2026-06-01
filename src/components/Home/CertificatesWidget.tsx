@@ -23,7 +23,8 @@ const CertificatesWidget: React.FC<CertificatesWidgetProps> = ({
   const { state, dispatch } = useAppContext();
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
 
-  const activeCertificates = state.certificates || [];
+  // Фильтруем только активные сертификаты
+  const activeCertificates = (state.certificates || []).filter(c => c.status === "active");
 
   const handleDeleteCertificate = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
