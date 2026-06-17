@@ -1,6 +1,6 @@
 import AnimatedBackground from "@/components/ui/AnimatedBackground";
 import { useAuth } from "@/lib/context/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
@@ -11,12 +11,96 @@ const LoginPage = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
+  // Refs for seamless mobile background video cross-fading
+  const videoARef = useRef<HTMLVideoElement>(null);
+  const videoBRef = useRef<HTMLVideoElement>(null);
+  const isFirstPlay = useRef(true);
+
   // Если пользователь уже авторизован, перенаправляем на главную
   useEffect(() => {
     if (user) {
       navigate("/");
     }
   }, [user, navigate]);
+
+  const handleTimeUpdateA = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const videoA = e.currentTarget;
+    const videoB = videoBRef.current;
+    if (!videoB) return;
+    
+    const duration = videoA.duration;
+    const currentTime = videoA.currentTime;
+    if (!duration) return;
+    
+    const crossFadeDuration = 1.5;
+    const maxOpacity = 0.25;
+    
+    // First time load: fade in from 0
+    if (isFirstPlay.current && currentTime < 1.0) {
+      videoA.style.opacity = ((currentTime / 1.0) * maxOpacity).toString();
+      return;
+    } else if (isFirstPlay.current && currentTime >= 1.0) {
+      isFirstPlay.current = false;
+      videoA.style.opacity = maxOpacity.toString();
+    }
+    
+    // Near the end of video A: start playing B and cross-fade
+    if (currentTime > duration - crossFadeDuration) {
+      if (videoB.paused) {
+        videoB.currentTime = 0;
+        videoB.play().catch(() => {});
+      }
+      const progress = (currentTime - (duration - crossFadeDuration)) / crossFadeDuration;
+      videoA.style.opacity = (maxOpacity * (1 - progress)).toString();
+      videoB.style.opacity = (maxOpacity * progress).toString();
+    }
+  };
+
+  const handleEndedA = () => {
+    const videoA = videoARef.current;
+    const videoB = videoBRef.current;
+    if (!videoA || !videoB) return;
+    
+    videoA.pause();
+    videoA.currentTime = 0;
+    videoA.style.opacity = "0";
+    videoB.style.opacity = "0.25";
+  };
+
+  const handleTimeUpdateB = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const videoB = e.currentTarget;
+    const videoA = videoARef.current;
+    if (!videoA) return;
+    
+    const duration = videoB.duration;
+    const currentTime = videoB.currentTime;
+    if (!duration) return;
+    
+    const crossFadeDuration = 1.5;
+    const maxOpacity = 0.25;
+    
+    // Near the end of video B: start playing A and cross-fade
+    if (currentTime > duration - crossFadeDuration) {
+      if (videoA.paused) {
+        videoA.currentTime = 0;
+        videoA.play().catch(() => {});
+      }
+      const progress = (currentTime - (duration - crossFadeDuration)) / crossFadeDuration;
+      videoB.style.opacity = (maxOpacity * (1 - progress)).toString();
+      videoA.style.opacity = (maxOpacity * progress).toString();
+    }
+  };
+
+  const handleEndedB = () => {
+    const videoB = videoBRef.current;
+    const videoA = videoARef.current;
+    if (!videoB || !videoA) return;
+    
+    videoB.pause();
+    videoB.currentTime = 0;
+    videoB.style.opacity = "0";
+    videoA.style.opacity = "0.25";
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,58 +120,82 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Анимированный фон */}
-      <AnimatedBackground />
+      {/* Background video A for mobile only */}
+      <video
+        ref={videoARef}
+        src="/main.mp4"
+        autoPlay
+        muted
+        playsInline
+        onTimeUpdate={handleTimeUpdateA}
+        onEnded={handleEndedA}
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0 block md:hidden transition-opacity duration-300"
+        style={{ opacity: 0 }}
+      />
 
-      <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="text-center mb-8 flex justify-center w-full px-4 select-none pointer-events-none relative group">
-          <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/20 black:bg-blue-500/40 blur-[45px] rounded-full scale-[1.4] z-[-1] pointer-events-none opacity-100 dark:opacity-60 transition-opacity duration-1000 ease-in"></div>
-          <div className="bg-transparent dark:bg-transparent black:bg-zinc-950 px-5 py-3 rounded-2xl shadow-sm dark:shadow-none border border-transparent dark:border-transparent black:border-zinc-800/50 transition-colors select-none pointer-events-none relative z-10">
-            <img src="/logo.png" alt="Detail Lab" className="h-16 md:h-20 w-auto object-contain drop-shadow-lg select-none pointer-events-none" draggable="false" />
-          </div>
+      {/* Background video B for mobile only */}
+      <video
+        ref={videoBRef}
+        src="/main.mp4"
+        muted
+        playsInline
+        onTimeUpdate={handleTimeUpdateB}
+        onEnded={handleEndedB}
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0 block md:hidden transition-opacity duration-300"
+        style={{ opacity: 0 }}
+      />
+      
+      {/* Dark overlay for mobile video background */}
+      <div className="absolute inset-0 bg-black/30 pointer-events-none z-[1] block md:hidden" />
+
+      {/* Анимированный фон для десктопа */}
+      <div className="hidden md:block">
+        <AnimatedBackground />
+      </div>
+
+      <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 black:bg-blue-500/15 blur-[60px] rounded-full scale-[1.2] z-[-1] pointer-events-none"></div>
+
+      <div className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col gap-4">
+        {/* Logo */}
+        <div className="text-center flex flex-col items-center gap-1 mb-1">
+          <img src="/logo.png" alt="Detail Lab" className="h-10 w-auto object-contain drop-shadow-md select-none pointer-events-none" draggable="false" />
+          <p className="text-[9px] text-white/40 mt-1">Авторизация</p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-gray-900/30 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/10">
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-black/30 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all duration-200 backdrop-blur-sm"
-              />
+        <form onSubmit={handleLogin} className="space-y-3">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-3.5 py-2 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
+          />
+
+          <input
+            type="password"
+            placeholder="Пароль"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-3.5 py-2 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
+          />
+
+          {error && (
+            <div className="text-red-350 text-[10px] text-center bg-red-950/20 py-2 px-3 rounded-2xl border-0">
+              {error}
             </div>
+          )}
 
-            <div>
-              <input
-                type="password"
-                placeholder="Пароль"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-black/30 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/30 transition-all duration-200 backdrop-blur-sm"
-              />
-            </div>
-
-            {error && (
-              <div className="text-red-300 text-sm text-center bg-red-900/30 py-2 px-4 rounded-lg border border-red-500/30 backdrop-blur-sm">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-white text-black font-medium rounded-xl hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-            >
-              {loading ? "Вход..." : "Войти"}
-            </button>
-          </form>
-        </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2 mt-1 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] transition-all text-xs font-bold rounded-2xl text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_4px_15px_rgba(0,0,0,0.2)] border-0"
+          >
+            {loading ? "Вход..." : "Войти"}
+          </button>
+        </form>
       </div>
     </div>
   );
