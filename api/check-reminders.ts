@@ -48,8 +48,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const diffMs = nextStepTime.getTime() - now.getTime();
       const diffMinutes = Math.round(diffMs / 60000);
 
-      const notifyBeforeList = lead.notify_before || [];
-      const sentNotifications = lead.sent_notifications || [];
+      const notifyBeforeList = (lead.notify_before || []).map(Number);
+      const sentNotifications = (lead.sent_notifications || []).map(Number);
 
       // Находим все пороги напоминаний, которые подошли по времени, но еще не были отправлены
       const dueThresholds = notifyBeforeList.filter(minutes => 
@@ -117,13 +117,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const updatedHistory = [...(lead.history || []), historyEntry];
 
         // Сохраняем изменения в БД
-        await supabase
+        const { error: dbError } = await supabase
           .from("crm_leads")
           .update({
             sent_notifications: updatedSentNotifications,
             history: updatedHistory
           })
           .eq("id", lead.id);
+
+        if (dbError) {
+          console.error(`Supabase update error for lead ${lead.id}:`, dbError);
+        }
 
         sentReport.push({ leadId: lead.id, client: lead.name, minutes: targetMinutes });
       }
