@@ -244,6 +244,17 @@ const Sidebar: React.FC<SidebarProps> = ({
           <Home className="w-5 h-5" />
           <span>Главная</span>
         </NavLink>
+
+        <a
+          href="/crm"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="sidebar-link"
+          onClick={() => isMobileOpen && toggleMobileSidebar()}
+        >
+          <LayoutDashboard className="w-5 h-5" />
+          <span>CRM</span>
+        </a>
         <NavLink
           to="/records"
           className={({ isActive }) =>

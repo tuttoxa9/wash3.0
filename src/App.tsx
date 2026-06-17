@@ -9,12 +9,23 @@ import ReportsPage from "@/pages/ReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import PayoutsPage from "@/pages/PayoutsPage";
 import ServicesPage from "@/pages/ServicesPage";
+import CrmPage from "@/pages/CrmPage";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/crm",
+    element: <ProtectedRoute />,
+    children: [
+      {
+        index: true,
+        element: <CrmPage />,
+      },
+    ],
   },
   {
     path: "/",

@@ -55,7 +55,17 @@
       ]
     }
   ],
+  "crons": [
+    {
+      "path": "/api/check-reminders",
+      "schedule": "*/5 * * * *"
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

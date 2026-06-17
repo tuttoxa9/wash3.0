@@ -208,3 +208,49 @@ export type AppAction =
   | { type: "SET_SAFE_TRANSACTIONS"; payload: SafeTransaction[] }
   | { type: "ADD_SAFE_TRANSACTION"; payload: SafeTransaction }
   | { type: "SET_INITIALIZED"; payload: boolean };
+
+// Типы для CRM системы
+export type CRMLeadStatus =
+  | "new"         // Новый
+  | "in_work"     // В работе
+  | "appointment" // Приезд
+  | "call_back"   // Перезвон
+  | "no_answer"   // Недозвон
+  | "thinking"    // Думает
+  | "won"         // Сделка завершена
+  | "lost";       // Отказ
+
+export interface CRMHistoryEntry {
+  id: string;
+  type: "status" | "note" | "price" | "service" | "creation" | "other";
+  text: string;
+  createdAt: string;
+  author?: string;
+  fromValue?: string;
+  toValue?: string;
+}
+
+export interface CRMLead {
+  id: string;
+  createdAt: string;
+  name: string;
+  phone: string;
+  car?: string;
+  status: CRMLeadStatus;
+  source?: string;
+  service?: string;
+  price: number;
+  nextStepDate?: string; // ISO string
+  notifyBefore: number[]; // e.g. [10, 20, 30]
+  sentNotifications?: number[]; // e.g. [10, 30]
+  notes?: string;
+  history: CRMHistoryEntry[];
+}
+
+export interface CRMSettings {
+  telegramBotToken: string;
+  telegramChatId: string;
+  telegramEnabled: boolean;
+  webhookApiKey: string;
+}
+
