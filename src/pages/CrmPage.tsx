@@ -105,6 +105,46 @@ const SOURCE_COLORS: Record<string, string> = {
   "другое": "bg-gray-500/10 text-gray-400 border-gray-500/20"
 };
 
+// Обои для рабочего стола CRM
+const WALLPAPERS = [
+  {
+    id: "indigo",
+    name: "Индиго абстракт",
+    url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=80",
+    thumb: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=200&q=80"
+  },
+  {
+    id: "purple",
+    name: "Фиолетовый шелк",
+    url: "https://images.unsplash.com/photo-1618005198143-e5283b519a7f?auto=format&fit=crop&w=1920&q=80",
+    thumb: "https://images.unsplash.com/photo-1618005198143-e5283b519a7f?auto=format&fit=crop&w=200&q=80"
+  },
+  {
+    id: "green",
+    name: "Изумрудное стекло",
+    url: "https://images.unsplash.com/photo-1618005174098-b80c353b1b6d?auto=format&fit=crop&w=1920&q=80",
+    thumb: "https://images.unsplash.com/photo-1618005174098-b80c353b1b6d?auto=format&fit=crop&w=200&q=80"
+  },
+  {
+    id: "orange",
+    name: "Оранжевый неон",
+    url: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=1920&q=80",
+    thumb: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=200&q=80"
+  },
+  {
+    id: "dark",
+    name: "Темный абстракт",
+    url: "https://images.unsplash.com/photo-1604871000636-074fa5117945?auto=format&fit=crop&w=1920&q=80",
+    thumb: "https://images.unsplash.com/photo-1604871000636-074fa5117945?auto=format&fit=crop&w=200&q=80"
+  },
+  {
+    id: "lavender",
+    name: "Лавандовый неон",
+    url: "https://images.unsplash.com/photo-1634017851502-c81766a0665f?auto=format&fit=crop&w=1920&q=80",
+    thumb: "https://images.unsplash.com/photo-1634017851502-c81766a0665f?auto=format&fit=crop&w=200&q=80"
+  }
+];
+
 // Функция форматирования белорусских номеров телефонов
 const formatBYPhone = (val: string): string => {
   let digits = val.replace(/\D/g, "");
@@ -170,16 +210,16 @@ function CustomSelect<T extends string>({ value, onChange, options, label }: Cus
 
   return (
     <div className={`relative ${isOpen ? 'z-50' : 'z-10'}`}>
-      {label && <label className="text-[10px] text-muted-foreground/80 dark:text-muted-foreground block mb-1">{label}</label>}
+      {label && <label className="text-[10px] text-white/60 block mb-1">{label}</label>}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-10 px-3 bg-muted/50 border border-border rounded-xl text-foreground text-xs flex items-center justify-between focus:outline-none focus:border-primary/50 transition-colors"
+        className="w-full h-10 px-3 bg-white/[0.04] text-white rounded-xl text-xs flex items-center justify-between focus:outline-none transition-colors"
       >
         <span className="truncate mr-2">{selectedOption?.label || value || "Выберите..."}</span>
         <motion.span 
           animate={{ rotate: isOpen ? 180 : 0 }} 
-          className="text-muted-foreground/60 text-[9px]"
+          className="text-white/40 text-[9px]"
         >
           ▼
         </motion.span>
@@ -194,7 +234,7 @@ function CustomSelect<T extends string>({ value, onChange, options, label }: Cus
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="absolute left-0 right-0 mt-1.5 bg-card border border-zinc-850 rounded-xl shadow-2xl z-20 py-1 overflow-hidden divide-y divide-zinc-900"
+              className="absolute left-0 right-0 mt-1.5 bg-black/60 backdrop-blur-2xl border border-white/5 rounded-xl shadow-2xl z-20 py-1 overflow-hidden divide-y divide-white/5"
             >
               {options.map(opt => (
                 <button
@@ -206,8 +246,8 @@ function CustomSelect<T extends string>({ value, onChange, options, label }: Cus
                   }}
                   className={`w-full text-left px-3.5 py-2.5 text-xs transition-colors flex items-center justify-between
                     ${opt.value === value 
-                      ? "bg-muted-foreground/20 text-foreground font-bold" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+                      ? "bg-white/10 text-white font-bold" 
+                      : "text-white/60 hover:text-white hover:bg-white/[0.05]"}`}
                 >
                   <span className="truncate">{opt.label}</span>
                   {opt.value === value && <Check className="w-3.5 h-3.5" />}
@@ -239,20 +279,20 @@ const RightDrawer: React.FC<RightDrawerProps> = ({ isOpen, onClose, title, child
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-background/75 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/45 backdrop-blur-sm z-50"
           />
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 32, stiffness: 320 }}
-            className="fixed right-0 top-0 bottom-0 w-full sm:w-[500px] md:w-[580px] bg-card border-l border-border text-foreground shadow-2xl z-[100] flex flex-col h-full overflow-hidden"
+            className="fixed right-0 top-0 bottom-0 w-full sm:w-[500px] md:w-[580px] bg-black/55 backdrop-blur-[32px] border-l border-white/5 text-white shadow-2xl z-[100] flex flex-col h-full overflow-hidden"
           >
-            <div className="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
-              <h3 className="text-base font-bold text-foreground tracking-tight">{title}</h3>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 shrink-0">
+              <h3 className="text-base font-bold text-white tracking-tight">{title}</h3>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg bg-muted hover:bg-muted-foreground/20 text-muted-foreground hover:text-foreground transition-colors"
+                className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -368,6 +408,14 @@ const CrmPage: React.FC = () => {
   const [loadingLeads, setLoadingLeads] = useState(false);
   const [activeTab, setActiveTab] = useState<CRMLeadStatus | "all">("new");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedWallpaper, setSelectedWallpaper] = useState(() => {
+    return localStorage.getItem("crm_wallpaper") || WALLPAPERS[0].url;
+  });
+
+  const handleSelectWallpaper = (url: string) => {
+    setSelectedWallpaper(url);
+    localStorage.setItem("crm_wallpaper", url);
+  };
 
   // Modals states
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
@@ -1072,6 +1120,27 @@ const CrmPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Выбор Обоев */}
+            <div className="p-3 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
+              <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
+                Обои рабочего стола
+              </span>
+              <div className="grid grid-cols-3 gap-1.5">
+                {WALLPAPERS.map(wp => (
+                  <button
+                    key={wp.id}
+                    type="button"
+                    onClick={() => handleSelectWallpaper(wp.url)}
+                    className={`relative aspect-video rounded-lg overflow-hidden border-0 transition-all active:scale-[0.95]
+                      ${selectedWallpaper === wp.url ? "ring-2 ring-white/80" : "opacity-60 hover:opacity-100"}`}
+                    title={wp.name}
+                  >
+                    <img src={wp.thumb} alt={wp.name} className="w-full h-full object-cover pointer-events-none" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Telegram */}
             <div className="p-3 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
               <div className="flex items-center justify-between">
@@ -1296,23 +1365,23 @@ const CrmPage: React.FC = () => {
         </aside>
 
         {/* ПРАВАЯ КОЛОНКА */}
-        <main className="flex-1 flex flex-col min-w-0 bg-background h-screen overflow-hidden">
+        <main className="flex-1 flex flex-col min-w-0 bg-transparent h-screen overflow-hidden">
           
           {/* МОБИЛЬНОЕ МЕНЮ СТАТУСОВ (Показывается только если mobileViewLevel === "statuses") */}
-          <div className={`md:hidden flex-1 flex-col ${mobileViewLevel === "statuses" ? "flex" : "hidden"} bg-background h-full overflow-y-auto custom-scrollbar`}>
+          <div className={`md:hidden flex-1 flex-col ${mobileViewLevel === "statuses" ? "flex" : "hidden"} bg-transparent h-full overflow-y-auto custom-scrollbar`}>
             <div className="flex items-center justify-between px-5 pt-6 pb-4 shrink-0">
-              <h1 className="text-xl font-bold text-foreground tracking-tight">CRM Клиенты</h1>
+              <h1 className="text-xl font-bold text-white tracking-tight">CRM Клиенты</h1>
               <div className="flex gap-2.5">
                 <button
                   onClick={() => setIsAddDrawerOpen(true)}
-                  className="h-10 px-4 bg-primary text-primary-foreground rounded-xl flex items-center justify-center font-bold active:scale-95 transition-transform shadow-md text-sm gap-2"
+                  className="h-10 px-4 bg-white text-black font-semibold rounded-xl flex items-center justify-center active:scale-95 transition-transform shadow-md text-sm gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Лид
                 </button>
                 <button
                   onClick={() => setViewMode("gate")}
-                  className="h-10 w-10 bg-muted/80 text-foreground rounded-xl flex items-center justify-center active:scale-95 transition-transform border border-border/40"
+                  className="h-10 w-10 bg-white/[0.04] text-white rounded-xl flex items-center justify-center active:scale-95 transition-transform border-0 hover:bg-white/[0.08]"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -1321,21 +1390,21 @@ const CrmPage: React.FC = () => {
 
             <div className="px-5 pb-6 space-y-4">
               <div className="space-y-2.5">
-                <h3 className="text-[10px] font-bold text-muted-foreground/80 tracking-widest uppercase px-1">Основные</h3>
+                <h3 className="text-[10px] font-bold text-white/40 tracking-widest uppercase px-1">Основные</h3>
                 <div className="flex flex-col gap-2">
                   {(["all", "new", "in_work", "appointment", "call_back", "no_answer", "thinking"] as const).map(tab => (
                     <button
                       key={tab}
                       onClick={() => { setActiveTab(tab); setMobileViewLevel("leads"); }}
-                      className="w-full p-3.5 bg-card border border-border/40 rounded-2xl flex items-center justify-between active:scale-[0.98] transition-all shadow-sm hover:border-primary/50 group"
+                      className="w-full p-3.5 bg-white/[0.04] rounded-2xl flex items-center justify-between active:scale-[0.98] transition-all shadow-sm border-0 group"
                     >
                       <div className="flex items-center gap-3.5">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${tab === 'new' ? 'bg-blue-500 text-white' : 'bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary'}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${tab === 'new' ? 'bg-blue-500 text-white' : 'bg-white/[0.08] text-white'}`}>
                           {STATUS_ICONS[tab]}
                         </div>
-                        <span className="text-sm font-bold text-foreground">{tab === "all" ? "Все лиды" : STATUS_LABELS[tab]}</span>
+                        <span className="text-sm font-bold text-white">{tab === "all" ? "Все лиды" : STATUS_LABELS[tab]}</span>
                       </div>
-                      <span className="text-sm font-black text-muted-foreground bg-muted/50 px-3 py-1 rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                      <span className="text-sm font-black text-white/60 bg-white/[0.08] px-3 py-1 rounded-full group-hover:bg-white/[0.14] transition-colors">
                         {getTabCount(tab)}
                       </span>
                     </button>
@@ -1344,30 +1413,30 @@ const CrmPage: React.FC = () => {
               </div>
 
               <div className="space-y-2.5 pt-2">
-                <h3 className="text-[10px] font-bold text-muted-foreground/80 tracking-widest uppercase px-1">Завершенные</h3>
+                <h3 className="text-[10px] font-bold text-white/40 tracking-widest uppercase px-1">Завершенные</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => { setActiveTab("won"); setMobileViewLevel("leads"); }}
-                    className="p-3.5 bg-card border border-border/40 rounded-2xl flex items-center gap-3 active:scale-[0.98]"
+                    className="p-3.5 bg-white/[0.04] rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0"
                   >
-                    <div className="w-8 h-8 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
                       {STATUS_ICONS["won"]}
                     </div>
                     <div className="text-left min-w-0 flex-1">
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase truncate">{STATUS_LABELS["won"]}</div>
-                      <div className="text-sm font-black text-foreground">{getTabCount("won")}</div>
+                      <div className="text-[10px] font-bold text-white/40 uppercase truncate">{STATUS_LABELS["won"]}</div>
+                      <div className="text-sm font-black text-white">{getTabCount("won")}</div>
                     </div>
                   </button>
                   <button
                     onClick={() => { setActiveTab("lost"); setMobileViewLevel("leads"); }}
-                    className="p-3.5 bg-card border border-border/40 rounded-2xl flex items-center gap-3 active:scale-[0.98]"
+                    className="p-3.5 bg-white/[0.04] rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0"
                   >
-                    <div className="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
                       {STATUS_ICONS["lost"]}
                     </div>
                     <div className="text-left min-w-0 flex-1">
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase truncate">{STATUS_LABELS["lost"]}</div>
-                      <div className="text-sm font-black text-foreground">{getTabCount("lost")}</div>
+                      <div className="text-[10px] font-bold text-white/40 uppercase truncate">{STATUS_LABELS["lost"]}</div>
+                      <div className="text-sm font-black text-white">{getTabCount("lost")}</div>
                     </div>
                   </button>
                 </div>
@@ -1376,25 +1445,25 @@ const CrmPage: React.FC = () => {
           </div>
 
           {/* СПИСОК ЛИДОВ (Показывается всегда на Desktop, а на Mobile только если mobileViewLevel === "leads") */}
-          <div className={`flex-1 flex-col min-w-0 bg-background h-full ${mobileViewLevel === "leads" ? "flex" : "hidden md:flex"}`}>
+          <div className={`flex-1 flex-col min-w-0 bg-transparent h-full ${mobileViewLevel === "leads" ? "flex" : "hidden md:flex"}`}>
             
             {/* Шапка для мобильных (внутри списка лидов) */}
-            <div className="md:hidden flex flex-col gap-3 px-4 pt-4 pb-2 border-b border-border/40 shrink-0">
+            <div className="md:hidden flex flex-col gap-3 px-4 pt-4 pb-2 border-b border-white/5 shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setMobileViewLevel("statuses")}
-                    className="p-2 -ml-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-full hover:bg-muted"
+                    className="p-2 -ml-2 text-white/60 hover:text-white active:scale-95 transition-all rounded-full hover:bg-white/[0.08]"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
-                  <h1 className="text-sm font-bold text-foreground uppercase tracking-wider">
+                  <h1 className="text-sm font-bold text-white uppercase tracking-wider">
                     {activeTab === "all" ? "Все лиды" : STATUS_LABELS[activeTab]}
                   </h1>
                 </div>
                 <button
                   onClick={() => setIsAddDrawerOpen(true)}
-                  className="h-8 w-8 bg-primary text-primary-foreground rounded-lg flex items-center justify-center active:scale-95 transition-transform shadow-sm"
+                  className="h-8 w-8 bg-white text-black rounded-lg flex items-center justify-center active:scale-95 transition-transform shadow-sm"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -1402,19 +1471,20 @@ const CrmPage: React.FC = () => {
             </div>
 
             {/* Строка поиска */}
-          <div className="p-4 sm:p-6 border-b border-border/40 shrink-0 flex items-center justify-between">
+          <div className="p-4 sm:p-6 border-b border-white/5 shrink-0 flex items-center justify-between">
             <div className="relative flex items-center w-full max-w-md">
-              <Search className="w-4 h-4 text-muted-foreground/60 absolute left-3 pointer-events-none" />
+              <Search className="w-4 h-4 text-white/40 absolute left-3 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-9 pr-4 bg-card border border-border/40 rounded-xl text-foreground/90 text-xs focus:outline-none focus:border-border transition-all font-medium"
+                placeholder="Поиск..."
+                className="w-full h-10 pl-9 pr-4 bg-white/[0.04] dark:bg-black/25 text-white placeholder-white/25 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-all font-medium"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 p-1 rounded-full text-muted-foreground/80 hover:text-foreground"
+                  className="absolute right-3 p-1 rounded-full text-white/60 hover:text-white"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -1422,7 +1492,7 @@ const CrmPage: React.FC = () => {
             </div>
 
             <div className="hidden md:flex items-center gap-3">
-              <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-widest bg-card border border-border/40 px-3 py-1.5 rounded-full">
+              <span className="text-[10px] text-white/60 font-bold uppercase tracking-widest bg-white/[0.04] px-3 py-1.5 rounded-full">
                 Активный фильтр: {activeTab === "all" ? "Вся база" : STATUS_LABELS[activeTab]}
               </span>
             </div>
@@ -1432,17 +1502,17 @@ const CrmPage: React.FC = () => {
           <div className="flex-1 overflow-auto p-4 sm:p-6 custom-scrollbar">
             {loadingLeads ? (
               <div className="h-[50vh] flex items-center justify-center">
-                <RefreshCw className="w-6 h-6 text-zinc-700 animate-spin" />
+                <RefreshCw className="w-6 h-6 text-white/40 animate-spin" />
               </div>
             ) : sortedGroupKeys.length === 0 ? (
-              <div className="h-[40vh] bg-card/20 border border-dashed border-border/40 rounded-2xl flex flex-col items-center justify-center text-center p-6">
-                <Inbox className="w-8 h-8 text-zinc-700 mb-3" />
-                <h3 className="text-xs font-semibold text-muted-foreground/80">Заявок не найдено</h3>
+              <div className="h-[40vh] bg-white/[0.02] border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center p-6">
+                <Inbox className="w-8 h-8 text-white/40 mb-3" />
+                <h3 className="text-xs font-semibold text-white/60">Заявок не найдено</h3>
               </div>
             ) : (
               <div className="space-y-8">
                 
-                <div className="hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 px-5 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider select-none shrink-0 border-b border-border/40/60 pb-2">
+                <div className="hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 px-5 text-[10px] font-bold text-white/40 uppercase tracking-wider select-none shrink-0 border-b border-white/5 pb-2">
                   <span>Ист.</span>
                   <span>Имя</span>
                   <span>Телефон</span>
@@ -1476,31 +1546,31 @@ const CrmPage: React.FC = () => {
                                   setSelectedLead(lead);
                                   setIsDetailOpen(true);
                                 }}
-                                className="hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 items-center px-5 py-3.5 bg-card/20 hover:bg-muted/20 border border-border/40/60 hover:border-border rounded-xl transition-all duration-150 cursor-pointer"
+                                className="hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 items-center px-5 py-3.5 bg-white/[0.03] hover:bg-white/[0.07] active:bg-white/[0.1] backdrop-blur-[6px] border-0 rounded-xl transition-all duration-150 cursor-pointer shadow-sm"
                               >
-                                <div className="flex items-center justify-start pl-1.5 text-muted-foreground">
+                                <div className="flex items-center justify-start pl-1.5 text-white/60">
                                   {getSourceIcon(lead.source || "")}
                                 </div>
 
-                                <span className="text-xs font-bold text-foreground truncate pr-2">
+                                <span className="text-xs font-bold text-white truncate pr-2">
                                   {lead.name}
                                 </span>
 
-                                <span className="font-mono text-muted-foreground text-xs tracking-tight">
+                                <span className="font-mono text-white/70 text-xs tracking-tight">
                                   {lead.phone}
                                 </span>
 
-                                <div className="flex items-center gap-1.5 text-xs text-foreground/80">
+                                <div className="flex items-center gap-1.5 text-xs text-white/80">
                                   <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[lead.status]}`} />
                                   <span>{STATUS_LABELS[lead.status] === "Новые" ? "Новый" : STATUS_LABELS[lead.status]}</span>
                                 </div>
 
                                 <div>
                                   {lead.nextStepDate ? (
-                                    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-semibold
+                                    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-semibold
                                       ${overdue
-                                        ? "bg-red-500/15 text-red-400 border-red-500/20"
-                                        : "bg-muted/80 text-muted-foreground border-border"}`}
+                                        ? "bg-red-500/15 text-red-400"
+                                        : "bg-white/[0.08] text-white/70"}`}
                                     >
                                       <Clock className="w-3 h-3" />
                                       <span>
@@ -1508,19 +1578,19 @@ const CrmPage: React.FC = () => {
                                       </span>
                                     </div>
                                   ) : (
-                                    <span className="text-[10px] text-zinc-700">—</span>
+                                    <span className="text-[10px] text-white/30">—</span>
                                   )}
                                 </div>
 
-                                <span className="text-xs text-muted-foreground truncate pr-2">
+                                <span className="text-xs text-white/70 truncate pr-2">
                                   {lead.car || "—"}
                                 </span>
 
-                                <span className="text-xs text-muted-foreground/80 truncate max-w-[280px] block" title={lead.notes}>
+                                <span className="text-xs text-white/60 truncate max-w-[280px] block" title={lead.notes}>
                                   {lead.notes || "—"}
                                 </span>
 
-                                <span className="text-[10px] text-muted-foreground/60 text-right">
+                                <span className="text-[10px] text-white/40 text-right">
                                   {format(new Date(lead.createdAt), "d MMM, HH:mm", { locale: ru })}
                                 </span>
                               </div>
@@ -1531,61 +1601,61 @@ const CrmPage: React.FC = () => {
                                   setSelectedLead(lead);
                                   setIsDetailOpen(true);
                                 }}
-                                className="md:hidden p-3.5 bg-card border border-border shadow-md rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group"
+                                className="md:hidden p-3.5 bg-white/[0.05] dark:bg-black/35 backdrop-blur-md border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group"
                               >
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/50 to-primary/10"></div>
                                 <div className="pl-1.5 flex justify-between items-start gap-2">
                                   <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="shrink-0 text-muted-foreground bg-muted p-1.5 rounded-xl group-hover:bg-primary/10 transition-colors">
+                                    <div className="shrink-0 text-white/60 bg-white/[0.08] p-1.5 rounded-xl group-hover:bg-primary/20 transition-colors">
                                       {getSourceIcon(lead.source || "")}
                                     </div>
                                     <div className="flex flex-col">
-                                      <span className="text-xs font-bold text-foreground truncate">
+                                      <span className="text-xs font-bold text-white truncate">
                                         {lead.name}
                                       </span>
-                                      <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                                      <span className="text-[10px] text-white/60 font-mono mt-0.5">
                                         {lead.phone}
                                       </span>
                                     </div>
                                   </div>
 
                                   <div className="flex flex-col items-end gap-1">
-                                    <div className="flex items-center gap-1.5 text-[10px] text-foreground/80 bg-muted/40 px-2 py-0.5 rounded-full border border-border/40">
+                                    <div className="flex items-center gap-1.5 text-[10px] text-white/80 bg-white/[0.06] px-2 py-0.5 rounded-full">
                                       <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[lead.status]}`} />
                                       <span className="font-semibold">{STATUS_LABELS[lead.status]}</span>
                                     </div>
                                     {lead.price ? (
-                                      <span className="text-xs font-black text-foreground mt-0.5">
+                                      <span className="text-xs font-black text-white mt-0.5">
                                         {lead.price} BYN
                                       </span>
                                     ) : null}
                                   </div>
                                 </div>
 
-                                <div className="pl-1.5 flex flex-col gap-2 pt-1.5 border-t border-border/40">
+                                <div className="pl-1.5 flex flex-col gap-2 pt-1.5 border-t border-white/5">
                                   <div className="flex items-center justify-between text-[11px]">
                                     {lead.service ? (
-                                      <span className="text-primary/80 font-bold bg-primary/10 px-2 py-0.5 rounded-md border border-primary/10 truncate">
+                                      <span className="text-primary/90 font-bold bg-primary/20 px-2 py-0.5 rounded-md border border-primary/20 truncate">
                                         {lead.service}
                                       </span>
                                     ) : (
-                                      <span className="text-muted-foreground/40 italic">Нет услуги</span>
+                                      <span className="text-white/40 italic">Нет услуги</span>
                                     )}
-                                    {lead.car && <span className="text-muted-foreground font-medium truncate ml-2 bg-muted/30 px-2 py-0.5 rounded-md">{lead.car}</span>}
+                                    {lead.car && <span className="text-white/70 font-medium truncate ml-2 bg-white/[0.08] px-2 py-0.5 rounded-md">{lead.car}</span>}
                                   </div>
 
                                   {lead.notes && (
-                                    <p className="text-[11px] text-muted-foreground/70 truncate">
+                                    <p className="text-[11px] text-white/60 truncate">
                                       {lead.notes}
                                     </p>
                                   )}
 
                                   <div className="flex items-center justify-between mt-1">
                                     {lead.nextStepDate ? (
-                                      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-bold
+                                      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold
                                         ${overdue
-                                          ? "bg-red-500/10 text-red-400 border-red-500/20"
-                                          : "bg-muted/60 text-muted-foreground border-border/60"}`}
+                                          ? "bg-red-500/10 text-red-400"
+                                          : "bg-white/[0.08] text-white/75"}`}
                                       >
                                         <Clock className="w-3 h-3" />
                                         <span>
@@ -1596,7 +1666,7 @@ const CrmPage: React.FC = () => {
                                       <div></div>
                                     )}
                                     
-                                    <span className="text-[9px] text-muted-foreground/50 font-medium self-end mb-0.5">
+                                    <span className="text-[9px] text-white/40 font-medium self-end mb-0.5">
                                       Создан: {format(new Date(lead.createdAt), "d.MM.yy HH:mm", { locale: ru })}
                                     </span>
                                   </div>
@@ -1627,35 +1697,35 @@ const CrmPage: React.FC = () => {
         <form onSubmit={handleAddLeadSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] text-muted-foreground/80 block mb-1">Имя клиента *</label>
+              <label className="text-[10px] text-white/60 block mb-1">Имя клиента *</label>
               <input
                 type="text"
                 value={newLeadForm.name}
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, name: e.target.value }))}
                 required
-                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
               />
             </div>
             <div>
-              <label className="text-[10px] text-muted-foreground/80 block mb-1">Телефон *</label>
+              <label className="text-[10px] text-white/60 block mb-1">Телефон *</label>
               <input
                 type="text"
                 value={newLeadForm.phone}
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, phone: formatBYPhone(e.target.value) }))}
                 maxLength={19}
                 required
-                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground text-xs font-mono focus:outline-none focus:border-primary/50 transition-colors"
+                className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs font-mono focus:outline-none transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[10px] text-muted-foreground/80 block mb-1">Автомобиль</label>
+            <label className="text-[10px] text-white/60 block mb-1">Автомобиль</label>
             <input
               type="text"
               value={newLeadForm.car}
               onChange={(e) => setNewLeadForm(prev => ({ ...prev, car: e.target.value }))}
-              className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground text-xs focus:outline-none focus:border-primary/50 transition-colors"
+              className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
             />
           </div>
 
@@ -1675,13 +1745,13 @@ const CrmPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] text-muted-foreground block mb-1">Услуга</label>
+              <label className="text-[10px] text-white/60 block mb-1">Услуга</label>
               <input
                 type="text"
                 value={newLeadForm.service || ""}
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, service: e.target.value }))}
                 list="service-names"
-                className="w-full px-3 py-2 bg-muted/50 border border-border/40 rounded-xl text-foreground text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
               />
               <datalist id="service-names">
                 {appState.services.map(s => (
@@ -1690,12 +1760,12 @@ const CrmPage: React.FC = () => {
               </datalist>
             </div>
             <div>
-              <label className="text-[10px] text-muted-foreground/80 block mb-1">Стоимость (руб.)</label>
+              <label className="text-[10px] text-white/60 block mb-1">Стоимость (руб.)</label>
               <input
                 type="number"
                 value={newLeadForm.price || ""}
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, price: Number(e.target.value) }))}
-                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground text-xs focus:outline-none focus:border-primary/50 transition-colors"
+                className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -1712,13 +1782,13 @@ const CrmPage: React.FC = () => {
           />
 
           <div>
-            <label className="text-[10px] text-muted-foreground/80 block mb-1">Заметки / Комментарий</label>
+            <label className="text-[10px] text-white/60 block mb-1">Заметки / Комментарий</label>
             <textarea
               placeholder="Опишите детали запроса клиента..."
               value={newLeadForm.notes}
               onChange={(e) => setNewLeadForm(prev => ({ ...prev, notes: e.target.value }))}
               rows={4}
-              className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground placeholder-zinc-700 text-xs resize-none focus:outline-none focus:border-primary/50 transition-colors"
+              className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs resize-none focus:outline-none transition-colors"
             />
           </div>
 
@@ -1726,7 +1796,7 @@ const CrmPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAddDrawerOpen(false)}
-              className="flex-1 h-10 border border-border hover:bg-muted rounded-xl text-foreground text-xs font-semibold"
+              className="flex-1 h-10 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-[4px] rounded-xl text-white text-xs font-semibold"
             >
               Отмена
             </button>
@@ -1755,45 +1825,45 @@ const CrmPage: React.FC = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] text-muted-foreground/80 block mb-1">ФИО Клиента</label>
+                  <label className="text-[10px] text-white/60 block mb-1">ФИО Клиента</label>
                   <input
                     type="text"
                     value={detailForm.name}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                    className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground text-xs focus:outline-none"
+                    className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground/80 block mb-1">Телефон</label>
+                  <label className="text-[10px] text-white/60 block mb-1">Телефон</label>
                   <input
                     type="text"
                     value={detailForm.phone}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
                     maxLength={19}
-                    className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground text-xs font-mono focus:outline-none"
+                    className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs font-mono focus:outline-none transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] text-muted-foreground/80 block mb-1">Автомобиль</label>
+                <label className="text-[10px] text-white/60 block mb-1">Автомобиль</label>
                 <input
                   type="text"
                   value={detailForm.car || ""}
                   onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
-                  className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground text-xs focus:outline-none"
+                  className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] text-muted-foreground block mb-1">Название услуги</label>
+                  <label className="text-[10px] text-white/60 block mb-1">Название услуги</label>
                   <input
                     type="text"
                     value={detailForm.service || ""}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
                     list="service-names-edit"
-                    className="w-full px-3 py-2 bg-muted/50 border border-border/40 rounded-xl text-foreground text-xs focus:outline-none"
+                    className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                   />
                   <datalist id="service-names-edit">
                     {appState.services.map(s => (
@@ -1802,12 +1872,12 @@ const CrmPage: React.FC = () => {
                   </datalist>
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground/80 block mb-1">Стоимость (руб.)</label>
+                  <label className="text-[10px] text-white/60 block mb-1">Стоимость (руб.)</label>
                   <input
                     type="number"
                     value={detailForm.price || ""}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, price: Number(e.target.value) }) : null)}
-                    className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground text-xs focus:outline-none"
+                    className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -1840,36 +1910,36 @@ const CrmPage: React.FC = () => {
               </div>
 
               {/* Планирование следующего шага */}
-              <div className="p-4 bg-background/40 border border-border/40 rounded-2xl space-y-3.5">
-                <span className="text-[11px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <div className="p-4 bg-white/[0.04] border border-white/5 rounded-2xl space-y-3.5">
+                <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-primary" />
                   <span>Следующий шаг визита/звонка</span>
                 </span>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[9px] text-muted-foreground/80 block mb-1">Дата события</label>
+                    <label className="text-[9px] text-white/60 block mb-1">Дата события</label>
                     <input
                       type="date"
                       value={nextStepDateInput}
                       onChange={(e) => setNextStepDateInput(e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-muted/50 border border-border rounded-lg text-foreground text-xs focus:outline-none"
+                      className="w-full px-2.5 py-1.5 bg-white/[0.04] text-white border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] text-muted-foreground/80 block mb-1">Время события</label>
+                    <label className="text-[9px] text-white/60 block mb-1">Время события</label>
                     <input
                       type="time"
                       value={nextStepTimeInput}
                       onChange={(e) => setNextStepTimeInput(e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-muted/50 border border-border rounded-lg text-foreground text-xs focus:outline-none"
+                      className="w-full px-2.5 py-1.5 bg-white/[0.04] text-white border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
 
                 {nextStepDateInput && (
-                  <div className="pt-2 border-t border-border/40 space-y-2">
-                    <label className="text-[9px] text-muted-foreground/80 block">Напоминания в Telegram бот:</label>
+                  <div className="pt-2 border-t border-white/5 space-y-2">
+                    <label className="text-[9px] text-white/60 block">Напоминания в Telegram бот:</label>
                     <div className="flex items-center gap-4">
                       {[10, 20, 30].map(minutes => {
                         const checked = detailForm.notifyBefore?.includes(minutes) || false;
@@ -1891,7 +1961,7 @@ const CrmPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleDeleteLead(detailForm.id)}
-                  className="p-2.5 rounded-xl border border-red-950/45 hover:bg-red-950/20 text-red-500 flex items-center justify-center transition-colors"
+                  className="p-2.5 rounded-xl bg-red-500/[0.08] hover:bg-red-500/[0.16] backdrop-blur-[6px] text-red-300 flex items-center justify-center transition-colors"
                   title="Удалить карточку"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -1899,19 +1969,19 @@ const CrmPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleUpdateLead}
-                  className="flex-1 py-2.5 bg-primary text-primary-foreground shadow-md font-bold rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all text-xs"
+                  className="flex-1 py-2.5 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 active:scale-[0.98] transition-all text-xs shadow-md"
                 >
                   Сохранить изменения
                 </button>
               </div>
             </div>
 
-            <hr className="border-border/40" />
+            <hr className="border-white/5" />
 
             {/* История и заметки менеджера */}
             <div className="space-y-4">
-              <span className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <History className="w-4 h-4 text-muted-foreground" />
+              <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                <History className="w-4 h-4 text-white/60" />
                 <span>Заметки и история изменений</span>
               </span>
 
@@ -1921,21 +1991,21 @@ const CrmPage: React.FC = () => {
                   placeholder="Добавить новую заметку менеджера..."
                   value={newNoteText}
                   onChange={(e) => setNewNoteText(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground placeholder-zinc-700 text-xs focus:outline-none"
+                  className="flex-1 px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
                   onClick={handleAddNoteToHistory}
-                  className="px-4 bg-muted hover:bg-muted/80 border border-border rounded-xl text-xs font-semibold text-foreground transition-all active:scale-[0.98]"
+                  className="px-4 bg-white/[0.08] hover:bg-white/[0.14] text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.98]"
                 >
                   Добавить
                 </button>
               </div>
 
-              <div className="border border-border/40 bg-card/40 rounded-2xl p-4 space-y-4 custom-scrollbar max-h-[300px] overflow-y-auto">
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4 custom-scrollbar max-h-[300px] overflow-y-auto shadow-inner">
                 {detailForm.history && detailForm.history.length > 0 ? (
                   [...detailForm.history].reverse().map((entry) => {
-                    let icon = <ChevronLeft className="w-2.5 h-2.5 text-muted-foreground/80" />;
+                    let icon = <ChevronLeft className="w-2.5 h-2.5 text-white/60" />;
                     if (entry.type === "creation") icon = <Plus className="w-2.5 h-2.5 text-green-400" />;
                     else if (entry.type === "status") icon = <Tag className="w-2.5 h-2.5 text-blue-400" />;
                     else if (entry.type === "note") icon = <FileText className="w-2.5 h-2.5 text-amber-500" />;
@@ -1945,13 +2015,13 @@ const CrmPage: React.FC = () => {
                     const date = new Date(entry.createdAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
 
                     return (
-                      <div key={entry.id} className="flex gap-3 text-xs text-foreground/80">
-                        <div className="w-5 h-5 rounded-full bg-muted border border-zinc-850 flex items-center justify-center shrink-0 mt-0.5">
+                      <div key={entry.id} className="flex gap-3 text-xs text-white/80">
+                        <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/5 flex items-center justify-center shrink-0 mt-0.5">
                           {icon}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="leading-relaxed break-words text-foreground/90">{entry.text}</p>
-                          <span className="text-[9px] text-muted-foreground/80 block mt-0.5">
+                          <p className="leading-relaxed break-words text-white/90">{entry.text}</p>
+                          <span className="text-[9px] text-white/40 block mt-0.5">
                             {date} в {time} {entry.author ? `• ${entry.author.split("@")[0]}` : ""}
                           </span>
                         </div>
@@ -1959,7 +2029,7 @@ const CrmPage: React.FC = () => {
                     );
                   })
                 ) : (
-                  <div className="text-center py-4 text-[10px] text-muted-foreground/60 italic">
+                  <div className="text-center py-4 text-[10px] text-white/30 italic">
                     История операций пуста
                   </div>
                 )}
