@@ -1085,7 +1085,7 @@ const CrmPage: React.FC = () => {
                     type="checkbox"
                     checked={crmSettings.telegramEnabled}
                     onChange={() => setCrmSettings(prev => ({ ...prev, telegramEnabled: !prev.telegramEnabled }))}
-                    className="peer sr-only"
+                    className="hidden peer"
                   />
                   <div className="w-9 h-5 bg-white/[0.08] dark:bg-black/40 peer-checked:bg-white/[0.22] backdrop-blur-[8px] rounded-full transition-colors duration-300 relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] border-0">
                     <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-300 shadow-[0_2px_5px_rgba(0,0,0,0.35)] ${
