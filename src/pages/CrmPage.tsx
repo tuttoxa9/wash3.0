@@ -39,7 +39,8 @@ import {
   Sparkles,
   Lock,
   Mail,
-  Sun
+  Sun,
+  Send
 } from "lucide-react";
 import { format, subDays, addDays } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -298,6 +299,7 @@ const CrmPage: React.FC = () => {
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [isApiKeyCopied, setIsApiKeyCopied] = useState(false);
+  const [isTestingTelegram, setIsTestingTelegram] = useState(false);
 
   // Форма добавления нового лида (без плейсхолдеров)
   const [newLeadForm, setNewLeadForm] = useState({
@@ -397,6 +399,45 @@ const CrmPage: React.FC = () => {
     setIsApiKeyCopied(true);
     toast.success("Webhook URL скопирован");
     setTimeout(() => setIsApiKeyCopied(false), 2000);
+  };
+
+  const handleTestTelegramBot = async () => {
+    if (!crmSettings.telegramBotToken.trim() || !crmSettings.telegramChatId.trim()) {
+      toast.error("Заполните токен бота и ID чата");
+      return;
+    }
+
+    setIsTestingTelegram(true);
+    try {
+      const message = 
+        `🔔 <b>Тестовое сообщение CRM</b>\n\n` +
+        `✅ Telegram-бот успешно настроен и подключен!\n` +
+        `📅 Время проверки: ${format(new Date(), "HH:mm:ss dd.MM.yyyy")}`;
+
+      const res = await fetch(`https://api.telegram.org/bot${crmSettings.telegramBotToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: crmSettings.telegramChatId,
+          text: message,
+          parse_mode: "HTML"
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.ok) {
+        toast.success("Тестовое сообщение успешно отправлено!");
+      } else {
+        console.error("Telegram error:", data);
+        toast.error(`Ошибка Telegram: ${data.description || "неизвестная ошибка"}`);
+      }
+    } catch (err: any) {
+      console.error("Test Telegram bot error:", err);
+      toast.error("Ошибка при отправке: проверьте подключение к сети");
+    } finally {
+      setIsTestingTelegram(false);
+    }
   };
 
   // Создание лида вручную
@@ -943,6 +984,24 @@ const CrmPage: React.FC = () => {
                       className="w-full px-3 py-2 bg-background border border-border/40 rounded-lg text-foreground text-xs focus:outline-none"
                     />
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleTestTelegramBot}
+                    disabled={isTestingTelegram || !crmSettings.telegramBotToken.trim() || !crmSettings.telegramChatId.trim()}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 bg-zinc-800 text-white rounded-lg text-xs font-medium hover:bg-zinc-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:pointer-events-none border border-zinc-700/50 shadow-sm animate-fade-in"
+                  >
+                    {isTestingTelegram ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                        <span>Отправка...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5 text-sky-400" />
+                        <span>Проверить подключение</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               )}
             </div>
