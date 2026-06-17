@@ -214,7 +214,7 @@ function CustomSelect<T extends string>({ value, onChange, options, label }: Cus
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-10 px-3 bg-white/[0.04] text-white rounded-xl text-xs flex items-center justify-between focus:outline-none transition-colors"
+        className="w-full h-10 px-3 bg-white/[0.06] backdrop-blur-md text-white rounded-xl text-xs flex items-center justify-between focus:outline-none transition-colors"
       >
         <span className="truncate mr-2">{selectedOption?.label || value || "Выберите..."}</span>
         <motion.span 
@@ -234,7 +234,7 @@ function CustomSelect<T extends string>({ value, onChange, options, label }: Cus
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="absolute left-0 right-0 mt-1.5 bg-black/60 backdrop-blur-2xl border border-white/5 rounded-xl shadow-2xl z-20 py-1 overflow-hidden divide-y divide-white/5"
+              className="absolute left-0 right-0 mt-1.5 bg-zinc-950/95 backdrop-blur-3xl border border-white/10 rounded-xl shadow-2xl z-20 py-1 overflow-hidden divide-y divide-white/5"
             >
               {options.map(opt => (
                 <button
@@ -464,6 +464,25 @@ const CrmPage: React.FC = () => {
       loadSettings();
     }
   }, [user]);
+
+  // Сброс и мгновенный запуск видео при возвращении на экран входа/настроек
+  useEffect(() => {
+    if (viewMode === "gate" || viewMode === "settings") {
+      isFirstPlay.current = true;
+      const videoA = videoARef.current;
+      const videoB = videoBRef.current;
+      if (videoA) {
+        videoA.currentTime = 0;
+        videoA.style.opacity = "0.25"; // сразу даем видимость, не дожидаясь cross-fade
+        videoA.play().catch(() => {});
+      }
+      if (videoB) {
+        videoB.pause();
+        videoB.currentTime = 0;
+        videoB.style.opacity = "0";
+      }
+    }
+  }, [viewMode]);
 
   const loadLeads = async () => {
     setLoadingLeads(true);
@@ -1303,7 +1322,7 @@ const CrmPage: React.FC = () => {
       style={{ backgroundImage: `url(${selectedWallpaper})` }}
     >
       {/* Dark overlay for contrast */}
-      <div className="absolute inset-0 bg-black/60 pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-black/75 pointer-events-none z-0" />
       
       <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_1fr] min-h-0 h-full relative z-10">
         
@@ -1398,7 +1417,7 @@ const CrmPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setViewMode("gate")}
-                  className="h-10 w-10 bg-white/[0.04] text-white rounded-xl flex items-center justify-center active:scale-95 transition-transform border-0 hover:bg-white/[0.08]"
+                  className="h-10 w-10 bg-white/[0.06] backdrop-blur-md text-white rounded-xl flex items-center justify-center active:scale-95 transition-transform border-0 hover:bg-white/[0.12]"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -1413,7 +1432,7 @@ const CrmPage: React.FC = () => {
                     <button
                       key={tab}
                       onClick={() => { setActiveTab(tab); setMobileViewLevel("leads"); }}
-                      className="w-full p-3.5 bg-white/[0.04] rounded-2xl flex items-center justify-between active:scale-[0.98] transition-all shadow-sm border-0 group"
+                      className="w-full p-3.5 bg-white/[0.06] backdrop-blur-md rounded-2xl flex items-center justify-between active:scale-[0.98] transition-all shadow-sm border-0 group"
                     >
                       <div className="flex items-center gap-3.5">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${tab === 'new' ? 'bg-blue-500 text-white' : 'bg-white/[0.08] text-white'}`}>
@@ -1434,7 +1453,7 @@ const CrmPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => { setActiveTab("won"); setMobileViewLevel("leads"); }}
-                    className="p-3.5 bg-white/[0.04] rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0"
+                    className="p-3.5 bg-white/[0.06] backdrop-blur-md rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0"
                   >
                     <div className="w-8 h-8 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
                       {STATUS_ICONS["won"]}
@@ -1446,7 +1465,7 @@ const CrmPage: React.FC = () => {
                   </button>
                   <button
                     onClick={() => { setActiveTab("lost"); setMobileViewLevel("leads"); }}
-                    className="p-3.5 bg-white/[0.04] rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0"
+                    className="p-3.5 bg-white/[0.06] backdrop-blur-md rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0"
                   >
                     <div className="w-8 h-8 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
                       {STATUS_ICONS["lost"]}
@@ -1496,7 +1515,7 @@ const CrmPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск..."
-                className="w-full h-10 pl-9 pr-4 bg-white/[0.04] dark:bg-black/25 text-white placeholder-white/25 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-all font-medium"
+                className="w-full h-10 pl-9 pr-4 bg-white/[0.06] backdrop-blur-md text-white placeholder-white/30 border-0 focus:bg-white/[0.12] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-all font-medium"
               />
               {searchQuery && (
                 <button
