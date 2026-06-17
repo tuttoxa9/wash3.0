@@ -323,6 +323,7 @@ const CrmPage: React.FC = () => {
   const videoARef = useRef<HTMLVideoElement>(null);
   const videoBRef = useRef<HTMLVideoElement>(null);
   const isFirstPlay = useRef(true);
+  const prevViewModeRef = useRef<string>("gate");
 
   const handleTimeUpdateA = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const videoA = e.currentTarget;
@@ -410,6 +411,7 @@ const CrmPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedWallpaper, setSelectedWallpaper] = useState(() => {
     const saved = localStorage.getItem("crm_wallpaper");
+    if (saved === "none") return "none";
     if (saved && saved.startsWith("/wallpapers/")) {
       return saved;
     }
@@ -468,20 +470,30 @@ const CrmPage: React.FC = () => {
   // Сброс и мгновенный запуск видео при возвращении на экран входа/настроек
   useEffect(() => {
     if (viewMode === "gate" || viewMode === "settings") {
-      isFirstPlay.current = true;
       const videoA = videoARef.current;
       const videoB = videoBRef.current;
-      if (videoA) {
-        videoA.currentTime = 0;
-        videoA.style.opacity = "0.25"; // сразу даем видимость, не дожидаясь cross-fade
-        videoA.play().catch(() => {});
-      }
-      if (videoB) {
-        videoB.pause();
-        videoB.currentTime = 0;
-        videoB.style.opacity = "0";
+      
+      // Перезапускаем только если вернулись из самой CRM-ки
+      if (prevViewModeRef.current === "crm") {
+        isFirstPlay.current = true;
+        if (videoA) {
+          videoA.currentTime = 0;
+          videoA.style.opacity = "0.25"; // сразу даем видимость, не дожидаясь cross-fade
+          videoA.play().catch(() => {});
+        }
+        if (videoB) {
+          videoB.pause();
+          videoB.currentTime = 0;
+          videoB.style.opacity = "0";
+        }
+      } else {
+        // При переходе между gate и settings видео не прерывается, просто проверяем, что оно воспроизводится
+        if (videoA && videoA.paused && (!videoB || videoB.paused)) {
+          videoA.play().catch(() => {});
+        }
       }
     }
+    prevViewModeRef.current = viewMode;
   }, [viewMode]);
 
   const loadLeads = async () => {
@@ -869,13 +881,10 @@ const CrmPage: React.FC = () => {
     groups[activeDateStr].push(lead);
   }
 
-  // Сортировка внутри групп по времени
+  // Сброс и мгновенный запуск видео при возвращении на экран входа/настроек
+  // Сортировка внутри групп по дате создания (в убывающем порядке - новые сверху)
   for (const key of Object.keys(groups)) {
-    groups[key].sort((a, b) => {
-      const timeA = a.nextStepDate ? a.nextStepDate.slice(11, 16) : a.createdAt.slice(11, 16);
-      const timeB = b.nextStepDate ? b.nextStepDate.slice(11, 16) : b.createdAt.slice(11, 16);
-      return timeA.localeCompare(timeB);
-    });
+    groups[key].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
   // Сортировка ключей групп (Будущие по возрастанию, Прошедшие/Сегодня по убыванию)
@@ -965,8 +974,8 @@ const CrmPage: React.FC = () => {
     );
   }
 
-  // 1. GATE VIEW (Входная карточка)
-  if (viewMode === "gate") {
+  // 1 & 2. GATE & SETTINGS VIEW (Общий экран входа и настроек для плавного видео-фона)
+  if (viewMode === "gate" || viewMode === "settings") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
         {/* Background video A for mobile only */}
@@ -999,347 +1008,336 @@ const CrmPage: React.FC = () => {
 
         <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 black:bg-blue-500/15 blur-[60px] rounded-full scale-[1.2] z-[-1] pointer-events-none"></div>
         
-        <div className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col gap-4">
-          
-          <div className="text-center">
-            <h1 className="text-base font-bold tracking-tight text-white/90">Detail Lab CRM</h1>
-            <p className="text-[9px] text-white/40 mt-1">Авторизация</p>
-          </div>
-
-          {!user ? (
-            <form onSubmit={handleLoginSubmit} className="space-y-3">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="Email"
-                className="w-full px-3.5 py-2 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
-              />
-
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Пароль"
-                className="w-full px-3.5 py-2 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
-              />
-
-              {loginError && (
-                <div className="text-red-350 text-[10px] text-center bg-red-950/20 py-2 px-3 rounded-2xl border-0">
-                  {loginError}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loginLoading}
-                className="w-full py-2 mt-1 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] transition-all text-xs font-bold rounded-2xl text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_4px_15px_rgba(0,0,0,0.2)] border-0"
-              >
-                {loginLoading ? "Авторизация..." : "Войти в систему"}
-              </button>
-            </form>
-          ) : (
-            <div className="space-y-3.5">
-              <div className="text-center bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] p-3.5 rounded-2xl border-0">
-                <h3 className="text-xs font-semibold text-white/95">Сессия активна</h3>
-                <span className="text-[9px] text-white/50 block truncate mt-0.5">{user.email}</span>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => setViewMode("crm")}
-                  className="w-full py-2 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] transition-all text-xs font-bold rounded-2xl text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_4px_15px_rgba(0,0,0,0.2)] border-0 flex items-center justify-center gap-1.5"
-                >
-                  <LayoutDashboard className="w-3.5 h-3.5 text-white/90" />
-                  <span>Войти в CRM</span>
-                </button>
-
-                <button
-                  onClick={() => setViewMode("settings")}
-                  className="w-full py-2 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.1] active:scale-[0.97] backdrop-blur-[4px] transition-all text-xs font-bold rounded-2xl text-white/80 border-0 flex items-center justify-center gap-1.5"
-                >
-                  <Settings className="w-3.5 h-3.5 text-white/80" />
-                  <span>Настройки</span>
-                </button>
-
-                <div className="h-[1px] bg-white/10 my-0.5"></div>
-
-                <button
-                  onClick={handleLogoutClick}
-                  className="w-full py-2 bg-red-500/[0.08] hover:bg-red-500/[0.16] active:bg-red-500/[0.22] active:scale-[0.97] backdrop-blur-[6px] transition-all text-xs font-bold rounded-2xl text-red-300 border-0 flex items-center justify-center gap-1.5"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Выйти</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // 2. SETTINGS VIEW (Настройки CRM)
-  if (viewMode === "settings") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Background video A for mobile only */}
-        <video
-          ref={videoARef}
-          src="/main.mp4"
-          autoPlay
-          muted
-          playsInline
-          onTimeUpdate={handleTimeUpdateA}
-          onEnded={handleEndedA}
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0 block md:hidden transition-opacity duration-300"
-          style={{ opacity: 0 }}
-        />
-
-        {/* Background video B for mobile only */}
-        <video
-          ref={videoBRef}
-          src="/main.mp4"
-          muted
-          playsInline
-          onTimeUpdate={handleTimeUpdateB}
-          onEnded={handleEndedB}
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0 block md:hidden transition-opacity duration-300"
-          style={{ opacity: 0 }}
-        />
-        
-        {/* Dark overlay for mobile video background */}
-        <div className="absolute inset-0 bg-black/30 pointer-events-none z-[1] block md:hidden" />
-
-        <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 black:bg-blue-500/15 blur-[60px] rounded-full scale-[1.2] z-[-1] pointer-events-none"></div>
-
-        <div className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white">
-          
-          <div className="flex items-center gap-2 mb-3.5">
-            <button
-              onClick={() => setViewMode("gate")}
-              className="p-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] active:bg-white/[0.16] active:scale-[0.95] text-white/80 transition-all border-0"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <h1 className="text-xs font-bold text-white/95 uppercase tracking-wider">Настройки</h1>
-          </div>
-
-          <form onSubmit={handleSaveSettings} className="space-y-3">
+        {viewMode === "gate" ? (
+          <div className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col gap-4">
             
-            {/* Выбор Темы оформления */}
-            <div className="p-3 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
-              <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
-                Тема интерфейса
-              </span>
-              <div className="flex gap-2">
-                {(["light", "dark", "black"] as const).map(t => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => dispatch({ type: "SET_THEME", payload: t })}
-                    className={`flex-1 py-1 rounded-xl text-[10px] font-semibold border-0 transition-all
-                      ${appState.theme === t
-                        ? "bg-white/15 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
-                        : "bg-white/[0.04] text-white/50 hover:text-white"}`}
-                  >
-                    {t === "light" ? "Светлая" : t === "dark" ? "Темная" : "Черная"}
-                  </button>
-                ))}
-              </div>
+            <div className="text-center">
+              <h1 className="text-base font-bold tracking-tight text-white/90">Detail Lab CRM</h1>
+              <p className="text-[9px] text-white/40 mt-1">Авторизация</p>
             </div>
 
-            {/* Выбор Обоев */}
-            <div className="p-3 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
-              <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
-                Обои рабочего стола
-              </span>
-              <div className="grid grid-cols-3 gap-1.5">
-                {WALLPAPERS.map(wp => (
-                  <button
-                    key={wp.id}
-                    type="button"
-                    onClick={() => handleSelectWallpaper(wp.url)}
-                    className={`relative aspect-video rounded-lg overflow-hidden border-0 transition-all active:scale-[0.95]
-                      ${selectedWallpaper === wp.url ? "ring-2 ring-white/80" : "opacity-60 hover:opacity-100"}`}
-                    title={wp.name}
-                  >
-                    <img src={wp.thumb} alt={wp.name} className="w-full h-full object-cover pointer-events-none" />
-                  </button>
-                ))}
-              </div>
-            </div>
+            {!user ? (
+              <form onSubmit={handleLoginSubmit} className="space-y-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Email"
+                  className="w-full px-3.5 py-2 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:ring-1 focus:ring-white/10 transition-all !border-0"
+                />
 
-            {/* Telegram */}
-            <div className="p-3 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
-                  Telegram оповещения
-                </span>
-                
-                {/* Компактный свитчер без иконок */}
-                <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={crmSettings.telegramEnabled}
-                    onChange={() => setCrmSettings(prev => ({ ...prev, telegramEnabled: !prev.telegramEnabled }))}
-                    className="hidden peer"
-                  />
-                  <div className="w-9 h-5 bg-white/[0.08] dark:bg-black/40 peer-checked:bg-white/[0.22] backdrop-blur-[8px] rounded-full transition-colors duration-300 relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] border-0">
-                    <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-300 shadow-[0_2px_5px_rgba(0,0,0,0.35)] ${
-                      crmSettings.telegramEnabled ? "translate-x-[18px]" : "translate-x-0"
-                    }`} />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Пароль"
+                  className="w-full px-3.5 py-2 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:ring-1 focus:ring-white/10 transition-all !border-0"
+                />
+
+                {loginError && (
+                  <div className="text-red-350 text-[10px] text-center bg-red-950/20 py-2 px-3 rounded-2xl border-0">
+                    {loginError}
                   </div>
-                </label>
-              </div>
-
-              <AnimatePresence initial={false}>
-                {crmSettings.telegramEnabled && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: "easeInOut" }}
-                    className="overflow-hidden space-y-2 pt-0.5"
-                  >
-                    <div>
-                      <label className="text-[9px] text-white/50 block mb-0.5">Токен бота</label>
-                      <input
-                        type="text"
-                        value={crmSettings.telegramBotToken}
-                        onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramBotToken: e.target.value }))}
-                        required={crmSettings.telegramEnabled}
-                        className="w-full px-2.5 py-1.5 bg-white/[0.04] dark:bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] text-white/50 block mb-0.5">ID чата / группы</label>
-                      <input
-                        type="text"
-                        value={crmSettings.telegramChatId}
-                        onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramChatId: e.target.value }))}
-                        required={crmSettings.telegramEnabled}
-                        className="w-full px-2.5 py-1.5 bg-white/[0.04] dark:bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleTestTelegramBot}
-                      disabled={isTestingTelegram || !crmSettings.telegramBotToken.trim() || !crmSettings.telegramChatId.trim()}
-                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-white/[0.12] hover:bg-white/[0.2] active:bg-white/[0.26] active:scale-[0.98] transition-all text-[10px] font-semibold rounded-xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] text-white"
-                    >
-                      {isTestingTelegram ? (
-                        <>
-                          <RefreshCw className="w-3 animate-spin text-white/60" />
-                          <span>Отправка...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-3 text-sky-400" />
-                          <span>Проверить подключение</span>
-                        </>
-                      )}
-                    </button>
-                  </motion.div>
                 )}
-              </AnimatePresence>
-            </div>
 
-            {/* Webhook */}
-            <div className="p-3 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
-              <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
-                Make / Zapier Webhook
-              </span>
-
-              <div className="space-y-1.5">
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className="text-[9px] text-white/50 block mb-0.5">API ключ безопасности</label>
-                    <input
-                      type="text"
-                      readOnly
-                      value={crmSettings.webhookApiKey}
-                      className="w-full px-2.5 py-1.5 bg-white/[0.04] dark:bg-black/25 backdrop-blur-[10px] rounded-xl text-white/70 text-[10px] select-all focus:outline-none border-0"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={regenerateWebhookKey}
-                    className="h-[28px] w-[28px] self-end rounded-xl bg-white/[0.06] hover:bg-white/[0.14] active:bg-white/[0.2] active:scale-[0.97] backdrop-blur-[6px] border-0 flex items-center justify-center text-white/70 hover:text-white transition-colors"
-                    title="Обновить ключ"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                  </button>
+                <button
+                  type="submit"
+                  disabled={loginLoading}
+                  className="w-full py-2 mt-1 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] transition-all text-xs font-bold rounded-2xl text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_4px_15px_rgba(0,0,0,0.2)] border-0"
+                >
+                  {loginLoading ? "Авторизация..." : "Войти в систему"}
+                </button>
+              </form>
+            ) : (
+              <div className="space-y-3.5">
+                <div className="text-center !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] p-3.5 rounded-2xl border-0">
+                  <h3 className="text-xs font-semibold text-white/95">Сессия активна</h3>
+                  <span className="text-[9px] text-white/50 block truncate mt-0.5">{user.email}</span>
                 </div>
 
-                <div>
-                  <label className="text-[9px] text-white/50 block mb-0.5">Адрес вебхука</label>
-                  <div className="flex items-center gap-2 bg-white/[0.04] dark:bg-black/25 backdrop-blur-[10px] rounded-xl px-2.5 py-1.5 overflow-hidden border-0">
-                    <span className="text-white/70 text-[9px] select-all truncate flex-1 font-mono">
-                      {window.location.origin}/api/leads-webhook?api_key={crmSettings.webhookApiKey}
-                    </span>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => setViewMode("crm")}
+                    className="w-full py-2 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] transition-all text-xs font-bold rounded-2xl text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_4px_15px_rgba(0,0,0,0.2)] border-0 flex items-center justify-center gap-1.5"
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5 text-white/90" />
+                    <span>Войти в CRM</span>
+                  </button>
+
+                  <button
+                    onClick={() => setViewMode("settings")}
+                    className="w-full py-2 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.1] active:scale-[0.97] backdrop-blur-[4px] transition-all text-xs font-bold rounded-2xl text-white/80 border-0 flex items-center justify-center gap-1.5"
+                  >
+                    <Settings className="w-3.5 h-3.5 text-white/80" />
+                    <span>Настройки</span>
+                  </button>
+
+                  <div className="h-[1px] bg-white/10 my-0.5"></div>
+
+                  <button
+                    onClick={handleLogoutClick}
+                    className="w-full py-2 bg-red-500/[0.08] hover:bg-red-500/[0.16] active:bg-red-500/[0.22] active:scale-[0.97] backdrop-blur-[6px] transition-all text-xs font-bold rounded-2xl text-red-300 border-0 flex items-center justify-center gap-1.5"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Выйти</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white">
+            
+            <div className="flex items-center gap-2 mb-3.5">
+              <button
+                onClick={() => setViewMode("gate")}
+                className="p-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] active:bg-white/[0.16] active:scale-[0.95] text-white/80 transition-all border-0"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <h1 className="text-xs font-bold text-white/95 uppercase tracking-wider">Настройки</h1>
+            </div>
+
+            <form onSubmit={handleSaveSettings} className="space-y-3">
+              
+              {/* Выбор Темы оформления */}
+              <div className="p-3 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
+                  Тема интерфейса
+                </span>
+                <div className="flex gap-2">
+                  {(["light", "dark", "black"] as const).map(t => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => dispatch({ type: "SET_THEME", payload: t })}
+                      className={`flex-1 py-1 rounded-xl text-[10px] font-semibold border-0 transition-all
+                        ${appState.theme === t
+                          ? "bg-white/15 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+                          : "bg-white/[0.04] text-white/50 hover:text-white"}`}
+                    >
+                      {t === "light" ? "Светлая" : t === "dark" ? "Темная" : "Черная"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Выбор Обоев */}
+              <div className="p-3 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
+                  Обои рабочего стола
+                </span>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectWallpaper("none")}
+                    className={`relative aspect-video rounded-lg overflow-hidden border-0 transition-all active:scale-[0.95] bg-zinc-800 flex flex-col items-center justify-center gap-1
+                      ${selectedWallpaper === "none" ? "ring-2 ring-white/80" : "opacity-60 hover:opacity-100"}`}
+                    title="Без обоев"
+                  >
+                    <X className="w-3.5 h-3.5 text-white/60" />
+                    <span className="text-[8px] text-white/60">Без обоев</span>
+                  </button>
+                  {WALLPAPERS.map(wp => (
+                    <button
+                      key={wp.id}
+                      type="button"
+                      onClick={() => handleSelectWallpaper(wp.url)}
+                      className={`relative aspect-video rounded-lg overflow-hidden border-0 transition-all active:scale-[0.95]
+                        ${selectedWallpaper === wp.url ? "ring-2 ring-white/80" : "opacity-60 hover:opacity-100"}`}
+                      title={wp.name}
+                    >
+                      <img src={wp.thumb} alt={wp.name} className="w-full h-full object-cover pointer-events-none" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Telegram */}
+              <div className="p-3 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
+                    Telegram оповещения
+                  </span>
+                  
+                  {/* Компактный свитчер без иконок */}
+                  <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={crmSettings.telegramEnabled}
+                      onChange={() => setCrmSettings(prev => ({ ...prev, telegramEnabled: !prev.telegramEnabled }))}
+                      className="hidden peer"
+                    />
+                    <div className="w-9 h-5 bg-white/[0.08] dark:bg-black/40 peer-checked:bg-white/[0.22] backdrop-blur-[8px] rounded-full transition-colors duration-300 relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] border-0">
+                      <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-300 shadow-[0_2px_5px_rgba(0,0,0,0.35)] ${
+                        crmSettings.telegramEnabled ? "translate-x-[18px]" : "translate-x-0"
+                      }`} />
+                    </div>
+                  </label>
+                </div>
+
+                <AnimatePresence initial={false}>
+                  {crmSettings.telegramEnabled && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      className="overflow-hidden space-y-2 pt-0.5"
+                    >
+                      <div>
+                        <label className="text-[9px] text-white/50 block mb-0.5">Токен бота</label>
+                        <input
+                          type="text"
+                          value={crmSettings.telegramBotToken}
+                          onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramBotToken: e.target.value }))}
+                          required={crmSettings.telegramEnabled}
+                          className="w-full px-2.5 py-1.5 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all !border-0"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] text-white/50 block mb-0.5">ID чата / группы</label>
+                        <input
+                          type="text"
+                          value={crmSettings.telegramChatId}
+                          onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramChatId: e.target.value }))}
+                          required={crmSettings.telegramEnabled}
+                          className="w-full px-2.5 py-1.5 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all !border-0"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleTestTelegramBot}
+                        disabled={isTestingTelegram || !crmSettings.telegramBotToken.trim() || !crmSettings.telegramChatId.trim()}
+                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-white/[0.12] hover:bg-white/[0.2] active:bg-white/[0.26] active:scale-[0.98] transition-all text-[10px] font-semibold rounded-xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] text-white"
+                      >
+                        {isTestingTelegram ? (
+                          <>
+                            <RefreshCw className="w-3 animate-spin text-white/60" />
+                            <span>Отправка...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-3 text-sky-400" />
+                            <span>Проверить подключение</span>
+                          </>
+                        )}
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Webhook */}
+              <div className="p-3 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
+                  Make / Zapier Webhook
+                </span>
+
+                <div className="space-y-1.5">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <label className="text-[9px] text-white/50 block mb-0.5">API ключ безопасности</label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={crmSettings.webhookApiKey}
+                        className="w-full px-2.5 py-1.5 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl text-white/70 text-[10px] select-all focus:outline-none !border-0"
+                      />
+                    </div>
                     <button
                       type="button"
-                      onClick={copyWebhookUrl}
-                      className="text-white/60 hover:text-white transition-colors"
+                      onClick={regenerateWebhookKey}
+                      className="h-[28px] w-[28px] self-end rounded-xl bg-white/[0.06] hover:bg-white/[0.14] active:bg-white/[0.2] active:scale-[0.97] backdrop-blur-[6px] border-0 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                      title="Обновить ключ"
                     >
-                      {isApiKeyCopied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                      <RefreshCw className="w-3 h-3" />
                     </button>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-white/50 block mb-0.5">Адрес вебхука</label>
+                    <div className="flex items-center gap-2 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl px-2.5 py-1.5 overflow-hidden border-0">
+                      <span className="text-white/70 text-[9px] select-all truncate flex-1 font-mono">
+                        {window.location.origin}/api/leads-webhook?api_key={crmSettings.webhookApiKey}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={copyWebhookUrl}
+                        className="text-white/60 hover:text-white transition-colors"
+                      >
+                        {isApiKeyCopied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={() => setViewMode("gate")}
-                className="flex-1 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.12] active:scale-[0.97] backdrop-blur-[4px] rounded-xl text-white/70 hover:text-white text-[10px] font-semibold border-0"
-              >
-                Отмена
-              </button>
-              <button
-                type="submit"
-                disabled={savingSettings}
-                className="flex-1 py-1.5 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] rounded-xl text-white text-[10px] font-semibold border-0 flex items-center justify-center gap-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
-              >
-                {savingSettings && <RefreshCw className="w-3 h-3 animate-spin" />}
-                <span>Сохранить</span>
-              </button>
-            </div>
-          </form>
-        </div>
+              <div className="flex gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("gate")}
+                  className="flex-1 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.12] active:scale-[0.97] backdrop-blur-[4px] rounded-xl text-white/70 hover:text-white text-[10px] font-semibold border-0"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingSettings}
+                  className="flex-1 py-1.5 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] rounded-xl text-white text-[10px] font-semibold border-0 flex items-center justify-center gap-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+                >
+                  {savingSettings && <RefreshCw className="w-3 h-3 animate-spin" />}
+                  <span>Сохранить</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     );
   }
 
   // 3. CRM WORKSPACE (Основной экран)
+  const hasWallpaper = selectedWallpaper && selectedWallpaper !== "none";
+
   return (
     <div 
-      className="min-h-screen text-white flex flex-col font-sans bg-cover bg-center transition-all duration-500 relative"
-      style={{ backgroundImage: `url(${selectedWallpaper})` }}
+      className={`min-h-screen flex flex-col font-sans transition-all duration-500 relative ${
+        hasWallpaper ? "text-white bg-cover bg-center" : "bg-background text-foreground"
+      }`}
+      style={hasWallpaper ? { backgroundImage: `url(${selectedWallpaper})` } : undefined}
     >
       {/* Dark overlay for contrast */}
-      <div className="absolute inset-0 bg-black/75 pointer-events-none z-0" />
+      {hasWallpaper && <div className="absolute inset-0 bg-black/85 pointer-events-none z-0" />}
       
       <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_1fr] min-h-0 h-full relative z-10">
         
         {/* ЛЕВАЯ КОЛОНКА */}
-        <aside className="hidden md:flex flex-col gap-6 bg-black/15 backdrop-blur-xl border-r border-white/5 p-6 shrink-0 h-screen sticky top-0 overflow-y-auto">
+        <aside className={`hidden md:flex flex-col gap-6 p-6 shrink-0 h-screen sticky top-0 overflow-y-auto border-r ${
+          hasWallpaper 
+            ? "bg-white/[0.06] backdrop-blur-2xl backdrop-brightness-[1.5] backdrop-saturate-[1.3] border-white/5" 
+            : "bg-card border-border"
+        }`}>
           {/* Кнопка "Добавить лида" */}
           <button
             onClick={() => setIsAddDrawerOpen(true)}
-            className="w-full h-11 bg-white/[0.08] hover:bg-white/[0.14] text-white border-0 rounded-full active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs font-semibold shadow-md backdrop-blur-md"
+            className={`w-full h-11 border-0 rounded-full active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs font-semibold shadow-md ${
+              hasWallpaper 
+                ? "bg-white/[0.10] hover:bg-white/[0.18] text-white backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3]" 
+                : "bg-primary hover:bg-primary/90 text-primary-foreground"
+            }`}
           >
-            <Plus className="w-4 h-4 text-white" />
+            <Plus className="w-4 h-4" />
             <span>Добавить лида</span>
           </button>
 
           {/* Фильтры */}
           <div className="space-y-2.5">
-            <span className="text-[10px] font-bold text-white/40 tracking-widest uppercase block px-3">
+            <span className={`text-[10px] font-bold tracking-widest uppercase block px-3 ${
+              hasWallpaper ? "text-white/40" : "text-muted-foreground/80"
+            }`}>
               Фильтры
             </span>
 
@@ -1348,14 +1346,16 @@ const CrmPage: React.FC = () => {
                 onClick={() => setActiveTab("all")}
                 className={`w-full h-10 px-3 rounded-xl text-xs font-medium flex items-center justify-between transition-colors
                   ${activeTab === "all"
-                    ? "bg-white/10 text-white font-bold shadow-sm"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.03]"}`}
+                    ? (hasWallpaper ? "bg-white/15 text-white font-bold shadow-sm" : "bg-muted text-foreground font-bold")
+                    : (hasWallpaper ? "text-white/60 hover:text-white hover:bg-white/[0.03]" : "text-muted-foreground hover:text-foreground hover:bg-muted/50")}`}
               >
                 <div className="flex items-center gap-2.5">
                   {STATUS_ICONS["all"]}
                   <span>Вся база</span>
                 </div>
-                <span className="text-[10px] text-white/60 font-bold bg-white/[0.08] px-2 py-0.5 rounded-full">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  hasWallpaper ? "text-white/60 bg-white/[0.08]" : "text-muted-foreground/80 bg-card border border-border/40"
+                }`}>
                   {getTabCount("all")}
                 </span>
               </button>
@@ -1371,15 +1371,17 @@ const CrmPage: React.FC = () => {
                     onClick={() => setActiveTab(tab)}
                     className={`w-full h-10 px-3 rounded-xl text-xs font-medium flex items-center justify-between transition-colors
                       ${isActive
-                        ? "bg-muted text-foreground font-bold"
-                        : "text-muted-foreground hover:text-foreground/90 hover:bg-muted/50"}`}
+                        ? (hasWallpaper ? "bg-white/15 text-white font-bold shadow-sm" : "bg-muted text-foreground font-bold")
+                        : (hasWallpaper ? "text-white/60 hover:text-white hover:bg-white/[0.03]" : "text-muted-foreground hover:text-foreground hover:bg-muted/50")}`}
                   >
                     <div className="flex items-center gap-2.5">
                       {STATUS_ICONS[tab]}
                       <span>{label}</span>
                     </div>
                     {count > 0 && (
-                      <span className="text-[10px] text-muted-foreground/80 font-bold bg-card border border-border/40 px-2 py-0.5 rounded-full">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        hasWallpaper ? "text-white/60 bg-white/[0.08]" : "text-muted-foreground/80 bg-card border border-border/40"
+                      }`}>
                         {count}
                       </span>
                     )}
@@ -1392,7 +1394,9 @@ const CrmPage: React.FC = () => {
           <div className="mt-auto pt-6 border-t border-border/40 flex flex-col gap-2">
             <button
               onClick={() => setViewMode("gate")}
-              className="w-full h-9 px-3 rounded-xl text-muted-foreground/80 hover:text-foreground/80 hover:bg-muted/20 transition-all text-xs font-semibold flex items-center gap-2.5"
+              className={`w-full h-9 px-3 rounded-xl transition-all text-xs font-semibold flex items-center gap-2.5 ${
+                hasWallpaper ? "text-white/60 hover:text-white hover:bg-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              }`}
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Главный экран CRM</span>
@@ -1406,18 +1410,24 @@ const CrmPage: React.FC = () => {
           {/* МОБИЛЬНОЕ МЕНЮ СТАТУСОВ (Показывается только если mobileViewLevel === "statuses") */}
           <div className={`md:hidden flex-1 flex-col ${mobileViewLevel === "statuses" ? "flex" : "hidden"} bg-transparent h-full overflow-y-auto custom-scrollbar`}>
             <div className="flex items-center justify-between px-5 pt-6 pb-4 shrink-0">
-              <h1 className="text-xl font-bold text-white tracking-tight">CRM Клиенты</h1>
+              <h1 className={`text-xl font-bold tracking-tight ${hasWallpaper ? "text-white" : "text-foreground"}`}>CRM Клиенты</h1>
               <div className="flex gap-2.5">
                 <button
                   onClick={() => setIsAddDrawerOpen(true)}
-                  className="h-10 px-4 bg-white text-black font-semibold rounded-xl flex items-center justify-center active:scale-95 transition-transform shadow-md text-sm gap-2"
+                  className={`h-10 px-4 font-semibold rounded-xl flex items-center justify-center active:scale-95 transition-transform shadow-md text-sm gap-2 ${
+                    hasWallpaper ? "bg-white text-black hover:bg-zinc-100" : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
                 >
                   <Plus className="w-4 h-4" />
                   Лид
                 </button>
                 <button
                   onClick={() => setViewMode("gate")}
-                  className="h-10 w-10 bg-white/[0.06] backdrop-blur-md text-white rounded-xl flex items-center justify-center active:scale-95 transition-transform border-0 hover:bg-white/[0.12]"
+                  className={`h-10 w-10 rounded-xl flex items-center justify-center active:scale-95 transition-transform border-0 ${
+                    hasWallpaper 
+                      ? "bg-white/[0.08] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white hover:bg-white/[0.14]" 
+                      : "bg-muted text-foreground hover:bg-muted/80"
+                  }`}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -1426,21 +1436,31 @@ const CrmPage: React.FC = () => {
 
             <div className="px-5 pb-6 space-y-4">
               <div className="space-y-2.5">
-                <h3 className="text-[10px] font-bold text-white/40 tracking-widest uppercase px-1">Основные</h3>
+                <h3 className={`text-[10px] font-bold tracking-widest uppercase px-1 ${hasWallpaper ? "text-white/40" : "text-muted-foreground/85"}`}>Основные</h3>
                 <div className="flex flex-col gap-2">
                   {(["all", "new", "in_work", "appointment", "call_back", "no_answer", "thinking"] as const).map(tab => (
                     <button
                       key={tab}
                       onClick={() => { setActiveTab(tab); setMobileViewLevel("leads"); }}
-                      className="w-full p-3.5 bg-white/[0.06] backdrop-blur-md rounded-2xl flex items-center justify-between active:scale-[0.98] transition-all shadow-sm border-0 group"
+                      className={`w-full p-3.5 rounded-2xl flex items-center justify-between active:scale-[0.98] transition-all shadow-sm border-0 group ${
+                        hasWallpaper
+                          ? "bg-white/[0.08] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white hover:bg-white/[0.14]"
+                          : "bg-card text-foreground hover:bg-muted"
+                      }`}
                     >
                       <div className="flex items-center gap-3.5">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${tab === 'new' ? 'bg-blue-500 text-white' : 'bg-white/[0.08] text-white'}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                          tab === 'new' 
+                            ? 'bg-blue-500 text-white' 
+                            : (hasWallpaper ? 'bg-white/[0.08] text-white' : 'bg-muted text-muted-foreground')
+                        }`}>
                           {STATUS_ICONS[tab]}
                         </div>
-                        <span className="text-sm font-bold text-white">{tab === "all" ? "Все лиды" : STATUS_LABELS[tab]}</span>
+                        <span className="text-sm font-bold">{tab === "all" ? "Все лиды" : STATUS_LABELS[tab]}</span>
                       </div>
-                      <span className="text-sm font-black text-white/60 bg-white/[0.08] px-3 py-1 rounded-full group-hover:bg-white/[0.14] transition-colors">
+                      <span className={`text-sm font-black px-3 py-1 rounded-full transition-colors ${
+                        hasWallpaper ? "text-white/60 bg-white/[0.08] group-hover:bg-white/[0.14]" : "text-muted-foreground bg-muted group-hover:bg-muted/80"
+                      }`}>
                         {getTabCount(tab)}
                       </span>
                     </button>
@@ -1449,30 +1469,38 @@ const CrmPage: React.FC = () => {
               </div>
 
               <div className="space-y-2.5 pt-2">
-                <h3 className="text-[10px] font-bold text-white/40 tracking-widest uppercase px-1">Завершенные</h3>
+                <h3 className={`text-[10px] font-bold tracking-widest uppercase px-1 ${hasWallpaper ? "text-white/40" : "text-muted-foreground/85"}`}>Завершенные</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => { setActiveTab("won"); setMobileViewLevel("leads"); }}
-                    className="p-3.5 bg-white/[0.06] backdrop-blur-md rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0"
+                    className={`p-3.5 rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0 ${
+                      hasWallpaper
+                        ? "bg-white/[0.08] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white hover:bg-white/[0.14]"
+                        : "bg-card text-foreground hover:bg-muted"
+                    }`}
                   >
                     <div className="w-8 h-8 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
                       {STATUS_ICONS["won"]}
                     </div>
                     <div className="text-left min-w-0 flex-1">
-                      <div className="text-[10px] font-bold text-white/40 uppercase truncate">{STATUS_LABELS["won"]}</div>
-                      <div className="text-sm font-black text-white">{getTabCount("won")}</div>
+                      <div className={`text-[10px] font-bold uppercase truncate ${hasWallpaper ? "text-white/40" : "text-muted-foreground/75"}`}>{STATUS_LABELS["won"]}</div>
+                      <div className="text-sm font-black">{getTabCount("won")}</div>
                     </div>
                   </button>
                   <button
                     onClick={() => { setActiveTab("lost"); setMobileViewLevel("leads"); }}
-                    className="p-3.5 bg-white/[0.06] backdrop-blur-md rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0"
+                    className={`p-3.5 rounded-2xl flex items-center gap-3 active:scale-[0.98] border-0 ${
+                      hasWallpaper
+                        ? "bg-white/[0.08] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white hover:bg-white/[0.14]"
+                        : "bg-card text-foreground hover:bg-muted"
+                    }`}
                   >
                     <div className="w-8 h-8 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
                       {STATUS_ICONS["lost"]}
                     </div>
                     <div className="text-left min-w-0 flex-1">
-                      <div className="text-[10px] font-bold text-white/40 uppercase truncate">{STATUS_LABELS["lost"]}</div>
-                      <div className="text-sm font-black text-white">{getTabCount("lost")}</div>
+                      <div className={`text-[10px] font-bold uppercase truncate ${hasWallpaper ? "text-white/40" : "text-muted-foreground/75"}`}>{STATUS_LABELS["lost"]}</div>
+                      <div className="text-sm font-black">{getTabCount("lost")}</div>
                     </div>
                   </button>
                 </div>
@@ -1493,13 +1521,15 @@ const CrmPage: React.FC = () => {
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
-                  <h1 className="text-sm font-bold text-white uppercase tracking-wider">
+                  <h1 className={`text-sm font-bold uppercase tracking-wider ${hasWallpaper ? "text-white" : "text-foreground"}`}>
                     {activeTab === "all" ? "Все лиды" : STATUS_LABELS[activeTab]}
                   </h1>
                 </div>
                 <button
                   onClick={() => setIsAddDrawerOpen(true)}
-                  className="h-8 w-8 bg-white text-black rounded-lg flex items-center justify-center active:scale-95 transition-transform shadow-sm"
+                  className={`h-8 w-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform shadow-sm ${
+                    hasWallpaper ? "bg-white text-black" : "bg-primary text-primary-foreground"
+                  }`}
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -1509,18 +1539,22 @@ const CrmPage: React.FC = () => {
             {/* Строка поиска */}
           <div className="p-4 sm:p-6 border-b border-white/5 shrink-0 flex items-center justify-between">
             <div className="relative flex items-center w-full max-w-md">
-              <Search className="w-4 h-4 text-white/40 absolute left-3 pointer-events-none" />
+              <Search className={`w-4 h-4 absolute left-3 pointer-events-none ${hasWallpaper ? "text-white/40" : "text-muted-foreground"}`} />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск..."
-                className="w-full h-10 pl-9 pr-4 bg-white/[0.06] backdrop-blur-md text-white placeholder-white/30 border-0 focus:bg-white/[0.12] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-all font-medium"
+                className={`w-full h-10 pl-9 pr-4 text-xs focus:outline-none transition-all font-medium rounded-xl !border-0 focus:ring-1 ${
+                  hasWallpaper
+                    ? "!bg-white/[0.08] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white placeholder-white/35 focus:!bg-white/[0.15] focus:ring-white/20"
+                    : "!bg-muted text-foreground placeholder-muted-foreground focus:!bg-muted/80 focus:ring-primary/20"
+                }`}
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 p-1 rounded-full text-white/60 hover:text-white"
+                  className={`absolute right-3 p-1 rounded-full ${hasWallpaper ? "text-white/60 hover:text-white" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -1528,7 +1562,9 @@ const CrmPage: React.FC = () => {
             </div>
 
             <div className="hidden md:flex items-center gap-3">
-              <span className="text-[10px] text-white/60 font-bold uppercase tracking-widest bg-white/[0.04] px-3 py-1.5 rounded-full">
+              <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${
+                hasWallpaper ? "text-white/60 bg-white/[0.04]" : "text-muted-foreground bg-muted"
+              }`}>
                 Активный фильтр: {activeTab === "all" ? "Вся база" : STATUS_LABELS[activeTab]}
               </span>
             </div>
@@ -1538,17 +1574,21 @@ const CrmPage: React.FC = () => {
           <div className="flex-1 overflow-auto p-4 sm:p-6 custom-scrollbar">
             {loadingLeads ? (
               <div className="h-[50vh] flex items-center justify-center">
-                <RefreshCw className="w-6 h-6 text-white/40 animate-spin" />
+                <RefreshCw className={`w-6 h-6 animate-spin ${hasWallpaper ? "text-white/40" : "text-muted-foreground/50"}`} />
               </div>
             ) : sortedGroupKeys.length === 0 ? (
-              <div className="h-[40vh] bg-white/[0.02] border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center p-6">
-                <Inbox className="w-8 h-8 text-white/40 mb-3" />
-                <h3 className="text-xs font-semibold text-white/60">Заявок не найдено</h3>
+              <div className={`h-[40vh] border border-dashed rounded-2xl flex flex-col items-center justify-center text-center p-6 ${
+                hasWallpaper ? "bg-white/[0.02] border-white/10" : "bg-muted/20 border-border"
+              }`}>
+                <Inbox className={`w-8 h-8 mb-3 ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`} />
+                <h3 className={`text-xs font-semibold ${hasWallpaper ? "text-white/60" : "text-muted-foreground"}`}>Заявок не найдено</h3>
               </div>
             ) : (
               <div className="space-y-8">
                 
-                <div className="hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 px-5 text-[10px] font-bold text-white/40 uppercase tracking-wider select-none shrink-0 border-b border-white/5 pb-2">
+                <div className={`hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 px-5 text-[10px] font-bold uppercase tracking-wider select-none shrink-0 border-b pb-2 ${
+                  hasWallpaper ? "text-white/40 border-white/5" : "text-muted-foreground border-border"
+                }`}>
                   <span>Ист.</span>
                   <span>Имя</span>
                   <span>Телефон</span>
@@ -1582,23 +1622,27 @@ const CrmPage: React.FC = () => {
                                   setSelectedLead(lead);
                                   setIsDetailOpen(true);
                                 }}
-                                className="hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 items-center px-5 py-3.5 bg-white/[0.03] hover:bg-white/[0.07] active:bg-white/[0.1] backdrop-blur-[6px] border-0 rounded-xl transition-all duration-150 cursor-pointer shadow-sm"
+                                className={`hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 items-center px-5 py-3.5 border-0 rounded-xl transition-all duration-150 cursor-pointer shadow-sm ${
+                                  hasWallpaper
+                                    ? "bg-white/[0.06] hover:bg-white/[0.14] active:bg-white/[0.22] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white"
+                                    : "bg-card hover:bg-muted/50 active:bg-muted text-foreground"
+                                }`}
                               >
-                                <div className="flex items-center justify-start pl-1.5 text-white/60">
+                                <div className={`flex items-center justify-start pl-1.5 ${hasWallpaper ? "text-white/60" : "text-muted-foreground"}`}>
                                   {getSourceIcon(lead.source || "")}
                                 </div>
 
-                                <span className="text-xs font-bold text-white truncate pr-2">
+                                <span className={`text-xs font-bold truncate pr-2 ${hasWallpaper ? "text-white" : "text-foreground"}`}>
                                   {lead.name}
                                 </span>
 
-                                <span className="font-mono text-white/70 text-xs tracking-tight">
+                                <span className={`font-mono text-xs tracking-tight ${hasWallpaper ? "text-white/70" : "text-muted-foreground"}`}>
                                   {lead.phone}
                                 </span>
 
-                                <div className="flex items-center gap-1.5 text-xs text-white/80">
+                                <div className="flex items-center gap-1.5 text-xs">
                                   <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[lead.status]}`} />
-                                  <span>{STATUS_LABELS[lead.status] === "Новые" ? "Новый" : STATUS_LABELS[lead.status]}</span>
+                                  <span className={hasWallpaper ? "text-white/80" : "text-foreground"}>{STATUS_LABELS[lead.status] === "Новые" ? "Новый" : STATUS_LABELS[lead.status]}</span>
                                 </div>
 
                                 <div>
@@ -1606,7 +1650,7 @@ const CrmPage: React.FC = () => {
                                     <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-semibold
                                       ${overdue
                                         ? "bg-red-500/15 text-red-400"
-                                        : "bg-white/[0.08] text-white/70"}`}
+                                        : (hasWallpaper ? "bg-white/[0.08] text-white/70" : "bg-muted text-muted-foreground")}`}
                                     >
                                       <Clock className="w-3 h-3" />
                                       <span>
@@ -1614,19 +1658,19 @@ const CrmPage: React.FC = () => {
                                       </span>
                                     </div>
                                   ) : (
-                                    <span className="text-[10px] text-white/30">—</span>
+                                    <span className={`text-[10px] ${hasWallpaper ? "text-white/30" : "text-muted-foreground/45"}`}>—</span>
                                   )}
                                 </div>
 
-                                <span className="text-xs text-white/70 truncate pr-2">
+                                <span className={`text-xs truncate pr-2 ${hasWallpaper ? "text-white/70" : "text-muted-foreground"}`}>
                                   {lead.car || "—"}
                                 </span>
 
-                                <span className="text-xs text-white/60 truncate max-w-[280px] block" title={lead.notes}>
+                                <span className={`text-xs truncate max-w-[280px] block ${hasWallpaper ? "text-white/60" : "text-muted-foreground/80"}`} title={lead.notes}>
                                   {lead.notes || "—"}
                                 </span>
 
-                                <span className="text-[10px] text-white/40 text-right">
+                                <span className={`text-[10px] text-right ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`}>
                                   {format(new Date(lead.createdAt), "d MMM, HH:mm", { locale: ru })}
                                 </span>
                               </div>
@@ -1637,51 +1681,61 @@ const CrmPage: React.FC = () => {
                                   setSelectedLead(lead);
                                   setIsDetailOpen(true);
                                 }}
-                                className="md:hidden p-3.5 bg-white/[0.05] dark:bg-black/35 backdrop-blur-md border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group"
+                                className={`md:hidden p-3.5 border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group ${
+                                  hasWallpaper
+                                    ? "bg-white/[0.08] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white"
+                                    : "bg-card text-foreground"
+                                }`}
                               >
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/50 to-primary/10"></div>
                                 <div className="pl-1.5 flex justify-between items-start gap-2">
                                   <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="shrink-0 text-white/60 bg-white/[0.08] p-1.5 rounded-xl group-hover:bg-primary/20 transition-colors">
+                                    <div className={`shrink-0 p-1.5 rounded-xl group-hover:bg-primary/20 transition-colors ${
+                                      hasWallpaper ? "text-white/60 bg-white/[0.08]" : "text-muted-foreground bg-muted"
+                                    }`}>
                                       {getSourceIcon(lead.source || "")}
                                     </div>
                                     <div className="flex flex-col">
-                                      <span className="text-xs font-bold text-white truncate">
+                                      <span className="text-xs font-bold truncate">
                                         {lead.name}
                                       </span>
-                                      <span className="text-[10px] text-white/60 font-mono mt-0.5">
+                                      <span className={`text-[10px] font-mono mt-0.5 ${hasWallpaper ? "text-white/60" : "text-muted-foreground"}`}>
                                         {lead.phone}
                                       </span>
                                     </div>
                                   </div>
 
                                   <div className="flex flex-col items-end gap-1">
-                                    <div className="flex items-center gap-1.5 text-[10px] text-white/80 bg-white/[0.06] px-2 py-0.5 rounded-full">
+                                    <div className={`flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full ${
+                                      hasWallpaper ? "text-white/80 bg-white/[0.06]" : "text-foreground bg-muted"
+                                    }`}>
                                       <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[lead.status]}`} />
                                       <span className="font-semibold">{STATUS_LABELS[lead.status]}</span>
                                     </div>
                                     {lead.price ? (
-                                      <span className="text-xs font-black text-white mt-0.5">
+                                      <span className="text-xs font-black mt-0.5">
                                         {lead.price} BYN
                                       </span>
                                     ) : null}
                                   </div>
                                 </div>
 
-                                <div className="pl-1.5 flex flex-col gap-2 pt-1.5 border-t border-white/5">
+                                <div className={`pl-1.5 flex flex-col gap-2 pt-1.5 border-t ${hasWallpaper ? "border-white/5" : "border-border/50"}`}>
                                   <div className="flex items-center justify-between text-[11px]">
                                     {lead.service ? (
                                       <span className="text-primary/90 font-bold bg-primary/20 px-2 py-0.5 rounded-md border border-primary/20 truncate">
                                         {lead.service}
                                       </span>
                                     ) : (
-                                      <span className="text-white/40 italic">Нет услуги</span>
+                                      <span className={`italic ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`}>Нет услуги</span>
                                     )}
-                                    {lead.car && <span className="text-white/70 font-medium truncate ml-2 bg-white/[0.08] px-2 py-0.5 rounded-md">{lead.car}</span>}
+                                    {lead.car && <span className={`font-medium truncate ml-2 px-2 py-0.5 rounded-md ${
+                                      hasWallpaper ? "text-white/70 bg-white/[0.08]" : "text-muted-foreground bg-muted"
+                                    }`}>{lead.car}</span>}
                                   </div>
 
                                   {lead.notes && (
-                                    <p className="text-[11px] text-white/60 truncate">
+                                    <p className={`text-[11px] truncate ${hasWallpaper ? "text-white/60" : "text-muted-foreground"}`}>
                                       {lead.notes}
                                     </p>
                                   )}
@@ -1691,7 +1745,7 @@ const CrmPage: React.FC = () => {
                                       <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold
                                         ${overdue
                                           ? "bg-red-500/10 text-red-400"
-                                          : "bg-white/[0.08] text-white/75"}`}
+                                          : (hasWallpaper ? "bg-white/[0.08] text-white/75" : "bg-muted text-muted-foreground")}`}
                                       >
                                         <Clock className="w-3 h-3" />
                                         <span>
@@ -1702,7 +1756,7 @@ const CrmPage: React.FC = () => {
                                       <div></div>
                                     )}
                                     
-                                    <span className="text-[9px] text-white/40 font-medium self-end mb-0.5">
+                                    <span className={`text-[9px] font-medium self-end mb-0.5 ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`}>
                                       Создан: {format(new Date(lead.createdAt), "d.MM.yy HH:mm", { locale: ru })}
                                     </span>
                                   </div>
@@ -1739,7 +1793,7 @@ const CrmPage: React.FC = () => {
                 value={newLeadForm.name}
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, name: e.target.value }))}
                 required
-                className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
               />
             </div>
             <div>
@@ -1750,7 +1804,7 @@ const CrmPage: React.FC = () => {
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, phone: formatBYPhone(e.target.value) }))}
                 maxLength={19}
                 required
-                className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs font-mono focus:outline-none transition-colors"
+                className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs font-mono focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -1761,7 +1815,7 @@ const CrmPage: React.FC = () => {
               type="text"
               value={newLeadForm.car}
               onChange={(e) => setNewLeadForm(prev => ({ ...prev, car: e.target.value }))}
-              className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+              className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
             />
           </div>
 
@@ -1787,7 +1841,7 @@ const CrmPage: React.FC = () => {
                 value={newLeadForm.service || ""}
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, service: e.target.value }))}
                 list="service-names"
-                className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
               />
               <datalist id="service-names">
                 {appState.services.map(s => (
@@ -1801,7 +1855,7 @@ const CrmPage: React.FC = () => {
                 type="number"
                 value={newLeadForm.price || ""}
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, price: Number(e.target.value) }))}
-                className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -1824,7 +1878,7 @@ const CrmPage: React.FC = () => {
               value={newLeadForm.notes}
               onChange={(e) => setNewLeadForm(prev => ({ ...prev, notes: e.target.value }))}
               rows={4}
-              className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs resize-none focus:outline-none transition-colors"
+              className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs resize-none focus:outline-none transition-colors"
             />
           </div>
 
@@ -1866,7 +1920,7 @@ const CrmPage: React.FC = () => {
                     type="text"
                     value={detailForm.name}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                    className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                    className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -1876,7 +1930,7 @@ const CrmPage: React.FC = () => {
                     value={detailForm.phone}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
                     maxLength={19}
-                    className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs font-mono focus:outline-none transition-colors"
+                    className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs font-mono focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -1887,7 +1941,7 @@ const CrmPage: React.FC = () => {
                   type="text"
                   value={detailForm.car || ""}
                   onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
-                  className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                  className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                 />
               </div>
 
@@ -1899,7 +1953,7 @@ const CrmPage: React.FC = () => {
                     value={detailForm.service || ""}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
                     list="service-names-edit"
-                    className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                    className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                   />
                   <datalist id="service-names-edit">
                     {appState.services.map(s => (
@@ -1913,7 +1967,7 @@ const CrmPage: React.FC = () => {
                     type="number"
                     value={detailForm.price || ""}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, price: Number(e.target.value) }) : null)}
-                    className="w-full px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                    className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -1959,7 +2013,7 @@ const CrmPage: React.FC = () => {
                       type="date"
                       value={nextStepDateInput}
                       onChange={(e) => setNextStepDateInput(e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-white/[0.04] text-white border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
+                      className="w-full px-2.5 py-1.5 !bg-white/[0.04] text-white !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -1968,7 +2022,7 @@ const CrmPage: React.FC = () => {
                       type="time"
                       value={nextStepTimeInput}
                       onChange={(e) => setNextStepTimeInput(e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-white/[0.04] text-white border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
+                      className="w-full px-2.5 py-1.5 !bg-white/[0.04] text-white !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -2027,7 +2081,7 @@ const CrmPage: React.FC = () => {
                   placeholder="Добавить новую заметку менеджера..."
                   value={newNoteText}
                   onChange={(e) => setNewNoteText(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-white/[0.04] text-white placeholder-white/20 border-0 focus:bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                  className="flex-1 px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
