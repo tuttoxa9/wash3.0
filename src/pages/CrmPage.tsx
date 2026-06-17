@@ -805,10 +805,41 @@ const CrmPage: React.FC = () => {
   // 1. GATE VIEW (Входная карточка)
   if (viewMode === "gate") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Background video for mobile only */}
+        <video
+          src="/main.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          onTimeUpdate={(e) => {
+            const video = e.currentTarget;
+            const duration = video.duration;
+            const currentTime = video.currentTime;
+            if (!duration) return;
+            
+            const fadeTime = 1.0;
+            let opacity = 0.25;
+            
+            if (currentTime < fadeTime) {
+              opacity = (currentTime / fadeTime) * 0.25;
+            } else if (currentTime > duration - fadeTime) {
+              opacity = ((duration - currentTime) / fadeTime) * 0.25;
+            }
+            
+            video.style.opacity = opacity.toString();
+          }}
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0 block md:hidden transition-opacity duration-300"
+          style={{ opacity: 0 }}
+        />
+        
+        {/* Dark overlay for mobile video background */}
+        <div className="absolute inset-0 bg-black/60 pointer-events-none z-[1] block md:hidden" />
+
         <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 black:bg-blue-500/15 blur-[60px] rounded-full scale-[1.2] z-[-1] pointer-events-none"></div>
         
-        <div className="w-full max-w-sm bg-card border border-border/40 rounded-3xl p-6 sm:p-8 shadow-2xl relative">
+        <div className="w-full max-w-sm bg-card/85 md:bg-card border border-border/40 backdrop-blur-xl md:backdrop-blur-none rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10">
           
           <div className="text-center mb-8">
             <h1 className="text-xl font-bold tracking-tight text-foreground">Detail Lab CRM</h1>
