@@ -48,87 +48,84 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const diffMs = nextStepTime.getTime() - now.getTime();
       const diffMinutes = Math.round(diffMs / 60000);
 
-      // Проверяем каждое настроенное время напоминания (например, за 10, 20, 30 минут)
       const notifyBeforeList = lead.notify_before || [];
       const sentNotifications = lead.sent_notifications || [];
 
-      for (const minutes of notifyBeforeList) {
-        // Уведомляем, если:
-        // 1. Оставшееся время попало в 6-минутный коридор перед напоминанием (например, от 25 до 30 минут для порога 30 минут).
-        //    Это решает проблему с дублированием напоминаний в одной и той же итерации крона и предотвращает 
-        //    запоздалые уведомления (например, отправку напоминания "за 10 минут", когда время события уже прошло).
-        // 2. Уведомление на этот интервал еще не отправлялось
-        const shouldNotify = 
-          diffMinutes <= minutes && 
-          diffMinutes > minutes - 6 && 
-          !sentNotifications.includes(minutes);
+      // Находим все пороги напоминаний, которые подошли по времени, но еще не были отправлены
+      const dueThresholds = notifyBeforeList.filter(minutes => 
+        diffMinutes <= minutes && 
+        diffMinutes > -10 && 
+        !sentNotifications.includes(minutes)
+      );
 
-        if (shouldNotify) {
-          // Отправляем сообщение в Telegram
-          const label = diffMinutes <= 0 
-            ? "Время визита наступило!" 
-            : `Визит запланирован через ${diffMinutes} минут!`;
+      if (dueThresholds.length > 0) {
+        // Выбираем самый минимальный (наиболее актуальный на данный момент) порог, чтобы отправить только его
+        const targetMinutes = Math.min(...dueThresholds);
 
-          let statusLabel = lead.status;
-          if (lead.status === "appointment") statusLabel = "Приезд";
-          else if (lead.status === "call_back") statusLabel = "Перезвон";
-          else if (lead.status === "in_work") statusLabel = "В работе";
-          else if (lead.status === "no_answer") statusLabel = "Недозвон";
-          else if (lead.status === "thinking") statusLabel = "Думает";
-          else if (lead.status === "new") statusLabel = "Новый";
+        // Отправляем сообщение в Telegram
+        const label = diffMinutes <= 0 
+          ? "Время визита наступило!" 
+          : `Визит запланирован через ${diffMinutes} минут!`;
 
-          const message = 
-            `🔔 <b>Напоминание: ${label}</b>\n\n` +
-            `👤 <b>Клиент:</b> ${lead.name}\n` +
-            `📞 <b>Телефон:</b> <code>${lead.phone}</code>\n` +
-            (lead.car ? `🚗 <b>Автомобиль:</b> ${lead.car}\n` : "") +
-            `🛠 <b>Услуга:</b> ${lead.service || "Не указана"}\n` +
-            (lead.price > 0 ? `💰 <b>Стоимость:</b> ${lead.price} руб.\n` : "") +
-            `📡 <b>Текущий статус:</b> ${statusLabel}\n` +
-            (lead.notes ? `📝 <b>Заметки:</b> ${lead.notes}\n` : "");
+        let statusLabel = lead.status;
+        if (lead.status === "appointment") statusLabel = "Приезд";
+        else if (lead.status === "call_back") statusLabel = "Перезвон";
+        else if (lead.status === "in_work") statusLabel = "В работе";
+        else if (lead.status === "no_answer") statusLabel = "Недозвон";
+        else if (lead.status === "thinking") statusLabel = "Думает";
+        else if (lead.status === "new") statusLabel = "Новый";
 
-          const tgRes = await fetch(`https://api.telegram.org/bot${crmSettings.telegramBotToken}/sendMessage`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: crmSettings.telegramChatId,
-              text: message,
-              parse_mode: "HTML"
-            })
-          });
+        const message = 
+          `🔔 <b>Напоминание: ${label}</b>\n\n` +
+          `👤 <b>Клиент:</b> ${lead.name}\n` +
+          `📞 <b>Телефон:</b> <code>${lead.phone}</code>\n` +
+          (lead.car ? `🚗 <b>Автомобиль:</b> ${lead.car}\n` : "") +
+          `🛠 <b>Услуга:</b> ${lead.service || "Не указана"}\n` +
+          (lead.price > 0 ? `💰 <b>Стоимость:</b> ${lead.price} руб.\n` : "") +
+          `📡 <b>Текущий статус:</b> ${statusLabel}\n` +
+          (lead.notes ? `📝 <b>Заметки:</b> ${lead.notes}\n` : "");
 
-          if (!tgRes.ok) {
-            const errorText = await tgRes.text();
-            console.error(`Telegram sendMessage failed for lead ${lead.id}:`, errorText);
-            continue;
-          }
+        const tgRes = await fetch(`https://api.telegram.org/bot${crmSettings.telegramBotToken}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: crmSettings.telegramChatId,
+            text: message,
+            parse_mode: "HTML"
+          })
+        });
 
-          // Добавляем напоминание в отправленные
-          const updatedSentNotifications = [...sentNotifications, minutes];
-          
-          // Создаем запись в историю
-          const timeString = nextStepTime.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-          const dateString = nextStepTime.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
-          const historyEntry = {
-            id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
-            type: "other",
-            text: `Отправлено Telegram-напоминание за ${minutes} мин. до шага (${dateString} в ${timeString})`,
-            createdAt: new Date().toISOString()
-          };
-
-          const updatedHistory = [...(lead.history || []), historyEntry];
-
-          // Сохраняем изменения в БД
-          await supabase
-            .from("crm_leads")
-            .update({
-              sent_notifications: updatedSentNotifications,
-              history: updatedHistory
-            })
-            .eq("id", lead.id);
-
-          sentReport.push({ leadId: lead.id, client: lead.name, minutes });
+        if (!tgRes.ok) {
+          const errorText = await tgRes.text();
+          console.error(`Telegram sendMessage failed for lead ${lead.id}:`, errorText);
+          continue;
         }
+
+        // Помечаем все подошедшие пороги как отправленные, чтобы они больше не срабатывали
+        const updatedSentNotifications = [...sentNotifications, ...dueThresholds];
+        
+        // Создаем запись в историю
+        const timeString = nextStepTime.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+        const dateString = nextStepTime.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+        const historyEntry = {
+          id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
+          type: "other",
+          text: `Отправлено Telegram-напоминание за ${targetMinutes} мин. до шага (${dateString} в ${timeString})`,
+          createdAt: new Date().toISOString()
+        };
+
+        const updatedHistory = [...(lead.history || []), historyEntry];
+
+        // Сохраняем изменения в БД
+        await supabase
+          .from("crm_leads")
+          .update({
+            sent_notifications: updatedSentNotifications,
+            history: updatedHistory
+          })
+          .eq("id", lead.id);
+
+        sentReport.push({ leadId: lead.id, client: lead.name, minutes: targetMinutes });
       }
     }
 
