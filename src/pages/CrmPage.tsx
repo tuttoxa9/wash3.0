@@ -920,39 +920,35 @@ const CrmPage: React.FC = () => {
 
         <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 black:bg-blue-500/15 blur-[60px] rounded-full scale-[1.2] z-[-1] pointer-events-none"></div>
         
-        <div className="w-full max-w-sm bg-card/85 md:bg-card border border-border/40 backdrop-blur-xl md:backdrop-blur-none rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10">
+        <div className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col gap-4">
           
-          <div className="text-center mb-8">
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Detail Lab CRM</h1>
-            <p className="text-xs text-muted-foreground/80 mt-1.5">Вход с использованием учетной записи</p>
+          <div className="text-center">
+            <h1 className="text-base font-bold tracking-tight text-white/90">Detail Lab CRM</h1>
+            <p className="text-[9px] text-white/40 mt-1">Авторизация</p>
           </div>
 
           {!user ? (
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
-              <div className="relative flex items-center">
-                <Mail className="w-4 h-4 text-muted-foreground/60 absolute left-3" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full pl-9 pr-4 py-2.5 bg-muted/50 border border-border/40 rounded-xl text-foreground focus:outline-none focus:border-border text-sm transition-all"
-                />
-              </div>
+            <form onSubmit={handleLoginSubmit} className="space-y-3">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="Email"
+                className="w-full px-3.5 py-2 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
+              />
 
-              <div className="relative flex items-center">
-                <Lock className="w-4 h-4 text-muted-foreground/60 absolute left-3" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full pl-9 pr-4 py-2.5 bg-muted/50 border border-border/40 rounded-xl text-foreground focus:outline-none focus:border-border text-sm transition-all"
-                />
-              </div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Пароль"
+                className="w-full px-3.5 py-2 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
+              />
 
               {loginError && (
-                <div className="text-red-400 text-[11px] text-center bg-red-950/20 py-2 px-3 rounded-lg border border-red-900/20">
+                <div className="text-red-350 text-[10px] text-center bg-red-950/20 py-2 px-3 rounded-2xl border-0">
                   {loginError}
                 </div>
               )}
@@ -960,43 +956,40 @@ const CrmPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loginLoading}
-                className="w-full py-2.5 mt-2 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 active:scale-[0.98] transition-all text-xs shadow-md"
+                className="w-full py-2 mt-1 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] transition-all text-xs font-bold rounded-2xl text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_4px_15px_rgba(0,0,0,0.2)] border-0"
               >
                 {loginLoading ? "Авторизация..." : "Войти в систему"}
               </button>
             </form>
           ) : (
-            <div className="space-y-4">
-              <div className="text-center bg-muted/10 border border-border/40 p-4 rounded-2xl mb-4">
-                <div className="w-9 h-9 bg-muted border border-border rounded-xl flex items-center justify-center mx-auto mb-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <h3 className="text-xs font-semibold text-foreground">Сессия активна</h3>
-                <span className="text-[10px] text-muted-foreground/80 block truncate mt-1">{user.email}</span>
+            <div className="space-y-3.5">
+              <div className="text-center bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] p-3.5 rounded-2xl border-0">
+                <h3 className="text-xs font-semibold text-white/95">Сессия активна</h3>
+                <span className="text-[9px] text-white/50 block truncate mt-0.5">{user.email}</span>
               </div>
 
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={() => setViewMode("crm")}
-                  className="w-full py-2.5 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 active:scale-[0.99] transition-all text-xs flex items-center justify-center gap-1.5 shadow"
+                  className="w-full py-2 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] transition-all text-xs font-bold rounded-2xl text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_4px_15px_rgba(0,0,0,0.2)] border-0 flex items-center justify-center gap-1.5"
                 >
-                  <LayoutDashboard className="w-4 h-4" />
+                  <LayoutDashboard className="w-3.5 h-3.5 text-white/90" />
                   <span>Войти в CRM</span>
                 </button>
 
                 <button
                   onClick={() => setViewMode("settings")}
-                  className="w-full py-2.5 bg-muted/50 border border-border/40 text-foreground/80 font-semibold rounded-xl hover:bg-muted/80 active:scale-[0.99] transition-all text-xs flex items-center justify-center gap-1.5"
+                  className="w-full py-2 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.1] active:scale-[0.97] backdrop-blur-[4px] transition-all text-xs font-bold rounded-2xl text-white/80 border-0 flex items-center justify-center gap-1.5"
                 >
-                  <Settings className="w-4 h-4" />
+                  <Settings className="w-3.5 h-3.5 text-white/80" />
                   <span>Настройки</span>
                 </button>
 
-                <div className="h-[1px] bg-muted my-1"></div>
+                <div className="h-[1px] bg-white/10 my-0.5"></div>
 
                 <button
                   onClick={handleLogoutClick}
-                  className="w-full py-2 bg-red-950/20 text-red-400 border border-red-950/40 hover:bg-red-950/30 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full py-2 bg-red-500/[0.08] hover:bg-red-500/[0.16] active:bg-red-500/[0.22] active:scale-[0.97] backdrop-blur-[6px] transition-all text-xs font-bold rounded-2xl text-red-300 border-0 flex items-center justify-center gap-1.5"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Выйти</span>
@@ -1043,25 +1036,24 @@ const CrmPage: React.FC = () => {
 
         <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 black:bg-blue-500/15 blur-[60px] rounded-full scale-[1.2] z-[-1] pointer-events-none"></div>
 
-        <div className="w-full max-w-sm bg-card/85 md:bg-card border border-border/40 backdrop-blur-xl md:backdrop-blur-none rounded-3xl p-5 shadow-2xl relative z-10">
+        <div className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white">
           
           <div className="flex items-center gap-2 mb-3.5">
             <button
               onClick={() => setViewMode("gate")}
-              className="p-1 rounded-lg bg-muted hover:bg-muted-foreground/20 text-muted-foreground transition-colors"
+              className="p-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] active:bg-white/[0.16] active:scale-[0.95] text-white/80 transition-all border-0"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <h1 className="text-xs font-bold text-foreground uppercase tracking-wider">Настройки системы</h1>
+            <h1 className="text-xs font-bold text-white/95 uppercase tracking-wider">Настройки</h1>
           </div>
 
-          <form onSubmit={handleSaveSettings} className="space-y-3.5">
+          <form onSubmit={handleSaveSettings} className="space-y-3">
             
             {/* Выбор Темы оформления */}
-            <div className="p-2.5 bg-muted/10 border border-border/40 rounded-xl space-y-2">
-              <span className="text-[10px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Sun className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Тема интерфейса</span>
+            <div className="p-3 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
+              <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
+                Тема интерфейса
               </span>
               <div className="flex gap-2">
                 {(["light", "dark", "black"] as const).map(t => (
@@ -1069,10 +1061,10 @@ const CrmPage: React.FC = () => {
                     key={t}
                     type="button"
                     onClick={() => dispatch({ type: "SET_THEME", payload: t })}
-                    className={`flex-1 py-1 rounded-lg text-[10px] font-semibold border transition-all
+                    className={`flex-1 py-1 rounded-xl text-[10px] font-semibold border-0 transition-all
                       ${appState.theme === t
-                        ? "bg-white text-black border-white"
-                        : "bg-card border-border/40 text-muted-foreground hover:text-foreground"}`}
+                        ? "bg-white/15 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+                        : "bg-white/[0.04] text-white/50 hover:text-white"}`}
                   >
                     {t === "light" ? "Светлая" : t === "dark" ? "Темная" : "Черная"}
                   </button>
@@ -1081,104 +1073,101 @@ const CrmPage: React.FC = () => {
             </div>
 
             {/* Telegram */}
-            <div className="p-2.5 bg-muted/10 border border-border/40 rounded-xl space-y-2.5">
+            <div className="p-3 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Bell className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Telegram бот</span>
+                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
+                  Telegram оповещения
                 </span>
                 
-                {/* Компактный свитчер с иконками */}
-                <label className="relative inline-flex items-center cursor-pointer select-none">
+                {/* Компактный свитчер без иконок */}
+                <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
                   <input
                     type="checkbox"
                     checked={crmSettings.telegramEnabled}
                     onChange={() => setCrmSettings(prev => ({ ...prev, telegramEnabled: !prev.telegramEnabled }))}
                     className="peer sr-only"
                   />
-                  <div className="w-9 h-5 bg-zinc-600 dark:bg-zinc-700 peer-checked:bg-primary border border-border/40 rounded-full transition-colors duration-300 relative">
-                    <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white dark:bg-zinc-900 shadow-sm flex items-center justify-center transition-transform duration-300 ${
+                  <div className="w-9 h-5 bg-white/[0.08] dark:bg-black/40 peer-checked:bg-white/[0.22] backdrop-blur-[8px] rounded-full transition-colors duration-300 relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] border-0">
+                    <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-300 shadow-[0_2px_5px_rgba(0,0,0,0.35)] ${
                       crmSettings.telegramEnabled ? "translate-x-[18px]" : "translate-x-0"
-                    }`}>
-                      <div className="relative w-full h-full flex items-center justify-center">
-                        <Check className={`w-2.5 h-2.5 text-primary absolute transition-all duration-300 ${
-                          crmSettings.telegramEnabled ? "opacity-100 scale-100" : "opacity-0 scale-50"
-                        }`} strokeWidth={3} />
-                        <X className={`w-2.5 h-2.5 text-muted-foreground/80 absolute transition-all duration-300 ${
-                          !crmSettings.telegramEnabled ? "opacity-100 scale-100" : "opacity-0 scale-50"
-                        }`} strokeWidth={3} />
-                      </div>
-                    </div>
+                    }`} />
                   </div>
                 </label>
               </div>
 
-              {crmSettings.telegramEnabled && (
-                <div className="space-y-2 pt-0.5">
-                  <div>
-                    <label className="text-[9px] text-muted-foreground/80 block mb-0.5">Токен бота</label>
-                    <input
-                      type="text"
-                      value={crmSettings.telegramBotToken}
-                      onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramBotToken: e.target.value }))}
-                      required={crmSettings.telegramEnabled}
-                      className="w-full px-2.5 py-1.5 bg-background border border-border/40 rounded-lg text-foreground text-[10px] focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[9px] text-muted-foreground/80 block mb-0.5">ID чата / группы</label>
-                    <input
-                      type="text"
-                      value={crmSettings.telegramChatId}
-                      onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramChatId: e.target.value }))}
-                      required={crmSettings.telegramEnabled}
-                      className="w-full px-2.5 py-1.5 bg-background border border-border/40 rounded-lg text-foreground text-[10px] focus:outline-none"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleTestTelegramBot}
-                    disabled={isTestingTelegram || !crmSettings.telegramBotToken.trim() || !crmSettings.telegramChatId.trim()}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-zinc-800 text-white rounded-lg text-[10px] font-medium hover:bg-zinc-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:pointer-events-none border border-zinc-700/50 shadow-sm animate-fade-in"
+              <AnimatePresence initial={false}>
+                {crmSettings.telegramEnabled && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden space-y-2 pt-0.5"
                   >
-                    {isTestingTelegram ? (
-                      <>
-                        <RefreshCw className="w-3 animate-spin text-muted-foreground" />
-                        <span>Отправка...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-3 text-sky-400" />
-                        <span>Проверить подключение</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
+                    <div>
+                      <label className="text-[9px] text-white/50 block mb-0.5">Токен бота</label>
+                      <input
+                        type="text"
+                        value={crmSettings.telegramBotToken}
+                        onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramBotToken: e.target.value }))}
+                        required={crmSettings.telegramEnabled}
+                        className="w-full px-2.5 py-1.5 bg-white/[0.04] dark:bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] text-white/50 block mb-0.5">ID чата / группы</label>
+                      <input
+                        type="text"
+                        value={crmSettings.telegramChatId}
+                        onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramChatId: e.target.value }))}
+                        required={crmSettings.telegramEnabled}
+                        className="w-full px-2.5 py-1.5 bg-white/[0.04] dark:bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all border-0"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleTestTelegramBot}
+                      disabled={isTestingTelegram || !crmSettings.telegramBotToken.trim() || !crmSettings.telegramChatId.trim()}
+                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-white/[0.12] hover:bg-white/[0.2] active:bg-white/[0.26] active:scale-[0.98] transition-all text-[10px] font-semibold rounded-xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] text-white"
+                    >
+                      {isTestingTelegram ? (
+                        <>
+                          <RefreshCw className="w-3 animate-spin text-white/60" />
+                          <span>Отправка...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3 text-sky-400" />
+                          <span>Проверить подключение</span>
+                        </>
+                      )}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Webhook */}
-            <div className="p-2.5 bg-muted/10 border border-border/40 rounded-xl space-y-2">
-              <span className="text-[10px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Make / Zapier Webhook</span>
+            <div className="p-3 bg-white/[0.04] dark:bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
+              <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
+                Make / Zapier Webhook
               </span>
 
               <div className="space-y-1.5">
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="text-[9px] text-muted-foreground/80 block mb-0.5">API ключ безопасности</label>
+                    <label className="text-[9px] text-white/50 block mb-0.5">API ключ безопасности</label>
                     <input
                       type="text"
                       readOnly
                       value={crmSettings.webhookApiKey}
-                      className="w-full px-2.5 py-1.5 bg-background border border-border/40 rounded-lg text-muted-foreground/85 text-[10px] select-all focus:outline-none"
+                      className="w-full px-2.5 py-1.5 bg-white/[0.04] dark:bg-black/25 backdrop-blur-[10px] rounded-xl text-white/70 text-[10px] select-all focus:outline-none border-0"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={regenerateWebhookKey}
-                    className="h-[28px] w-[28px] self-end rounded-lg bg-muted hover:bg-muted-foreground/20 border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    className="h-[28px] w-[28px] self-end rounded-xl bg-white/[0.06] hover:bg-white/[0.14] active:bg-white/[0.2] active:scale-[0.97] backdrop-blur-[6px] border-0 flex items-center justify-center text-white/70 hover:text-white transition-colors"
                     title="Обновить ключ"
                   >
                     <RefreshCw className="w-3 h-3" />
@@ -1186,15 +1175,15 @@ const CrmPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[9px] text-muted-foreground/80 block mb-0.5">Адрес вебхука</label>
-                  <div className="flex items-center gap-2 bg-background border border-border/40 rounded-lg px-2.5 py-1.5 overflow-hidden">
-                    <span className="text-muted-foreground text-[9px] select-all truncate flex-1 font-mono">
+                  <label className="text-[9px] text-white/50 block mb-0.5">Адрес вебхука</label>
+                  <div className="flex items-center gap-2 bg-white/[0.04] dark:bg-black/25 backdrop-blur-[10px] rounded-xl px-2.5 py-1.5 overflow-hidden border-0">
+                    <span className="text-white/70 text-[9px] select-all truncate flex-1 font-mono">
                       {window.location.origin}/api/leads-webhook?api_key={crmSettings.webhookApiKey}
                     </span>
                     <button
                       type="button"
                       onClick={copyWebhookUrl}
-                      className="text-muted-foreground/80 hover:text-foreground transition-colors"
+                      className="text-white/60 hover:text-white transition-colors"
                     >
                       {isApiKeyCopied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
                     </button>
@@ -1207,21 +1196,20 @@ const CrmPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setViewMode("gate")}
-                className="flex-1 py-1.5 bg-muted hover:bg-muted/80 border border-border/40 rounded-xl text-foreground/80 text-[10px] font-semibold"
+                className="flex-1 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.12] active:scale-[0.97] backdrop-blur-[4px] rounded-xl text-white/70 hover:text-white text-[10px] font-semibold border-0"
               >
                 Отмена
               </button>
               <button
                 type="submit"
                 disabled={savingSettings}
-                className="flex-1 py-1.5 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 text-[10px] flex items-center justify-center gap-1.5 shadow"
+                className="flex-1 py-1.5 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] rounded-xl text-white text-[10px] font-semibold border-0 flex items-center justify-center gap-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
               >
                 {savingSettings && <RefreshCw className="w-3 h-3 animate-spin" />}
                 <span>Сохранить</span>
               </button>
             </div>
           </form>
-
         </div>
       </div>
     );
