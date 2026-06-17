@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useAppContext } from "@/lib/context/AppContext";
 import { crmService } from "@/lib/services/crmService";
@@ -278,6 +278,90 @@ const CrmPage: React.FC = () => {
   const [loginError, setLoginError] = useState("");
   const [viewMode, setViewMode] = useState<"gate" | "crm" | "settings">("gate");
   const [mobileViewLevel, setMobileViewLevel] = useState<"statuses" | "leads">("statuses");
+
+  // Refs for seamless mobile background video cross-fading
+  const videoARef = useRef<HTMLVideoElement>(null);
+  const videoBRef = useRef<HTMLVideoElement>(null);
+  const isFirstPlay = useRef(true);
+
+  const handleTimeUpdateA = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const videoA = e.currentTarget;
+    const videoB = videoBRef.current;
+    if (!videoB) return;
+    
+    const duration = videoA.duration;
+    const currentTime = videoA.currentTime;
+    if (!duration) return;
+    
+    const crossFadeDuration = 1.5;
+    const maxOpacity = 0.25;
+    
+    // First time load: fade in from 0
+    if (isFirstPlay.current && currentTime < 1.0) {
+      videoA.style.opacity = ((currentTime / 1.0) * maxOpacity).toString();
+      return;
+    } else if (isFirstPlay.current && currentTime >= 1.0) {
+      isFirstPlay.current = false;
+      videoA.style.opacity = maxOpacity.toString();
+    }
+    
+    // Near the end of video A: start playing B and cross-fade
+    if (currentTime > duration - crossFadeDuration) {
+      if (videoB.paused) {
+        videoB.currentTime = 0;
+        videoB.play().catch(() => {});
+      }
+      const progress = (currentTime - (duration - crossFadeDuration)) / crossFadeDuration;
+      videoA.style.opacity = (maxOpacity * (1 - progress)).toString();
+      videoB.style.opacity = (maxOpacity * progress).toString();
+    }
+  };
+
+  const handleEndedA = () => {
+    const videoA = videoARef.current;
+    const videoB = videoBRef.current;
+    if (!videoA || !videoB) return;
+    
+    videoA.pause();
+    videoA.currentTime = 0;
+    videoA.style.opacity = "0";
+    videoB.style.opacity = "0.25";
+  };
+
+  const handleTimeUpdateB = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const videoB = e.currentTarget;
+    const videoA = videoARef.current;
+    if (!videoA) return;
+    
+    const duration = videoB.duration;
+    const currentTime = videoB.currentTime;
+    if (!duration) return;
+    
+    const crossFadeDuration = 1.5;
+    const maxOpacity = 0.25;
+    
+    // Near the end of video B: start playing A and cross-fade
+    if (currentTime > duration - crossFadeDuration) {
+      if (videoA.paused) {
+        videoA.currentTime = 0;
+        videoA.play().catch(() => {});
+      }
+      const progress = (currentTime - (duration - crossFadeDuration)) / crossFadeDuration;
+      videoB.style.opacity = (maxOpacity * (1 - progress)).toString();
+      videoA.style.opacity = (maxOpacity * progress).toString();
+    }
+  };
+
+  const handleEndedB = () => {
+    const videoB = videoBRef.current;
+    const videoA = videoARef.current;
+    if (!videoB || !videoA) return;
+    
+    videoB.pause();
+    videoB.currentTime = 0;
+    videoB.style.opacity = "0";
+    videoA.style.opacity = "0.25";
+  };
 
   // CRM Workspace states
   const [leads, setLeads] = useState<CRMLead[]>([]);
@@ -806,30 +890,27 @@ const CrmPage: React.FC = () => {
   if (viewMode === "gate") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Background video for mobile only */}
+        {/* Background video A for mobile only */}
         <video
+          ref={videoARef}
           src="/main.mp4"
           autoPlay
-          loop
           muted
           playsInline
-          onTimeUpdate={(e) => {
-            const video = e.currentTarget;
-            const duration = video.duration;
-            const currentTime = video.currentTime;
-            if (!duration) return;
-            
-            const fadeTime = 1.0;
-            let opacity = 0.25;
-            
-            if (currentTime < fadeTime) {
-              opacity = (currentTime / fadeTime) * 0.25;
-            } else if (currentTime > duration - fadeTime) {
-              opacity = ((duration - currentTime) / fadeTime) * 0.25;
-            }
-            
-            video.style.opacity = opacity.toString();
-          }}
+          onTimeUpdate={handleTimeUpdateA}
+          onEnded={handleEndedA}
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0 block md:hidden transition-opacity duration-300"
+          style={{ opacity: 0 }}
+        />
+
+        {/* Background video B for mobile only */}
+        <video
+          ref={videoBRef}
+          src="/main.mp4"
+          muted
+          playsInline
+          onTimeUpdate={handleTimeUpdateB}
+          onEnded={handleEndedB}
           className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0 block md:hidden transition-opacity duration-300"
           style={{ opacity: 0 }}
         />
