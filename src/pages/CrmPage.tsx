@@ -110,38 +110,38 @@ const WALLPAPERS = [
   {
     id: "indigo",
     name: "Индиго абстракт",
-    url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=80",
-    thumb: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=200&q=80"
+    url: "/wallpapers/indigo.jpg",
+    thumb: "/wallpapers/indigo_thumb.jpg"
   },
   {
     id: "purple",
     name: "Фиолетовый шелк",
-    url: "https://images.unsplash.com/photo-1618005198143-e5283b519a7f?auto=format&fit=crop&w=1920&q=80",
-    thumb: "https://images.unsplash.com/photo-1618005198143-e5283b519a7f?auto=format&fit=crop&w=200&q=80"
+    url: "/wallpapers/purple.jpg",
+    thumb: "/wallpapers/purple_thumb.jpg"
   },
   {
     id: "green",
     name: "Изумрудное стекло",
-    url: "https://images.unsplash.com/photo-1618005174098-b80c353b1b6d?auto=format&fit=crop&w=1920&q=80",
-    thumb: "https://images.unsplash.com/photo-1618005174098-b80c353b1b6d?auto=format&fit=crop&w=200&q=80"
+    url: "/wallpapers/green.jpg",
+    thumb: "/wallpapers/green_thumb.jpg"
   },
   {
     id: "orange",
     name: "Оранжевый неон",
-    url: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=1920&q=80",
-    thumb: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=200&q=80"
+    url: "/wallpapers/orange.jpg",
+    thumb: "/wallpapers/orange_thumb.jpg"
   },
   {
     id: "dark",
     name: "Темный абстракт",
-    url: "https://images.unsplash.com/photo-1604871000636-074fa5117945?auto=format&fit=crop&w=1920&q=80",
-    thumb: "https://images.unsplash.com/photo-1604871000636-074fa5117945?auto=format&fit=crop&w=200&q=80"
+    url: "/wallpapers/dark.jpg",
+    thumb: "/wallpapers/dark_thumb.jpg"
   },
   {
     id: "lavender",
     name: "Лавандовый неон",
-    url: "https://images.unsplash.com/photo-1634017851502-c81766a0665f?auto=format&fit=crop&w=1920&q=80",
-    thumb: "https://images.unsplash.com/photo-1634017851502-c81766a0665f?auto=format&fit=crop&w=200&q=80"
+    url: "/wallpapers/lavender.jpg",
+    thumb: "/wallpapers/lavender_thumb.jpg"
   }
 ];
 
@@ -409,7 +409,19 @@ const CrmPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<CRMLeadStatus | "all">("new");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedWallpaper, setSelectedWallpaper] = useState(() => {
-    return localStorage.getItem("crm_wallpaper") || WALLPAPERS[0].url;
+    const saved = localStorage.getItem("crm_wallpaper");
+    if (saved && saved.startsWith("/wallpapers/")) {
+      return saved;
+    }
+    if (saved && saved.includes("unsplash.com")) {
+      if (saved.includes("1618005182384")) return "/wallpapers/indigo.jpg";
+      if (saved.includes("1618005198143")) return "/wallpapers/purple.jpg";
+      if (saved.includes("1618005174098")) return "/wallpapers/green.jpg";
+      if (saved.includes("1634017839464")) return "/wallpapers/orange.jpg";
+      if (saved.includes("1604871000636")) return "/wallpapers/dark.jpg";
+      if (saved.includes("1634017851502")) return "/wallpapers/lavender.jpg";
+    }
+    return WALLPAPERS[0].url;
   });
 
   const handleSelectWallpaper = (url: string) => {
@@ -1286,24 +1298,29 @@ const CrmPage: React.FC = () => {
 
   // 3. CRM WORKSPACE (Основной экран)
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+    <div 
+      className="min-h-screen text-white flex flex-col font-sans bg-cover bg-center transition-all duration-500 relative"
+      style={{ backgroundImage: `url(${selectedWallpaper})` }}
+    >
+      {/* Dark overlay for contrast */}
+      <div className="absolute inset-0 bg-black/60 pointer-events-none z-0" />
       
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_1fr] min-h-0 h-full">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_1fr] min-h-0 h-full relative z-10">
         
         {/* ЛЕВАЯ КОЛОНКА */}
-        <aside className="hidden md:flex flex-col gap-6 bg-background border-r border-border/40 p-6 shrink-0 h-screen sticky top-0 overflow-y-auto">
+        <aside className="hidden md:flex flex-col gap-6 bg-black/15 backdrop-blur-xl border-r border-white/5 p-6 shrink-0 h-screen sticky top-0 overflow-y-auto">
           {/* Кнопка "Добавить лида" */}
           <button
             onClick={() => setIsAddDrawerOpen(true)}
-            className="w-full h-11 bg-card text-foreground border border-border rounded-full hover:bg-muted hover:border-primary/50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs font-semibold shadow-sm"
+            className="w-full h-11 bg-white/[0.08] hover:bg-white/[0.14] text-white border-0 rounded-full active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs font-semibold shadow-md backdrop-blur-md"
           >
-            <Plus className="w-4 h-4 text-foreground" />
+            <Plus className="w-4 h-4 text-white" />
             <span>Добавить лида</span>
           </button>
 
           {/* Фильтры */}
           <div className="space-y-2.5">
-            <span className="text-[10px] font-bold text-muted-foreground/80 tracking-widest uppercase block px-3">
+            <span className="text-[10px] font-bold text-white/40 tracking-widest uppercase block px-3">
               Фильтры
             </span>
 
@@ -1312,14 +1329,14 @@ const CrmPage: React.FC = () => {
                 onClick={() => setActiveTab("all")}
                 className={`w-full h-10 px-3 rounded-xl text-xs font-medium flex items-center justify-between transition-colors
                   ${activeTab === "all"
-                    ? "bg-muted text-foreground font-bold"
-                    : "text-muted-foreground hover:text-foreground/90 hover:bg-muted/50"}`}
+                    ? "bg-white/10 text-white font-bold shadow-sm"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.03]"}`}
               >
                 <div className="flex items-center gap-2.5">
                   {STATUS_ICONS["all"]}
                   <span>Вся база</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground/80 font-bold bg-card border border-border/40 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] text-white/60 font-bold bg-white/[0.08] px-2 py-0.5 rounded-full">
                   {getTabCount("all")}
                 </span>
               </button>
