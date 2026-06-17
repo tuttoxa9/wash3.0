@@ -1088,207 +1088,224 @@ const CrmPage: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white">
+          <div className="w-full max-w-[800px] mx-4 md:mx-auto bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 md:p-7 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white transition-all duration-300 flex flex-col max-h-[85vh]">
             
-            <div className="flex items-center gap-2 mb-3.5">
+            <div className="flex items-center gap-2 mb-4 shrink-0">
               <button
+                type="button"
                 onClick={() => setViewMode("gate")}
-                className="p-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] active:bg-white/[0.16] active:scale-[0.95] text-white/80 transition-all border-0"
+                className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] active:bg-white/[0.16] active:scale-[0.95] text-white/80 transition-all border-0"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <h1 className="text-xs font-bold text-white/95 uppercase tracking-wider">Настройки</h1>
+              <h1 className="text-sm font-bold text-white/95 uppercase tracking-wider">Настройки CRM</h1>
             </div>
 
-            <form onSubmit={handleSaveSettings} className="space-y-3">
+            <form onSubmit={handleSaveSettings} className="flex flex-col min-h-0 flex-1">
               
-              {/* Выбор Темы оформления */}
-              <div className="p-3 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
-                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
-                  Тема интерфейса
-                </span>
-                <div className="flex gap-2">
-                  {(["light", "dark", "black"] as const).map(t => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => dispatch({ type: "SET_THEME", payload: t })}
-                      className={`flex-1 py-1 rounded-xl text-[10px] font-semibold border-0 transition-all
-                        ${appState.theme === t
-                          ? "bg-white/15 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
-                          : "bg-white/[0.04] text-white/50 hover:text-white"}`}
-                    >
-                      {t === "light" ? "Светлая" : t === "dark" ? "Темная" : "Черная"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Выбор Обоев */}
-              <div className="p-3 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
-                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
-                  Обои рабочего стола
-                </span>
-                <div className="grid grid-cols-3 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleSelectWallpaper("none")}
-                    className={`relative aspect-video rounded-lg overflow-hidden border-0 transition-all active:scale-[0.95] bg-zinc-800 flex flex-col items-center justify-center gap-1
-                      ${selectedWallpaper === "none" ? "ring-2 ring-white/80" : "opacity-60 hover:opacity-100"}`}
-                    title="Без обоев"
-                  >
-                    <X className="w-3.5 h-3.5 text-white/60" />
-                    <span className="text-[8px] text-white/60">Без обоев</span>
-                  </button>
-                  {WALLPAPERS.map(wp => (
-                    <button
-                      key={wp.id}
-                      type="button"
-                      onClick={() => handleSelectWallpaper(wp.url)}
-                      className={`relative aspect-video rounded-lg overflow-hidden border-0 transition-all active:scale-[0.95]
-                        ${selectedWallpaper === wp.url ? "ring-2 ring-white/80" : "opacity-60 hover:opacity-100"}`}
-                      title={wp.name}
-                    >
-                      <img src={wp.thumb} alt={wp.name} className="w-full h-full object-cover pointer-events-none" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Telegram */}
-              <div className="p-3 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
-                    Telegram оповещения
-                  </span>
+              {/* Scrollable container for settings options */}
+              <div className="flex-1 overflow-y-auto pr-1 md:pr-2 space-y-4 min-h-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   
-                  {/* Компактный свитчер без иконок */}
-                  <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={crmSettings.telegramEnabled}
-                      onChange={() => setCrmSettings(prev => ({ ...prev, telegramEnabled: !prev.telegramEnabled }))}
-                      className="hidden peer"
-                    />
-                    <div className="w-9 h-5 bg-white/[0.08] dark:bg-black/40 peer-checked:bg-white/[0.22] backdrop-blur-[8px] rounded-full transition-colors duration-300 relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] border-0">
-                      <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-300 shadow-[0_2px_5px_rgba(0,0,0,0.35)] ${
-                        crmSettings.telegramEnabled ? "translate-x-[18px]" : "translate-x-0"
-                      }`} />
-                    </div>
-                  </label>
-                </div>
-
-                <AnimatePresence initial={false}>
-                  {crmSettings.telegramEnabled && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
-                      className="overflow-hidden space-y-2 pt-0.5"
-                    >
-                      <div>
-                        <label className="text-[9px] text-white/50 block mb-0.5">Токен бота</label>
-                        <input
-                          type="text"
-                          value={crmSettings.telegramBotToken}
-                          onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramBotToken: e.target.value }))}
-                          required={crmSettings.telegramEnabled}
-                          className="w-full px-2.5 py-1.5 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all !border-0"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[9px] text-white/50 block mb-0.5">ID чата / группы</label>
-                        <input
-                          type="text"
-                          value={crmSettings.telegramChatId}
-                          onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramChatId: e.target.value }))}
-                          required={crmSettings.telegramEnabled}
-                          className="w-full px-2.5 py-1.5 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all !border-0"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleTestTelegramBot}
-                        disabled={isTestingTelegram || !crmSettings.telegramBotToken.trim() || !crmSettings.telegramChatId.trim()}
-                        className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-white/[0.12] hover:bg-white/[0.2] active:bg-white/[0.26] active:scale-[0.98] transition-all text-[10px] font-semibold rounded-xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] text-white"
-                      >
-                        {isTestingTelegram ? (
-                          <>
-                            <RefreshCw className="w-3 animate-spin text-white/60" />
-                            <span>Отправка...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Send className="w-3 text-sky-400" />
-                            <span>Проверить подключение</span>
-                          </>
-                        )}
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Webhook */}
-              <div className="p-3 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
-                <span className="text-[9px] font-bold text-white/70 uppercase tracking-wider block">
-                  Make / Zapier Webhook
-                </span>
-
-                <div className="space-y-1.5">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <label className="text-[9px] text-white/50 block mb-0.5">API ключ безопасности</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={crmSettings.webhookApiKey}
-                        className="w-full px-2.5 py-1.5 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl text-white/70 text-[10px] select-all focus:outline-none !border-0"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={regenerateWebhookKey}
-                      className="h-[28px] w-[28px] self-end rounded-xl bg-white/[0.06] hover:bg-white/[0.14] active:bg-white/[0.2] active:scale-[0.97] backdrop-blur-[6px] border-0 flex items-center justify-center text-white/70 hover:text-white transition-colors"
-                      title="Обновить ключ"
-                    >
-                      <RefreshCw className="w-3 h-3" />
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-white/50 block mb-0.5">Адрес вебхука</label>
-                    <div className="flex items-center gap-2 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl px-2.5 py-1.5 overflow-hidden border-0">
-                      <span className="text-white/70 text-[9px] select-all truncate flex-1 font-mono">
-                        {window.location.origin}/api/leads-webhook?api_key={crmSettings.webhookApiKey}
+                  {/* Left Column: Appearance */}
+                  <div className="space-y-4">
+                    {/* Выбор Темы оформления */}
+                    <div className="p-3.5 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
+                      <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider block">
+                        Тема интерфейса
                       </span>
-                      <button
-                        type="button"
-                        onClick={copyWebhookUrl}
-                        className="text-white/60 hover:text-white transition-colors"
-                      >
-                        {isApiKeyCopied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
-                      </button>
+                      <div className="flex gap-2.5">
+                        {(["light", "dark", "black"] as const).map(t => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => dispatch({ type: "SET_THEME", payload: t })}
+                            className={`flex-1 py-1.5 rounded-xl text-[11px] font-semibold border-0 transition-all active:scale-95
+                              ${appState.theme === t
+                                ? "bg-white/15 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+                                : "bg-white/[0.04] text-white/50 hover:text-white"}`}
+                          >
+                            {t === "light" ? "Светлая" : t === "dark" ? "Темная" : "Черная"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Выбор Обоев */}
+                    <div className="p-3.5 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2 border-0">
+                      <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider block">
+                        Обои рабочего стола
+                      </span>
+                      <div className="grid grid-cols-4 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectWallpaper("none")}
+                          className={`relative aspect-video rounded-xl overflow-hidden border-0 transition-all active:scale-[0.95] bg-zinc-800 flex flex-col items-center justify-center gap-1
+                            ${selectedWallpaper === "none" ? "ring-2 ring-white/80" : "opacity-60 hover:opacity-100"}`}
+                          title="Без обоев"
+                        >
+                          <X className="w-3.5 h-3.5 text-white/60" />
+                          <span className="text-[8px] text-white/60">Без обоев</span>
+                        </button>
+                        {WALLPAPERS.map(wp => (
+                          <button
+                            key={wp.id}
+                            type="button"
+                            onClick={() => handleSelectWallpaper(wp.url)}
+                            className={`relative aspect-video rounded-xl overflow-hidden border-0 transition-all active:scale-[0.95]
+                              ${selectedWallpaper === wp.url ? "ring-2 ring-white/80" : "opacity-60 hover:opacity-100"}`}
+                            title={wp.name}
+                          >
+                            <img src={wp.thumb} alt={wp.name} className="w-full h-full object-cover pointer-events-none" />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
+
+                  {/* Right Column: Integrations */}
+                  <div className="space-y-4">
+                    {/* Telegram */}
+                    <div className="p-3.5 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2.5 border-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider block">
+                          Telegram оповещения
+                        </span>
+                        
+                        {/* Компактный свитчер без иконок */}
+                        <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={crmSettings.telegramEnabled}
+                            onChange={() => setCrmSettings(prev => ({ ...prev, telegramEnabled: !prev.telegramEnabled }))}
+                            className="hidden peer"
+                          />
+                          <div className="w-9 h-5 bg-white/[0.08] dark:bg-black/40 peer-checked:bg-white/[0.22] backdrop-blur-[8px] rounded-full transition-colors duration-300 relative shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] border-0">
+                            <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-300 shadow-[0_2px_5px_rgba(0,0,0,0.35)] ${
+                              crmSettings.telegramEnabled ? "translate-x-[18px]" : "translate-x-0"
+                            }`} />
+                          </div>
+                        </label>
+                      </div>
+
+                      <AnimatePresence initial={false}>
+                        {crmSettings.telegramEnabled && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="overflow-hidden space-y-3 pt-1"
+                          >
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-[9px] text-white/50 block mb-1">Токен бота</label>
+                                <input
+                                  type="text"
+                                  value={crmSettings.telegramBotToken}
+                                  onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramBotToken: e.target.value }))}
+                                  required={crmSettings.telegramEnabled}
+                                  className="w-full px-3 py-2 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all !border-0"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] text-white/50 block mb-1">ID чата / группы</label>
+                                <input
+                                  type="text"
+                                  value={crmSettings.telegramChatId}
+                                  onChange={(e) => setCrmSettings(prev => ({ ...prev, telegramChatId: e.target.value }))}
+                                  required={crmSettings.telegramEnabled}
+                                  className="w-full px-3 py-2 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl text-white placeholder-white/20 text-[10px] focus:outline-none focus:ring-1 focus:ring-white/10 transition-all !border-0"
+                                />
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleTestTelegramBot}
+                              disabled={isTestingTelegram || !crmSettings.telegramBotToken.trim() || !crmSettings.telegramChatId.trim()}
+                              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-white/[0.12] hover:bg-white/[0.2] active:bg-white/[0.26] active:scale-[0.98] transition-all text-[10px] font-semibold rounded-xl border-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] text-white"
+                            >
+                              {isTestingTelegram ? (
+                                <>
+                                  <RefreshCw className="w-3 animate-spin text-white/60" />
+                                  <span>Отправка...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="w-3 text-sky-400" />
+                                  <span>Проверить подключение</span>
+                                </>
+                              )}
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Webhook */}
+                    <div className="p-3.5 !bg-white/[0.04] dark:!bg-black/35 backdrop-blur-[12px] rounded-2xl space-y-2.5 border-0">
+                      <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider block">
+                        Make / Zapier Webhook
+                      </span>
+
+                      <div className="space-y-2">
+                        <div className="flex gap-2.5">
+                          <div className="flex-1">
+                            <label className="text-[9px] text-white/50 block mb-1">API ключ безопасности</label>
+                            <input
+                              type="text"
+                              readOnly
+                              value={crmSettings.webhookApiKey}
+                              className="w-full px-3 py-2 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl text-white/70 text-[10px] select-all focus:outline-none !border-0"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={regenerateWebhookKey}
+                            className="h-[34px] w-[34px] self-end rounded-xl bg-white/[0.06] hover:bg-white/[0.14] active:bg-white/[0.2] active:scale-[0.97] backdrop-blur-[6px] border-0 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                            title="Обновить ключ"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div>
+                          <label className="text-[9px] text-white/50 block mb-1">Адрес вебхука</label>
+                          <div className="flex items-center gap-2.5 !bg-white/[0.04] dark:!bg-black/25 backdrop-blur-[10px] rounded-xl px-3 py-2 overflow-hidden border-0">
+                            <span className="text-white/70 text-[9px] select-all truncate flex-1 font-mono">
+                              {window.location.origin}/api/leads-webhook?api_key={crmSettings.webhookApiKey}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={copyWebhookUrl}
+                              className="text-white/60 hover:text-white transition-colors"
+                            >
+                              {isApiKeyCopied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
-              <div className="flex gap-2.5 pt-1">
+              {/* Action buttons (fixed at bottom of form) */}
+              <div className="flex gap-3 pt-4 border-t border-white/10 mt-4 shrink-0">
                 <button
                   type="button"
                   onClick={() => setViewMode("gate")}
-                  className="flex-1 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.12] active:scale-[0.97] backdrop-blur-[4px] rounded-xl text-white/70 hover:text-white text-[10px] font-semibold border-0"
+                  className="flex-1 py-2 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.12] active:scale-[0.97] backdrop-blur-[4px] rounded-xl text-white/70 hover:text-white text-[11px] font-semibold border-0"
                 >
                   Отмена
                 </button>
                 <button
                   type="submit"
                   disabled={savingSettings}
-                  className="flex-1 py-1.5 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] rounded-xl text-white text-[10px] font-semibold border-0 flex items-center justify-center gap-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+                  className="flex-1 py-2 bg-white/[0.14] hover:bg-white/[0.22] active:bg-white/[0.28] active:scale-[0.97] backdrop-blur-[8px] rounded-xl text-white text-[11px] font-semibold border-0 flex items-center justify-center gap-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
                 >
-                  {savingSettings && <RefreshCw className="w-3 h-3 animate-spin" />}
+                  {savingSettings && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                   <span>Сохранить</span>
                 </button>
               </div>
