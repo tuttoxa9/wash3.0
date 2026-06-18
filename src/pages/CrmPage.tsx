@@ -2544,55 +2544,43 @@ const CrmPage: React.FC = () => {
       >
         {detailForm && (
           <div className="space-y-5">
-            
-            {/* Удалить клиента */}
-            <div className="flex justify-end pt-0.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => handleDeleteLead(detailForm.id)}
-                className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors border-0  bg-red-950/40 text-red-400 hover:bg-red-900/40"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Удалить карточку</span>
-              </button>
-            </div>
 
             <div className="space-y-3.5">
               
               {/* Объединенный блок клиента ФИО / Телефон */}
-              <div className="p-3 bg-zinc-900 rounded-xl space-y-2.5 border-0">
-                <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider block">Клиент (ФИО и Телефон)</span>
-                <div className="flex flex-col gap-2">
+              <div className="space-y-3">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block pl-1">Контактные данные</span>
+                <div className="flex flex-col gap-2.5">
                   <input
                     type="text"
                     placeholder="ФИО клиента"
                     value={detailForm.name}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                    className="w-full px-2.5 py-1.5 bg-zinc-950 text-white placeholder-white/20 !border-0 rounded-md text-xs focus:outline-none transition-colors font-semibold"
+                    className="w-full px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm focus:outline-none focus:border-primary/50 transition-colors font-medium"
                   />
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2.5">
                     <input
                       type="text"
                       placeholder="Телефон"
                       value={detailForm.phone}
                       onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
                       maxLength={19}
-                      className="flex-1 min-w-0 px-2.5 py-1.5 bg-zinc-950 text-white placeholder-white/20 !border-0 rounded-md text-xs font-mono focus:outline-none transition-colors"
+                      className="flex-1 min-w-0 px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm font-mono focus:outline-none focus:border-primary/50 transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => handleCopyPhone(detailForm.phone)}
-                      className="p-1.5 rounded-md bg-zinc-950 hover:bg-zinc-800 text-white/70 hover:text-white  transition-all shrink-0 border-0"
+                      className="w-11 h-11 rounded-xl bg-muted/40 hover:bg-muted/80 text-white/70 hover:text-white transition-all shrink-0 border border-border/50 flex items-center justify-center"
                       title="Копировать телефон"
                     >
-                      <Copy className="w-3.5 h-3.5 shrink-0" />
+                      <Copy className="w-4 h-4 shrink-0" />
                     </button>
                     <a
                       href={`tel:${getPhoneDigits(detailForm.phone)}`}
-                      className="p-1.5 rounded-md bg-zinc-950 hover:bg-zinc-800 text-white/70 hover:text-white  transition-all flex items-center justify-center shrink-0 border-0"
+                      className="w-11 h-11 rounded-xl bg-green-500/10 hover:bg-green-500/20 text-green-500 transition-all flex items-center justify-center shrink-0 border border-green-500/20"
                       title="Позвонить"
                     >
-                      <Phone className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                      <Phone className="w-4 h-4 shrink-0" />
                     </a>
                   </div>
                 </div>
@@ -2600,71 +2588,66 @@ const CrmPage: React.FC = () => {
 
               {/* Быстрые мессенджеры в мобильном окне */}
               {detailForm.phone && (
-                <div className="pt-0.5">
-                  <span className="text-[9px] text-white/50 block mb-1 uppercase tracking-wider font-bold">Написать в мессенджер:</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    <a
-                      href={getWhatsAppLink(detailForm.phone)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] font-bold transition-all  shadow-sm border-0"
-                    >
-                      <WhatsAppIcon className="w-3.5 h-3.5 shrink-0" />
-                      <span>WhatsApp</span>
-                    </a>
-                    <a
-                      href={getTelegramLink(detailForm.phone)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#24A1DE] hover:bg-[#1d8dbf] text-white text-[10px] font-bold transition-all  shadow-sm border-0"
-                    >
-                      <TelegramIcon className="w-3.5 h-3.5 shrink-0" />
-                      <span>Telegram</span>
-                    </a>
-                    <a
-                      href={getViberLink(detailForm.phone)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#7360F2] hover:bg-[#5e4cd9] text-white text-[10px] font-bold transition-all  shadow-sm border-0"
-                    >
-                      <ViberIcon className="w-3.5 h-3.5 shrink-0" />
-                      <span>Viber</span>
-                    </a>
-                  </div>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <a
+                    href={getWhatsAppLink(detailForm.phone)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] transition-all border border-[#25D366]/20 shadow-sm"
+                  >
+                    <WhatsAppIcon className="w-5 h-5 shrink-0" />
+                    <span className="text-[10px] font-bold">WhatsApp</span>
+                  </a>
+                  <a
+                    href={getTelegramLink(detailForm.phone)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#24A1DE]/10 hover:bg-[#24A1DE]/20 text-[#24A1DE] transition-all border border-[#24A1DE]/20 shadow-sm"
+                  >
+                    <TelegramIcon className="w-5 h-5 shrink-0" />
+                    <span className="text-[10px] font-bold">Telegram</span>
+                  </a>
+                  <a
+                    href={getViberLink(detailForm.phone)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#7360F2]/10 hover:bg-[#7360F2]/20 text-[#7360F2] transition-all border border-[#7360F2]/20 shadow-sm"
+                  >
+                    <ViberIcon className="w-5 h-5 shrink-0" />
+                    <span className="text-[10px] font-bold">Viber</span>
+                  </a>
                 </div>
               )}
 
-              {/* Авто и Стоимость side-by-side */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Автомобиль</label>
+              {/* Детали визита */}
+              <div className="space-y-3 pt-3">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block pl-1">Детали визита</label>
+                <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
+                    placeholder="Автомобиль"
                     value={detailForm.car || ""}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
-                    className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
+                    className="w-full px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm focus:outline-none focus:border-primary/50 transition-colors"
                   />
+                  <div className="relative">
+                    <input
+                      type="number"
+                      placeholder="Стоимость"
+                      value={detailForm.price || ""}
+                      onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, price: Number(e.target.value) }) : null)}
+                      className="w-full px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm focus:outline-none focus:border-primary/50 transition-colors font-semibold pr-10"
+                    />
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[12px] font-bold text-muted-foreground">BYN</span>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (руб.)</label>
-                  <input
-                    type="number"
-                    value={detailForm.price || ""}
-                    onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, price: Number(e.target.value) }) : null)}
-                    className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold"
-                  />
-                </div>
-              </div>
-
-              {/* Название услуги - на всю ширину */}
-              <div>
-                <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Название услуги</label>
                 <input
                   type="text"
+                  placeholder="Название услуги"
                   value={detailForm.service || ""}
                   onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
                   list="service-names-edit"
-                  className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
+                  className="w-full px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm focus:outline-none focus:border-primary/50 transition-colors"
                 />
                 <datalist id="service-names-edit">
                   {appState.services.map(s => (
@@ -2673,14 +2656,13 @@ const CrmPage: React.FC = () => {
                 </datalist>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {/* Кастомный селект для статуса */}
+              <div className="grid grid-cols-2 gap-3 pt-3">
                 <CustomSelect
                   label="Статус лида"
                   value={detailForm.status}
                   onChange={(val) => setDetailForm(prev => prev ? ({ ...prev, status: val }) : null)}
                   isCompact={true}
-                  hasWallpaper={true}
+                  hasWallpaper={false}
                   options={(Object.keys(STATUS_LABELS) as CRMLeadStatus[]).map(statusKey => ({
                     value: statusKey,
                     label: STATUS_LABELS[statusKey]
@@ -2692,7 +2674,7 @@ const CrmPage: React.FC = () => {
                     value={detailForm.source || ""}
                     onChange={(val) => setDetailForm(prev => prev ? ({ ...prev, source: val }) : null)}
                     isCompact={true}
-                    hasWallpaper={true}
+                    hasWallpaper={false}
                     options={[
                       { value: "звонок", label: "Телефонный звонок" },
                       { value: "Instagram", label: "Instagram" },
@@ -2705,36 +2687,30 @@ const CrmPage: React.FC = () => {
               </div>
 
               {/* Планирование следующего шага */}
-              <div className="p-3.5 bg-zinc-900 rounded-xl space-y-3 border-0">
-                <span className="text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-indigo-400" />
+              <div className="p-4 bg-muted/20 border border-border/50 rounded-2xl space-y-3 mt-4">
+                <span className="text-[11px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-primary" />
                   <span>Следующий шаг визита/звонка</span>
                 </span>
-
+                
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[9px] text-white/60 block mb-0.5">Дата события</label>
-                    <input
-                      type="date"
-                      value={nextStepDateInput}
-                      onChange={(e) => setNextStepDateInput(e.target.value)}
-                      className="w-full px-2.5 py-1.5 !bg-zinc-950 text-white !border-0 rounded-lg text-xs focus:outline-none transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[9px] text-white/60 block mb-0.5">Время события</label>
-                    <input
-                      type="time"
-                      value={nextStepTimeInput}
-                      onChange={(e) => setNextStepTimeInput(e.target.value)}
-                      className="w-full px-2.5 py-1.5 !bg-zinc-955 text-white !border-0 rounded-lg text-xs focus:outline-none transition-colors"
-                    />
-                  </div>
+                  <input
+                    type="date"
+                    value={nextStepDateInput}
+                    onChange={(e) => setNextStepDateInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-background border border-border/50 rounded-xl text-[13px] text-white focus:outline-none focus:border-primary/50"
+                  />
+                  <input
+                    type="time"
+                    value={nextStepTimeInput}
+                    onChange={(e) => setNextStepTimeInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-background border border-border/50 rounded-xl text-[13px] text-white focus:outline-none focus:border-primary/50"
+                  />
                 </div>
 
                 {nextStepDateInput && (
-                  <div className="pt-2 border-t border-zinc-800 space-y-2">
-                    <label className="text-[9px] text-white/60 block font-semibold">Напоминания в Telegram:</label>
+                  <div className="pt-3.5 border-t border-border/50 space-y-3">
+                    <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Напоминания в Telegram</label>
                     <div className="flex items-center gap-4">
                       {[10, 20, 30].map(minutes => {
                         const checked = detailForm.notifyBefore?.includes(minutes) || false;
@@ -2744,7 +2720,7 @@ const CrmPage: React.FC = () => {
                             checked={checked}
                             onChange={() => handleToggleNotifyBefore(minutes)}
                             label={`За ${minutes} мин.`}
-                            textClassName="text-white/80 group-hover:text-white"
+                            textClassName="text-white/80 font-medium text-[13px]"
                           />
                         );
                       })}
@@ -2755,65 +2731,73 @@ const CrmPage: React.FC = () => {
 
             </div>
 
-            <hr className="border-zinc-800 h-[1px] border-0 bg-zinc-800" />
-
-            {/* Поле заметки */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-white/60" />
-                <span>Заметка</span>
-              </span>
-              <textarea
-                value={detailForm.notes || ""}
-                onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, notes: e.target.value }) : null)}
-                placeholder="Введите заметку..."
-                rows={4}
-                className="w-full px-3 py-2 bg-zinc-900 text-white placeholder-white/20 border border-zinc-800/80 rounded-xl text-xs resize-none focus:outline-none transition-colors font-medium"
-              />
-            </div>
-
-            <hr className="border-zinc-800 h-[1px] border-0 bg-zinc-800" />
-
-            {/* История изменений */}
-            <div className="space-y-3">
-              <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
-                <History className="w-4 h-4 text-white/60" />
-                <span>История изменений</span>
-              </span>
-
-              <div className="bg-zinc-900 rounded-xl p-3 space-y-3 custom-scrollbar max-h-[300px] overflow-y-auto border-0">
-                {detailForm.history && detailForm.history.length > 0 ? (
-                  [...detailForm.history].reverse().map((entry) => {
-                    let icon = <ChevronLeft className="w-2.5 h-2.5 text-white/60" />;
-                    if (entry.type === "creation") icon = <Plus className="w-2.5 h-2.5 text-green-400" />;
-                    else if (entry.type === "status") icon = <Tag className="w-2.5 h-2.5 text-blue-400" />;
-                    else if (entry.type === "note") icon = <FileText className="w-2.5 h-2.5 text-amber-500" />;
-                    else if (entry.type === "price" || entry.type === "service") icon = <Coins className="w-2.5 h-2.5 text-purple-400" />;
-
-                    const time = new Date(entry.createdAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-                    const date = new Date(entry.createdAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
-
-                    return (
-                      <div key={entry.id} className="flex gap-3 text-xs text-white/80">
-                        <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/5 flex items-center justify-center shrink-0 mt-0.5">
-                          {icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="leading-relaxed break-words text-white/90">{entry.text}</p>
-                          <span className="text-[9px] text-white/40 block mt-0.5">
-                            {date} в {time} {entry.author ? `• ${entry.author.split("@")[0]}` : ""}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-4 text-[10px] text-white/30 italic">
-                    История операций пуста
-                  </div>
-                )}
+              {/* Поле заметки */}
+              <div className="space-y-2 pt-3">
+                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider pl-1 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Заметка</span>
+                </label>
+                <textarea
+                  value={detailForm.notes || ""}
+                  onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, notes: e.target.value }) : null)}
+                  placeholder="Введите заметку..."
+                  rows={3}
+                  className="w-full px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm resize-none focus:outline-none focus:border-primary/50 transition-colors font-medium"
+                />
               </div>
-            </div>
+
+              {/* История изменений */}
+              <div className="space-y-3 pt-5 pb-4">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider pl-1 flex items-center gap-1.5">
+                  <History className="w-3.5 h-3.5" />
+                  <span>История операций</span>
+                </span>
+
+                <div className="space-y-4 px-1 custom-scrollbar max-h-[250px] overflow-y-auto">
+                  {detailForm.history && detailForm.history.length > 0 ? (
+                    [...detailForm.history].reverse().map((entry) => {
+                      let icon = <ChevronLeft className="w-3 h-3 text-muted-foreground" />;
+                      if (entry.type === "creation") icon = <Plus className="w-3 h-3 text-green-500" />;
+                      else if (entry.type === "status") icon = <Tag className="w-3 h-3 text-blue-500" />;
+                      else if (entry.type === "note") icon = <FileText className="w-3 h-3 text-amber-500" />;
+                      else if (entry.type === "price" || entry.type === "service") icon = <Coins className="w-3 h-3 text-purple-500" />;
+
+                      const time = new Date(entry.createdAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+                      const date = new Date(entry.createdAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+
+                      return (
+                        <div key={entry.id} className="flex gap-3 text-[13px]">
+                          <div className="w-7 h-7 rounded-full bg-muted border border-border/50 flex items-center justify-center shrink-0">
+                            {icon}
+                          </div>
+                          <div className="flex-1 min-w-0 pt-0.5">
+                            <p className="leading-snug text-white/90 font-medium">{entry.text}</p>
+                            <span className="text-[10.5px] text-muted-foreground font-medium block mt-1">
+                              {date} в {time} {entry.author ? `• ${entry.author.split("@")[0]}` : ""}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-5 text-[12px] text-muted-foreground italic font-medium">
+                      История пуста
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Удалить карточку */}
+              <div className="flex justify-center pt-6 pb-2">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteLead(detailForm.id)}
+                  className="text-[12px] font-bold uppercase tracking-wider flex items-center gap-2 px-5 py-2.5 rounded-xl text-red-500/80 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Удалить карточку клиента</span>
+                </button>
+              </div>
 
 
 
