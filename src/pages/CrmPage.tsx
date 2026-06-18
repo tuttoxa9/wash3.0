@@ -2621,14 +2621,14 @@ const CrmPage: React.FC = () => {
 
               {/* Детали визита */}
               <div className="space-y-3 pt-3">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block pl-1">Детали визита</label>
+                <label className="text-[10px] font-bold text-white/50 uppercase tracking-wider block pl-1">Детали визита</label>
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
                     placeholder="Автомобиль"
                     value={detailForm.car || ""}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
-                    className="w-full px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                    className="w-full px-3.5 py-3 bg-white/5 hover:bg-white/10 text-white placeholder-white/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500/50 transition-colors"
                   />
                   <div className="relative">
                     <input
@@ -2636,9 +2636,9 @@ const CrmPage: React.FC = () => {
                       placeholder="Стоимость"
                       value={detailForm.price || ""}
                       onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, price: Number(e.target.value) }) : null)}
-                      className="w-full px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm focus:outline-none focus:border-primary/50 transition-colors font-semibold pr-10"
+                      className="w-full px-3.5 py-3 bg-white/5 hover:bg-white/10 text-white placeholder-white/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500/50 transition-colors font-semibold pr-10"
                     />
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[12px] font-bold text-muted-foreground">BYN</span>
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[12px] font-bold text-white/40">BYN</span>
                   </div>
                 </div>
                 <input
@@ -2647,7 +2647,7 @@ const CrmPage: React.FC = () => {
                   value={detailForm.service || ""}
                   onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
                   list="service-names-edit"
-                  className="w-full px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                  className="w-full px-3.5 py-3 bg-white/5 hover:bg-white/10 text-white placeholder-white/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500/50 transition-colors"
                 />
                 <datalist id="service-names-edit">
                   {appState.services.map(s => (
@@ -2687,30 +2687,36 @@ const CrmPage: React.FC = () => {
               </div>
 
               {/* Планирование следующего шага */}
-              <div className="p-4 bg-muted/20 border border-border/50 rounded-2xl space-y-3 mt-4">
-                <span className="text-[11px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-primary" />
+              <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-3 mt-4">
+                <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Следующий шаг визита/звонка</span>
                 </span>
                 
                 <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="date"
-                    value={nextStepDateInput}
-                    onChange={(e) => setNextStepDateInput(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-background border border-border/50 rounded-xl text-[13px] text-white focus:outline-none focus:border-primary/50"
-                  />
-                  <input
-                    type="time"
-                    value={nextStepTimeInput}
-                    onChange={(e) => setNextStepTimeInput(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-background border border-border/50 rounded-xl text-[13px] text-white focus:outline-none focus:border-primary/50"
-                  />
+                  <div className="relative">
+                    <input
+                      type="date"
+                      value={nextStepDateInput}
+                      onChange={(e) => setNextStepDateInput(e.target.value)}
+                      onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                      className="w-full px-3.5 py-2.5 bg-zinc-900 border border-white/10 rounded-xl text-[13px] text-white focus:outline-none focus:border-indigo-500/50 appearance-none"
+                    />
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="time"
+                      value={nextStepTimeInput}
+                      onChange={(e) => setNextStepTimeInput(e.target.value)}
+                      onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
+                      className="w-full px-3.5 py-2.5 bg-zinc-900 border border-white/10 rounded-xl text-[13px] text-white focus:outline-none focus:border-indigo-500/50 appearance-none"
+                    />
+                  </div>
                 </div>
 
                 {nextStepDateInput && (
-                  <div className="pt-3.5 border-t border-border/50 space-y-3">
-                    <label className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Напоминания в Telegram</label>
+                  <div className="pt-3.5 border-t border-white/10 space-y-3">
+                    <label className="text-[11px] text-white/50 font-semibold uppercase tracking-wider">Напоминания в Telegram</label>
                     <div className="flex items-center gap-4">
                       {[10, 20, 30].map(minutes => {
                         const checked = detailForm.notifyBefore?.includes(minutes) || false;
@@ -2733,7 +2739,7 @@ const CrmPage: React.FC = () => {
 
               {/* Поле заметки */}
               <div className="space-y-2 pt-3">
-                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider pl-1 flex items-center gap-1.5">
+                <label className="text-[11px] font-bold text-white/50 uppercase tracking-wider pl-1 flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5" />
                   <span>Заметка</span>
                 </label>
@@ -2742,13 +2748,13 @@ const CrmPage: React.FC = () => {
                   onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, notes: e.target.value }) : null)}
                   placeholder="Введите заметку..."
                   rows={3}
-                  className="w-full px-3.5 py-3 bg-muted/40 hover:bg-muted/60 text-white placeholder-white/20 border border-border/50 rounded-xl text-sm resize-none focus:outline-none focus:border-primary/50 transition-colors font-medium"
+                  className="w-full px-3.5 py-3 bg-white/5 hover:bg-white/10 text-white placeholder-white/20 border border-white/10 rounded-xl text-sm resize-none focus:outline-none focus:border-indigo-500/50 transition-colors font-medium"
                 />
               </div>
 
               {/* История изменений */}
               <div className="space-y-3 pt-5 pb-4">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider pl-1 flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-white/50 uppercase tracking-wider pl-1 flex items-center gap-1.5">
                   <History className="w-3.5 h-3.5" />
                   <span>История операций</span>
                 </span>
