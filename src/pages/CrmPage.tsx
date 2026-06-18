@@ -654,28 +654,22 @@ const CrmPage: React.FC = () => {
 
     setIsTestingTelegram(true);
     try {
-      const message = 
-        `🔔 <b>Тестовое сообщение CRM</b>\n\n` +
-        `✅ Telegram-бот успешно настроен и подключен!\n` +
-        `📅 Время проверки: ${format(new Date(), "HH:mm:ss dd.MM.yyyy")}`;
-
-      const res = await fetch(`https://api.telegram.org/bot${crmSettings.telegramBotToken}/sendMessage`, {
+      const res = await fetch("/api/test-telegram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: crmSettings.telegramChatId,
-          text: message,
-          parse_mode: "HTML"
+          botToken: crmSettings.telegramBotToken,
+          chatId: crmSettings.telegramChatId
         })
       });
 
       const data = await res.json();
 
-      if (res.ok && data.ok) {
+      if (res.ok && data.success) {
         toast.success("Тестовое сообщение успешно отправлено!");
       } else {
-        console.error("Telegram error:", data);
-        toast.error(`Ошибка Telegram: ${data.description || "неизвестная ошибка"}`);
+        console.error("Telegram proxy error:", data);
+        toast.error(`Ошибка: ${data.error || "неизвестная ошибка"}`);
       }
     } catch (err: any) {
       console.error("Test Telegram bot error:", err);
