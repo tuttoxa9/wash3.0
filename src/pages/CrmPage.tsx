@@ -1725,9 +1725,9 @@ const CrmPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Строка поиска */}
-          <div className="p-4 sm:p-6 border-b border-white/5 shrink-0 flex items-center justify-between">
-            <div className="relative flex items-center w-full max-w-md">
+            {/* Строка поиска и фильтры */}
+          <div className="p-4 sm:p-6 border-b border-white/5 shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="relative flex items-center w-full md:max-w-md">
               <Search className={`w-4 h-4 absolute left-3 pointer-events-none ${hasWallpaper ? "text-white/40" : "text-muted-foreground"}`} />
               <input
                 type="text"
@@ -1750,7 +1750,7 @@ const CrmPage: React.FC = () => {
               )}
             </div>
 
-            <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 custom-scrollbar">
               {/* Переключатель дат */}
               <div className="flex items-center gap-1">
                 <button
@@ -1796,7 +1796,7 @@ const CrmPage: React.FC = () => {
                 </button>
               </div>
 
-              <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border ${
+              <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border whitespace-nowrap shrink-0 ${
                 hasWallpaper ? "text-indigo-300 bg-indigo-500/15 border-indigo-500/20 backdrop-blur-xl backdrop-brightness-[1.2]" : "text-primary bg-primary/10 border-primary/15"
               }`}>
                 {activeTab === "all" ? "Вся база" : STATUS_LABELS[activeTab]}
