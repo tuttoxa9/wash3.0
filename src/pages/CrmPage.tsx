@@ -1726,7 +1726,7 @@ const CrmPage: React.FC = () => {
                       setViewingDate(format(subDays(new Date(viewingDate + 'T12:00:00'), 1), "yyyy-MM-dd"));
                     }
                   }}
-                  className={`p-1.5 rounded-xl transition-all border ${hasWallpaper ? "text-white/70 hover:text-white hover:bg-white/[0.08] border-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted border-border"}`}
+                  className={`p-1.5 rounded-xl transition-all border ${hasWallpaper ? "text-white/70 hover:text-white bg-white/[0.06] backdrop-blur-xl backdrop-brightness-[1.2] hover:bg-white/[0.12] border-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted border-border"}`}
                   title="Предыдущий день"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -1735,8 +1735,8 @@ const CrmPage: React.FC = () => {
                   onClick={() => setViewingDate(null)}
                   className={`px-3 py-1.5 rounded-xl text-[10px] uppercase font-bold tracking-wider transition-all border min-w-[130px] text-center ${
                     viewingDate === null
-                      ? (hasWallpaper ? "bg-indigo-500/20 text-indigo-200 border-indigo-500/35 shadow-[0_0_12px_rgba(99,102,241,0.15)] font-black" : "bg-primary/10 text-primary border-primary/20 font-black")
-                      : (hasWallpaper ? "bg-white/[0.06] text-white/80 border-white/10 hover:bg-white/[0.12]" : "bg-muted text-foreground border-border hover:bg-muted/80")
+                      ? (hasWallpaper ? "bg-indigo-500/20 text-indigo-200 border-indigo-500/35 shadow-[0_0_12px_rgba(99,102,241,0.15)] font-black backdrop-blur-xl" : "bg-primary/10 text-primary border-primary/20 font-black")
+                      : (hasWallpaper ? "bg-white/[0.06] text-white/80 border-white/10 hover:bg-white/[0.12] backdrop-blur-xl" : "bg-muted text-foreground border-border hover:bg-muted/80")
                   }`}
                   title="Показать сегодня и ранее"
                 >
@@ -1754,7 +1754,7 @@ const CrmPage: React.FC = () => {
                       setViewingDate(format(addDays(new Date(viewingDate + 'T12:00:00'), 1), "yyyy-MM-dd"));
                     }
                   }}
-                  className={`p-1.5 rounded-xl transition-all border ${hasWallpaper ? "text-white/70 hover:text-white hover:bg-white/[0.08] border-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted border-border"}`}
+                  className={`p-1.5 rounded-xl transition-all border ${hasWallpaper ? "text-white/70 hover:text-white bg-white/[0.06] backdrop-blur-xl backdrop-brightness-[1.2] hover:bg-white/[0.12] border-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted border-border"}`}
                   title="Следующий день"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -1762,7 +1762,7 @@ const CrmPage: React.FC = () => {
               </div>
 
               <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border ${
-                hasWallpaper ? "text-indigo-300 bg-indigo-500/15 border-indigo-500/20" : "text-primary bg-primary/10 border-primary/15"
+                hasWallpaper ? "text-indigo-300 bg-indigo-500/15 border-indigo-500/20 backdrop-blur-xl backdrop-brightness-[1.2]" : "text-primary bg-primary/10 border-primary/15"
               }`}>
                 {activeTab === "all" ? "Вся база" : STATUS_LABELS[activeTab]}
               </span>
