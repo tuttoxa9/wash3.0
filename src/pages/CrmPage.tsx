@@ -1159,7 +1159,7 @@ const CrmPage: React.FC = () => {
         <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 black:bg-blue-500/15 blur-[60px] rounded-full scale-[1.2] z-[-1] pointer-events-none"></div>
         
         {viewMode === "gate" ? (
-          <div key="gate-card" className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col gap-4">
+          <div key="gate-card" className="w-full max-w-[280px] bg-white/10 dark:bg-black/40 backdrop-blur-[40px] backdrop-saturate-[1.2] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col gap-4">
             
             <div className="text-center">
               <h1 className="text-base font-bold tracking-tight text-white/90">Detail Lab CRM</h1>
@@ -1238,7 +1238,7 @@ const CrmPage: React.FC = () => {
             )}
           </div>
         ) : (
-          <div key="settings-card" className="w-full max-w-[800px] mx-4 md:mx-auto bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 md:p-7 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col max-h-[85vh]">
+          <div key="settings-card" className="w-full max-w-[800px] mx-4 md:mx-auto bg-white/10 dark:bg-black/40 backdrop-blur-[40px] backdrop-saturate-[1.2] rounded-3xl p-5 md:p-7 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col max-h-[85vh]">
             
             <div className="flex items-center gap-2 mb-4 shrink-0">
               <button
@@ -1270,7 +1270,7 @@ const CrmPage: React.FC = () => {
                             key={t}
                             type="button"
                             onClick={() => dispatch({ type: "SET_THEME", payload: t })}
-                            className={`flex-1 py-1.5 rounded-xl text-[11px] font-semibold border-0 transition-all active:scale-95
+                            className={`flex-1 py-1.5 rounded-xl text-[11px] font-semibold border-0 transition-all 
                               ${appState.theme === t
                                 ? "bg-white/15 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
                                 : "bg-white/[0.04] text-white/50 hover:text-white"}`}
@@ -1603,7 +1603,7 @@ const CrmPage: React.FC = () => {
               <div className="flex gap-2.5">
                 <button
                   onClick={() => setIsAddDrawerOpen(true)}
-                  className={`h-10 px-4 font-semibold rounded-xl flex items-center justify-center active:scale-95 transition-transform shadow-md text-sm gap-2 ${
+                  className={`h-10 px-4 font-semibold rounded-xl flex items-center justify-center  transition-transform shadow-md text-sm gap-2 ${
                     hasWallpaper ? "bg-white text-black hover:bg-zinc-100" : "bg-primary text-primary-foreground hover:bg-primary/90"
                   }`}
                 >
@@ -1612,7 +1612,7 @@ const CrmPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setViewMode("gate")}
-                  className={`h-10 w-10 rounded-xl flex items-center justify-center active:scale-95 transition-transform border-0 ${
+                  className={`h-10 w-10 rounded-xl flex items-center justify-center  transition-transform border-0 ${
                     hasWallpaper 
                       ? "bg-white/[0.08] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white hover:bg-white/[0.14]" 
                       : "bg-muted text-foreground hover:bg-muted/80"
@@ -1706,7 +1706,7 @@ const CrmPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setMobileViewLevel("statuses")}
-                    className="p-2 -ml-2 text-white/60 hover:text-white active:scale-95 transition-all rounded-full hover:bg-white/[0.08]"
+                    className="p-2 -ml-2 text-white/60 hover:text-white  transition-all rounded-full hover:bg-white/[0.08]"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
@@ -1716,7 +1716,7 @@ const CrmPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setIsAddDrawerOpen(true)}
-                  className={`h-8 w-8 rounded-lg flex items-center justify-center active:scale-95 transition-transform shadow-sm ${
+                  className={`h-8 w-8 rounded-lg flex items-center justify-center  transition-transform shadow-sm ${
                     hasWallpaper ? "bg-white text-black" : "bg-primary text-primary-foreground"
                   }`}
                 >
@@ -1915,83 +1915,84 @@ const CrmPage: React.FC = () => {
                                 </span>
                               </div>
 
-                              {/* МОБИЛЬНАЯ КАРТОЧКА */}
+                              {/* МОБИЛЬНАЯ КАРТОЧКА (Refreshed Design) */}
                               <div
                                 onClick={() => {
                                   setSelectedLead(lead);
                                   setIsDetailOpen(true);
                                 }}
-                                className={`md:hidden p-3.5 border shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group ${
+                                className={`md:hidden p-4 rounded-3xl border transition-all flex flex-col gap-3.5 cursor-pointer relative overflow-hidden group shadow-md ${
                                   hasWallpaper
-                                    ? "bg-white/[0.12] border-white/15 backdrop-blur-xl text-white"
-                                    : "bg-card border-border text-foreground"
+                                    ? "bg-white/[0.08] hover:bg-white/[0.12] border-white/10 backdrop-blur-[40px] backdrop-saturate-[1.5] text-white"
+                                    : "bg-card border-border text-foreground hover:shadow-lg"
                                 }`}
                               >
-                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/50 to-primary/10"></div>
-                                <div className="pl-1.5 flex justify-between items-start gap-2">
-                                  <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className={`shrink-0 p-1.5 rounded-xl group-hover:bg-primary/20 transition-colors ${
-                                      hasWallpaper ? "text-white/60 bg-white/[0.08]" : "text-muted-foreground bg-muted"
+                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary/60 to-primary/20 rounded-l-3xl"></div>
+                                
+                                <div className="pl-2 flex justify-between items-start gap-3">
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <div className={`shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-colors shadow-inner ${
+                                      hasWallpaper ? "bg-white/10 text-white shadow-white/5" : "bg-muted text-muted-foreground"
                                     }`}>
                                       {getSourceIcon(lead.source || "")}
                                     </div>
-                                    <div className="flex flex-col">
-                                      <span className="text-xs font-bold truncate">
+                                    <div className="flex flex-col min-w-0">
+                                      <span className="text-[15px] font-bold truncate tracking-tight">
                                         {lead.name}
                                       </span>
-                                      <span className={`text-[10px] font-mono mt-0.5 ${hasWallpaper ? "text-white/60" : "text-muted-foreground"}`}>
+                                      <span className={`text-[12px] font-medium tracking-wide mt-0.5 ${hasWallpaper ? "text-white/60" : "text-muted-foreground"}`}>
                                         {lead.phone}
                                       </span>
                                     </div>
                                   </div>
 
-                                  <div className="flex flex-col items-end gap-1">
-                                    <div className={`flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full border ${
-                                      hasWallpaper ? "text-white/80 bg-zinc-800/80 border-white/5" : "text-foreground bg-muted border-border"
+                                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                    <div className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border shadow-sm ${
+                                      hasWallpaper ? "text-white/90 bg-white/10 border-white/10 backdrop-blur-md" : "text-foreground bg-muted border-border"
                                     }`}>
-                                      <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[lead.status]}`} />
+                                      <span className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px] ${STATUS_DOT_COLORS[lead.status]}`} style={{boxShadow: '0 0 8px var(--tw-shadow-color)'}} />
                                       <span className="font-semibold">{STATUS_LABELS[lead.status]}</span>
                                     </div>
                                     {lead.price ? (
-                                      <span className="text-xs font-black mt-0.5">
+                                      <span className="text-[13px] font-black mt-0.5 tracking-tight">
                                         {lead.price} BYN
                                       </span>
                                     ) : null}
                                   </div>
                                 </div>
 
-                                <div className={`pl-1.5 flex flex-col gap-2.5 pt-2.5 border-t ${hasWallpaper ? "border-white/5" : "border-border/50"}`}>
-                                  <div className="flex items-center justify-between text-[11px]">
+                                <div className={`pl-2 flex flex-col gap-3 pt-3 mt-1 border-t ${hasWallpaper ? "border-white/10" : "border-border/50"}`}>
+                                  <div className="flex flex-wrap items-center gap-2 text-[12px]">
                                     {lead.service ? (
-                                      <span className="text-indigo-300 font-extrabold bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-500/30 truncate">
+                                      <span className="text-indigo-200 font-bold bg-indigo-500/20 px-2.5 py-1 rounded-lg border border-indigo-500/30 truncate shadow-sm">
                                         {lead.service}
                                       </span>
                                     ) : (
-                                      <span className={`italic ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`}>Нет услуги</span>
+                                      <span className={`italic ${hasWallpaper ? "text-white/30" : "text-muted-foreground/60"}`}>Нет услуги</span>
                                     )}
-                                    {lead.car && <span className={`font-bold truncate ml-2 px-2 py-0.5 rounded-md border ${
-                                      hasWallpaper ? "text-zinc-300 bg-zinc-800/80 border-zinc-700/40" : "text-muted-foreground bg-muted border-border"
+                                    {lead.car && <span className={`font-bold truncate px-2.5 py-1 rounded-lg border shadow-sm ${
+                                      hasWallpaper ? "text-zinc-200 bg-white/5 border-white/10" : "text-muted-foreground bg-muted border-border"
                                     }`}>{lead.car}</span>}
                                   </div>
 
                                   {lead.notes && (
-                                    <div className={`p-2 rounded-lg text-[11px] border-l-2 leading-relaxed ${
+                                    <div className={`p-2.5 rounded-xl text-[12px] border-l-2 leading-relaxed backdrop-blur-sm ${
                                       hasWallpaper 
-                                        ? "bg-white/[0.03] border-indigo-500 text-white/85" 
+                                        ? "bg-white/[0.04] border-indigo-400 text-white/80" 
                                         : "bg-muted/40 border-primary text-muted-foreground"
                                     }`}>
-                                      <p className="line-clamp-2 italic">{lead.notes}</p>
+                                      <p className="line-clamp-2 italic font-medium">{lead.notes}</p>
                                     </div>
                                   )}
 
-                                  <div className="flex items-center justify-between mt-1">
+                                  <div className="flex items-center justify-between mt-1 pt-1">
                                     {lead.nextStepDate ? (
-                                      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-extrabold border
+                                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border shadow-sm
                                         ${overdue
-                                          ? "bg-red-950/60 text-red-200 border-red-500/40 shadow-sm"
-                                          : (hasWallpaper ? "bg-zinc-800/60 text-zinc-200 border-zinc-700/40" : "bg-muted text-muted-foreground border-border")}`}
+                                          ? "bg-red-500/20 text-red-200 border-red-500/30"
+                                          : (hasWallpaper ? "bg-white/10 text-white border-white/10" : "bg-muted text-muted-foreground border-border")}`}
                                       >
-                                        <Clock className="w-3 h-3" />
+                                        <Clock className="w-3.5 h-3.5" />
                                         <span>
                                           След. шаг: {format(new Date(lead.nextStepDate), "d MMM, HH:mm", { locale: ru })}
                                         </span>
@@ -2000,8 +2001,8 @@ const CrmPage: React.FC = () => {
                                       <div></div>
                                     )}
                                     
-                                    <span className={`text-[9px] font-medium self-end mb-0.5 ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`}>
-                                      Создан: {format(new Date(lead.createdAt), "d.MM.yy HH:mm", { locale: ru })}
+                                    <span className={`text-[10px] font-medium self-end mb-1 tracking-wide ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`}>
+                                      {format(new Date(lead.createdAt), "d.MM.yy HH:mm", { locale: ru })}
                                     </span>
                                   </div>
                                 </div>
@@ -2036,7 +2037,7 @@ const CrmPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleDeleteLead(detailForm.id)}
-                    className={`p-1.5 rounded-lg transition-colors border-0 active:scale-95 ${
+                    className={`p-1.5 rounded-lg transition-colors border-0  ${
                       hasWallpaper ? "bg-red-950/60 hover:bg-red-900/50 text-red-400" : "bg-red-50 hover:bg-red-100 text-red-600"
                     }`}
                     title="Удалить карточку"
@@ -2086,14 +2087,14 @@ const CrmPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleCopyPhone(detailForm.phone)}
-                          className={`p-1.5 rounded-md ${hasWallpaper ? "bg-zinc-955 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-background hover:bg-muted text-foreground/75"} active:scale-95 transition-all shrink-0 border-0`}
+                          className={`p-1.5 rounded-md ${hasWallpaper ? "bg-zinc-955 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-background hover:bg-muted text-foreground/75"}  transition-all shrink-0 border-0`}
                           title="Копировать телефон"
                         >
                           <Copy className="w-3.5 h-3.5 shrink-0" />
                         </button>
                         <a
                           href={`tel:${getPhoneDigits(detailForm.phone)}`}
-                          className={`p-1.5 rounded-md ${hasWallpaper ? "bg-zinc-955 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-background hover:bg-muted text-foreground/75"} active:scale-95 transition-all flex items-center justify-center shrink-0 border-0`}
+                          className={`p-1.5 rounded-md ${hasWallpaper ? "bg-zinc-955 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-background hover:bg-muted text-foreground/75"}  transition-all flex items-center justify-center shrink-0 border-0`}
                           title="Позвонить"
                         >
                           <Phone className="w-3.5 h-3.5 text-green-400 shrink-0" />
@@ -2111,7 +2112,7 @@ const CrmPage: React.FC = () => {
                           href={getWhatsAppLink(detailForm.phone)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
+                          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] font-bold transition-all  shadow-sm border-0"
                         >
                           <WhatsAppIcon className="w-3.5 h-3.5 shrink-0" />
                           <span>WhatsApp</span>
@@ -2120,7 +2121,7 @@ const CrmPage: React.FC = () => {
                           href={getTelegramLink(detailForm.phone)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#24A1DE] hover:bg-[#1d8dbf] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
+                          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#24A1DE] hover:bg-[#1d8dbf] text-white text-[10px] font-bold transition-all  shadow-sm border-0"
                         >
                           <TelegramIcon className="w-3.5 h-3.5 shrink-0" />
                           <span>Telegram</span>
@@ -2129,7 +2130,7 @@ const CrmPage: React.FC = () => {
                           href={getViberLink(detailForm.phone)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#7360F2] hover:bg-[#5e4cd9] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
+                          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#7360F2] hover:bg-[#5e4cd9] text-white text-[10px] font-bold transition-all  shadow-sm border-0"
                         >
                           <ViberIcon className="w-3.5 h-3.5 shrink-0" />
                           <span>Viber</span>
@@ -2545,7 +2546,7 @@ const CrmPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleDeleteLead(detailForm.id)}
-                className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors border-0 active:scale-95 bg-red-950/40 text-red-400 hover:bg-red-900/40"
+                className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors border-0  bg-red-950/40 text-red-400 hover:bg-red-900/40"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Удалить карточку</span>
@@ -2577,14 +2578,14 @@ const CrmPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleCopyPhone(detailForm.phone)}
-                      className="p-1.5 rounded-md bg-zinc-950 hover:bg-zinc-800 text-white/70 hover:text-white active:scale-95 transition-all shrink-0 border-0"
+                      className="p-1.5 rounded-md bg-zinc-950 hover:bg-zinc-800 text-white/70 hover:text-white  transition-all shrink-0 border-0"
                       title="Копировать телефон"
                     >
                       <Copy className="w-3.5 h-3.5 shrink-0" />
                     </button>
                     <a
                       href={`tel:${getPhoneDigits(detailForm.phone)}`}
-                      className="p-1.5 rounded-md bg-zinc-950 hover:bg-zinc-800 text-white/70 hover:text-white active:scale-95 transition-all flex items-center justify-center shrink-0 border-0"
+                      className="p-1.5 rounded-md bg-zinc-950 hover:bg-zinc-800 text-white/70 hover:text-white  transition-all flex items-center justify-center shrink-0 border-0"
                       title="Позвонить"
                     >
                       <Phone className="w-3.5 h-3.5 text-green-400 shrink-0" />
@@ -2602,7 +2603,7 @@ const CrmPage: React.FC = () => {
                       href={getWhatsAppLink(detailForm.phone)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] font-bold transition-all  shadow-sm border-0"
                     >
                       <WhatsAppIcon className="w-3.5 h-3.5 shrink-0" />
                       <span>WhatsApp</span>
@@ -2611,7 +2612,7 @@ const CrmPage: React.FC = () => {
                       href={getTelegramLink(detailForm.phone)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#24A1DE] hover:bg-[#1d8dbf] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#24A1DE] hover:bg-[#1d8dbf] text-white text-[10px] font-bold transition-all  shadow-sm border-0"
                     >
                       <TelegramIcon className="w-3.5 h-3.5 shrink-0" />
                       <span>Telegram</span>
@@ -2620,7 +2621,7 @@ const CrmPage: React.FC = () => {
                       href={getViberLink(detailForm.phone)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#7360F2] hover:bg-[#5e4cd9] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#7360F2] hover:bg-[#5e4cd9] text-white text-[10px] font-bold transition-all  shadow-sm border-0"
                     >
                       <ViberIcon className="w-3.5 h-3.5 shrink-0" />
                       <span>Viber</span>
