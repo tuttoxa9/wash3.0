@@ -724,14 +724,12 @@ const CrmPage: React.FC = () => {
 
   // Подготовка деталей лида к редактированию
   const [detailForm, setDetailForm] = useState<CRMLead | null>(null);
-  const [newNoteText, setNewNoteText] = useState("");
   const [nextStepDateInput, setNextStepDateInput] = useState("");
   const [nextStepTimeInput, setNextStepTimeInput] = useState("");
 
   useEffect(() => {
     if (selectedLead) {
       setDetailForm({ ...selectedLead });
-      setNewNoteText("");
       
       if (selectedLead.nextStepDate) {
         const d = new Date(selectedLead.nextStepDate);
@@ -802,6 +800,16 @@ const CrmPage: React.FC = () => {
       });
     }
 
+    if ((detailForm.notes || "") !== (selectedLead.notes || "")) {
+      updatedHistory.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
+        type: "note",
+        text: `Заметка обновлена: "${detailForm.notes || ""}"`,
+        createdAt: new Date().toISOString(),
+        author: userAuthor
+      });
+    }
+
     // Обработка даты/времени следующего шага
     let combinedNextStepDate = undefined;
     if (nextStepDateInput) {
@@ -843,37 +851,6 @@ const CrmPage: React.FC = () => {
     }
   };
 
-  // Добавление текстовой заметки в историю лида
-  const handleAddNoteToHistory = async () => {
-    if (!detailForm || !newNoteText.trim()) return;
-    const userAuthor = user?.email || "Менеджер";
-
-    const newNoteId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
-    const newNoteHistory: CRMHistoryEntry = {
-      id: newNoteId,
-      type: "note",
-      text: newNoteText.trim(),
-      createdAt: new Date().toISOString(),
-      author: userAuthor
-    };
-
-    const finalLead: CRMLead = {
-      ...detailForm,
-      notes: newNoteText.trim(),
-      history: [...detailForm.history, newNoteHistory]
-    };
-
-    const success = await crmService.updateLead(finalLead);
-    if (success) {
-      toast.success("Заметка сохранена");
-      setDetailForm(finalLead);
-      setSelectedLead(finalLead);
-      setNewNoteText("");
-      loadLeads();
-    } else {
-      toast.error("Ошибка при сохранении заметки");
-    }
-  };
 
   // Переключение тумблера напоминаний в форме деталей
   const handleToggleNotifyBefore = (minutes: number) => {
@@ -886,6 +863,34 @@ const CrmPage: React.FC = () => {
       newList = [...currentList, minutes];
     }
     setDetailForm(prev => prev ? ({ ...prev, notifyBefore: newList }) : null);
+  };
+
+  const getHasChanges = () => {
+    if (!detailForm || !selectedLead) return false;
+    
+    let originalDateInput = "";
+    let originalTimeInput = "";
+    if (selectedLead.nextStepDate) {
+      const d = new Date(selectedLead.nextStepDate);
+      originalDateInput = format(d, "yyyy-MM-dd");
+      originalTimeInput = format(d, "HH:mm");
+    }
+
+    const nextStepChanged = nextStepDateInput !== originalDateInput || nextStepTimeInput !== originalTimeInput;
+    const notifyChanged = JSON.stringify(detailForm.notifyBefore || []) !== JSON.stringify(selectedLead.notifyBefore || []);
+    
+    return (
+      detailForm.name !== selectedLead.name ||
+      detailForm.phone !== selectedLead.phone ||
+      (detailForm.car || "") !== (selectedLead.car || "") ||
+      Number(detailForm.price || 0) !== Number(selectedLead.price || 0) ||
+      (detailForm.service || "") !== (selectedLead.service || "") ||
+      detailForm.status !== selectedLead.status ||
+      (detailForm.source || "") !== (selectedLead.source || "") ||
+      (detailForm.notes || "") !== (selectedLead.notes || "") ||
+      nextStepChanged ||
+      notifyChanged
+    );
   };
 
   // Фильтрация и группировка лидов
@@ -1054,8 +1059,7 @@ const CrmPage: React.FC = () => {
   if (viewMode === "gate" || viewMode === "settings") {
     return (
       <div 
-        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('/wallpapers/detail.webp')" }}
+        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-cover bg-center bg-black md:bg-[url('/wallpapers/detail.webp')]"
       >
         {/* Dark overlay for desktop wallpaper background */}
         <div className="absolute inset-0 bg-black/60 pointer-events-none z-0 hidden md:block" />
@@ -1959,44 +1963,60 @@ const CrmPage: React.FC = () => {
                 </button>
               </div>
 
+              {/* Удалить клиента */}
+              <div className="flex justify-end pt-0.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteLead(detailForm.id)}
+                  className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors border-0 active:scale-95 ${
+                    hasWallpaper ? "bg-red-950/40 text-red-400 hover:bg-red-900/40" : "bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700"
+                  }`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Удалить карточку</span>
+                </button>
+              </div>
+
               {/* Форма редактирования */}
               <div className="space-y-3.5">
                 <div className="space-y-2.5">
-                  <div>
-                    <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">ФИО Клиента</label>
-                    <input
-                      type="text"
-                      value={detailForm.name}
-                      onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                      className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold`}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Телефон</label>
-                    <div className="flex items-center gap-2">
+                  
+                  {/* Объединенный блок клиента ФИО / Телефон */}
+                  <div className={`p-3.5 ${hasWallpaper ? "bg-zinc-900" : "bg-muted"} rounded-xl space-y-2.5 border-0`}>
+                    <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider block">Клиент (ФИО и Телефон)</span>
+                    <div className="flex flex-col gap-2">
                       <input
                         type="text"
-                        value={detailForm.phone}
-                        onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
-                        maxLength={19}
-                        className={`flex-1 px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs font-mono focus:outline-none transition-colors`}
+                        placeholder="ФИО клиента"
+                        value={detailForm.name}
+                        onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
+                        className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-950 text-white placeholder-white/20" : "!bg-background text-foreground placeholder-foreground/30"} !border-0 rounded-md text-xs focus:outline-none transition-colors font-semibold`}
                       />
-                      <button
-                        type="button"
-                        onClick={() => handleCopyPhone(detailForm.phone)}
-                        className={`p-1.5 rounded-lg ${hasWallpaper ? "bg-zinc-900 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-muted hover:bg-muted/80 text-foreground/75"} active:scale-95 transition-all`}
-                        title="Копировать телефон"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                      <a
-                        href={`tel:${getPhoneDigits(detailForm.phone)}`}
-                        className={`p-1.5 rounded-lg ${hasWallpaper ? "bg-zinc-900 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-muted hover:bg-muted/80 text-foreground/75"} active:scale-95 transition-all flex items-center justify-center`}
-                        title="Позвонить"
-                      >
-                        <Phone className="w-3.5 h-3.5 text-green-400" />
-                      </a>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          placeholder="Телефон"
+                          value={detailForm.phone}
+                          onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
+                          maxLength={19}
+                          className={`flex-1 min-w-0 px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-950 text-white placeholder-white/20" : "!bg-background text-foreground placeholder-foreground/30"} !border-0 rounded-md text-xs font-mono focus:outline-none transition-colors`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleCopyPhone(detailForm.phone)}
+                          className={`p-1.5 rounded-md ${hasWallpaper ? "bg-zinc-955 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-background hover:bg-muted text-foreground/75"} active:scale-95 transition-all shrink-0 border-0`}
+                          title="Копировать телефон"
+                        >
+                          <Copy className="w-3.5 h-3.5 shrink-0" />
+                        </button>
+                        <a
+                          href={`tel:${getPhoneDigits(detailForm.phone)}`}
+                          className={`p-1.5 rounded-md ${hasWallpaper ? "bg-zinc-955 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-background hover:bg-muted text-foreground/75"} active:scale-95 transition-all flex items-center justify-center shrink-0 border-0`}
+                          title="Позвонить"
+                        >
+                          <Phone className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                        </a>
+                      </div>
                     </div>
                   </div>
 
@@ -2011,7 +2031,7 @@ const CrmPage: React.FC = () => {
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
                         >
-                          <WhatsAppIcon className="w-3.5 h-3.5" />
+                          <WhatsAppIcon className="w-3.5 h-3.5 shrink-0" />
                           <span>WhatsApp</span>
                         </a>
                         <a
@@ -2020,7 +2040,7 @@ const CrmPage: React.FC = () => {
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#24A1DE] hover:bg-[#1d8dbf] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
                         >
-                          <TelegramIcon className="w-3.5 h-3.5" />
+                          <TelegramIcon className="w-3.5 h-3.5 shrink-0" />
                           <span>Telegram</span>
                         </a>
                         <a
@@ -2029,38 +2049,23 @@ const CrmPage: React.FC = () => {
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#7360F2] hover:bg-[#5e4cd9] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
                         >
-                          <ViberIcon className="w-3 h-3" />
+                          <ViberIcon className="w-3.5 h-3.5 shrink-0" />
                           <span>Viber</span>
                         </a>
                       </div>
                     </div>
                   )}
 
-                  <div>
-                    <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Автомобиль</label>
-                    <input
-                      type="text"
-                      value={detailForm.car || ""}
-                      onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
-                      className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors`}
-                    />
-                  </div>
-
+                  {/* Авто и Стоимость side-by-side */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Название услуги</label>
+                      <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Автомобиль</label>
                       <input
                         type="text"
-                        value={detailForm.service || ""}
-                        onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
-                        list="service-names-edit-desktop"
+                        value={detailForm.car || ""}
+                        onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
                         className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors`}
                       />
-                      <datalist id="service-names-edit-desktop">
-                        {appState.services.map(s => (
-                          <option key={s.id} value={s.name} />
-                        ))}
-                      </datalist>
                     </div>
                     <div>
                       <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (руб.)</label>
@@ -2071,6 +2076,23 @@ const CrmPage: React.FC = () => {
                         className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold`}
                       />
                     </div>
+                  </div>
+
+                  {/* Название услуги - на всю ширину */}
+                  <div>
+                    <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Название услуги</label>
+                    <input
+                      type="text"
+                      value={detailForm.service || ""}
+                      onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
+                      list="service-names-edit-desktop"
+                      className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors`}
+                    />
+                    <datalist id="service-names-edit-desktop">
+                      {appState.services.map(s => (
+                        <option key={s.id} value={s.name} />
+                      ))}
+                    </datalist>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -2151,50 +2173,33 @@ const CrmPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteLead(detailForm.id)}
-                    className={`p-2.5 rounded-lg ${hasWallpaper ? "bg-red-950/80 text-red-400 hover:bg-red-900/50" : "bg-red-50 text-red-600 hover:bg-red-100"} flex items-center justify-center transition-all border-0 active:scale-95`}
-                    title="Удалить карточку"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleUpdateLead}
-                    className="flex-1 py-2 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-semibold rounded-lg active:scale-[0.98] transition-all text-xs shadow-md border-0"
-                  >
-                    Сохранить изменения
-                  </button>
-                </div>
               </div>
 
               <hr className={`border-0 h-[1px] ${hasWallpaper ? "bg-zinc-800" : "bg-border"}`} />
 
-              {/* История и заметки менеджера */}
+              {/* Поле заметки */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-white/60" />
+                  <span>Заметка</span>
+                </span>
+                <textarea
+                  value={detailForm.notes || ""}
+                  onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, notes: e.target.value }) : null)}
+                  placeholder="Введите заметку..."
+                  rows={4}
+                  className={`w-full px-3 py-2 ${hasWallpaper ? "bg-zinc-900 text-white placeholder-white/20 border border-zinc-800/80" : "bg-muted text-foreground placeholder-foreground/30 border border-border"} rounded-xl text-xs resize-none focus:outline-none transition-colors font-medium`}
+                />
+              </div>
+
+              <hr className={`border-0 h-[1px] ${hasWallpaper ? "bg-zinc-800" : "bg-border"}`} />
+
+              {/* История изменений */}
               <div className="space-y-3">
                 <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
                   <History className="w-4 h-4 text-white/60" />
-                  <span>Заметки и история</span>
+                  <span>История изменений</span>
                 </span>
-
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Новая заметка..."
-                    value={newNoteText}
-                    onChange={(e) => setNewNoteText(e.target.value)}
-                    className={`flex-1 px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors`}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddNoteToHistory}
-                    className={`px-3 ${hasWallpaper ? "bg-zinc-900 hover:bg-zinc-800 text-white" : "bg-muted hover:bg-muted/80 text-foreground"} rounded-lg text-xs font-semibold transition-all active:scale-[0.98] border-0`}
-                  >
-                    Добавить
-                  </button>
-                </div>
 
                 <div className={`rounded-xl p-3 space-y-3 custom-scrollbar max-h-[180px] overflow-y-auto border-0 ${hasWallpaper ? "bg-zinc-900" : "bg-muted/40"}`}>
                   {detailForm.history && detailForm.history.length > 0 ? (
@@ -2229,6 +2234,19 @@ const CrmPage: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              {/* Кнопка сохранения изменений, появляется только при наличии изменений */}
+              {getHasChanges() && (
+                <div className="pt-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleUpdateLead}
+                    className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-bold rounded-lg active:scale-[0.98] transition-all text-xs shadow-md border-0"
+                  >
+                    Сохранить изменения
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-5">
@@ -2427,6 +2445,18 @@ const CrmPage: React.FC = () => {
         {detailForm && (
           <div className="space-y-5">
             
+            {/* Удалить клиента */}
+            <div className="flex justify-end pt-0.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleDeleteLead(detailForm.id)}
+                className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors border-0 active:scale-95 bg-red-950/40 text-red-400 hover:bg-red-900/40"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Удалить карточку</span>
+              </button>
+            </div>
+
             <div className="space-y-3.5">
               
               {/* Объединенный блок клиента ФИО / Телефон */}
@@ -2623,62 +2653,33 @@ const CrmPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleDeleteLead(detailForm.id)}
-                  className="p-2.5 rounded-lg bg-red-950/80 text-red-400 hover:bg-red-900/50 flex items-center justify-center transition-all border-0 active:scale-95"
-                  title="Удалить карточку"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleUpdateLead}
-                  className="flex-1 py-2 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-semibold rounded-lg active:scale-[0.98] transition-all text-xs shadow-md border-0"
-                >
-                  Сохранить изменения
-                </button>
-              </div>
             </div>
 
             <hr className="border-zinc-800 h-[1px] border-0 bg-zinc-800" />
 
-            {/* История и заметки менеджера */}
+            {/* Поле заметки */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-white/60" />
+                <span>Заметка</span>
+              </span>
+              <textarea
+                value={detailForm.notes || ""}
+                onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, notes: e.target.value }) : null)}
+                placeholder="Введите заметку..."
+                rows={4}
+                className="w-full px-3 py-2 bg-zinc-900 text-white placeholder-white/20 border border-zinc-800/80 rounded-xl text-xs resize-none focus:outline-none transition-colors font-medium"
+              />
+            </div>
+
+            <hr className="border-zinc-800 h-[1px] border-0 bg-zinc-800" />
+
+            {/* История изменений */}
             <div className="space-y-3">
               <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
                 <History className="w-4 h-4 text-white/60" />
-                <span>Заметки и история изменений</span>
+                <span>История изменений</span>
               </span>
-
-              {/* Поле последней заметки */}
-              <div>
-                <label className="text-[9px] text-white/50 block mb-0.5 font-semibold">Последняя заметка:</label>
-                <textarea
-                  value={detailForm.notes || ""}
-                  readOnly
-                  placeholder="Заметок по клиенту пока нет..."
-                  rows={2}
-                  className="w-full px-2.5 py-1.5 bg-zinc-900/50 text-white/95 border border-zinc-800/80 rounded-lg text-xs resize-none focus:outline-none transition-colors font-medium"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Добавить новую заметку менеджера..."
-                  value={newNoteText}
-                  onChange={(e) => setNewNoteText(e.target.value)}
-                  className="flex-1 px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddNoteToHistory}
-                  className="px-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold transition-all active:scale-[0.98] border-0"
-                >
-                  Добавить
-                </button>
-              </div>
 
               <div className="bg-zinc-900 rounded-xl p-3 space-y-3 custom-scrollbar max-h-[300px] overflow-y-auto border-0">
                 {detailForm.history && detailForm.history.length > 0 ? (
@@ -2713,6 +2714,19 @@ const CrmPage: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Кнопка сохранения изменений, появляется только при наличии изменений */}
+            {getHasChanges() && (
+              <div className="pt-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleUpdateLead}
+                  className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-bold rounded-lg active:scale-[0.98] transition-all text-xs shadow-md border-0"
+                >
+                  Сохранить изменения
+                </button>
+              </div>
+            )}
 
           </div>
         )}
