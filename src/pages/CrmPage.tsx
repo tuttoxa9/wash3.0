@@ -308,9 +308,10 @@ interface RightDrawerProps {
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  onDelete?: () => void;
 }
 
-const RightDrawer: React.FC<RightDrawerProps> = ({ isOpen, onClose, title, children, footer }) => {
+const RightDrawer: React.FC<RightDrawerProps> = ({ isOpen, onClose, title, children, footer, onDelete }) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -331,12 +332,24 @@ const RightDrawer: React.FC<RightDrawerProps> = ({ isOpen, onClose, title, child
           >
             <div className="flex items-center justify-between px-6 py-5 shrink-0">
               <h3 className="text-base font-bold text-white tracking-tight">{title}</h3>
-              <button
-                onClick={onClose}
-                className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white/60 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {onDelete && (
+                  <button
+                    type="button"
+                    onClick={onDelete}
+                    className="p-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/50 text-red-400 transition-colors"
+                    title="Удалить карточку"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white/60 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 custom-scrollbar">
               {children}
@@ -1787,13 +1800,13 @@ const CrmPage: React.FC = () => {
                                     setIsDetailOpen(true);
                                   }
                                 }}
-                                className={`hidden md:grid grid-cols-[45px_1.1fr_1.4fr_1fr_1.3fr_1.1fr_2fr_1fr] gap-4 items-center px-5 py-3.5 border border-white/5 rounded-xl transition-all duration-150 cursor-pointer shadow-sm ${
+                                className={`hidden md:grid grid-cols-[45px_1.1fr_1.4fr_1fr_1.3fr_1.1fr_2fr_1fr] gap-4 items-center px-5 py-3.5 border rounded-xl transition-all duration-150 cursor-pointer shadow-sm ${
                                   selectedLead?.id === lead.id 
                                     ? (hasWallpaper 
-                                      ? "bg-white/[0.28] ring-1.5 ring-indigo-400/50 backdrop-blur-2xl backdrop-brightness-[1.9] backdrop-saturate-[1.5] text-white shadow-lg" 
+                                      ? "bg-indigo-950/70 border-indigo-500/40 ring-1 ring-indigo-500/30 shadow-lg backdrop-blur-xl text-white" 
                                       : "bg-primary/10 ring-1.5 ring-primary/30 text-foreground")
                                     : (hasWallpaper
-                                      ? "bg-white/[0.15] hover:bg-white/[0.24] active:bg-white/[0.30] backdrop-blur-2xl backdrop-brightness-[1.9] backdrop-saturate-[1.5] text-white"
+                                      ? "bg-zinc-900/65 hover:bg-zinc-800/70 border-white/5 shadow-md backdrop-blur-xl text-white"
                                       : "bg-card hover:bg-muted/70 active:bg-muted/90 text-foreground")
                                 }`}
                               >
@@ -1816,10 +1829,10 @@ const CrmPage: React.FC = () => {
 
                                 <div>
                                   {lead.nextStepDate ? (
-                                    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap
+                                    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap border
                                       ${overdue
-                                        ? "bg-red-500/25 text-red-300 border border-red-500/30 shadow-sm"
-                                        : (hasWallpaper ? "bg-white/[0.15] text-white border border-white/10" : "bg-muted text-foreground")}`}
+                                        ? "bg-red-950/60 text-red-200 border-red-500/40 shadow-sm"
+                                        : (hasWallpaper ? "bg-zinc-800/60 text-zinc-200 border-zinc-700/40" : "bg-muted text-foreground border-border")}`}
                                     >
                                       <Clock className="w-3 h-3" />
                                       <span>
@@ -1850,10 +1863,10 @@ const CrmPage: React.FC = () => {
                                   setSelectedLead(lead);
                                   setIsDetailOpen(true);
                                 }}
-                                className={`md:hidden p-3.5 border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group ${
+                                className={`md:hidden p-3.5 border shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group ${
                                   hasWallpaper
-                                    ? "bg-white/[0.18] backdrop-blur-2xl backdrop-brightness-[1.9] backdrop-saturate-[1.6] text-white"
-                                    : "bg-card text-foreground"
+                                    ? "bg-zinc-900/65 border-white/10 backdrop-blur-xl text-white"
+                                    : "bg-card border-border text-foreground"
                                 }`}
                               >
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/50 to-primary/10"></div>
@@ -1875,8 +1888,8 @@ const CrmPage: React.FC = () => {
                                   </div>
 
                                   <div className="flex flex-col items-end gap-1">
-                                    <div className={`flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full ${
-                                      hasWallpaper ? "text-white/80 bg-white/[0.06]" : "text-foreground bg-muted"
+                                    <div className={`flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full border ${
+                                      hasWallpaper ? "text-white/80 bg-zinc-800/80 border-white/5" : "text-foreground bg-muted border-border"
                                     }`}>
                                       <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[lead.status]}`} />
                                       <span className="font-semibold">{STATUS_LABELS[lead.status]}</span>
@@ -1889,32 +1902,36 @@ const CrmPage: React.FC = () => {
                                   </div>
                                 </div>
 
-                                <div className={`pl-1.5 flex flex-col gap-2 pt-1.5 border-t ${hasWallpaper ? "border-white/5" : "border-border/50"}`}>
+                                <div className={`pl-1.5 flex flex-col gap-2.5 pt-2.5 border-t ${hasWallpaper ? "border-white/5" : "border-border/50"}`}>
                                   <div className="flex items-center justify-between text-[11px]">
                                     {lead.service ? (
-                                      <span className="text-primary/90 font-bold bg-primary/20 px-2 py-0.5 rounded-md border border-primary/20 truncate">
+                                      <span className="text-indigo-300 font-extrabold bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-500/30 truncate">
                                         {lead.service}
                                       </span>
                                     ) : (
                                       <span className={`italic ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`}>Нет услуги</span>
                                     )}
-                                    {lead.car && <span className={`font-medium truncate ml-2 px-2 py-0.5 rounded-md ${
-                                      hasWallpaper ? "text-white/70 bg-white/[0.08]" : "text-muted-foreground bg-muted"
+                                    {lead.car && <span className={`font-bold truncate ml-2 px-2 py-0.5 rounded-md border ${
+                                      hasWallpaper ? "text-zinc-300 bg-zinc-800/80 border-zinc-700/40" : "text-muted-foreground bg-muted border-border"
                                     }`}>{lead.car}</span>}
                                   </div>
 
                                   {lead.notes && (
-                                    <p className={`text-[11px] truncate ${hasWallpaper ? "text-white/60" : "text-muted-foreground"}`}>
-                                      {lead.notes}
-                                    </p>
+                                    <div className={`p-2 rounded-lg text-[11px] border-l-2 leading-relaxed ${
+                                      hasWallpaper 
+                                        ? "bg-white/[0.03] border-indigo-500 text-white/85" 
+                                        : "bg-muted/40 border-primary text-muted-foreground"
+                                    }`}>
+                                      <p className="line-clamp-2 italic">{lead.notes}</p>
+                                    </div>
                                   )}
 
                                   <div className="flex items-center justify-between mt-1">
                                     {lead.nextStepDate ? (
-                                      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold
+                                      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-extrabold border
                                         ${overdue
-                                          ? "bg-red-500/10 text-red-400"
-                                          : (hasWallpaper ? "bg-white/[0.08] text-white/75" : "bg-muted text-muted-foreground")}`}
+                                          ? "bg-red-950/60 text-red-200 border-red-500/40 shadow-sm"
+                                          : (hasWallpaper ? "bg-zinc-800/60 text-zinc-200 border-zinc-700/40" : "bg-muted text-muted-foreground border-border")}`}
                                       >
                                         <Clock className="w-3 h-3" />
                                         <span>
@@ -1947,7 +1964,6 @@ const CrmPage: React.FC = () => {
         </main>
 
         {/* ДЕСКТОПНАЯ ПАНЕЛЬ КЛИЕНТА / СВОДКА */}
-        {/* ДЕСКТОПНАЯ ПАНЕЛЬ КЛИЕНТА / СВОДКА */}
         <aside className={`hidden md:flex flex-col shrink-0 h-screen sticky top-0 overflow-hidden border-0 ${
           hasWallpaper 
             ? "bg-zinc-950 text-white" 
@@ -1958,34 +1974,32 @@ const CrmPage: React.FC = () => {
               {/* Шапка панели клиента */}
               <div className="flex items-center justify-between p-6 pb-4 shrink-0">
                 <h3 className="text-xs font-bold uppercase tracking-wider">Информация о клиенте</h3>
-                <button
-                  onClick={() => {
-                    setSelectedLead(null);
-                    setDetailForm(null);
-                  }}
-                  className={`p-1 rounded-lg ${hasWallpaper ? "bg-zinc-900 hover:bg-zinc-800 text-white/60 hover:text-white" : "bg-muted hover:bg-muted/80 text-foreground/60 hover:text-foreground"} transition-colors`}
-                  title="Закрыть и показать сводку"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteLead(detailForm.id)}
+                    className={`p-1.5 rounded-lg transition-colors border-0 active:scale-95 ${
+                      hasWallpaper ? "bg-red-950/60 hover:bg-red-900/50 text-red-400" : "bg-red-50 hover:bg-red-100 text-red-600"
+                    }`}
+                    title="Удалить карточку"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedLead(null);
+                      setDetailForm(null);
+                    }}
+                    className={`p-1.5 rounded-lg ${hasWallpaper ? "bg-zinc-900 hover:bg-zinc-800 text-white/60 hover:text-white" : "bg-muted hover:bg-muted/80 text-foreground/60 hover:text-foreground"} transition-colors`}
+                    title="Закрыть и показать сводку"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Прокручиваемое содержимое */}
               <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-6 space-y-5">
-
-              {/* Удалить клиента */}
-              <div className="flex justify-end pt-0.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleDeleteLead(detailForm.id)}
-                  className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors border-0 active:scale-95 ${
-                    hasWallpaper ? "bg-red-950/40 text-red-400 hover:bg-red-900/40" : "bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700"
-                  }`}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Удалить карточку</span>
-                </button>
-              </div>
 
               {/* Форма редактирования */}
               <div className="space-y-3.5">
