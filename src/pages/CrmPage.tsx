@@ -307,9 +307,10 @@ interface RightDrawerProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
-const RightDrawer: React.FC<RightDrawerProps> = ({ isOpen, onClose, title, children }) => {
+const RightDrawer: React.FC<RightDrawerProps> = ({ isOpen, onClose, title, children, footer }) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -340,6 +341,11 @@ const RightDrawer: React.FC<RightDrawerProps> = ({ isOpen, onClose, title, child
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 custom-scrollbar">
               {children}
             </div>
+            {footer && (
+              <div className="p-6 border-t border-zinc-900 shrink-0 bg-zinc-950">
+                {footer}
+              </div>
+            )}
           </motion.div>
         </>
       )}
@@ -1941,15 +1947,16 @@ const CrmPage: React.FC = () => {
         </main>
 
         {/* ДЕСКТОПНАЯ ПАНЕЛЬ КЛИЕНТА / СВОДКА */}
-        <aside className={`hidden md:flex flex-col gap-6 p-6 shrink-0 h-screen sticky top-0 overflow-y-auto custom-scrollbar border-0 ${
+        {/* ДЕСКТОПНАЯ ПАНЕЛЬ КЛИЕНТА / СВОДКА */}
+        <aside className={`hidden md:flex flex-col shrink-0 h-screen sticky top-0 overflow-hidden border-0 ${
           hasWallpaper 
             ? "bg-zinc-950 text-white" 
             : "bg-card text-foreground"
         }`}>
           {selectedLead && detailForm ? (
-            <div className="space-y-5">
+            <div className="flex flex-col h-full overflow-hidden">
               {/* Шапка панели клиента */}
-              <div className="flex items-center justify-between pb-2 shrink-0">
+              <div className="flex items-center justify-between p-6 pb-4 shrink-0">
                 <h3 className="text-xs font-bold uppercase tracking-wider">Информация о клиенте</h3>
                 <button
                   onClick={() => {
@@ -1962,6 +1969,9 @@ const CrmPage: React.FC = () => {
                   <X className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Прокручиваемое содержимое */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-6 space-y-5">
 
               {/* Удалить клиента */}
               <div className="flex justify-end pt-0.5 shrink-0">
@@ -2235,9 +2245,11 @@ const CrmPage: React.FC = () => {
                 </div>
               </div>
 
+              </div>
+
               {/* Кнопка сохранения изменений, появляется только при наличии изменений */}
               {getHasChanges() && (
-                <div className="pt-2 shrink-0">
+                <div className={`p-6 border-t shrink-0 ${hasWallpaper ? "bg-zinc-950 border-zinc-800" : "bg-card border-border"}`}>
                   <button
                     type="button"
                     onClick={handleUpdateLead}
@@ -2249,7 +2261,7 @@ const CrmPage: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-5">
               {/* Сводка / Dashboard */}
               <div className="pb-2 shrink-0">
                 <h3 className="text-xs font-bold uppercase tracking-wider">Сводка CRM</h3>
@@ -2441,6 +2453,17 @@ const CrmPage: React.FC = () => {
           setSelectedLead(null);
         }}
         title="Редактирование карточки клиента"
+        footer={
+          detailForm && getHasChanges() ? (
+            <button
+              type="button"
+              onClick={handleUpdateLead}
+              className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-bold rounded-lg active:scale-[0.98] transition-all text-xs shadow-md border-0"
+            >
+              Сохранить изменения
+            </button>
+          ) : null
+        }
       >
         {detailForm && (
           <div className="space-y-5">
@@ -2715,18 +2738,7 @@ const CrmPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Кнопка сохранения изменений, появляется только при наличии изменений */}
-            {getHasChanges() && (
-              <div className="pt-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={handleUpdateLead}
-                  className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-bold rounded-lg active:scale-[0.98] transition-all text-xs shadow-md border-0"
-                >
-                  Сохранить изменения
-                </button>
-              </div>
-            )}
+
 
           </div>
         )}
