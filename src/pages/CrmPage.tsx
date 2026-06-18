@@ -1589,11 +1589,56 @@ const CrmPage: React.FC = () => {
               )}
             </div>
 
-            <div className="hidden md:flex items-center gap-3">
-              <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${
-                hasWallpaper ? "text-white/60 bg-white/[0.04]" : "text-muted-foreground bg-muted"
+            <div className="hidden md:flex items-center gap-4">
+              {/* Переключатель дат */}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    if (viewingDate === null) {
+                      setViewingDate(yesterdayStr);
+                    } else {
+                      setViewingDate(format(subDays(new Date(viewingDate + 'T12:00:00'), 1), "yyyy-MM-dd"));
+                    }
+                  }}
+                  className={`p-1.5 rounded-xl transition-all border ${hasWallpaper ? "text-white/70 hover:text-white hover:bg-white/[0.08] border-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted border-border"}`}
+                  title="Предыдущий день"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setViewingDate(null)}
+                  className={`px-3 py-1.5 rounded-xl text-[10px] uppercase font-bold tracking-wider transition-all border min-w-[130px] text-center ${
+                    viewingDate === null
+                      ? (hasWallpaper ? "bg-indigo-500/20 text-indigo-200 border-indigo-500/35 shadow-[0_0_12px_rgba(99,102,241,0.15)] font-black" : "bg-primary/10 text-primary border-primary/20 font-black")
+                      : (hasWallpaper ? "bg-white/[0.06] text-white/80 border-white/10 hover:bg-white/[0.12]" : "bg-muted text-foreground border-border hover:bg-muted/80")
+                  }`}
+                  title="Показать сегодня и ранее"
+                >
+                  {viewingDate === null ? "Сегодня и ранее" : 
+                   viewingDate === todayStr ? "Сегодня" :
+                   viewingDate === yesterdayStr ? "Вчера" :
+                   viewingDate === tomorrowStr ? "Завтра" :
+                   format(new Date(viewingDate + 'T12:00:00'), "d MMMM", { locale: ru })}
+                </button>
+                <button
+                  onClick={() => {
+                    if (viewingDate === null) {
+                      setViewingDate(tomorrowStr);
+                    } else {
+                      setViewingDate(format(addDays(new Date(viewingDate + 'T12:00:00'), 1), "yyyy-MM-dd"));
+                    }
+                  }}
+                  className={`p-1.5 rounded-xl transition-all border ${hasWallpaper ? "text-white/70 hover:text-white hover:bg-white/[0.08] border-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted border-border"}`}
+                  title="Следующий день"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border ${
+                hasWallpaper ? "text-indigo-300 bg-indigo-500/15 border-indigo-500/20" : "text-primary bg-primary/10 border-primary/15"
               }`}>
-                Активный фильтр: {activeTab === "all" ? "Вся база" : STATUS_LABELS[activeTab]}
+                {activeTab === "all" ? "Вся база" : STATUS_LABELS[activeTab]}
               </span>
             </div>
           </div>
@@ -1615,7 +1660,7 @@ const CrmPage: React.FC = () => {
               <div className="space-y-8">
                 
                 <div className={`hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 px-5 text-[10px] font-bold uppercase tracking-wider select-none shrink-0 border-b pb-2 ${
-                  hasWallpaper ? "text-white/40 border-white/5" : "text-muted-foreground border-border"
+                  hasWallpaper ? "text-white/95 border-white/10" : "text-muted-foreground border-border"
                 }`}>
                   <span>Ист.</span>
                   <span>Имя</span>
@@ -1648,37 +1693,43 @@ const CrmPage: React.FC = () => {
                               <div
                                 onClick={() => {
                                   setSelectedLead(lead);
-                                  setIsDetailOpen(true);
+                                  if (window.innerWidth < 768) {
+                                    setIsDetailOpen(true);
+                                  }
                                 }}
-                                className={`hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 items-center px-5 py-3.5 border-0 rounded-xl transition-all duration-150 cursor-pointer shadow-sm ${
-                                  hasWallpaper
-                                    ? "bg-white/[0.06] hover:bg-white/[0.14] active:bg-white/[0.22] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white"
-                                    : "bg-card hover:bg-muted/50 active:bg-muted text-foreground"
+                                className={`hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 items-center px-5 py-3.5 border border-white/5 rounded-xl transition-all duration-150 cursor-pointer shadow-sm ${
+                                  selectedLead?.id === lead.id 
+                                    ? (hasWallpaper 
+                                      ? "bg-white/[0.28] ring-1.5 ring-indigo-400/50 backdrop-blur-2xl backdrop-brightness-[1.9] backdrop-saturate-[1.5] text-white shadow-lg" 
+                                      : "bg-primary/10 ring-1.5 ring-primary/30 text-foreground")
+                                    : (hasWallpaper
+                                      ? "bg-white/[0.15] hover:bg-white/[0.24] active:bg-white/[0.30] backdrop-blur-2xl backdrop-brightness-[1.9] backdrop-saturate-[1.5] text-white"
+                                      : "bg-card hover:bg-muted/70 active:bg-muted/90 text-foreground")
                                 }`}
                               >
-                                <div className={`flex items-center justify-start pl-1.5 ${hasWallpaper ? "text-white/60" : "text-muted-foreground"}`}>
+                                <div className={`flex items-center justify-start pl-1.5 ${hasWallpaper ? "text-white/85" : "text-muted-foreground"}`}>
                                   {getSourceIcon(lead.source || "")}
                                 </div>
 
-                                <span className={`text-xs font-bold truncate pr-2 ${hasWallpaper ? "text-white" : "text-foreground"}`}>
+                                <span className={`text-xs font-extrabold truncate pr-2 ${hasWallpaper ? "text-white" : "text-foreground"}`}>
                                   {lead.name}
                                 </span>
 
-                                <span className={`font-mono text-xs tracking-tight ${hasWallpaper ? "text-white/70" : "text-muted-foreground"}`}>
+                                <span className={`font-mono text-xs tracking-tight ${hasWallpaper ? "text-white" : "text-muted-foreground"}`}>
                                   {lead.phone}
                                 </span>
 
-                                <div className="flex items-center gap-1.5 text-xs">
+                                <div className="flex items-center gap-1.5 text-xs font-semibold">
                                   <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[lead.status]}`} />
-                                  <span className={hasWallpaper ? "text-white/80" : "text-foreground"}>{STATUS_LABELS[lead.status] === "Новые" ? "Новый" : STATUS_LABELS[lead.status]}</span>
+                                  <span className={hasWallpaper ? "text-white" : "text-foreground"}>{STATUS_LABELS[lead.status] === "Новые" ? "Новый" : STATUS_LABELS[lead.status]}</span>
                                 </div>
 
                                 <div>
                                   {lead.nextStepDate ? (
-                                    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-semibold
+                                    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold
                                       ${overdue
-                                        ? "bg-red-500/15 text-red-400"
-                                        : (hasWallpaper ? "bg-white/[0.08] text-white/70" : "bg-muted text-muted-foreground")}`}
+                                        ? "bg-red-500/25 text-red-300 border border-red-500/30 shadow-sm"
+                                        : (hasWallpaper ? "bg-white/[0.15] text-white border border-white/10" : "bg-muted text-foreground")}`}
                                     >
                                       <Clock className="w-3 h-3" />
                                       <span>
@@ -1690,15 +1741,15 @@ const CrmPage: React.FC = () => {
                                   )}
                                 </div>
 
-                                <span className={`text-xs truncate pr-2 ${hasWallpaper ? "text-white/70" : "text-muted-foreground"}`}>
+                                <span className={`text-xs truncate pr-2 font-semibold ${hasWallpaper ? "text-white" : "text-foreground"}`}>
                                   {lead.car || "—"}
                                 </span>
 
-                                <span className={`text-xs truncate max-w-[280px] block ${hasWallpaper ? "text-white/60" : "text-muted-foreground/80"}`} title={lead.notes}>
+                                <span className={`text-xs truncate max-w-[280px] block font-medium ${hasWallpaper ? "text-white/95" : "text-foreground/90"}`} title={lead.notes}>
                                   {lead.notes || "—"}
                                 </span>
 
-                                <span className={`text-[10px] text-right ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`}>
+                                <span className={`text-[10px] text-right font-medium ${hasWallpaper ? "text-white/80" : "text-muted-foreground/75"}`}>
                                   {format(new Date(lead.createdAt), "d MMM, HH:mm", { locale: ru })}
                                 </span>
                               </div>
@@ -1709,9 +1760,9 @@ const CrmPage: React.FC = () => {
                                   setSelectedLead(lead);
                                   setIsDetailOpen(true);
                                 }}
-                                className={`md:hidden p-3.5 border-0 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group ${
+                                className={`md:hidden p-3.5 border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group ${
                                   hasWallpaper
-                                    ? "bg-white/[0.08] backdrop-blur-xl backdrop-brightness-[1.6] backdrop-saturate-[1.3] text-white"
+                                    ? "bg-white/[0.18] backdrop-blur-2xl backdrop-brightness-[1.9] backdrop-saturate-[1.6] text-white"
                                     : "bg-card text-foreground"
                                 }`}
                               >
@@ -1804,6 +1855,355 @@ const CrmPage: React.FC = () => {
           </div>
           </div>
         </main>
+
+        {/* ДЕСКТОПНАЯ ПАНЕЛЬ КЛИЕНТА / СВОДКА */}
+        <aside className={`hidden md:flex flex-col gap-6 p-6 shrink-0 w-[400px] h-screen sticky top-0 overflow-y-auto border-l custom-scrollbar ${
+          hasWallpaper 
+            ? "bg-white/[0.10] backdrop-blur-2xl backdrop-brightness-[1.6] backdrop-saturate-[1.4] border-white/10 text-white" 
+            : "bg-card border-border text-foreground"
+        }`}>
+          {selectedLead && detailForm ? (
+            <div className="space-y-6">
+              {/* Шапка панели клиента */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
+                <h3 className="text-sm font-bold uppercase tracking-wider">Информация о клиенте</h3>
+                <button
+                  onClick={() => {
+                    setSelectedLead(null);
+                    setDetailForm(null);
+                  }}
+                  className="p-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white transition-colors"
+                  title="Закрыть и показать сводку"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Форма редактирования */}
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[10px] text-white/60 block mb-1 font-semibold">ФИО Клиента</label>
+                    <input
+                      type="text"
+                      value={detailForm.name}
+                      onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
+                      className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-white/60 block mb-1 font-semibold">Телефон</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={detailForm.phone}
+                        onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
+                        maxLength={19}
+                        className="flex-1 px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs font-mono focus:outline-none transition-colors"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleCopyPhone(detailForm.phone)}
+                        className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.14] text-white/70 hover:text-white active:scale-95 transition-all"
+                        title="Копировать телефон"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                      <a
+                        href={`tel:${getPhoneDigits(detailForm.phone)}`}
+                        className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.14] text-white/70 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                        title="Позвонить"
+                      >
+                        <Phone className="w-3.5 h-3.5 text-green-400" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Быстрые мессенджеры */}
+                  {detailForm.phone && (
+                    <div className="pt-1">
+                      <span className="text-[9px] text-white/50 block mb-1.5 uppercase tracking-wider font-bold">Написать в мессенджер:</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        <a
+                          href={getWhatsAppLink(detailForm.phone)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border border-emerald-500/25 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold transition-all active:scale-95 shadow-sm"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>WhatsApp</span>
+                        </a>
+                        <a
+                          href={getTelegramLink(detailForm.phone)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border border-sky-500/25 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-[10px] font-bold transition-all active:scale-95 shadow-sm"
+                        >
+                          <Send className="w-3 h-3" />
+                          <span>Telegram</span>
+                        </a>
+                        <a
+                          href={getViberLink(detailForm.phone)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border border-violet-500/25 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 text-[10px] font-bold transition-all active:scale-95 shadow-sm"
+                        >
+                          <Phone className="w-3 h-3" />
+                          <span>Viber</span>
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="text-[10px] text-white/60 block mb-1 font-semibold">Автомобиль</label>
+                    <input
+                      type="text"
+                      value={detailForm.car || ""}
+                      onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
+                      className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] text-white/60 block mb-1 font-semibold">Название услуги</label>
+                      <input
+                        type="text"
+                        value={detailForm.service || ""}
+                        onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
+                        list="service-names-edit-desktop"
+                        className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                      />
+                      <datalist id="service-names-edit-desktop">
+                        {appState.services.map(s => (
+                          <option key={s.id} value={s.name} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-white/60 block mb-1 font-semibold">Стоимость (руб.)</label>
+                      <input
+                        type="number"
+                        value={detailForm.price || ""}
+                        onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, price: Number(e.target.value) }) : null)}
+                        className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <CustomSelect
+                      label="Статус лида"
+                      value={detailForm.status}
+                      onChange={(val) => setDetailForm(prev => prev ? ({ ...prev, status: val }) : null)}
+                      options={(Object.keys(STATUS_LABELS) as CRMLeadStatus[]).map(statusKey => ({
+                        value: statusKey,
+                        label: STATUS_LABELS[statusKey]
+                      }))}
+                    />
+                    <CustomSelect
+                      label="Источник"
+                      value={detailForm.source || ""}
+                      onChange={(val) => setDetailForm(prev => prev ? ({ ...prev, source: val }) : null)}
+                      options={[
+                        { value: "звонок", label: "Телефонный звонок" },
+                        { value: "Instagram", label: "Instagram" },
+                        { value: "TikTok", label: "TikTok" },
+                        { value: "сайт", label: "Сайт" },
+                        { value: "другое", label: "Другое" }
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                {/* Планирование следующего шага */}
+                <div className="p-4 bg-white/[0.04] border border-white/5 rounded-2xl space-y-3.5">
+                  <span className="text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-indigo-400" />
+                    <span>Следующий шаг визита/звонка</span>
+                  </span>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] text-white/60 block mb-1">Дата события</label>
+                      <input
+                        type="date"
+                        value={nextStepDateInput}
+                        onChange={(e) => setNextStepDateInput(e.target.value)}
+                        className="w-full px-2.5 py-1.5 !bg-white/[0.04] text-white !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] text-white/60 block mb-1">Время события</label>
+                      <input
+                        type="time"
+                        value={nextStepTimeInput}
+                        onChange={(e) => setNextStepTimeInput(e.target.value)}
+                        className="w-full px-2.5 py-1.5 !bg-white/[0.04] text-white !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {nextStepDateInput && (
+                    <div className="pt-2 border-t border-white/5 space-y-2">
+                      <label className="text-[9px] text-white/60 block font-semibold">Напоминания в Telegram:</label>
+                      <div className="flex items-center gap-4">
+                        {[10, 20, 30].map(minutes => {
+                          const checked = detailForm.notifyBefore?.includes(minutes) || false;
+                          return (
+                            <AnimatedCheckbox
+                              key={minutes}
+                              checked={checked}
+                              onChange={() => handleToggleNotifyBefore(minutes)}
+                              label={`За ${minutes} мин.`}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteLead(detailForm.id)}
+                    className="p-2.5 rounded-xl bg-red-500/[0.08] hover:bg-red-500/[0.16] backdrop-blur-[6px] text-red-300 flex items-center justify-center transition-colors border-0 animate-pulse-subtle"
+                    title="Удалить карточку"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleUpdateLead}
+                    className="flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-semibold rounded-xl active:scale-[0.98] transition-all text-xs shadow-md border-0"
+                  >
+                    Сохранить изменения
+                  </button>
+                </div>
+              </div>
+
+              <hr className="border-white/5" />
+
+              {/* История и заметки менеджера */}
+              <div className="space-y-4">
+                <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <History className="w-4 h-4 text-white/60" />
+                  <span>Заметки и история</span>
+                </span>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Новая заметка..."
+                    value={newNoteText}
+                    onChange={(e) => setNewNoteText(e.target.value)}
+                    className="flex-1 px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddNoteToHistory}
+                    className="px-3 bg-white/[0.08] hover:bg-white/[0.14] text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.98] border-0"
+                  >
+                    Добавить
+                  </button>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4 custom-scrollbar max-h-[200px] overflow-y-auto shadow-inner">
+                  {detailForm.history && detailForm.history.length > 0 ? (
+                    [...detailForm.history].reverse().map((entry) => {
+                      let icon = <ChevronLeft className="w-2.5 h-2.5 text-white/60" />;
+                      if (entry.type === "creation") icon = <Plus className="w-2.5 h-2.5 text-green-400" />;
+                      else if (entry.type === "status") icon = <Tag className="w-2.5 h-2.5 text-blue-400" />;
+                      else if (entry.type === "note") icon = <FileText className="w-2.5 h-2.5 text-amber-500" />;
+                      else if (entry.type === "price" || entry.type === "service") icon = <Coins className="w-2.5 h-2.5 text-purple-400" />;
+
+                      const time = new Date(entry.createdAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+                      const date = new Date(entry.createdAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+
+                      return (
+                        <div key={entry.id} className="flex gap-2.5 text-[11px] text-white/80">
+                          <div className="w-4.5 h-4.5 rounded-full bg-white/[0.06] border border-white/5 flex items-center justify-center shrink-0 mt-0.5">
+                            {icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="leading-relaxed break-words text-white/90">{entry.text}</p>
+                            <span className="text-[9px] text-white/40 block mt-0.5">
+                              {date} в {time} {entry.author ? `• ${entry.author.split("@")[0]}` : ""}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-4 text-[10px] text-white/30 italic">
+                      История операций пуста
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Сводка / Dashboard */}
+              <div className="pb-3 border-b border-white/10 shrink-0">
+                <h3 className="text-sm font-bold uppercase tracking-wider">Сводка CRM</h3>
+              </div>
+
+              {/* Метрики */}
+              <div className="grid grid-cols-1 gap-3.5">
+                <div className="p-4 bg-white/[0.05] border border-white/10 rounded-2xl flex flex-col gap-1 shadow-sm">
+                  <span className="text-[10px] font-bold text-white/55 uppercase tracking-wider">Всего лидов</span>
+                  <span className="text-2xl font-black">{totalLeadsCount}</span>
+                </div>
+                <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex flex-col gap-1 shadow-sm shadow-indigo-500/5">
+                  <span className="text-[10px] font-bold text-indigo-300/80 uppercase tracking-wider">На сегодня</span>
+                  <span className="text-2xl font-black text-indigo-200">{leadsTodayCount}</span>
+                </div>
+                <div className={`p-4 rounded-2xl flex flex-col gap-1 border shadow-sm ${
+                  overdueLeadsCount > 0 
+                    ? "bg-red-500/10 border-red-500/20 shadow-red-500/5" 
+                    : "bg-white/[0.05] border-white/10"
+                }`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                    overdueLeadsCount > 0 ? "text-red-400" : "text-white/55"
+                  }`}>Просрочено</span>
+                  <span className={`text-2xl font-black ${
+                    overdueLeadsCount > 0 ? "text-red-300" : "text-white"
+                  }`}>{overdueLeadsCount}</span>
+                </div>
+              </div>
+
+              {/* Распределение по статусам */}
+              <div className="space-y-4">
+                <span className="text-xs font-bold text-white/75 uppercase tracking-wider block">Статусы лидов</span>
+                <div className="space-y-3">
+                  {statusStats.map(stat => (
+                    <div key={stat.key} className="space-y-1">
+                      <div className="flex justify-between text-[11px] font-semibold">
+                        <span className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${stat.color}`} />
+                          <span>{stat.label}</span>
+                        </span>
+                        <span className="text-white/60">
+                          {stat.count} <span className="text-[9px] text-white/40">({Math.round(stat.percentage)}%)</span>
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${stat.color.split(' ')[0]}`}
+                          style={{ width: `${stat.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </aside>
       </div>
 
       {/* DRAWER СПРАВА: ДОБАВЛЕНИЕ ЛИДА */}
