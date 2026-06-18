@@ -44,8 +44,7 @@ BEGIN
         url := webhook_url,
         body := '{}'::jsonb,
         params := '{}'::jsonb,
-        headers := '{"Content-Type": "application/json"}'::jsonb,
-        timeout_ms := 10000
+        headers := '{"Content-Type": "application/json"}'::jsonb
     );
 END;
 $$;
