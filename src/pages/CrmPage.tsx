@@ -486,6 +486,30 @@ const CrmPage: React.FC = () => {
     return WALLPAPERS[0].url;
   });
 
+  const [activeWallpaper, setActiveWallpaper] = useState<string>("none");
+  const [isWallpaperLoaded, setIsWallpaperLoaded] = useState<boolean>(false);
+
+  // Предзагрузка обоев в фоновом режиме
+  useEffect(() => {
+    if (!selectedWallpaper || selectedWallpaper === "none") {
+      setActiveWallpaper("none");
+      setIsWallpaperLoaded(false);
+      return;
+    }
+
+    setIsWallpaperLoaded(false);
+    const img = new Image();
+    img.src = selectedWallpaper;
+    img.onload = () => {
+      setActiveWallpaper(selectedWallpaper);
+      setIsWallpaperLoaded(true);
+    };
+    img.onerror = () => {
+      setActiveWallpaper(selectedWallpaper);
+      setIsWallpaperLoaded(true);
+    };
+  }, [selectedWallpaper]);
+
   const handleSelectWallpaper = (url: string) => {
     setSelectedWallpaper(url);
     localStorage.setItem("crm_wallpaper", url);
@@ -1448,13 +1472,24 @@ const CrmPage: React.FC = () => {
   return (
     <div 
       key="crm-workspace-root"
-      className={`min-h-screen flex flex-col font-sans transition-all duration-500 relative ${
-        hasWallpaper ? "text-white bg-cover bg-center" : "bg-background text-foreground"
+      className={`min-h-screen flex flex-col font-sans relative bg-black ${
+        hasWallpaper ? "text-white" : "text-foreground bg-background"
       }`}
-      style={hasWallpaper ? { backgroundImage: `url(${selectedWallpaper})` } : undefined}
     >
+      {/* Плавное проявление обоев после полной прогрузки */}
+      {hasWallpaper && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-opacity ease-in-out pointer-events-none z-0"
+          style={{ 
+            backgroundImage: `url(${activeWallpaper})`,
+            opacity: isWallpaperLoaded ? 1 : 0,
+            transitionDuration: "1200ms"
+          }}
+        />
+      )}
+
       {/* Dark overlay for contrast */}
-      {hasWallpaper && <div className="absolute inset-0 bg-black/85 pointer-events-none z-0" />}
+      {hasWallpaper && <div className="absolute inset-0 bg-black/85 pointer-events-none z-[1]" />}
       
       <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_3fr_2fr] min-h-0 h-full relative z-10">
         
