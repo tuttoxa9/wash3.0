@@ -566,13 +566,21 @@ const CrmPage: React.FC = () => {
   const loadSettings = async () => {
     const data = await crmService.getSettings();
     if (data) {
-      setCrmSettings(data);
+      // Автоматически обновляем URL приложения в БД, если он изменился или отсутствует
+      if (data.appUrl !== window.location.origin) {
+        const updated = { ...data, appUrl: window.location.origin };
+        await crmService.saveSettings(updated);
+        setCrmSettings(updated);
+      } else {
+        setCrmSettings(data);
+      }
     } else {
       const initialSettings: CRMSettings = {
         telegramBotToken: "",
         telegramChatId: "",
         telegramEnabled: false,
-        webhookApiKey: crypto.randomUUID ? crypto.randomUUID().replace(/-/g, "") : Math.random().toString(36).substring(2, 18)
+        webhookApiKey: crypto.randomUUID ? crypto.randomUUID().replace(/-/g, "") : Math.random().toString(36).substring(2, 18),
+        appUrl: window.location.origin
       };
       setCrmSettings(initialSettings);
       await crmService.saveSettings(initialSettings);
@@ -612,9 +620,11 @@ const CrmPage: React.FC = () => {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingSettings(true);
-    const success = await crmService.saveSettings(crmSettings);
+    const settingsWithUrl = { ...crmSettings, appUrl: window.location.origin };
+    const success = await crmService.saveSettings(settingsWithUrl);
     setSavingSettings(false);
     if (success) {
+      setCrmSettings(settingsWithUrl);
       toast.success("Настройки CRM сохранены");
       setViewMode("gate");
     } else {

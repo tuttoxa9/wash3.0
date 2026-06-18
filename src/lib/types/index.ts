@@ -252,5 +252,6 @@ export interface CRMSettings {
   telegramChatId: string;
   telegramEnabled: boolean;
   webhookApiKey: string;
+  appUrl?: string;
 }
 
