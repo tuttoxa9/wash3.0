@@ -196,20 +196,20 @@ const getViberLink = (phone: string) => `viber://chat?number=%2B${getPhoneDigits
 
 // Брендированные иконки мессенджеров
 const WhatsAppIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.703 1.458h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  <svg className={`${className} shrink-0`} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.071 4.914A9.927 9.927 0 0012.036 2c-5.51 0-9.998 4.487-10 9.998a9.927 9.927 0 001.53 5.26l-1.025 3.742 3.829-.994a9.98 9.98 0 004.832 1.258h.004c5.51 0 10-4.487 10-10 0-2.668-1.039-5.176-2.923-7.078zm-7.035 15.39c-1.701 0-3.37-.457-4.828-1.326l-.347-.206-3.585.932.955-3.488-.225-.358a8.272 8.272 0 01-1.267-4.385c0-4.57 3.73-8.3 8.303-8.3 2.213 0 4.293.863 5.856 2.428 1.563 1.564 2.424 3.646 2.422 5.874-.004 4.572-3.734 8.302-8.307 8.302zm4.568-6.239c-.25-.124-1.477-.73-1.705-.813-.228-.083-.393-.124-.559.124-.166.248-.642.813-.787.978-.145.165-.29.186-.54.062-.25-.124-1.056-.39-2.01-1.242-.743-.662-1.245-1.48-1.39-1.728-.145-.248-.015-.383.11-.507.112-.111.25-.29.375-.434.125-.145.166-.248.25-.414.083-.166.04-.31-.02-.435-.063-.124-.559-1.347-.766-1.844-.202-.487-.407-.42-.559-.428-.145-.008-.31-.01-.476-.01-.166 0-.435.062-.663.31-.228.248-.87.848-.87 2.071 0 1.222.89 2.401 1.014 2.566.124.166 1.751 2.674 4.243 3.743.593.254 1.056.406 1.416.52.596.19 1.138.163 1.567.099.478-.072 1.477-.604 1.684-1.16.207-.555.207-1.031.145-1.131-.062-.1-.228-.166-.477-.29z"/>
   </svg>
 );
 
-const TelegramIcon = ({ className = "w-3 h-3" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.017c.24-.213-.054-.33-.373-.12l-6.869 4.325-2.96-.924c-.643-.203-.658-.643.136-.953l11.57-4.46c.536-.196 1.006.128.832.93z"/>
+const TelegramIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
+  <svg className={`${className} shrink-0`} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M22.05 1.577c-.39-.39-2.501.488-5.32 1.646L3.087 8.718c-.85.34-.82 1.042-.036 1.272l4.9 1.528 1.7 5.286c.21.656.76.24 1.1-.064l2.4-2.315 4.9 3.61c.64.47 1.2.14 1.36-.656l3.2-15.064c.2-.95-.31-1.127-.562-.952zm-11.838 11.23l7.6-6c.21-.166.42-.046.22.124l-6.8 6.502-.29 3.037-1.12-3.315z"/>
   </svg>
 );
 
-const ViberIcon = ({ className = "w-3 h-3" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M22.5 12c0 5.799-4.701 10.5-10.5 10.5S1.5 17.799 1.5 12 6.201 1.5 12 1.5 22.5 6.201 22.5 12zm-3.664.717c-.126-.145-.722-.441-.837-.492-.116-.051-.2-.074-.284.051-.084.125-.337.337-.41.417-.074.084-.152.094-.284.03a3.64 3.64 0 01-1.352-1.063c-.22-.213-.327-.354-.243-.437.084-.084.253-.25.316-.334.063-.084.084-.165.03-.284-.051-.118-.27-.723-.33-.85-.06-.128-.129-.152-.243-.152h-.246c-.116 0-.337.041-.492.207-.156.156-.625.59-.625 1.512 0 .921.321 1.81.372 1.88.05.07 1.258 2.054 3.203 2.923.479.214.852.342 1.143.436.48.156.918.134 1.264.084.385-.057 1.184-.482 1.349-.949.165-.466.165-.867.116-.949-.048-.083-.169-.133-.37-.217z"/>
+const ViberIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
+  <svg className={`${className} shrink-0`} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.4 0C9.473.028 5.333.344 3.02 2.467 1.302 4.187.696 6.7.633 9.817.57 12.933.488 18.776 6.12 20.36h.003l-.004 2.416s-.037.977.61 1.177c.777.242 1.234-.5 1.98-1.302.407-.44.972-1.084 1.397-1.58 3.85.326 6.812-.416 7.15-.525.776-.252 5.176-.816 5.892-6.657.74-6.02-.36-9.83-2.34-11.546-.596-.55-3.006-2.3-8.375-2.323 0 0-.395-.025-1.037-.017zm.058 1.693c.545-.004.88.017.88.017 4.542.02 6.717 1.388 7.222 1.846 1.675 1.435 2.53 4.868 1.906 9.897v.002c-.604 4.878-4.174 5.184-4.832 5.395-.28.09-2.882.737-6.153.524 0 0-2.436 2.94-3.197 3.704-.12.12-.26.167-.352.144-.13-.033-.166-.188-.165-.414l.02-4.018c-4.762-1.32-4.485-6.292-4.43-8.895.054-2.604.543-4.738 1.996-6.173 1.96-1.773 5.474-2.018 7.11-2.03zm.38 2.602c-.167 0-.303.135-.304.302 0 .167.133.303.3.305 1.624.01 2.946.537 4.028 1.592 1.073 1.046 1.62 2.468 1.633 4.334.002.167.14.3.307.3.166-.002.3-.138.3-.304-.014-1.984-.618-3.596-1.816-4.764-1.19-1.16-2.692-1.753-4.447-1.765zm-3.96.695c-.19-.032-.4.005-.616.117l-.01.002c-.43.247-.816.562-1.146.932-.002.004-.006.004-.008.008-.267.323-.42.638-.46.948-.008.046-.01.093-.007.14 0 .136.022.27.065.4l.013.01c.135.48.473 1.276 1.205 2.604.42.768.903 1.5 1.446 2.186.27.344.56.673.87.984l.132.132c.31.308.64.6.984.87.686.543 1.418 1.027 2.186 1.447 1.328.733 2.126 1.07 2.604 1.206l.01.014c.13.042.265.064.402.063.046.002.092 0 .138-.008.31-.036.627-.19.948-.46.004 0 .003-.002.008-.005.37-.33.683-.72.93-1.148l.003-.01c.225-.432.15-.842-.18-1.12-.004 0-.698-.58-1.037-.83-.36-.255-.73-.492-1.113-.71-.51-.285-1.032-.106-1.248.174l-.447.564c-.23.283-.657.246-.657.246-3.12-.796-3.955-3.955-3.955-3.955s-.037-.426.248-.656l.563-.448c.277-.215.456-.737.17-1.248-.217-.383-.454-.756-.71-1.115-.25-.34-.826-1.033-.83-1.035-.137-.165-.31-.265-.502-.297zm4.49.88c-.158.002-.29.124-.3.282-.01.167.115.312.282.324 1.16.085 2.017.466 2.645 1.15.63.688.93 1.524.906.155z"/>
   </svg>
 );
 
@@ -1439,20 +1439,24 @@ const CrmPage: React.FC = () => {
               Фильтры
             </span>
 
-            <nav className="flex flex-col gap-1">
+            <nav className="flex flex-col gap-1.5">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`w-full h-10 px-3 rounded-xl text-xs font-medium flex items-center justify-between transition-colors
+                className={`w-full h-10 px-3 rounded-xl text-xs font-semibold flex items-center justify-between transition-all border
                   ${activeTab === "all"
-                    ? (hasWallpaper ? "bg-white/15 text-white font-bold shadow-sm" : "bg-muted text-foreground font-bold")
-                    : (hasWallpaper ? "text-white/60 hover:text-white hover:bg-white/[0.03]" : "text-muted-foreground hover:text-foreground hover:bg-muted/50")}`}
+                    ? "bg-indigo-600 text-white border-indigo-500/30 shadow-[0_4px_12px_rgba(99,102,241,0.3)]"
+                    : (hasWallpaper 
+                      ? "bg-zinc-900/70 border-white/10 text-white/70 hover:text-white hover:bg-zinc-800/80 hover:border-white/15 shadow-sm" 
+                      : "bg-muted/80 border-border text-muted-foreground hover:text-foreground hover:bg-muted shadow-sm")}`}
               >
                 <div className="flex items-center gap-2.5">
                   {STATUS_ICONS["all"]}
                   <span>Вся база</span>
                 </div>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                  hasWallpaper ? "text-white/60 bg-white/[0.08]" : "text-muted-foreground/80 bg-card border border-border/40"
+                  activeTab === "all"
+                    ? "text-indigo-200 bg-indigo-700/50"
+                    : (hasWallpaper ? "text-white/60 bg-white/[0.08]" : "text-muted-foreground/80 bg-card border border-border/40")
                 }`}>
                   {getTabCount("all")}
                 </span>
@@ -1467,10 +1471,12 @@ const CrmPage: React.FC = () => {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`w-full h-10 px-3 rounded-xl text-xs font-medium flex items-center justify-between transition-colors
+                    className={`w-full h-10 px-3 rounded-xl text-xs font-semibold flex items-center justify-between transition-all border
                       ${isActive
-                        ? (hasWallpaper ? "bg-white/15 text-white font-bold shadow-sm" : "bg-muted text-foreground font-bold")
-                        : (hasWallpaper ? "text-white/60 hover:text-white hover:bg-white/[0.03]" : "text-muted-foreground hover:text-foreground hover:bg-muted/50")}`}
+                        ? "bg-indigo-600 text-white border-indigo-500/30 shadow-[0_4px_12px_rgba(99,102,241,0.3)]"
+                        : (hasWallpaper 
+                          ? "bg-zinc-900/70 border-white/10 text-white/70 hover:text-white hover:bg-zinc-800/80 hover:border-white/15 shadow-sm" 
+                          : "bg-muted/80 border-border text-muted-foreground hover:text-foreground hover:bg-muted shadow-sm")}`}
                   >
                     <div className="flex items-center gap-2.5">
                       {STATUS_ICONS[tab]}
@@ -1478,7 +1484,9 @@ const CrmPage: React.FC = () => {
                     </div>
                     {count > 0 && (
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        hasWallpaper ? "text-white/60 bg-white/[0.08]" : "text-muted-foreground/80 bg-card border border-border/40"
+                        isActive
+                          ? "text-indigo-200 bg-indigo-700/50"
+                          : (hasWallpaper ? "text-white/60 bg-white/[0.08]" : "text-muted-foreground/80 bg-card border border-border/40")
                       }`}>
                         {count}
                       </span>
@@ -1492,8 +1500,10 @@ const CrmPage: React.FC = () => {
           <div className="mt-auto pt-6 border-t border-border/40 flex flex-col gap-2">
             <button
               onClick={() => setViewMode("gate")}
-              className={`w-full h-9 px-3 rounded-xl transition-all text-xs font-semibold flex items-center gap-2.5 ${
-                hasWallpaper ? "text-white/60 hover:text-white hover:bg-white/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              className={`w-full h-10 px-3 rounded-xl transition-all text-xs font-semibold flex items-center gap-2.5 border shadow-sm ${
+                hasWallpaper 
+                  ? "bg-zinc-900/70 border-white/10 text-white/80 hover:text-white hover:bg-zinc-800/80 hover:border-white/15" 
+                  : "bg-muted/80 border-border text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               <ChevronLeft className="w-4 h-4" />
@@ -2418,40 +2428,41 @@ const CrmPage: React.FC = () => {
           <div className="space-y-5">
             
             <div className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">ФИО Клиента</label>
+              
+              {/* Объединенный блок клиента ФИО / Телефон */}
+              <div className="p-3 bg-zinc-900 rounded-xl space-y-2.5 border-0">
+                <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider block">Клиент (ФИО и Телефон)</span>
+                <div className="flex flex-col gap-2">
                   <input
                     type="text"
+                    placeholder="ФИО клиента"
                     value={detailForm.name}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                    className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold"
+                    className="w-full px-2.5 py-1.5 bg-zinc-950 text-white placeholder-white/20 !border-0 rounded-md text-xs focus:outline-none transition-colors font-semibold"
                   />
-                </div>
-                <div>
-                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Телефон</label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <input
                       type="text"
+                      placeholder="Телефон"
                       value={detailForm.phone}
                       onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
                       maxLength={19}
-                      className="flex-1 px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs font-mono focus:outline-none transition-colors"
+                      className="flex-1 min-w-0 px-2.5 py-1.5 bg-zinc-950 text-white placeholder-white/20 !border-0 rounded-md text-xs font-mono focus:outline-none transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => handleCopyPhone(detailForm.phone)}
-                      className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white/70 hover:text-white active:scale-95 transition-all"
+                      className="p-1.5 rounded-md bg-zinc-950 hover:bg-zinc-800 text-white/70 hover:text-white active:scale-95 transition-all shrink-0 border-0"
                       title="Копировать телефон"
                     >
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className="w-3.5 h-3.5 shrink-0" />
                     </button>
                     <a
                       href={`tel:${getPhoneDigits(detailForm.phone)}`}
-                      className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white/70 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                      className="p-1.5 rounded-md bg-zinc-950 hover:bg-zinc-800 text-white/70 hover:text-white active:scale-95 transition-all flex items-center justify-center shrink-0 border-0"
                       title="Позвонить"
                     >
-                      <Phone className="w-3.5 h-3.5 text-green-400" />
+                      <Phone className="w-3.5 h-3.5 text-green-400 shrink-0" />
                     </a>
                   </div>
                 </div>
@@ -2468,7 +2479,7 @@ const CrmPage: React.FC = () => {
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
                     >
-                      <WhatsAppIcon className="w-3.5 h-3.5" />
+                      <WhatsAppIcon className="w-3.5 h-3.5 shrink-0" />
                       <span>WhatsApp</span>
                     </a>
                     <a
@@ -2477,7 +2488,7 @@ const CrmPage: React.FC = () => {
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#24A1DE] hover:bg-[#1d8dbf] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
                     >
-                      <TelegramIcon className="w-3.5 h-3.5" />
+                      <TelegramIcon className="w-3.5 h-3.5 shrink-0" />
                       <span>Telegram</span>
                     </a>
                     <a
@@ -2486,38 +2497,23 @@ const CrmPage: React.FC = () => {
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#7360F2] hover:bg-[#5e4cd9] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
                     >
-                      <ViberIcon className="w-3 h-3" />
+                      <ViberIcon className="w-3.5 h-3.5 shrink-0" />
                       <span>Viber</span>
                     </a>
                   </div>
                 </div>
               )}
 
-              <div>
-                <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Автомобиль</label>
-                <input
-                  type="text"
-                  value={detailForm.car || ""}
-                  onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
-                  className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
-                />
-              </div>
-
+              {/* Авто и Стоимость side-by-side */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Название услуги</label>
+                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Автомобиль</label>
                   <input
                     type="text"
-                    value={detailForm.service || ""}
-                    onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
-                    list="service-names-edit"
+                    value={detailForm.car || ""}
+                    onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
                     className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
                   />
-                  <datalist id="service-names-edit">
-                    {appState.services.map(s => (
-                      <option key={s.id} value={s.name} />
-                    ))}
-                  </datalist>
                 </div>
                 <div>
                   <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (руб.)</label>
@@ -2528,6 +2524,23 @@ const CrmPage: React.FC = () => {
                     className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold"
                   />
                 </div>
+              </div>
+
+              {/* Название услуги - на всю ширину */}
+              <div>
+                <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Название услуги</label>
+                <input
+                  type="text"
+                  value={detailForm.service || ""}
+                  onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
+                  list="service-names-edit"
+                  className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
+                />
+                <datalist id="service-names-edit">
+                  {appState.services.map(s => (
+                    <option key={s.id} value={s.name} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -2637,6 +2650,18 @@ const CrmPage: React.FC = () => {
                 <History className="w-4 h-4 text-white/60" />
                 <span>Заметки и история изменений</span>
               </span>
+
+              {/* Поле последней заметки */}
+              <div>
+                <label className="text-[9px] text-white/50 block mb-0.5 font-semibold">Последняя заметка:</label>
+                <textarea
+                  value={detailForm.notes || ""}
+                  readOnly
+                  placeholder="Заметок по клиенту пока нет..."
+                  rows={2}
+                  className="w-full px-2.5 py-1.5 bg-zinc-900/50 text-white/95 border border-zinc-800/80 rounded-lg text-xs resize-none focus:outline-none transition-colors font-medium"
+                />
+              </div>
 
               <div className="flex gap-2">
                 <input
