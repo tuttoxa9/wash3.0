@@ -1391,7 +1391,7 @@ const CrmPage: React.FC = () => {
       {/* Dark overlay for contrast */}
       {hasWallpaper && <div className="absolute inset-0 bg-black/85 pointer-events-none z-0" />}
       
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_1fr] min-h-0 h-full relative z-10">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_1.5fr_1fr] min-h-0 h-full relative z-10">
         
         {/* ЛЕВАЯ КОЛОНКА */}
         <aside className={`hidden md:flex flex-col gap-6 p-6 shrink-0 h-screen sticky top-0 overflow-y-auto border-r ${
@@ -1908,9 +1908,9 @@ const CrmPage: React.FC = () => {
         </main>
 
         {/* ДЕСКТОПНАЯ ПАНЕЛЬ КЛИЕНТА / СВОДКА */}
-        <aside className={`hidden md:flex flex-col gap-6 p-6 shrink-0 w-[400px] h-screen sticky top-0 overflow-y-auto border-l custom-scrollbar ${
+        <aside className={`hidden md:flex flex-col gap-6 p-6 shrink-0 w-full h-screen sticky top-0 overflow-y-auto border-l custom-scrollbar ${
           hasWallpaper 
-            ? "bg-white/[0.10] backdrop-blur-2xl backdrop-brightness-[1.6] backdrop-saturate-[1.4] border-white/10 text-white" 
+            ? "bg-zinc-950/85 border-white/10 text-white" 
             : "bg-card border-border text-foreground"
         }`}>
           {selectedLead && detailForm ? (
