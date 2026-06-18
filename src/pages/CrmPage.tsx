@@ -27,6 +27,7 @@ import {
   Copy, 
   RefreshCw,
   ChevronLeft,
+  ChevronRight,
   Trash2,
   PhoneCall,
   PhoneOff,
@@ -178,6 +179,20 @@ const formatBYPhone = (val: string): string => {
   if (capped.length <= 10) return `+${capped.slice(0, 3)} (${capped.slice(3, 5)}) ${capped.slice(5, 8)}-${capped.slice(8)}`;
   return `+${capped.slice(0, 3)} (${capped.slice(3, 5)}) ${capped.slice(5, 8)}-${capped.slice(8, 10)}-${capped.slice(10)}`;
 };
+
+// Получить только цифры из телефона
+const getPhoneDigits = (phone: string): string => phone.replace(/\D/g, '');
+
+// Копирование телефона
+const handleCopyPhone = (phone: string) => {
+  navigator.clipboard.writeText(phone);
+  toast.success("Телефон скопирован");
+};
+
+// Ссылки на мессенджеры
+const getWhatsAppLink = (phone: string) => `https://wa.me/${getPhoneDigits(phone)}`;
+const getTelegramLink = (phone: string) => `https://t.me/+${getPhoneDigits(phone)}`;
+const getViberLink = (phone: string) => `viber://chat?number=%2B${getPhoneDigits(phone)}`;
 
 // Кастомный компонент Выпадающего Списка (Select)
 interface CustomSelectProps<T extends string> {
@@ -980,6 +995,28 @@ const CrmPage: React.FC = () => {
     if (status === "all") return leads.length;
     return leads.filter(l => l.status === status).length;
   };
+
+  // Статистика лидов для сводки
+  const totalLeadsCount = leads.length;
+  const leadsTodayCount = leads.filter(l => {
+    const activeDateStr = l.nextStepDate ? l.nextStepDate.slice(0, 10) : l.createdAt.slice(0, 10);
+    return activeDateStr === todayStr;
+  }).length;
+  const overdueLeadsCount = leads.filter(l => 
+    l.nextStepDate && new Date(l.nextStepDate) < now && !["won", "lost"].includes(l.status)
+  ).length;
+
+  const statusStats = (Object.keys(STATUS_LABELS) as CRMLeadStatus[]).map(statusKey => {
+    const count = leads.filter(l => l.status === statusKey).length;
+    const percentage = totalLeadsCount > 0 ? (count / totalLeadsCount) * 100 : 0;
+    return {
+      key: statusKey,
+      label: STATUS_LABELS[statusKey],
+      count,
+      percentage,
+      color: STATUS_DOT_COLORS[statusKey]
+    };
+  });
 
   // --- RENDERING ---
 
