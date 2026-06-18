@@ -1826,10 +1826,10 @@ const CrmPage: React.FC = () => {
                                 className={`hidden md:grid grid-cols-[45px_1.1fr_1.4fr_1fr_1.3fr_1.1fr_2fr_1fr] gap-4 items-center px-5 py-3.5 border rounded-xl transition-all duration-150 cursor-pointer shadow-sm ${
                                   selectedLead?.id === lead.id 
                                     ? (hasWallpaper 
-                                      ? "bg-indigo-950/70 border-indigo-500/40 ring-1 ring-indigo-500/30 shadow-lg backdrop-blur-xl text-white" 
+                                      ? "bg-indigo-950/75 border-indigo-400/50 ring-1 ring-indigo-400/30 shadow-lg backdrop-blur-xl text-white" 
                                       : "bg-primary/10 ring-1.5 ring-primary/30 text-foreground")
                                     : (hasWallpaper
-                                      ? "bg-zinc-900/65 hover:bg-zinc-800/70 border-white/5 shadow-md backdrop-blur-xl text-white"
+                                      ? "bg-white/[0.12] hover:bg-white/[0.18] border-white/10 shadow-md backdrop-blur-xl text-white"
                                       : "bg-card hover:bg-muted/70 active:bg-muted/90 text-foreground")
                                 }`}
                               >
@@ -1888,7 +1888,7 @@ const CrmPage: React.FC = () => {
                                 }}
                                 className={`md:hidden p-3.5 border shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-2xl active:scale-[0.99] transition-all flex flex-col gap-3 cursor-pointer relative overflow-hidden group ${
                                   hasWallpaper
-                                    ? "bg-zinc-900/65 border-white/10 backdrop-blur-xl text-white"
+                                    ? "bg-white/[0.12] border-white/15 backdrop-blur-xl text-white"
                                     : "bg-card border-border text-foreground"
                                 }`}
                               >
