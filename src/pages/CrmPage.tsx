@@ -142,6 +142,12 @@ const WALLPAPERS = [
     name: "Лавандовый неон",
     url: "/wallpapers/lavender.jpg",
     thumb: "/wallpapers/lavender_thumb.jpg"
+  },
+  {
+    id: "detail",
+    name: "Detail Lab",
+    url: "/wallpapers/detail.webp",
+    thumb: "/wallpapers/detail.webp"
   }
 ];
 
@@ -977,7 +983,12 @@ const CrmPage: React.FC = () => {
   // 1 & 2. GATE & SETTINGS VIEW (Общий экран входа и настроек для плавного видео-фона)
   if (viewMode === "gate" || viewMode === "settings") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: "url('/wallpapers/detail.webp')" }}
+      >
+        {/* Dark overlay for desktop wallpaper background */}
+        <div className="absolute inset-0 bg-black/60 pointer-events-none z-0 hidden md:block" />
         {/* Background video A for mobile only */}
         <video
           ref={videoARef}
