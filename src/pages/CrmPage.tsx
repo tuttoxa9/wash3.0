@@ -415,6 +415,7 @@ const CrmPage: React.FC = () => {
   const [loadingLeads, setLoadingLeads] = useState(false);
   const [activeTab, setActiveTab] = useState<CRMLeadStatus | "all">("new");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewingDate, setViewingDate] = useState<string | null>(null); // null = сегодня и ранее, строка = конкретная дата
   const [selectedWallpaper, setSelectedWallpaper] = useState(() => {
     const saved = localStorage.getItem("crm_wallpaper");
     if (saved === "none") return "none";
@@ -861,6 +862,19 @@ const CrmPage: React.FC = () => {
 
   const filteredLeads = leads.filter(lead => {
     if (activeTab !== "all" && lead.status !== activeTab) return false;
+
+    // Фильтрация по дате (viewingDate)
+    const activeDateStr = lead.nextStepDate 
+      ? lead.nextStepDate.slice(0, 10) 
+      : lead.createdAt.slice(0, 10);
+
+    if (viewingDate === null) {
+      // Исключаем будущие даты
+      if (activeDateStr > todayStr) return false;
+    } else {
+      // Точное совпадение с выбранной датой
+      if (activeDateStr !== viewingDate) return false;
+    }
 
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase();
