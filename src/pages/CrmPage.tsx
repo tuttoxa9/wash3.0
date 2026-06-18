@@ -194,23 +194,42 @@ const getWhatsAppLink = (phone: string) => `https://wa.me/${getPhoneDigits(phone
 const getTelegramLink = (phone: string) => `https://t.me/+${getPhoneDigits(phone)}`;
 const getViberLink = (phone: string) => `viber://chat?number=%2B${getPhoneDigits(phone)}`;
 
-// Кастомный компонент Выпадающего Списка (Select)
+// Брендированные иконки мессенджеров
+const WhatsAppIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.703 1.458h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+);
+
+const TelegramIcon = ({ className = "w-3 h-3" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.017c.24-.213-.054-.33-.373-.12l-6.869 4.325-2.96-.924c-.643-.203-.658-.643.136-.953l11.57-4.46c.536-.196 1.006.128.832.93z"/>
+  </svg>
+);
+
+const ViberIcon = ({ className = "w-3 h-3" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M22.5 12c0 5.799-4.701 10.5-10.5 10.5S1.5 17.799 1.5 12 6.201 1.5 12 1.5 22.5 6.201 22.5 12zm-3.664.717c-.126-.145-.722-.441-.837-.492-.116-.051-.2-.074-.284.051-.084.125-.337.337-.41.417-.074.084-.152.094-.284.03a3.64 3.64 0 01-1.352-1.063c-.22-.213-.327-.354-.243-.437.084-.084.253-.25.316-.334.063-.084.084-.165.03-.284-.051-.118-.27-.723-.33-.85-.06-.128-.129-.152-.243-.152h-.246c-.116 0-.337.041-.492.207-.156.156-.625.59-.625 1.512 0 .921.321 1.81.372 1.88.05.07 1.258 2.054 3.203 2.923.479.214.852.342 1.143.436.48.156.918.134 1.264.084.385-.057 1.184-.482 1.349-.949.165-.466.165-.867.116-.949-.048-.083-.169-.133-.37-.217z"/>
+  </svg>
+);
+
 interface CustomSelectProps<T extends string> {
   value: T;
   onChange: (val: T) => void;
   options: { value: T; label: string }[];
   label?: string;
+  isCompact?: boolean;
+  hasWallpaper?: boolean;
 }
 
-
-const AnimatedCheckbox = ({ checked, onChange, label }: { checked: boolean, onChange: () => void, label: string }) => {
+const AnimatedCheckbox = ({ checked, onChange, label, className = "", textClassName = "text-foreground/80 group-hover:text-foreground" }: { checked: boolean, onChange: () => void, label: string, className?: string, textClassName?: string }) => {
   return (
     <div 
       onClick={onChange}
-      className="flex items-center gap-2 cursor-pointer group select-none"
+      className={`flex items-center gap-2 cursor-pointer group select-none ${className}`}
     >
       <div className={`w-4 h-4 rounded-[4px] flex items-center justify-center border transition-all duration-200 shadow-sm
-        ${checked ? 'bg-primary border-primary' : 'bg-card border-border/60 group-hover:border-primary/50'}
+        ${checked ? 'bg-primary border-primary' : 'bg-zinc-900 border-zinc-700 group-hover:border-primary/50'}
       `}>
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
@@ -220,24 +239,24 @@ const AnimatedCheckbox = ({ checked, onChange, label }: { checked: boolean, onCh
           <Check className="w-3 h-3 text-primary-foreground" strokeWidth={3} />
         </motion.div>
       </div>
-      <span className="text-[11px] text-foreground/80 group-hover:text-foreground transition-colors font-medium">{label}</span>
+      <span className={`text-[11px] transition-colors font-medium ${textClassName}`}>{label}</span>
     </div>
   );
 };
 
-function CustomSelect<T extends string>({ value, onChange, options, label }: CustomSelectProps<T>) {
+function CustomSelect<T extends string>({ value, onChange, options, label, isCompact = false, hasWallpaper = true }: CustomSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const selectedOption = options.find(o => o.value === value);
 
   return (
     <div className={`relative ${isOpen ? 'z-50' : 'z-10'}`}>
-      {label && <label className="text-[10px] text-white/60 block mb-1">{label}</label>}
+      {label && <label className="text-[10px] text-white/50 block mb-1 font-semibold">{label}</label>}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-10 px-3 bg-white/[0.06] backdrop-blur-md text-white rounded-xl text-xs flex items-center justify-between focus:outline-none transition-colors"
+        className={`w-full ${isCompact ? 'h-8 px-2.5 rounded-lg' : 'h-10 px-3 rounded-xl'} ${hasWallpaper ? 'bg-zinc-900 text-white hover:bg-zinc-800' : 'bg-muted text-foreground hover:bg-muted/80'} text-xs flex items-center justify-between border-0 focus:outline-none transition-colors`}
       >
-        <span className="truncate mr-2">{selectedOption?.label || value || "Выберите..."}</span>
+        <span className="truncate mr-2 font-semibold">{selectedOption?.label || value || "Выберите..."}</span>
         <motion.span 
           animate={{ rotate: isOpen ? 180 : 0 }} 
           className="text-white/40 text-[9px]"
@@ -255,7 +274,7 @@ function CustomSelect<T extends string>({ value, onChange, options, label }: Cus
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="absolute left-0 right-0 mt-1.5 bg-zinc-950/95 backdrop-blur-3xl border border-white/10 rounded-xl shadow-2xl z-20 py-1 overflow-hidden divide-y divide-white/5"
+              className={`absolute left-0 right-0 mt-1 ${hasWallpaper ? 'bg-zinc-900' : 'bg-card border border-border'} rounded-lg shadow-2xl z-20 py-1 overflow-hidden divide-y ${hasWallpaper ? 'divide-zinc-800' : 'divide-border'}`}
             >
               {options.map(opt => (
                 <button
@@ -265,10 +284,10 @@ function CustomSelect<T extends string>({ value, onChange, options, label }: Cus
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-3.5 py-2.5 text-xs transition-colors flex items-center justify-between
+                  className={`w-full text-left px-3.5 py-2.5 text-xs transition-colors flex items-center justify-between border-0
                     ${opt.value === value 
-                      ? "bg-white/10 text-white font-bold" 
-                      : "text-white/60 hover:text-white hover:bg-white/[0.05]"}`}
+                      ? (hasWallpaper ? "bg-zinc-800 text-white font-bold" : "bg-muted text-foreground font-bold") 
+                      : (hasWallpaper ? "text-white/60 hover:text-white hover:bg-zinc-800" : "text-foreground/70 hover:bg-muted/80")}`}
                 >
                   <span className="truncate">{opt.label}</span>
                   {opt.value === value && <Check className="w-3.5 h-3.5" />}
@@ -300,20 +319,20 @@ const RightDrawer: React.FC<RightDrawerProps> = ({ isOpen, onClose, title, child
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/45 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/50 z-50"
           />
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 32, stiffness: 320 }}
-            className="fixed right-0 top-0 bottom-0 w-full sm:w-[500px] md:w-[580px] bg-black/55 backdrop-blur-[32px] border-l border-white/5 text-white shadow-2xl z-[100] flex flex-col h-full overflow-hidden"
+            className="fixed right-0 top-0 bottom-0 w-full sm:w-[500px] md:w-[580px] bg-zinc-950 text-white shadow-2xl z-[100] flex flex-col h-full overflow-hidden border-0"
           >
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 shrink-0">
+            <div className="flex items-center justify-between px-6 py-5 shrink-0">
               <h3 className="text-base font-bold text-white tracking-tight">{title}</h3>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white transition-colors"
+                className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white/60 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1391,7 +1410,7 @@ const CrmPage: React.FC = () => {
       {/* Dark overlay for contrast */}
       {hasWallpaper && <div className="absolute inset-0 bg-black/85 pointer-events-none z-0" />}
       
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_1.5fr_1fr] min-h-0 h-full relative z-10">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_3fr_2fr] min-h-0 h-full relative z-10">
         
         {/* ЛЕВАЯ КОЛОНКА */}
         <aside className={`hidden md:flex flex-col gap-6 p-6 shrink-0 h-screen sticky top-0 overflow-y-auto border-r ${
@@ -1710,7 +1729,7 @@ const CrmPage: React.FC = () => {
             ) : (
               <div className="space-y-8">
                 
-                <div className={`hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 px-5 text-[10px] font-bold uppercase tracking-wider select-none shrink-0 border-b pb-2 ${
+                <div className={`hidden md:grid grid-cols-[45px_1.1fr_1.4fr_1fr_1.3fr_1.1fr_2fr_1fr] gap-4 px-5 text-[10px] font-bold uppercase tracking-wider select-none shrink-0 border-b pb-2 ${
                   hasWallpaper ? "text-white/95 border-white/10" : "text-muted-foreground border-border"
                 }`}>
                   <span>Ист.</span>
@@ -1748,7 +1767,7 @@ const CrmPage: React.FC = () => {
                                     setIsDetailOpen(true);
                                   }
                                 }}
-                                className={`hidden md:grid grid-cols-[50px_1.5fr_1.2fr_1fr_1.1fr_1.2fr_2fr_1fr] gap-4 items-center px-5 py-3.5 border border-white/5 rounded-xl transition-all duration-150 cursor-pointer shadow-sm ${
+                                className={`hidden md:grid grid-cols-[45px_1.1fr_1.4fr_1fr_1.3fr_1.1fr_2fr_1fr] gap-4 items-center px-5 py-3.5 border border-white/5 rounded-xl transition-all duration-150 cursor-pointer shadow-sm ${
                                   selectedLead?.id === lead.id 
                                     ? (hasWallpaper 
                                       ? "bg-white/[0.28] ring-1.5 ring-indigo-400/50 backdrop-blur-2xl backdrop-brightness-[1.9] backdrop-saturate-[1.5] text-white shadow-lg" 
@@ -1766,7 +1785,7 @@ const CrmPage: React.FC = () => {
                                   {lead.name}
                                 </span>
 
-                                <span className={`font-mono text-xs tracking-tight ${hasWallpaper ? "text-white" : "text-muted-foreground"}`}>
+                                <span className={`font-mono text-xs tracking-tight whitespace-nowrap ${hasWallpaper ? "text-white" : "text-muted-foreground"}`}>
                                   {lead.phone}
                                 </span>
 
@@ -1777,7 +1796,7 @@ const CrmPage: React.FC = () => {
 
                                 <div>
                                   {lead.nextStepDate ? (
-                                    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold
+                                    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap
                                       ${overdue
                                         ? "bg-red-500/25 text-red-300 border border-red-500/30 shadow-sm"
                                         : (hasWallpaper ? "bg-white/[0.15] text-white border border-white/10" : "bg-muted text-foreground")}`}
@@ -1908,22 +1927,22 @@ const CrmPage: React.FC = () => {
         </main>
 
         {/* ДЕСКТОПНАЯ ПАНЕЛЬ КЛИЕНТА / СВОДКА */}
-        <aside className={`hidden md:flex flex-col gap-6 p-6 shrink-0 w-full h-screen sticky top-0 overflow-y-auto border-l custom-scrollbar ${
+        <aside className={`hidden md:flex flex-col gap-6 p-6 shrink-0 h-screen sticky top-0 overflow-y-auto custom-scrollbar border-0 ${
           hasWallpaper 
-            ? "bg-zinc-950/85 border-white/10 text-white" 
-            : "bg-card border-border text-foreground"
+            ? "bg-zinc-950 text-white" 
+            : "bg-card text-foreground"
         }`}>
           {selectedLead && detailForm ? (
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* Шапка панели клиента */}
-              <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
-                <h3 className="text-sm font-bold uppercase tracking-wider">Информация о клиенте</h3>
+              <div className="flex items-center justify-between pb-2 shrink-0">
+                <h3 className="text-xs font-bold uppercase tracking-wider">Информация о клиенте</h3>
                 <button
                   onClick={() => {
                     setSelectedLead(null);
                     setDetailForm(null);
                   }}
-                  className="p-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.12] text-white/60 hover:text-white transition-colors"
+                  className={`p-1 rounded-lg ${hasWallpaper ? "bg-zinc-900 hover:bg-zinc-800 text-white/60 hover:text-white" : "bg-muted hover:bg-muted/80 text-foreground/60 hover:text-foreground"} transition-colors`}
                   title="Закрыть и показать сводку"
                 >
                   <X className="w-4 h-4" />
@@ -1931,39 +1950,39 @@ const CrmPage: React.FC = () => {
               </div>
 
               {/* Форма редактирования */}
-              <div className="space-y-4">
-                <div className="space-y-3">
+              <div className="space-y-3.5">
+                <div className="space-y-2.5">
                   <div>
-                    <label className="text-[10px] text-white/60 block mb-1 font-semibold">ФИО Клиента</label>
+                    <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">ФИО Клиента</label>
                     <input
                       type="text"
                       value={detailForm.name}
                       onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                      className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors font-semibold"
+                      className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold`}
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-white/60 block mb-1 font-semibold">Телефон</label>
+                    <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Телефон</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
                         value={detailForm.phone}
                         onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
                         maxLength={19}
-                        className="flex-1 px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs font-mono focus:outline-none transition-colors"
+                        className={`flex-1 px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs font-mono focus:outline-none transition-colors`}
                       />
                       <button
                         type="button"
                         onClick={() => handleCopyPhone(detailForm.phone)}
-                        className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.14] text-white/70 hover:text-white active:scale-95 transition-all"
+                        className={`p-1.5 rounded-lg ${hasWallpaper ? "bg-zinc-900 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-muted hover:bg-muted/80 text-foreground/75"} active:scale-95 transition-all`}
                         title="Копировать телефон"
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
                       <a
                         href={`tel:${getPhoneDigits(detailForm.phone)}`}
-                        className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.14] text-white/70 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                        className={`p-1.5 rounded-lg ${hasWallpaper ? "bg-zinc-900 hover:bg-zinc-800 text-white/70 hover:text-white" : "bg-muted hover:bg-muted/80 text-foreground/75"} active:scale-95 transition-all flex items-center justify-center`}
                         title="Позвонить"
                       >
                         <Phone className="w-3.5 h-3.5 text-green-400" />
@@ -1973,34 +1992,34 @@ const CrmPage: React.FC = () => {
 
                   {/* Быстрые мессенджеры */}
                   {detailForm.phone && (
-                    <div className="pt-1">
-                      <span className="text-[9px] text-white/50 block mb-1.5 uppercase tracking-wider font-bold">Написать в мессенджер:</span>
+                    <div className="pt-0.5">
+                      <span className="text-[9px] text-white/50 block mb-1 uppercase tracking-wider font-bold">Написать в мессенджер:</span>
                       <div className="grid grid-cols-3 gap-2">
                         <a
                           href={getWhatsAppLink(detailForm.phone)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border border-emerald-500/25 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold transition-all active:scale-95 shadow-sm"
+                          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
                         >
-                          <MessageCircle className="w-3.5 h-3.5" />
+                          <WhatsAppIcon className="w-3.5 h-3.5" />
                           <span>WhatsApp</span>
                         </a>
                         <a
                           href={getTelegramLink(detailForm.phone)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border border-sky-500/25 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-[10px] font-bold transition-all active:scale-95 shadow-sm"
+                          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#24A1DE] hover:bg-[#1d8dbf] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
                         >
-                          <Send className="w-3 h-3" />
+                          <TelegramIcon className="w-3.5 h-3.5" />
                           <span>Telegram</span>
                         </a>
                         <a
                           href={getViberLink(detailForm.phone)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl border border-violet-500/25 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 text-[10px] font-bold transition-all active:scale-95 shadow-sm"
+                          className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#7360F2] hover:bg-[#5e4cd9] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
                         >
-                          <Phone className="w-3 h-3" />
+                          <ViberIcon className="w-3 h-3" />
                           <span>Viber</span>
                         </a>
                       </div>
@@ -2008,24 +2027,24 @@ const CrmPage: React.FC = () => {
                   )}
 
                   <div>
-                    <label className="text-[10px] text-white/60 block mb-1 font-semibold">Автомобиль</label>
+                    <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Автомобиль</label>
                     <input
                       type="text"
                       value={detailForm.car || ""}
                       onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
-                      className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                      className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors`}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] text-white/60 block mb-1 font-semibold">Название услуги</label>
+                      <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Название услуги</label>
                       <input
                         type="text"
                         value={detailForm.service || ""}
                         onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
                         list="service-names-edit-desktop"
-                        className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                        className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors`}
                       />
                       <datalist id="service-names-edit-desktop">
                         {appState.services.map(s => (
@@ -2034,12 +2053,12 @@ const CrmPage: React.FC = () => {
                       </datalist>
                     </div>
                     <div>
-                      <label className="text-[10px] text-white/60 block mb-1 font-semibold">Стоимость (руб.)</label>
+                      <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (руб.)</label>
                       <input
                         type="number"
                         value={detailForm.price || ""}
                         onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, price: Number(e.target.value) }) : null)}
-                        className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors font-semibold"
+                        className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold`}
                       />
                     </div>
                   </div>
@@ -2049,6 +2068,8 @@ const CrmPage: React.FC = () => {
                       label="Статус лида"
                       value={detailForm.status}
                       onChange={(val) => setDetailForm(prev => prev ? ({ ...prev, status: val }) : null)}
+                      isCompact={true}
+                      hasWallpaper={hasWallpaper}
                       options={(Object.keys(STATUS_LABELS) as CRMLeadStatus[]).map(statusKey => ({
                         value: statusKey,
                         label: STATUS_LABELS[statusKey]
@@ -2058,6 +2079,8 @@ const CrmPage: React.FC = () => {
                       label="Источник"
                       value={detailForm.source || ""}
                       onChange={(val) => setDetailForm(prev => prev ? ({ ...prev, source: val }) : null)}
+                      isCompact={true}
+                      hasWallpaper={hasWallpaper}
                       options={[
                         { value: "звонок", label: "Телефонный звонок" },
                         { value: "Instagram", label: "Instagram" },
@@ -2070,7 +2093,7 @@ const CrmPage: React.FC = () => {
                 </div>
 
                 {/* Планирование следующего шага */}
-                <div className="p-4 bg-white/[0.04] border border-white/5 rounded-2xl space-y-3.5">
+                <div className={`p-3.5 ${hasWallpaper ? "bg-zinc-900" : "bg-muted"} rounded-xl space-y-3 border-0`}>
                   <span className="text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                     <Clock className="w-4 h-4 text-indigo-400" />
                     <span>Следующий шаг визита/звонка</span>
@@ -2078,27 +2101,27 @@ const CrmPage: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[9px] text-white/60 block mb-1">Дата события</label>
+                      <label className="text-[9px] text-white/60 block mb-0.5">Дата события</label>
                       <input
                         type="date"
                         value={nextStepDateInput}
                         onChange={(e) => setNextStepDateInput(e.target.value)}
-                        className="w-full px-2.5 py-1.5 !bg-white/[0.04] text-white !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
+                        className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-950 text-white" : "!bg-background text-foreground"} !border-0 rounded-lg text-xs focus:outline-none transition-colors`}
                       />
                     </div>
                     <div>
-                      <label className="text-[9px] text-white/60 block mb-1">Время события</label>
+                      <label className="text-[9px] text-white/60 block mb-0.5">Время события</label>
                       <input
                         type="time"
                         value={nextStepTimeInput}
                         onChange={(e) => setNextStepTimeInput(e.target.value)}
-                        className="w-full px-2.5 py-1.5 !bg-white/[0.04] text-white !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
+                        className={`w-full px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-955 text-white" : "!bg-background text-foreground"} !border-0 rounded-lg text-xs focus:outline-none transition-colors`}
                       />
                     </div>
                   </div>
 
                   {nextStepDateInput && (
-                    <div className="pt-2 border-t border-white/5 space-y-2">
+                    <div className={`pt-2 border-t ${hasWallpaper ? "border-zinc-800" : "border-border"} space-y-2`}>
                       <label className="text-[9px] text-white/60 block font-semibold">Напоминания в Telegram:</label>
                       <div className="flex items-center gap-4">
                         {[10, 20, 30].map(minutes => {
@@ -2109,6 +2132,7 @@ const CrmPage: React.FC = () => {
                               checked={checked}
                               onChange={() => handleToggleNotifyBefore(minutes)}
                               label={`За ${minutes} мин.`}
+                              textClassName="text-white/80 group-hover:text-white"
                             />
                           );
                         })}
@@ -2121,7 +2145,7 @@ const CrmPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleDeleteLead(detailForm.id)}
-                    className="p-2.5 rounded-xl bg-red-500/[0.08] hover:bg-red-500/[0.16] backdrop-blur-[6px] text-red-300 flex items-center justify-center transition-colors border-0 animate-pulse-subtle"
+                    className={`p-2.5 rounded-lg ${hasWallpaper ? "bg-red-950/80 text-red-400 hover:bg-red-900/50" : "bg-red-50 text-red-600 hover:bg-red-100"} flex items-center justify-center transition-all border-0 active:scale-95`}
                     title="Удалить карточку"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -2129,18 +2153,18 @@ const CrmPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleUpdateLead}
-                    className="flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-semibold rounded-xl active:scale-[0.98] transition-all text-xs shadow-md border-0"
+                    className="flex-1 py-2 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-semibold rounded-lg active:scale-[0.98] transition-all text-xs shadow-md border-0"
                   >
                     Сохранить изменения
                   </button>
                 </div>
               </div>
 
-              <hr className="border-white/5" />
+              <hr className={`border-0 h-[1px] ${hasWallpaper ? "bg-zinc-800" : "bg-border"}`} />
 
               {/* История и заметки менеджера */}
-              <div className="space-y-4">
-                <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <div className="space-y-3">
+                <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
                   <History className="w-4 h-4 text-white/60" />
                   <span>Заметки и история</span>
                 </span>
@@ -2151,18 +2175,18 @@ const CrmPage: React.FC = () => {
                     placeholder="Новая заметка..."
                     value={newNoteText}
                     onChange={(e) => setNewNoteText(e.target.value)}
-                    className="flex-1 px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                    className={`flex-1 px-2.5 py-1.5 ${hasWallpaper ? "!bg-zinc-900 text-white placeholder-white/20" : "!bg-muted text-foreground placeholder-foreground/30"} !border-0 rounded-lg text-xs focus:outline-none transition-colors`}
                   />
                   <button
                     type="button"
                     onClick={handleAddNoteToHistory}
-                    className="px-3 bg-white/[0.08] hover:bg-white/[0.14] text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.98] border-0"
+                    className={`px-3 ${hasWallpaper ? "bg-zinc-900 hover:bg-zinc-800 text-white" : "bg-muted hover:bg-muted/80 text-foreground"} rounded-lg text-xs font-semibold transition-all active:scale-[0.98] border-0`}
                   >
                     Добавить
                   </button>
                 </div>
 
-                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4 custom-scrollbar max-h-[200px] overflow-y-auto shadow-inner">
+                <div className={`rounded-xl p-3 space-y-3 custom-scrollbar max-h-[180px] overflow-y-auto border-0 ${hasWallpaper ? "bg-zinc-900" : "bg-muted/40"}`}>
                   {detailForm.history && detailForm.history.length > 0 ? (
                     [...detailForm.history].reverse().map((entry) => {
                       let icon = <ChevronLeft className="w-2.5 h-2.5 text-white/60" />;
@@ -2176,7 +2200,7 @@ const CrmPage: React.FC = () => {
 
                       return (
                         <div key={entry.id} className="flex gap-2.5 text-[11px] text-white/80">
-                          <div className="w-4.5 h-4.5 rounded-full bg-white/[0.06] border border-white/5 flex items-center justify-center shrink-0 mt-0.5">
+                          <div className={`w-5 h-5 rounded-full ${hasWallpaper ? "bg-zinc-955" : "bg-background"} flex items-center justify-center shrink-0 mt-0.5 border-0`}>
                             {icon}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -2197,52 +2221,50 @@ const CrmPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* Сводка / Dashboard */}
-              <div className="pb-3 border-b border-white/10 shrink-0">
-                <h3 className="text-sm font-bold uppercase tracking-wider">Сводка CRM</h3>
+              <div className="pb-2 shrink-0">
+                <h3 className="text-xs font-bold uppercase tracking-wider">Сводка CRM</h3>
               </div>
 
               {/* Метрики */}
-              <div className="grid grid-cols-1 gap-3.5">
-                <div className="p-4 bg-white/[0.05] border border-white/10 rounded-2xl flex flex-col gap-1 shadow-sm">
-                  <span className="text-[10px] font-bold text-white/55 uppercase tracking-wider">Всего лидов</span>
-                  <span className="text-2xl font-black">{totalLeadsCount}</span>
+              <div className="grid grid-cols-1 gap-3">
+                <div className={`p-3.5 ${hasWallpaper ? "bg-zinc-900" : "bg-muted/60"} rounded-xl flex flex-col gap-0.5 border-0 shadow-sm`}>
+                  <span className={`text-[9px] font-bold uppercase tracking-wider ${hasWallpaper ? "text-white/50" : "text-muted-foreground"}`}>Всего лидов</span>
+                  <span className="text-xl font-black">{totalLeadsCount}</span>
                 </div>
-                <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex flex-col gap-1 shadow-sm shadow-indigo-500/5">
-                  <span className="text-[10px] font-bold text-indigo-300/80 uppercase tracking-wider">На сегодня</span>
-                  <span className="text-2xl font-black text-indigo-200">{leadsTodayCount}</span>
+                <div className={`p-3.5 ${hasWallpaper ? "bg-indigo-950/40 text-indigo-200" : "bg-indigo-50 text-indigo-700"} rounded-xl flex flex-col gap-0.5 border-0 shadow-sm`}>
+                  <span className={`text-[9px] font-bold uppercase tracking-wider ${hasWallpaper ? "text-indigo-400" : "text-indigo-600/80"}`}>На сегодня</span>
+                  <span className="text-xl font-black">{leadsTodayCount}</span>
                 </div>
-                <div className={`p-4 rounded-2xl flex flex-col gap-1 border shadow-sm ${
+                <div className={`p-3.5 ${
                   overdueLeadsCount > 0 
-                    ? "bg-red-500/10 border-red-500/20 shadow-red-500/5" 
-                    : "bg-white/[0.05] border-white/10"
-                }`}>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                    overdueLeadsCount > 0 ? "text-red-400" : "text-white/55"
+                    ? (hasWallpaper ? "bg-red-950/40 text-red-200" : "bg-red-50 text-red-700") 
+                    : (hasWallpaper ? "bg-zinc-900 text-white" : "bg-muted/60 text-foreground")
+                } rounded-xl flex flex-col gap-0.5 border-0 shadow-sm`}>
+                  <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                    overdueLeadsCount > 0 ? "text-red-400" : (hasWallpaper ? "text-white/50" : "text-muted-foreground")
                   }`}>Просрочено</span>
-                  <span className={`text-2xl font-black ${
-                    overdueLeadsCount > 0 ? "text-red-300" : "text-white"
-                  }`}>{overdueLeadsCount}</span>
+                  <span className="text-xl font-black">{overdueLeadsCount}</span>
                 </div>
               </div>
 
               {/* Распределение по статусам */}
-              <div className="space-y-4">
-                <span className="text-xs font-bold text-white/75 uppercase tracking-wider block">Статусы лидов</span>
-                <div className="space-y-3">
+              <div className="space-y-3">
+                <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider block">Статусы лидов</span>
+                <div className="space-y-2.5">
                   {statusStats.map(stat => (
                     <div key={stat.key} className="space-y-1">
-                      <div className="flex justify-between text-[11px] font-semibold">
-                        <span className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${stat.color}`} />
+                      <div className="flex justify-between text-[10px] font-semibold">
+                        <span className="flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${stat.color}`} />
                           <span>{stat.label}</span>
                         </span>
-                        <span className="text-white/60">
-                          {stat.count} <span className="text-[9px] text-white/40">({Math.round(stat.percentage)}%)</span>
+                        <span className={hasWallpaper ? "text-white/60" : "text-muted-foreground"}>
+                          {stat.count} <span className="text-[9px] opacity-70">({Math.round(stat.percentage)}%)</span>
                         </span>
                       </div>
-                      <div className="h-1.5 w-full bg-white/[0.05] rounded-full overflow-hidden">
+                      <div className={`h-1 w-full ${hasWallpaper ? "bg-zinc-900" : "bg-muted"} rounded-full overflow-hidden`}>
                         <div
                           className={`h-full rounded-full ${stat.color.split(' ')[0]}`}
                           style={{ width: `${stat.percentage}%` }}
@@ -2303,6 +2325,8 @@ const CrmPage: React.FC = () => {
             label="Источник"
             value={newLeadForm.source}
             onChange={(val) => setNewLeadForm(prev => ({ ...prev, source: val }))}
+            isCompact={true}
+            hasWallpaper={true}
             options={[
               { value: "звонок", label: "Телефонный звонок" },
               { value: "Instagram", label: "Instagram" },
@@ -2314,13 +2338,13 @@ const CrmPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] text-white/60 block mb-1">Услуга</label>
+              <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Услуга</label>
               <input
                 type="text"
                 value={newLeadForm.service || ""}
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, service: e.target.value }))}
                 list="service-names"
-                className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
               />
               <datalist id="service-names">
                 {appState.services.map(s => (
@@ -2329,12 +2353,12 @@ const CrmPage: React.FC = () => {
               </datalist>
             </div>
             <div>
-              <label className="text-[10px] text-white/60 block mb-1">Стоимость (руб.)</label>
+              <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (руб.)</label>
               <input
                 type="number"
                 value={newLeadForm.price || ""}
                 onChange={(e) => setNewLeadForm(prev => ({ ...prev, price: Number(e.target.value) }))}
-                className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold"
               />
             </div>
           </div>
@@ -2344,6 +2368,8 @@ const CrmPage: React.FC = () => {
             label="Начальный статус"
             value={newLeadForm.status}
             onChange={(val) => setNewLeadForm(prev => ({ ...prev, status: val }))}
+            isCompact={true}
+            hasWallpaper={true}
             options={(Object.keys(STATUS_LABELS) as CRMLeadStatus[]).map(statusKey => ({
               value: statusKey,
               label: STATUS_LABELS[statusKey]
@@ -2351,13 +2377,13 @@ const CrmPage: React.FC = () => {
           />
 
           <div>
-            <label className="text-[10px] text-white/60 block mb-1">Заметки / Комментарий</label>
+            <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Заметки / Комментарий</label>
             <textarea
               placeholder="Опишите детали запроса клиента..."
               value={newLeadForm.notes}
               onChange={(e) => setNewLeadForm(prev => ({ ...prev, notes: e.target.value }))}
               rows={4}
-              className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs resize-none focus:outline-none transition-colors"
+              className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs resize-none focus:outline-none transition-colors"
             />
           </div>
 
@@ -2365,13 +2391,13 @@ const CrmPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAddDrawerOpen(false)}
-              className="flex-1 h-10 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-[4px] rounded-xl text-white text-xs font-semibold"
+              className="flex-1 h-10 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-lg"
             >
               Отмена
             </button>
             <button
               type="submit"
-              className="flex-1 h-10 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 text-xs shadow"
+              className="flex-1 h-10 bg-white hover:bg-zinc-200 text-black font-semibold rounded-lg text-xs shadow"
             >
               Добавить
             </button>
@@ -2389,50 +2415,103 @@ const CrmPage: React.FC = () => {
         title="Редактирование карточки клиента"
       >
         {detailForm && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] text-white/60 block mb-1">ФИО Клиента</label>
+                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">ФИО Клиента</label>
                   <input
                     type="text"
                     value={detailForm.name}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                    className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                    className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-white/60 block mb-1">Телефон</label>
-                  <input
-                    type="text"
-                    value={detailForm.phone}
-                    onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
-                    maxLength={19}
-                    className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs font-mono focus:outline-none transition-colors"
-                  />
+                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Телефон</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={detailForm.phone}
+                      onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, phone: formatBYPhone(e.target.value) }) : null)}
+                      maxLength={19}
+                      className="flex-1 px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs font-mono focus:outline-none transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleCopyPhone(detailForm.phone)}
+                      className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white/70 hover:text-white active:scale-95 transition-all"
+                      title="Копировать телефон"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                    <a
+                      href={`tel:${getPhoneDigits(detailForm.phone)}`}
+                      className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white/70 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                      title="Позвонить"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-green-400" />
+                    </a>
+                  </div>
                 </div>
               </div>
 
+              {/* Быстрые мессенджеры в мобильном окне */}
+              {detailForm.phone && (
+                <div className="pt-0.5">
+                  <span className="text-[9px] text-white/50 block mb-1 uppercase tracking-wider font-bold">Написать в мессенджер:</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    <a
+                      href={getWhatsAppLink(detailForm.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
+                    >
+                      <WhatsAppIcon className="w-3.5 h-3.5" />
+                      <span>WhatsApp</span>
+                    </a>
+                    <a
+                      href={getTelegramLink(detailForm.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#24A1DE] hover:bg-[#1d8dbf] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
+                    >
+                      <TelegramIcon className="w-3.5 h-3.5" />
+                      <span>Telegram</span>
+                    </a>
+                    <a
+                      href={getViberLink(detailForm.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#7360F2] hover:bg-[#5e4cd9] text-white text-[10px] font-bold transition-all active:scale-95 shadow-sm border-0"
+                    >
+                      <ViberIcon className="w-3 h-3" />
+                      <span>Viber</span>
+                    </a>
+                  </div>
+                </div>
+              )}
+
               <div>
-                <label className="text-[10px] text-white/60 block mb-1">Автомобиль</label>
+                <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Автомобиль</label>
                 <input
                   type="text"
                   value={detailForm.car || ""}
                   onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, car: e.target.value }) : null)}
-                  className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                  className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] text-white/60 block mb-1">Название услуги</label>
+                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Название услуги</label>
                   <input
                     type="text"
                     value={detailForm.service || ""}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, service: e.target.value }) : null)}
                     list="service-names-edit"
-                    className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                    className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
                   />
                   <datalist id="service-names-edit">
                     {appState.services.map(s => (
@@ -2441,12 +2520,12 @@ const CrmPage: React.FC = () => {
                   </datalist>
                 </div>
                 <div>
-                  <label className="text-[10px] text-white/60 block mb-1">Стоимость (руб.)</label>
+                  <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (руб.)</label>
                   <input
                     type="number"
                     value={detailForm.price || ""}
                     onChange={(e) => setDetailForm(prev => prev ? ({ ...prev, price: Number(e.target.value) }) : null)}
-                    className="w-full px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                    className="w-full px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors font-semibold"
                   />
                 </div>
               </div>
@@ -2457,6 +2536,8 @@ const CrmPage: React.FC = () => {
                   label="Статус лида"
                   value={detailForm.status}
                   onChange={(val) => setDetailForm(prev => prev ? ({ ...prev, status: val }) : null)}
+                  isCompact={true}
+                  hasWallpaper={true}
                   options={(Object.keys(STATUS_LABELS) as CRMLeadStatus[]).map(statusKey => ({
                     value: statusKey,
                     label: STATUS_LABELS[statusKey]
@@ -2467,6 +2548,8 @@ const CrmPage: React.FC = () => {
                     label="Источник"
                     value={detailForm.source || ""}
                     onChange={(val) => setDetailForm(prev => prev ? ({ ...prev, source: val }) : null)}
+                    isCompact={true}
+                    hasWallpaper={true}
                     options={[
                       { value: "звонок", label: "Телефонный звонок" },
                       { value: "Instagram", label: "Instagram" },
@@ -2479,36 +2562,36 @@ const CrmPage: React.FC = () => {
               </div>
 
               {/* Планирование следующего шага */}
-              <div className="p-4 bg-white/[0.04] border border-white/5 rounded-2xl space-y-3.5">
-                <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-primary" />
+              <div className="p-3.5 bg-zinc-900 rounded-xl space-y-3 border-0">
+                <span className="text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-indigo-400" />
                   <span>Следующий шаг визита/звонка</span>
                 </span>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[9px] text-white/60 block mb-1">Дата события</label>
+                    <label className="text-[9px] text-white/60 block mb-0.5">Дата события</label>
                     <input
                       type="date"
                       value={nextStepDateInput}
                       onChange={(e) => setNextStepDateInput(e.target.value)}
-                      className="w-full px-2.5 py-1.5 !bg-white/[0.04] text-white !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
+                      className="w-full px-2.5 py-1.5 !bg-zinc-950 text-white !border-0 rounded-lg text-xs focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] text-white/60 block mb-1">Время события</label>
+                    <label className="text-[9px] text-white/60 block mb-0.5">Время события</label>
                     <input
                       type="time"
                       value={nextStepTimeInput}
                       onChange={(e) => setNextStepTimeInput(e.target.value)}
-                      className="w-full px-2.5 py-1.5 !bg-white/[0.04] text-white !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-lg text-xs focus:outline-none transition-colors"
+                      className="w-full px-2.5 py-1.5 !bg-zinc-955 text-white !border-0 rounded-lg text-xs focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
 
                 {nextStepDateInput && (
-                  <div className="pt-2 border-t border-white/5 space-y-2">
-                    <label className="text-[9px] text-white/60 block">Напоминания в Telegram бот:</label>
+                  <div className="pt-2 border-t border-zinc-800 space-y-2">
+                    <label className="text-[9px] text-white/60 block font-semibold">Напоминания в Telegram:</label>
                     <div className="flex items-center gap-4">
                       {[10, 20, 30].map(minutes => {
                         const checked = detailForm.notifyBefore?.includes(minutes) || false;
@@ -2518,6 +2601,7 @@ const CrmPage: React.FC = () => {
                             checked={checked}
                             onChange={() => handleToggleNotifyBefore(minutes)}
                             label={`За ${minutes} мин.`}
+                            textClassName="text-white/80 group-hover:text-white"
                           />
                         );
                       })}
@@ -2530,7 +2614,7 @@ const CrmPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleDeleteLead(detailForm.id)}
-                  className="p-2.5 rounded-xl bg-red-500/[0.08] hover:bg-red-500/[0.16] backdrop-blur-[6px] text-red-300 flex items-center justify-center transition-colors"
+                  className="p-2.5 rounded-lg bg-red-950/80 text-red-400 hover:bg-red-900/50 flex items-center justify-center transition-all border-0 active:scale-95"
                   title="Удалить карточку"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -2538,18 +2622,18 @@ const CrmPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleUpdateLead}
-                  className="flex-1 py-2.5 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 active:scale-[0.98] transition-all text-xs shadow-md"
+                  className="flex-1 py-2 bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-semibold rounded-lg active:scale-[0.98] transition-all text-xs shadow-md border-0"
                 >
                   Сохранить изменения
                 </button>
               </div>
             </div>
 
-            <hr className="border-white/5" />
+            <hr className="border-zinc-800 h-[1px] border-0 bg-zinc-800" />
 
             {/* История и заметки менеджера */}
-            <div className="space-y-4">
-              <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <div className="space-y-3">
+              <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
                 <History className="w-4 h-4 text-white/60" />
                 <span>Заметки и история изменений</span>
               </span>
@@ -2560,18 +2644,18 @@ const CrmPage: React.FC = () => {
                   placeholder="Добавить новую заметку менеджера..."
                   value={newNoteText}
                   onChange={(e) => setNewNoteText(e.target.value)}
-                  className="flex-1 px-3 py-2 !bg-white/[0.04] text-white placeholder-white/20 !border-0 focus:!bg-white/[0.08] focus:ring-1 focus:ring-white/10 rounded-xl text-xs focus:outline-none transition-colors"
+                  className="flex-1 px-2.5 py-1.5 bg-zinc-900 text-white placeholder-white/20 !border-0 rounded-lg text-xs focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
                   onClick={handleAddNoteToHistory}
-                  className="px-4 bg-white/[0.08] hover:bg-white/[0.14] text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.98]"
+                  className="px-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-semibold transition-all active:scale-[0.98] border-0"
                 >
                   Добавить
                 </button>
               </div>
 
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4 custom-scrollbar max-h-[300px] overflow-y-auto shadow-inner">
+              <div className="bg-zinc-900 rounded-xl p-3 space-y-3 custom-scrollbar max-h-[300px] overflow-y-auto border-0">
                 {detailForm.history && detailForm.history.length > 0 ? (
                   [...detailForm.history].reverse().map((entry) => {
                     let icon = <ChevronLeft className="w-2.5 h-2.5 text-white/60" />;
