@@ -1099,6 +1099,7 @@ const CrmPage: React.FC = () => {
   if (viewMode === "gate" || viewMode === "settings") {
     return (
       <div 
+        key="gate-settings-root"
         className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-cover bg-center bg-black md:bg-[url('/wallpapers/detail.webp')]"
       >
         {/* Dark overlay for desktop wallpaper background */}
@@ -1134,7 +1135,7 @@ const CrmPage: React.FC = () => {
         <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 black:bg-blue-500/15 blur-[60px] rounded-full scale-[1.2] z-[-1] pointer-events-none"></div>
         
         {viewMode === "gate" ? (
-          <div className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col gap-4">
+          <div key="gate-card" className="w-full max-w-[280px] bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col gap-4">
             
             <div className="text-center">
               <h1 className="text-base font-bold tracking-tight text-white/90">Detail Lab CRM</h1>
@@ -1213,7 +1214,7 @@ const CrmPage: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="w-full max-w-[800px] mx-4 md:mx-auto bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 md:p-7 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white transition-all duration-300 flex flex-col max-h-[85vh]">
+          <div key="settings-card" className="w-full max-w-[800px] mx-4 md:mx-auto bg-white/[0.03] dark:bg-black/25 backdrop-blur-[32px] rounded-3xl p-5 md:p-7 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col max-h-[85vh]">
             
             <div className="flex items-center gap-2 mb-4 shrink-0">
               <button
@@ -1446,6 +1447,7 @@ const CrmPage: React.FC = () => {
 
   return (
     <div 
+      key="crm-workspace-root"
       className={`min-h-screen flex flex-col font-sans transition-all duration-500 relative ${
         hasWallpaper ? "text-white bg-cover bg-center" : "bg-background text-foreground"
       }`}
