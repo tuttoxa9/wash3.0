@@ -1915,93 +1915,97 @@ const CrmPage: React.FC = () => {
                                 </span>
                               </div>
 
-                              {/* МОБИЛЬНАЯ КАРТОЧКА (Refreshed Design) */}
+                              {/* МОБИЛЬНАЯ КАРТОЧКА (Elegant Modern Design) */}
                               <div
                                 onClick={() => {
                                   setSelectedLead(lead);
                                   setIsDetailOpen(true);
                                 }}
-                                className={`md:hidden p-4 rounded-3xl border transition-all flex flex-col gap-3.5 cursor-pointer relative overflow-hidden group shadow-md ${
+                                className={`md:hidden p-4 rounded-3xl border transition-all flex flex-col gap-4 cursor-pointer relative overflow-hidden group shadow-sm ${
                                   hasWallpaper
-                                    ? "bg-white/[0.08] hover:bg-white/[0.12] border-white/10 backdrop-blur-[40px] backdrop-saturate-[1.5] text-white"
-                                    : "bg-card border-border text-foreground hover:shadow-lg"
+                                    ? "bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08] backdrop-blur-2xl text-white"
+                                    : "bg-card border-border/40 text-foreground hover:shadow-md"
                                 }`}
                               >
-                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary/60 to-primary/20 rounded-l-3xl"></div>
-                                
-                                <div className="pl-2 flex justify-between items-start gap-3">
-                                  <div className="flex items-center gap-3 min-w-0">
-                                    <div className={`shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-colors shadow-inner ${
-                                      hasWallpaper ? "bg-white/10 text-white shadow-white/5" : "bg-muted text-muted-foreground"
+                                <div className="flex justify-between items-start gap-3">
+                                  <div className="flex items-center gap-3.5 min-w-0">
+                                    <div className={`shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition-colors ${
+                                      hasWallpaper ? "bg-white/5 border border-white/10 text-white/90" : "bg-muted text-muted-foreground"
                                     }`}>
                                       {getSourceIcon(lead.source || "")}
                                     </div>
-                                    <div className="flex flex-col min-w-0">
-                                      <span className="text-[15px] font-bold truncate tracking-tight">
+                                    <div className="flex flex-col min-w-0 justify-center">
+                                      <span className="text-[16px] font-semibold truncate tracking-tight">
                                         {lead.name}
                                       </span>
-                                      <span className={`text-[12px] font-medium tracking-wide mt-0.5 ${hasWallpaper ? "text-white/60" : "text-muted-foreground"}`}>
+                                      <span className={`text-[13px] font-medium tracking-wide mt-0.5 ${hasWallpaper ? "text-white/50" : "text-muted-foreground"}`}>
                                         {lead.phone}
                                       </span>
                                     </div>
                                   </div>
 
-                                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                                    <div className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border shadow-sm ${
-                                      hasWallpaper ? "text-white/90 bg-white/10 border-white/10 backdrop-blur-md" : "text-foreground bg-muted border-border"
+                                  <div className="flex flex-col items-end gap-2 shrink-0">
+                                    <div className={`flex items-center gap-1.5 text-[12px] px-3 py-1 rounded-full font-medium ${
+                                      hasWallpaper ? "text-white/90 bg-white/10" : "text-foreground bg-muted"
                                     }`}>
-                                      <span className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px] ${STATUS_DOT_COLORS[lead.status]}`} style={{boxShadow: '0 0 8px var(--tw-shadow-color)'}} />
-                                      <span className="font-semibold">{STATUS_LABELS[lead.status]}</span>
+                                      <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[lead.status]}`} />
+                                      <span>{STATUS_LABELS[lead.status]}</span>
                                     </div>
                                     {lead.price ? (
-                                      <span className="text-[13px] font-black mt-0.5 tracking-tight">
+                                      <span className="text-[15px] font-bold tracking-tight">
                                         {lead.price} BYN
                                       </span>
                                     ) : null}
                                   </div>
                                 </div>
 
-                                <div className={`pl-2 flex flex-col gap-3 pt-3 mt-1 border-t ${hasWallpaper ? "border-white/10" : "border-border/50"}`}>
-                                  <div className="flex flex-wrap items-center gap-2 text-[12px]">
-                                    {lead.service ? (
-                                      <span className="text-indigo-200 font-bold bg-indigo-500/20 px-2.5 py-1 rounded-lg border border-indigo-500/30 truncate shadow-sm">
-                                        {lead.service}
-                                      </span>
-                                    ) : (
-                                      <span className={`italic ${hasWallpaper ? "text-white/30" : "text-muted-foreground/60"}`}>Нет услуги</span>
-                                    )}
-                                    {lead.car && <span className={`font-bold truncate px-2.5 py-1 rounded-lg border shadow-sm ${
-                                      hasWallpaper ? "text-zinc-200 bg-white/5 border-white/10" : "text-muted-foreground bg-muted border-border"
-                                    }`}>{lead.car}</span>}
-                                  </div>
+                                <div className="flex flex-col gap-3">
+                                  {(lead.service || lead.car) && (
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      {lead.service ? (
+                                        <span className={`text-[13px] font-medium px-3 py-1 rounded-xl truncate ${
+                                          hasWallpaper ? "bg-white/10 text-white/90" : "bg-primary/10 text-primary"
+                                        }`}>
+                                          {lead.service}
+                                        </span>
+                                      ) : null}
+                                      {lead.car && (
+                                        <span className={`text-[13px] font-medium truncate px-3 py-1 rounded-xl ${
+                                          hasWallpaper ? "text-white/70 bg-white/5" : "text-muted-foreground bg-muted"
+                                        }`}>
+                                          {lead.car}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
 
                                   {lead.notes && (
-                                    <div className={`p-2.5 rounded-xl text-[12px] border-l-2 leading-relaxed backdrop-blur-sm ${
+                                    <div className={`px-3 py-2.5 rounded-xl text-[13px] leading-relaxed ${
                                       hasWallpaper 
-                                        ? "bg-white/[0.04] border-indigo-400 text-white/80" 
-                                        : "bg-muted/40 border-primary text-muted-foreground"
+                                        ? "bg-white/[0.03] text-white/70 border border-white/[0.05]" 
+                                        : "bg-muted/30 text-muted-foreground border border-border/50"
                                     }`}>
-                                      <p className="line-clamp-2 italic font-medium">{lead.notes}</p>
+                                      <p className="line-clamp-2">{lead.notes}</p>
                                     </div>
                                   )}
 
                                   <div className="flex items-center justify-between mt-1 pt-1">
                                     {lead.nextStepDate ? (
-                                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border shadow-sm
+                                      <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold
                                         ${overdue
-                                          ? "bg-red-500/20 text-red-200 border-red-500/30"
-                                          : (hasWallpaper ? "bg-white/10 text-white border-white/10" : "bg-muted text-muted-foreground border-border")}`}
+                                          ? (hasWallpaper ? "bg-red-500/15 text-red-200 border border-red-500/20" : "bg-red-50 text-red-600 border border-red-100")
+                                          : (hasWallpaper ? "bg-white/5 text-white/80 border border-white/5" : "bg-muted text-muted-foreground border border-border/50")}`}
                                       >
-                                        <Clock className="w-3.5 h-3.5" />
+                                        <Clock className="w-3.5 h-3.5 opacity-80" />
                                         <span>
-                                          След. шаг: {format(new Date(lead.nextStepDate), "d MMM, HH:mm", { locale: ru })}
+                                          {format(new Date(lead.nextStepDate), "d MMM, HH:mm", { locale: ru })}
                                         </span>
                                       </div>
                                     ) : (
-                                      <div></div>
+                                      <div />
                                     )}
                                     
-                                    <span className={`text-[10px] font-medium self-end mb-1 tracking-wide ${hasWallpaper ? "text-white/40" : "text-muted-foreground/60"}`}>
+                                    <span className={`text-[11px] font-medium self-end mb-1 tracking-wide ${hasWallpaper ? "text-white/30" : "text-muted-foreground/50"}`}>
                                       {format(new Date(lead.createdAt), "d.MM.yy HH:mm", { locale: ru })}
                                     </span>
                                   </div>
