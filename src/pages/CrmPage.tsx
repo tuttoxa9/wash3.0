@@ -566,8 +566,13 @@ const CrmPage: React.FC = () => {
   const loadSettings = async () => {
     const data = await crmService.getSettings();
     if (data) {
-      // Автоматически обновляем URL приложения в БД, если он изменился или отсутствует
-      if (data.appUrl !== window.location.origin) {
+      // Автоматически обновляем URL приложения в БД, если он изменился или отсутствует,
+      // но только если мы не на локальном хосте (чтобы не затереть рабочий Vercel-домен)
+      const isLocalhost = window.location.hostname === "localhost" || 
+                          window.location.hostname === "127.0.0.1" || 
+                          window.location.hostname.startsWith("192.168.");
+
+      if (data.appUrl !== window.location.origin && !isLocalhost) {
         const updated = { ...data, appUrl: window.location.origin };
         await crmService.saveSettings(updated);
         setCrmSettings(updated);
@@ -575,12 +580,16 @@ const CrmPage: React.FC = () => {
         setCrmSettings(data);
       }
     } else {
+      const isLocalhost = window.location.hostname === "localhost" || 
+                          window.location.hostname === "127.0.0.1" || 
+                          window.location.hostname.startsWith("192.168.");
+
       const initialSettings: CRMSettings = {
         telegramBotToken: "",
         telegramChatId: "",
         telegramEnabled: false,
         webhookApiKey: crypto.randomUUID ? crypto.randomUUID().replace(/-/g, "") : Math.random().toString(36).substring(2, 18),
-        appUrl: window.location.origin
+        appUrl: isLocalhost ? "" : window.location.origin
       };
       setCrmSettings(initialSettings);
       await crmService.saveSettings(initialSettings);
@@ -620,7 +629,15 @@ const CrmPage: React.FC = () => {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingSettings(true);
-    const settingsWithUrl = { ...crmSettings, appUrl: window.location.origin };
+    
+    const isLocalhost = window.location.hostname === "localhost" || 
+                        window.location.hostname === "127.0.0.1" || 
+                        window.location.hostname.startsWith("192.168.");
+                        
+    // Сохраняем URL только если он не локальный, иначе сохраняем старый URL (или пустой)
+    const appUrl = isLocalhost ? (crmSettings.appUrl || "") : window.location.origin;
+    const settingsWithUrl = { ...crmSettings, appUrl };
+    
     const success = await crmService.saveSettings(settingsWithUrl);
     setSavingSettings(false);
     if (success) {

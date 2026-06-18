@@ -42,7 +42,10 @@ BEGIN
     -- Отправляем асинхронный HTTP POST-запрос на Vercel
     PERFORM net.http_post(
         url := webhook_url,
-        headers := '{"Content-Type": "application/json"}'::jsonb
+        body := '{}'::jsonb,
+        params := '{}'::jsonb,
+        headers := '{"Content-Type": "application/json"}'::jsonb,
+        timeout_ms := 10000
     );
 END;
 $$;
