@@ -1923,14 +1923,14 @@ const CrmPage: React.FC = () => {
                                 }}
                                 className={`md:hidden p-4 rounded-3xl border transition-all flex flex-col gap-4 cursor-pointer relative overflow-hidden group shadow-sm ${
                                   hasWallpaper
-                                    ? "bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08] backdrop-blur-2xl text-white"
+                                    ? "bg-white/10 hover:bg-white/[0.15] border-white/20 backdrop-blur-3xl backdrop-brightness-125 text-white"
                                     : "bg-card border-border/40 text-foreground hover:shadow-md"
                                 }`}
                               >
                                 <div className="flex justify-between items-start gap-3">
                                   <div className="flex items-center gap-3.5 min-w-0">
                                     <div className={`shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition-colors ${
-                                      hasWallpaper ? "bg-white/5 border border-white/10 text-white/90" : "bg-muted text-muted-foreground"
+                                      hasWallpaper ? "bg-white/15 border border-white/20 text-white" : "bg-muted text-muted-foreground"
                                     }`}>
                                       {getSourceIcon(lead.source || "")}
                                     </div>
@@ -1946,7 +1946,7 @@ const CrmPage: React.FC = () => {
 
                                   <div className="flex flex-col items-end gap-2 shrink-0">
                                     <div className={`flex items-center gap-1.5 text-[12px] px-3 py-1 rounded-full font-medium ${
-                                      hasWallpaper ? "text-white/90 bg-white/10" : "text-foreground bg-muted"
+                                      hasWallpaper ? "text-white bg-white/20" : "text-foreground bg-muted"
                                     }`}>
                                       <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[lead.status]}`} />
                                       <span>{STATUS_LABELS[lead.status]}</span>
@@ -1964,14 +1964,14 @@ const CrmPage: React.FC = () => {
                                     <div className="flex flex-wrap items-center gap-2">
                                       {lead.service ? (
                                         <span className={`text-[13px] font-medium px-3 py-1 rounded-xl truncate ${
-                                          hasWallpaper ? "bg-white/10 text-white/90" : "bg-primary/10 text-primary"
+                                          hasWallpaper ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
                                         }`}>
                                           {lead.service}
                                         </span>
                                       ) : null}
                                       {lead.car && (
                                         <span className={`text-[13px] font-medium truncate px-3 py-1 rounded-xl ${
-                                          hasWallpaper ? "text-white/70 bg-white/5" : "text-muted-foreground bg-muted"
+                                          hasWallpaper ? "text-white/90 bg-white/10" : "text-muted-foreground bg-muted"
                                         }`}>
                                           {lead.car}
                                         </span>
