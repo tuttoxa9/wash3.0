@@ -2161,8 +2161,7 @@ const HomePage: React.FC = () => {
                             const orgsInTotal = state.organizationsInTotal || [];
                             const orgSum =
                               currentReport.records?.reduce((sum, record) => {
-                                const isOrg =
-                                  record.paymentMethod.type === "organization";
+                                const isOrg = record.paymentMethod.type === "organization" || (record.paymentMethod.type === "debt" && record.paymentMethod.isClosed && record.paymentMethod.actualMethod === "organization");
                                 const isSeparated =
                                   record.paymentMethod.organizationId &&
                                   orgsInTotal.includes(
@@ -2183,9 +2182,10 @@ const HomePage: React.FC = () => {
                     if (!org) return null;
                     const sumForOrg =
                       currentReport.records?.reduce((sum, record) => {
+                        const isOrg = record.paymentMethod.type === "organization" || (record.paymentMethod.type === "debt" && record.paymentMethod.isClosed && record.paymentMethod.actualMethod === "organization");
                         return (
                           sum +
-                          (record.paymentMethod.type === "organization" &&
+                          (isOrg &&
                           record.paymentMethod.organizationId === orgId
                             ? record.price
                             : 0)
