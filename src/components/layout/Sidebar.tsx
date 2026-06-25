@@ -233,8 +233,17 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Навигация */}
       <nav className="flex-1 space-y-2 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar pr-1">
+        <a
+          href="/"
+          className="sidebar-link"
+          onClick={() => isMobileOpen && toggleMobileSidebar()}
+        >
+          <LayoutDashboard className="w-5 h-5" />
+          <span>Рабочий стол</span>
+        </a>
+
         <NavLink
-          to="/"
+          to="/wash"
           className={({ isActive }) =>
             `sidebar-link ${isActive ? "active" : ""}`
           }
@@ -245,18 +254,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           <span>Главная</span>
         </NavLink>
 
-        <a
-          href="/crm"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="sidebar-link"
-          onClick={() => isMobileOpen && toggleMobileSidebar()}
-        >
-          <LayoutDashboard className="w-5 h-5" />
-          <span>CRM</span>
-        </a>
         <NavLink
-          to="/records"
+          to="/wash/records"
           className={({ isActive }) =>
             `sidebar-link ${isActive ? "active" : ""}`
           }
@@ -266,7 +265,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <span>Записи</span>
         </NavLink>
         <NavLink
-          to="/reports"
+          to="/wash/reports"
           className={({ isActive }) =>
             `sidebar-link ${isActive ? "active" : ""}`
           }
@@ -277,7 +276,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </NavLink>
 
         <NavLink
-          to="/payouts"
+          to="/wash/payouts"
           className={({ isActive }) =>
             `sidebar-link ${isActive ? "active" : ""}`
           }
@@ -288,7 +287,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </NavLink>
 
         <NavLink
-          to="/services"
+          to="/wash/services"
           className={({ isActive }) =>
             `sidebar-link flex items-center justify-between ${isActive ? "active" : ""}`
           }
@@ -308,7 +307,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 
         <NavLink
-          to="/settings"
+          to="/wash/settings"
           className={({ isActive }) =>
             `sidebar-link ${isActive ? "active" : ""}`
           }

@@ -2,6 +2,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/layout/Layout";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { NotificationProvider } from "@/lib/context/NotificationContext";
+import DesktopPage from "@/pages/DesktopPage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import RecordsPage from "@/pages/RecordsPage";
@@ -13,6 +14,10 @@ import CrmPage from "@/pages/CrmPage";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <DesktopPage />,
+  },
   {
     path: "/login",
     element: <LoginPage />,
@@ -28,7 +33,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/",
+    path: "/wash",
     element: <ProtectedRoute />,
     children: [
       {

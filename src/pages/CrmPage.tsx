@@ -1161,6 +1161,16 @@ const CrmPage: React.FC = () => {
         {viewMode === "gate" ? (
           <div key="gate-card" className="w-full max-w-[280px] bg-white/10 dark:bg-black/40 backdrop-blur-[40px] backdrop-saturate-[1.2] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] relative z-10 border-0 text-white flex flex-col gap-4">
             
+            {/* Back to desktop */}
+            <a
+              href="/"
+              className="flex items-center gap-1.5 text-white/35 hover:text-white/70 transition-colors text-[10px] -mb-1 w-fit"
+              aria-label="Рабочий стол"
+            >
+              <ChevronLeft className="w-3 h-3" />
+              Рабочий стол
+            </a>
+
             <div className="text-center">
               <h1 className="text-base font-bold tracking-tight text-white/90">Detail Lab CRM</h1>
               <p className="text-[9px] text-white/40 mt-1">Авторизация</p>

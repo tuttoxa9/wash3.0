@@ -43,6 +43,6 @@ export default defineConfig({
       'Cache-Control': 'no-cache',
     },
   },
-  // Add static site export option
-  base: './', // This setting is useful for static site deployments
+  // Absolute base path for correct asset loading on nested routes like /wash/records
+  base: '/',
 });
