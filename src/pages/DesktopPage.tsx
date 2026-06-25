@@ -140,41 +140,16 @@ const DesktopPage: React.FC = () => {
   return (
     <div className="min-h-[100dvh] w-full overflow-hidden relative bg-black select-none">
 
-      {/* ── Animated background ── */}
+      {/* ── Wallpaper background ── */}
       <div className="absolute inset-0 z-0">
-        {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#080818] to-slate-900" />
-
-        {/* Blob 1 — blue/indigo, top-right */}
-        <motion.div
-          className="absolute top-[-15%] right-[-10%] h-[55vh] w-[55vh] rounded-full bg-indigo-600/25 blur-[100px]"
-          animate={{ x: [0, -60, 0], y: [0, 40, 0], scale: [1, 1.15, 1] }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+        <img
+          src="/wallpapers/desktop_bg.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          draggable="false"
         />
-
-        {/* Blob 2 — purple/violet, left-center */}
-        <motion.div
-          className="absolute top-[30%] left-[-12%] h-[50vh] w-[50vh] rounded-full bg-violet-600/20 blur-[90px]"
-          animate={{ x: [0, 70, 0], y: [0, -40, 0], scale: [1, 1.2, 1] }}
-          transition={{ duration: 28, repeat: Infinity, ease: "easeInOut", delay: 3 }}
-        />
-
-        {/* Blob 3 — teal, bottom-center */}
-        <motion.div
-          className="absolute bottom-[-10%] left-[25%] h-[45vh] w-[60vh] rounded-full bg-teal-600/15 blur-[110px]"
-          animate={{ x: [0, -40, 0], y: [0, -30, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 35, repeat: Infinity, ease: "easeInOut", delay: 6 }}
-        />
-
-        {/* Subtle noise texture overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "repeat",
-            backgroundSize: "128px",
-          }}
-        />
+        {/* Subtle dark overlay so icons are readable */}
+        <div className="absolute inset-0 bg-black/20" />
       </div>
 
       {/* ── Top bar: logo left, clock right ── */}
