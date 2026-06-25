@@ -143,7 +143,7 @@ const DesktopPage: React.FC = () => {
       {/* ── Wallpaper background ── */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/wallpapers/desktop_bg.jpg"
+          src="/wallpapers/desktop_bg.webp"
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           draggable="false"
