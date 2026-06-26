@@ -16,6 +16,7 @@ export interface PaymentMethodDetailModalProps {
   records: CarWashRecord[];
   employee: Employee;
   periodLabel: string;
+  calculateEmployeeEarnings: (record: CarWashRecord, employeeId: string) => number;
 }
 
 export interface DailyBreakdownModalProps {

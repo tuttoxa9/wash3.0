@@ -14,6 +14,7 @@ const PaymentMethodDetailModal: React.FC<PaymentMethodDetailModalProps> = ({
   records,
   employee,
   periodLabel,
+  calculateEmployeeEarnings,
 }) => {
   const { state } = useAppContext();
 

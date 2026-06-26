@@ -540,6 +540,7 @@ const EmployeeRecordsModal: React.FC<EmployeeRecordsModalProps> = ({
         records={paymentMethodRecords}
         employee={employee}
         periodLabel={periodLabel}
+        calculateEmployeeEarnings={calculateEmployeeEarnings}
       />
 
       <PayoutHistoryModal
