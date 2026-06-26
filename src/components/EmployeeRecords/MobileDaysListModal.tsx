@@ -2,6 +2,7 @@ import type { CarWashRecord, Employee } from "@/lib/types";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import { BarChart3, X, Wallet } from "lucide-react";
+import { motion } from "framer-motion";
 import type React from "react";
 import LegacyModal from "@/components/ui/LegacyModal";
 
