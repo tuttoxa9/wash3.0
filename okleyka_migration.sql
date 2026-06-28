@@ -100,30 +100,17 @@ CREATE TABLE IF NOT EXISTS okleyka_appointments (
 );
 
 -- ============================================================
--- RLS Policies — разрешить чтение/запись авторизованным пользователям
+-- RLS Policies — отключить RLS, чтобы совпадало с поведением остальных таблиц мойки
 -- ============================================================
 
-ALTER TABLE okleyka_employees ENABLE ROW LEVEL SECURITY;
-ALTER TABLE okleyka_organizations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE okleyka_shifts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE okleyka_orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE okleyka_order_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE okleyka_order_workers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE okleyka_debts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE okleyka_appointments ENABLE ROW LEVEL SECURITY;
-
--- Политики для аутентифицированных пользователей
-CREATE POLICY "auth_all_okleyka_employees" ON okleyka_employees FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth_all_okleyka_organizations" ON okleyka_organizations FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth_all_okleyka_shifts" ON okleyka_shifts FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth_all_okleyka_orders" ON okleyka_orders FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth_all_okleyka_order_items" ON okleyka_order_items FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth_all_okleyka_order_workers" ON okleyka_order_workers FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth_all_okleyka_debts" ON okleyka_debts FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth_all_okleyka_appointments" ON okleyka_appointments FOR ALL TO authenticated USING (true) WITH CHECK (true);
-
--- Service role (для API functions)
-CREATE POLICY "service_all_okleyka_orders" ON okleyka_orders FOR ALL TO service_role USING (true) WITH CHECK (true);
+ALTER TABLE okleyka_employees DISABLE ROW LEVEL SECURITY;
+ALTER TABLE okleyka_organizations DISABLE ROW LEVEL SECURITY;
+ALTER TABLE okleyka_shifts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE okleyka_orders DISABLE ROW LEVEL SECURITY;
+ALTER TABLE okleyka_order_items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE okleyka_order_workers DISABLE ROW LEVEL SECURITY;
+ALTER TABLE okleyka_debts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE okleyka_appointments DISABLE ROW LEVEL SECURITY;
 
 -- ============================================================
 -- Indexes for performance
