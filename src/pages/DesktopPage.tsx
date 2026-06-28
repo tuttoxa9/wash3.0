@@ -2,7 +2,8 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Waves, Megaphone, Palette, X, Settings, Send, Eye, EyeOff, Loader2, Check } from "@phosphor-icons/react";
+import { Waves, Megaphone, Palette, X, Gear, PaperPlane, Eye, EyeSlash, Check } from "@phosphor-icons/react";
+import { Loader2 } from "lucide-react";
 import AppIcon from "@/components/Desktop/AppIcon";
 import CrmLaunchModal from "@/components/Desktop/CrmLaunchModal";
 import { useAuth } from "@/lib/context/AuthContext";
@@ -103,7 +104,7 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
 
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-400/20 flex items-center justify-center flex-shrink-0">
-                    <Send size={20} weight="duotone" className="text-sky-300" />
+                    <PaperPlane size={20} weight="duotone" className="text-sky-300" />
                   </div>
                   <div>
                     <p className="font-semibold text-sm">Telegram-бот</p>
@@ -151,7 +152,7 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
                         onClick={() => setShowToken(p => !p)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
                       >
-                        {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {showToken ? <EyeSlash size={14} /> : <Eye size={14} />}
                       </button>
                     </div>
 
@@ -171,7 +172,7 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
                         disabled={testing || !settings.telegramBotToken || !settings.telegramChatId}
                         className="flex-1 py-2 bg-white/[0.07] hover:bg-white/[0.12] active:scale-[0.97] transition-all text-xs font-medium rounded-2xl text-white/70 border border-white/[0.08] disabled:opacity-40 flex items-center justify-center gap-1.5"
                       >
-                        {testing ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                        {testing ? <Loader2 size={12} className="animate-spin" /> : <PaperPlane size={12} />}
                         Тест
                       </button>
                       <button
@@ -331,7 +332,7 @@ const DesktopPage: React.FC = () => {
             style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}
             title="Настройки Telegram-бота"
           >
-            <Settings size={18} weight="bold" />
+            <Gear size={18} weight="bold" />
           </button>
           <ClockWidget />
         </div>
