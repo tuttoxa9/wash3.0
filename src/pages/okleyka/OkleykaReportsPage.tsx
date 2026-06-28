@@ -1,6 +1,6 @@
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import { okleykaOrderService, okleykaShiftService, okleykaDebtService } from "@/lib/services/okleykaService";
 import { supabase } from "@/lib/supabase";
@@ -30,6 +30,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Wallet,
+  X,
 } from "lucide-react";
 
 interface EmployeeReportRow {
@@ -40,6 +41,109 @@ interface EmployeeReportRow {
   paid: number;
   balance: number;
 }
+
+interface WorkerOrderDetail {
+  id: string;
+  employeeId: string;
+  date: string;
+  carInfo: string;
+  serviceName: string;
+  price: number;
+  salary: number;
+  isPaid: boolean;
+}
+
+interface EmployeeOkleykaRecordsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  employeeName: string;
+  periodRange: string;
+  records: WorkerOrderDetail[];
+}
+
+const EmployeeOkleykaRecordsModal: React.FC<EmployeeOkleykaRecordsModalProps> = ({
+  isOpen,
+  onClose,
+  employeeName,
+  periodRange,
+  records,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        className="relative bg-card border border-border/50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-border/20">
+          <div>
+            <h3 className="text-lg font-bold text-foreground">{employeeName}</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Период: {periodRange}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {records.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground text-sm">
+              Нет выполненных услуг за этот период.
+            </div>
+          ) : (
+            <div className="overflow-x-auto border border-border/30 rounded-xl">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-border/30 bg-muted/40 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+                    <th className="py-3 px-4">Дата</th>
+                    <th className="py-3 px-4">Автомобиль</th>
+                    <th className="py-3 px-4">Услуга</th>
+                    <th className="py-3 px-4 text-right">Зарплата</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/20">
+                  {records.map((rec) => (
+                    <tr key={rec.id} className="hover:bg-muted/10 transition-colors">
+                      <td className="py-3 px-4 whitespace-nowrap text-xs text-muted-foreground">
+                        {format(parseISO(rec.date), "dd.MM.yyyy")}
+                      </td>
+                      <td className="py-3 px-4 font-medium text-foreground">{rec.carInfo}</td>
+                      <td className="py-3 px-4 text-muted-foreground">{rec.serviceName}</td>
+                      <td className="py-3 px-4 text-right font-bold text-foreground tabular-nums">
+                        {rec.salary.toLocaleString("ru-RU")} BYN
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-border/20 bg-muted/20 flex justify-between items-center rounded-b-2xl">
+          <div className="text-xs text-muted-foreground">
+            Всего услуг: <span className="font-bold text-foreground">{records.length}</span>
+          </div>
+          <div className="text-sm font-bold text-foreground">
+            Общая сумма ЗП:{" "}
+            <span className="text-primary">
+              {records.reduce((sum, r) => sum + r.salary, 0).toLocaleString("ru-RU")} BYN
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 type PresetRange = "today" | "yesterday" | "this_week" | "this_month" | "last_month";
 
@@ -60,6 +164,15 @@ const OkleykaReportsPage: React.FC = () => {
   const [revenueDebt, setRevenueDebt] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [employeeRows, setEmployeeRows] = useState<EmployeeReportRow[]>([]);
+  
+  const [allWorkersDetails, setAllWorkersDetails] = useState<WorkerOrderDetail[]>([]);
+  const [selectedEmployeeIdForModal, setSelectedEmployeeIdForModal] = useState<string | null>(null);
+  const [isRecordsModalOpen, setIsRecordsModalOpen] = useState(false);
+
+  const handleRowClick = (employeeId: string) => {
+    setSelectedEmployeeIdForModal(employeeId);
+    setIsRecordsModalOpen(true);
+  };
 
   // Apply preset dates
   const applyPreset = (preset: PresetRange) => {
@@ -130,6 +243,8 @@ const OkleykaReportsPage: React.FC = () => {
 
       // 3. Fetch worker records from completed orders to calculate earnings
       let employeeEarnings: Record<string, number> = {};
+      let detailsList: WorkerOrderDetail[] = [];
+
       if (completed.length > 0) {
         const completedIds = completed.map(o => o.id);
         
@@ -141,11 +256,25 @@ const OkleykaReportsPage: React.FC = () => {
           const chunk = completedIds.slice(i, i + chunkSize);
           const { data, error } = await supabase
             .from("okleyka_order_workers")
-            .select("*")
+            .select(`
+              id,
+              employee_id,
+              salary,
+              is_paid,
+              okleyka_orders (
+                date_start,
+                car_info,
+                status
+              ),
+              okleyka_order_items (
+                name,
+                price
+              )
+            `)
             .in("order_id", chunk);
 
           if (error) {
-            console.error("Error fetching order workers:", error);
+            console.error("Error fetching order workers details:", error);
           } else if (data) {
             workersData = [...workersData, ...data];
           }
@@ -155,8 +284,26 @@ const OkleykaReportsPage: React.FC = () => {
           if (w.salary !== null) {
             employeeEarnings[w.employee_id] = (employeeEarnings[w.employee_id] || 0) + Number(w.salary);
           }
+
+          const order = Array.isArray(w.okleyka_orders) ? w.okleyka_orders[0] : w.okleyka_orders;
+          const item = Array.isArray(w.okleyka_order_items) ? w.okleyka_order_items[0] : w.okleyka_order_items;
+
+          if (order && item) {
+            detailsList.push({
+              id: w.id,
+              employeeId: w.employee_id,
+              date: order.date_start,
+              carInfo: order.car_info,
+              serviceName: item.name,
+              price: Number(item.price || 0),
+              salary: w.salary !== null ? Number(w.salary) : 0,
+              isPaid: !!w.is_paid,
+            });
+          }
         });
       }
+
+      setAllWorkersDetails(detailsList);
 
       // 4. Incorporate closed debts payouts
       // Fetch closed debts in range
@@ -212,6 +359,16 @@ const OkleykaReportsPage: React.FC = () => {
   useEffect(() => {
     calculateReport();
   }, [calculateReport]);
+
+  const getPeriodLabel = () => {
+    try {
+      const start = format(parseISO(startDate), "dd.MM.yyyy");
+      const end = format(parseISO(endDate), "dd.MM.yyyy");
+      return `${start} - ${end}`;
+    } catch {
+      return `${startDate} - ${endDate}`;
+    }
+  };
 
   return (
     <motion.div
@@ -433,7 +590,11 @@ const OkleykaReportsPage: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-border/30">
                   {employeeRows.map((row) => (
-                    <tr key={row.id} className="hover:bg-muted/10 transition-colors">
+                    <tr
+                      key={row.id}
+                      onClick={() => handleRowClick(row.id)}
+                      className="hover:bg-muted/10 cursor-pointer transition-colors"
+                    >
                       <td className="py-3 px-2">
                         <div className="font-semibold text-foreground">{row.name}</div>
                         <div className="text-[10px] text-muted-foreground mt-0.5">{row.position}</div>
@@ -462,7 +623,11 @@ const OkleykaReportsPage: React.FC = () => {
             {/* Mobile Stack View */}
             <div className="sm:hidden space-y-3">
               {employeeRows.map((row) => (
-                <div key={row.id} className="bg-background border border-border/30 p-3 rounded-xl space-y-2">
+                <div
+                  key={row.id}
+                  onClick={() => handleRowClick(row.id)}
+                  className="bg-background border border-border/30 p-3 rounded-xl space-y-2 cursor-pointer active:bg-muted/10 transition-colors"
+                >
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-bold">{row.name}</p>
@@ -505,6 +670,22 @@ const OkleykaReportsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Employee records detail modal */}
+      <AnimatePresence>
+        {isRecordsModalOpen && selectedEmployeeIdForModal && (
+          <EmployeeOkleykaRecordsModal
+            isOpen={isRecordsModalOpen}
+            onClose={() => {
+              setIsRecordsModalOpen(false);
+              setSelectedEmployeeIdForModal(null);
+            }}
+            employeeName={state.employees.find(e => e.id === selectedEmployeeIdForModal)?.name || "Сотрудник"}
+            periodRange={getPeriodLabel()}
+            records={allWorkersDetails.filter(d => d.employeeId === selectedEmployeeIdForModal)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

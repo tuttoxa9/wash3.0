@@ -8,7 +8,7 @@ import {
   Trash,
   WarningCircle,
   CheckCircle,
-  CurrencyRub,
+  Tag,
   UserCircle,
   Car,
   Buildings,
@@ -74,6 +74,33 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
   const [carInfo, setCarInfo] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+
+  const handlePhoneChange = (val: string) => {
+    // only digits
+    const digits = val.replace(/\D/g, "");
+    if (!digits) {
+      setClientPhone("");
+      return;
+    }
+    let formatted = "+375";
+    let body = digits;
+    if (digits.startsWith("375")) {
+      body = digits.slice(3);
+    }
+    if (body.length > 0) {
+      formatted += " (" + body.slice(0, 2);
+    }
+    if (body.length > 2) {
+      formatted += ") " + body.slice(2, 5);
+    }
+    if (body.length > 5) {
+      formatted += "-" + body.slice(5, 7);
+    }
+    if (body.length > 7) {
+      formatted += "-" + body.slice(7, 9);
+    }
+    setClientPhone(formatted);
+  };
   const [boxNumber, setBoxNumber] = useState<1 | 2>(1);
   const [dateStart, setDateStart] = useState(today());
   const [dateEnd, setDateEnd] = useState(today());
@@ -435,7 +462,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
                           type="text"
                           value={carInfo}
                           onChange={(e) => setCarInfo(e.target.value)}
-                          placeholder="A001AA 777 / Toyota Camry"
+                          placeholder="1234 AB-7 / Toyota Camry"
                           className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 text-sm focus:outline-none focus:border-violet-500/60 focus:bg-white/8 transition-all"
                         />
                       </div>
@@ -456,8 +483,8 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
                           <input
                             type="tel"
                             value={clientPhone}
-                            onChange={(e) => setClientPhone(e.target.value)}
-                            placeholder="+7 999 000 00 00"
+                            onChange={(e) => handlePhoneChange(e.target.value)}
+                            placeholder="+375 (29) 123-45-67"
                             className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 text-sm focus:outline-none focus:border-violet-500/60 transition-all"
                           />
                         </div>
@@ -575,7 +602,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
                     <section className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <CurrencyRub className="text-violet-400" size={18} weight="duotone" />
+                          <Tag className="text-violet-400" size={18} weight="duotone" />
                           <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
                             Услуги
                           </h3>

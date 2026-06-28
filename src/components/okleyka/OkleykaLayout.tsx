@@ -39,49 +39,48 @@ const OkleykaLayout: React.FC = () => {
       <div vaul-drawer-wrapper="" className="flex h-full bg-background">
 
         {/* ── Desktop Sidebar ── */}
-        <aside className="hidden md:flex flex-col w-[220px] h-full bg-card border-r border-border/50 flex-shrink-0 py-5 px-3 gap-1">
-          {/* Back to desktop */}
-          <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent text-xs font-medium transition-colors mb-3"
-          >
-            <ArrowLeft size={14} />
-            На рабочий стол
-          </button>
-
-          {/* Logo */}
-          <div className="px-3 mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-400/30 flex items-center justify-center flex-shrink-0">
-                <span className="text-purple-300 text-[10px] font-bold">ОК</span>
+        <aside className="hidden md:flex sidebar w-64 min-w-[16rem] h-[100dvh] bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] p-4 border-r border-border/40 shadow-xl overflow-hidden transition-all duration-300 z-0">
+          <div className="flex flex-col h-full relative w-full">
+            {/* Logo header */}
+            <div className="flex items-center justify-between mb-6 sm:mb-8 md:px-3 md:mt-2 relative">
+              <div className="flex items-center justify-start relative group">
+                <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/30 black:bg-blue-500/50 blur-[25px] rounded-full scale-[1.3] md:scale-[1.6] z-[-1] pointer-events-none translate-y-1 md:translate-y-2 opacity-100 dark:opacity-40 transition-opacity duration-1000 ease-in"></div>
+                <div className="bg-transparent dark:bg-transparent black:bg-zinc-950 px-3 py-1.5 rounded-xl shadow-sm dark:shadow-none border border-transparent dark:border-transparent black:border-zinc-800/50 transition-colors select-none pointer-events-none relative z-10">
+                  <img src="/logo.png" alt="Detail Lab" className="h-6 md:h-7 w-auto object-contain select-none pointer-events-none" draggable="false" />
+                </div>
               </div>
-              <span className="text-sm font-bold text-foreground">Оклейка</span>
             </div>
-          </div>
 
-          {/* Nav links */}
-          {navItems.map(({ to, label, icon: Icon, exact, badge }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={exact}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative ${
-                  isActive
-                    ? "bg-purple-500/15 text-purple-400 border border-purple-400/20"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                }`
-              }
-            >
-              <Icon size={18} weight="duotone" />
-              <span className="flex-1">{label}</span>
-              {badge && unpaidCount > 0 && (
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 min-w-[18px] h-[18px] rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center px-1 animate-pulse">
-                  {unpaidCount > 99 ? "99+" : unpaidCount}
-                </span>
-              )}
-            </NavLink>
-          ))}
+            {/* Navigation */}
+            <nav className="flex-1 space-y-2 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar pr-1">
+              <button
+                onClick={() => navigate("/")}
+                className="sidebar-link w-full text-left"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>На рабочий стол</span>
+              </button>
+
+              {navItems.map(({ to, label, icon: Icon, exact, badge }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={exact}
+                  className={({ isActive }) =>
+                    `sidebar-link ${isActive ? "active" : ""}`
+                  }
+                >
+                  <Icon className="w-5 h-5" weight="duotone" />
+                  <span className="flex-1">{label}</span>
+                  {badge && unpaidCount > 0 && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 min-w-[18px] h-[18px] rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center px-1 animate-pulse">
+                      {unpaidCount > 99 ? "99+" : unpaidCount}
+                    </span>
+                  )}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
         </aside>
 
         {/* ── Main content ── */}
@@ -141,14 +140,14 @@ const OkleykaLayout: React.FC = () => {
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
                 transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                className="fixed right-0 top-0 bottom-0 w-72 bg-card border-l border-border z-50 flex flex-col py-5 px-3 gap-1 md:hidden"
+                className="fixed right-0 top-0 bottom-0 w-72 bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] border-l border-border z-50 flex flex-col py-5 px-3 gap-1 md:hidden shadow-xl"
               >
                 <div className="flex items-center justify-between px-2 mb-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-foreground">
                     <div className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-400/30 flex items-center justify-center">
                       <span className="text-purple-300 text-[10px] font-bold">ОК</span>
                     </div>
-                    <span className="text-sm font-bold text-foreground">Оклейка</span>
+                    <span className="text-sm font-bold">Оклейка</span>
                   </div>
                   <button
                     onClick={() => setMobileNavOpen(false)}
@@ -165,17 +164,13 @@ const OkleykaLayout: React.FC = () => {
                     end={exact}
                     onClick={() => setMobileNavOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all relative ${
-                        isActive
-                          ? "bg-purple-500/15 text-purple-400 border border-purple-400/20"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                      }`
+                      `sidebar-link ${isActive ? "active" : ""}`
                     }
                   >
-                    <Icon size={20} weight="duotone" />
+                    <Icon className="w-5 h-5" weight="duotone" />
                     <span className="flex-1">{label}</span>
                     {badge && unpaidCount > 0 && (
-                      <span className="min-w-[20px] h-5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center px-1.5 animate-pulse">
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 min-w-[18px] h-[18px] rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center px-1 animate-pulse">
                         {unpaidCount > 99 ? "99+" : unpaidCount}
                       </span>
                     )}
@@ -185,10 +180,10 @@ const OkleykaLayout: React.FC = () => {
                 <div className="mt-auto pt-4 border-t border-border/50">
                   <button
                     onClick={() => { navigate("/"); setMobileNavOpen(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    className="sidebar-link w-full text-left"
                   >
-                    <ArrowLeft size={18} />
-                    На рабочий стол
+                    <ArrowLeft className="w-5 h-5" />
+                    <span>На рабочий стол</span>
                   </button>
                 </div>
               </motion.div>

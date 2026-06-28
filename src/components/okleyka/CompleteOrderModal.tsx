@@ -7,7 +7,7 @@ import {
   CheckCircle,
   Car,
   CalendarBlank,
-  CurrencyRub,
+  Tag,
   Bell,
   Clock,
 } from "@phosphor-icons/react";
@@ -190,7 +190,7 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
                 {/* Total */}
                 <div className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <CurrencyRub size={16} className="text-emerald-400" />
+                    <Tag size={16} className="text-emerald-400" />
                     <span className="text-sm text-white/60">Итого</span>
                   </div>
                   <div className="text-right">
