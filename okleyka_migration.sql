@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS okleyka_shifts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   date DATE NOT NULL UNIQUE,
   employee_ids JSONB DEFAULT '[]',        -- массив UUID сотрудников
+  employee_roles JSONB DEFAULT '{}',      -- роли сотрудников { employeeId: 'admin' | 'installer' }
   start_of_day_cash NUMERIC DEFAULT 0,
   actual_end_cash NUMERIC,               -- NULL = смена открыта
   salary_payouts JSONB DEFAULT '{}',     -- { employeeId: amount }

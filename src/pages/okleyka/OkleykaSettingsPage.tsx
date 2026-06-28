@@ -5,6 +5,8 @@ import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import {
   okleykaEmployeeService,
   okleykaOrganizationService,
+  okleykaSettingsService,
+  okleykaShiftService,
 } from "@/lib/services/okleykaService";
 import type { OkleykaEmployee, OkleykaOrganization } from "@/lib/types/okleyka";
 import { toast } from "sonner";
@@ -17,6 +19,8 @@ import {
   X,
   Check,
   Loader2,
+  Coins,
+  AlertTriangle,
 } from "lucide-react";
 
 // ── Employee Modal ────────────────────────────────────────────────────────────
@@ -458,6 +462,194 @@ const OrganizationsTab: React.FC = () => {
   );
 };
 
+// ── Salary Settings Tab ───────────────────────────────────────────────────────
+const SalarySettingsTab: React.FC = () => {
+  const { state, dispatch } = useOkleykaContext();
+  const [adminSalaryType, setAdminSalaryType] = useState<"fixed" | "percent">(
+    state.settings?.adminSalaryType ?? "fixed"
+  );
+  const [adminSalaryValue, setAdminSalaryValue] = useState<string>(
+    state.settings?.adminSalaryValue?.toString() ?? "0"
+  );
+  const [saving, setSaving] = useState(false);
+  const [deletingShift, setDeletingShift] = useState(false);
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const valueNum = Number(adminSalaryValue);
+    if (isNaN(valueNum) || valueNum < 0) {
+      toast.error("Введите корректное числовое значение");
+      return;
+    }
+    setSaving(true);
+    try {
+      const ok = await okleykaSettingsService.save({
+        adminSalaryType,
+        adminSalaryValue: valueNum,
+      });
+      if (ok) {
+        dispatch({
+          type: "SET_SETTINGS",
+          payload: { adminSalaryType, adminSalaryValue: valueNum },
+        });
+        toast.success("Настройки ЗП успешно сохранены");
+      } else {
+        toast.error("Не удалось сохранить настройки");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Ошибка при сохранении");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteShift = async () => {
+    const dateInput = prompt(
+      "Введите дату смены для удаления в формате ГГГГ-ММ-ДД (например, 2026-06-28):"
+    );
+    if (!dateInput) return;
+
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateInput)) {
+      toast.error("Неверный формат даты. Используйте ГГГГ-ММ-ДД");
+      return;
+    }
+
+    const confirmInput = prompt(
+      `ВНИМАНИЕ! Это полностью удалит смену за ${dateInput} и ВСЕ связанные выплаты/данные смены.\nДля подтверждения введите дату еще раз:`
+    );
+    if (confirmInput !== dateInput) {
+      toast.error("Введенная дата не совпадает. Операция отменена.");
+      return;
+    }
+
+    setDeletingShift(true);
+    try {
+      const ok = await okleykaShiftService.deleteByDate(dateInput);
+      if (ok) {
+        toast.success(`Смена за ${dateInput} успешно удалена`);
+      } else {
+        toast.error(`Не удалось удалить смену за ${dateInput}`);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Ошибка при удалении смены");
+    } finally {
+      setDeletingShift(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Settings Card */}
+      <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm space-y-4">
+        <div>
+          <h3 className="text-base font-semibold text-foreground">Зарплата администратора</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Настройка расчета ежедневной ставки администратора оклейки
+          </p>
+        </div>
+
+        <form onSubmit={handleSaveSettings} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground block">Тип расчета</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setAdminSalaryType("fixed")}
+                className={`py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                  adminSalaryType === "fixed"
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "bg-background border-border/50 text-muted-foreground hover:bg-muted/50"
+                }`}
+              >
+                Фиксированная ставка
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdminSalaryType("percent")}
+                className={`py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                  adminSalaryType === "percent"
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "bg-background border-border/50 text-muted-foreground hover:bg-muted/50"
+                }`}
+              >
+                Процент от выручки
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground block">
+              {adminSalaryType === "fixed" ? "Ставка (BYN)" : "Процент (%)"}
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={adminSalaryValue}
+                onChange={(e) => setAdminSalaryValue(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-border/50 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition pr-12"
+                required
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+                {adminSalaryType === "fixed" ? "BYN" : "%"}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full sm:w-auto px-6 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            Сохранить
+          </button>
+        </form>
+      </div>
+
+      {/* Danger Zone Card */}
+      <div className="bg-destructive/5 border border-destructive/20 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 bg-destructive/10 text-destructive rounded-xl mt-0.5">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-destructive">Опасная зона</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Действия ниже могут привести к необратимому удалению данных.
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-destructive/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h4 className="text-sm font-semibold text-foreground">Удалить смену полностью</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Удаляет запись смены и очищает все ассоциированные данные за этот день.
+            </p>
+          </div>
+          <button
+            onClick={handleDeleteShift}
+            disabled={deletingShift}
+            className="px-4 py-2.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground text-xs font-semibold rounded-xl transition-colors shrink-0 disabled:opacity-60 flex items-center justify-center gap-1.5"
+          >
+            {deletingShift ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="w-3.5 h-3.5" />
+            )}
+            Удалить смену
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const OkleykaSettingsPage: React.FC = () => {
   return (
@@ -479,6 +671,9 @@ const OkleykaSettingsPage: React.FC = () => {
           <TabsTrigger value="organizations" className="flex-1 flex items-center gap-1.5">
             <Building className="w-3.5 h-3.5" /> Организации
           </TabsTrigger>
+          <TabsTrigger value="salary" className="flex-1 flex items-center gap-1.5">
+            <Coins className="w-3.5 h-3.5" /> Настройки ЗП
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="employees" className="mt-4">
@@ -487,6 +682,10 @@ const OkleykaSettingsPage: React.FC = () => {
 
         <TabsContent value="organizations" className="mt-4">
           <OrganizationsTab />
+        </TabsContent>
+
+        <TabsContent value="salary" className="mt-4">
+          <SalarySettingsTab />
         </TabsContent>
       </Tabs>
     </motion.div>

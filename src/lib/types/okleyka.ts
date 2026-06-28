@@ -76,6 +76,7 @@ export interface OkleykaShift {
   id: string;
   date: string; // YYYY-MM-DD
   employeeIds: string[];
+  employeeRoles: Record<string, "admin" | "installer">;
   startOfDayCash: number;
   actualEndCash?: number | null; // null = смена открыта
   salaryPayouts: Record<string, number>; // employeeId -> amount
@@ -123,4 +124,5 @@ export interface OkleykaAppState {
   unpaidWorkersCount: number;   // кол-во записей с salary IS NULL
   isInitialized: boolean;
   currentDate: string; // YYYY-MM-DD
+  settings: { adminSalaryType: "percent" | "fixed"; adminSalaryValue: number } | null;
 }

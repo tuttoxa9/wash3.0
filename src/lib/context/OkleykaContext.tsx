@@ -16,6 +16,7 @@ import {
   okleykaDebtService,
   okleykaAppointmentService,
   okleykaWorkerService,
+  okleykaSettingsService,
 } from "@/lib/services/okleykaService";
 import type {
   OkleykaEmployee,
@@ -42,6 +43,7 @@ const initialState: OkleykaAppState = {
   unpaidWorkersCount: 0,
   isInitialized: false,
   currentDate: todayStr,
+  settings: null,
 };
 
 // ── Actions ───────────────────────────────────────────────────────────────
@@ -67,7 +69,10 @@ type OkleykaAction =
   | { type: "SET_UPCOMING_INSPECTIONS"; payload: OkleykaOrder[] }
   | { type: "SET_UNPAID_COUNT"; payload: number }
   | { type: "SET_INITIALIZED"; payload: boolean }
-  | { type: "SET_CURRENT_DATE"; payload: string };
+  | { type: "SET_CURRENT_DATE"; payload: string }
+  | { type: "SET_SETTINGS"; payload: { adminSalaryType: 'percent' | 'fixed'; adminSalaryValue: number } | null }
+  | { type: "UPDATE_SETTINGS"; payload: { adminSalaryType: 'percent' | 'fixed'; adminSalaryValue: number } }
+  | { type: "DELETE_SHIFT"; payload: string };
 
 function reducer(state: OkleykaAppState, action: OkleykaAction): OkleykaAppState {
   switch (action.type) {
@@ -93,6 +98,14 @@ function reducer(state: OkleykaAppState, action: OkleykaAction): OkleykaAppState
     case "SET_UNPAID_COUNT": return { ...state, unpaidWorkersCount: action.payload };
     case "SET_INITIALIZED": return { ...state, isInitialized: action.payload };
     case "SET_CURRENT_DATE": return { ...state, currentDate: action.payload };
+    case "SET_SETTINGS": return { ...state, settings: action.payload };
+    case "UPDATE_SETTINGS": return { ...state, settings: action.payload };
+    case "DELETE_SHIFT": {
+      if (state.currentShift && state.currentShift.date === action.payload) {
+        return { ...state, currentShift: null };
+      }
+      return state;
+    }
     default: return state;
   }
 }
@@ -155,7 +168,7 @@ export function OkleykaProvider({ children }: { children: ReactNode }) {
         const end = format(endOfMonth(now), "yyyy-MM-dd");
         const today = format(now, "yyyy-MM-dd");
 
-        const [employees, organizations, shift, orders, debts, appointments, unpaidCount, inspections] =
+        const [employees, organizations, shift, orders, debts, appointments, unpaidCount, inspections, settingsData] =
           await Promise.all([
             okleykaEmployeeService.getAll(),
             okleykaOrganizationService.getAll(),
@@ -165,6 +178,7 @@ export function OkleykaProvider({ children }: { children: ReactNode }) {
             okleykaAppointmentService.getByDateRange(start, end),
             okleykaWorkerService.countUnpaid(),
             okleykaOrderService.getUpcomingInspections(),
+            okleykaSettingsService.get(),
           ]);
 
         dispatch({ type: "SET_EMPLOYEES", payload: employees });
@@ -175,6 +189,10 @@ export function OkleykaProvider({ children }: { children: ReactNode }) {
         dispatch({ type: "SET_APPOINTMENTS", payload: appointments });
         dispatch({ type: "SET_UNPAID_COUNT", payload: unpaidCount });
         dispatch({ type: "SET_UPCOMING_INSPECTIONS", payload: inspections });
+        dispatch({
+          type: "SET_SETTINGS",
+          payload: settingsData || { adminSalaryType: "fixed", adminSalaryValue: 0 },
+        });
         dispatch({ type: "SET_INITIALIZED", payload: true });
       } catch (err) {
         console.error("[OkleykaContext] loadInitialData error:", err);

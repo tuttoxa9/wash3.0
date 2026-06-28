@@ -14,6 +14,7 @@ import type {
   OkleykaAppointment,
   OkleykaCashModification,
   OkleykaPaymentMethod,
+  OkleykaEmployee,
 } from "@/lib/types/okleyka";
 import {
   Play,
@@ -33,6 +34,7 @@ import {
   ArrowCircleUpRight,
   Backspace,
   Info,
+  Gear,
 } from "@phosphor-icons/react";
 import { format, addDays } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -101,6 +103,150 @@ const PayoutModal: React.FC<{
               Выплатить
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Edit Crew Modal ────────────────────────────────────────────────────────
+const EditCrewModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  shift: OkleykaShift;
+  employees: OkleykaEmployee[];
+  onSave: (employeeIds: string[], employeeRoles: Record<string, "admin" | "installer">) => void;
+}> = ({ isOpen, onClose, shift, employees, onSave }) => {
+  const [selectedIds, setSelectedIds] = useState<string[]>(shift.employeeIds);
+  const [roles, setRoles] = useState<Record<string, "admin" | "installer">>(shift.employeeRoles || {});
+  const [saving, setSaving] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleToggle = (id: string) => {
+    setSelectedIds((prev) => {
+      const active = prev.includes(id);
+      if (active) {
+        return prev.filter((x) => x !== id);
+      } else {
+        if (!roles[id]) {
+          setRoles((prevRoles) => ({ ...prevRoles, [id]: "installer" }));
+        }
+        return [...prev, id];
+      }
+    });
+  };
+
+  const handleSetRole = (id: string, role: "admin" | "installer") => {
+    setRoles((prev) => ({ ...prev, [id]: role }));
+  };
+
+  const handleConfirm = async () => {
+    if (selectedIds.length === 0) {
+      toast.error("Выберите хотя бы одного сотрудника");
+      return;
+    }
+    setSaving(true);
+    try {
+      const rolesMap: Record<string, "admin" | "installer"> = {};
+      selectedIds.forEach((id) => {
+        rolesMap[id] = roles[id] || "installer";
+      });
+      await onSave(selectedIds, rolesMap);
+      onClose();
+    } catch {
+      toast.error("Ошибка сохранения");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-3xl w-full max-w-md space-y-4 max-h-[85vh] overflow-y-auto">
+        <div className="flex items-center justify-between pb-2 border-b border-white/[0.04]">
+          <div>
+            <h3 className="font-bold text-base text-white">Изменить состав смены</h3>
+            <p className="text-[10px] text-white/40">Добавление/удаление сотрудников и смена ролей</p>
+          </div>
+          <button onClick={onClose} className="p-1 text-white/40 hover:text-white rounded-lg">
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="space-y-2 py-2">
+          {employees.map((emp) => {
+            const active = selectedIds.includes(emp.id);
+            const role = roles[emp.id] || "installer";
+            return (
+              <div
+                key={emp.id}
+                className={`flex items-center justify-between p-3 rounded-2xl border text-xs font-medium transition-all ${
+                  active
+                    ? "bg-purple-500/10 border-purple-500/30 text-purple-400"
+                    : "bg-white/[0.03] border-white/[0.05] text-white/50"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleToggle(emp.id)}
+                  className="flex items-center gap-3 flex-1 text-left"
+                >
+                  <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
+                    active
+                      ? "bg-purple-500 border-purple-400 text-white"
+                      : "border-white/20 bg-transparent text-transparent"
+                  }`}>
+                    <Check size={12} weight="bold" />
+                  </div>
+                  <span className={active ? "text-white font-semibold" : "text-white/75"}>{emp.name}</span>
+                </button>
+
+                {active && (
+                  <div className="flex bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden p-0.5 ml-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSetRole(emp.id, "admin")}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                        role === "admin"
+                          ? "bg-purple-600 text-white"
+                          : "text-white/40 hover:text-white/60"
+                      }`}
+                    >
+                      Админ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetRole(emp.id, "installer")}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                        role === "installer"
+                          ? "bg-purple-600 text-white"
+                          : "text-white/40 hover:text-white/60"
+                      }`}
+                    >
+                      Оклейщик
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-2 pt-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-xl bg-zinc-900 text-white/70 hover:bg-zinc-800 text-xs font-semibold"
+          >
+            Отмена
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={saving}
+            className="flex-1 py-3 rounded-xl bg-purple-600 text-white hover:bg-purple-500 text-xs font-semibold disabled:opacity-40"
+          >
+            Сохранить
+          </button>
         </div>
       </div>
     </div>
@@ -218,6 +364,7 @@ const OkleykaHomePage: React.FC = () => {
   const { state, dispatch, refreshShift, refreshOrders, refreshDebts } = useOkleykaContext();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [shiftEmployees, setShiftEmployees] = useState<string[]>([]);
+  const [employeeRoles, setEmployeeRoles] = useState<Record<string, "admin" | "installer">>({});
   const [startCash, setStartCash] = useState("0");
   const [opening, setOpening] = useState(false);
 
@@ -242,6 +389,7 @@ const OkleykaHomePage: React.FC = () => {
   const [payoutOpen, setPayoutOpen] = useState(false);
   const [payoutEmployee, setPayoutEmployee] = useState<{ id: string; name: string } | null>(null);
   const [payoutMax, setPayoutMax] = useState(0);
+  const [editCrewOpen, setEditCrewOpen] = useState(false);
 
   // Load shift when selected date changes
   useEffect(() => {
@@ -265,9 +413,15 @@ const OkleykaHomePage: React.FC = () => {
     }
     setOpening(true);
     try {
+      const rolesMap: Record<string, "admin" | "installer"> = {};
+      shiftEmployees.forEach((id) => {
+        rolesMap[id] = employeeRoles[id] || "installer";
+      });
+
       const openedShift = await okleykaShiftService.open(
         selectedDate,
         shiftEmployees,
+        rolesMap,
         Number(startCash)
       );
       if (openedShift) {
@@ -285,9 +439,17 @@ const OkleykaHomePage: React.FC = () => {
 
   // Toggle employees select for new shift
   const handleToggleEmp = (id: string) => {
-    setShiftEmployees((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+    setShiftEmployees((prev) => {
+      const isSelected = prev.includes(id);
+      if (isSelected) {
+        return prev.filter((x) => x !== id);
+      } else {
+        if (!employeeRoles[id]) {
+          setEmployeeRoles((roles) => ({ ...roles, [id]: "installer" }));
+        }
+        return [...prev, id];
+      }
+    });
   };
 
   // Cash modifications logic
@@ -361,6 +523,25 @@ const OkleykaHomePage: React.FC = () => {
       refreshShift(selectedDate);
     } else {
       toast.error("Ошибка выплаты");
+    }
+  };
+
+  const handleSaveCrew = async (
+    employeeIds: string[],
+    employeeRoles: Record<string, "admin" | "installer">
+  ) => {
+    if (!shift) return;
+    const updatedShift: OkleykaShift = {
+      ...shift,
+      employeeIds,
+      employeeRoles,
+    };
+    const success = await okleykaShiftService.update(updatedShift);
+    if (success) {
+      toast.success("Состав смены изменен");
+      refreshShift(selectedDate);
+    } else {
+      toast.error("Не удалось обновить состав смены");
     }
   };
 
@@ -469,22 +650,61 @@ const OkleykaHomePage: React.FC = () => {
             {state.employees.length === 0 ? (
               <p className="text-xs text-white/30 italic pl-1">Сотрудники отсутствуют. Добавьте в настройках.</p>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 {state.employees.map((emp) => {
                   const active = shiftEmployees.includes(emp.id);
+                  const role = employeeRoles[emp.id] || "installer";
                   return (
-                    <button
+                    <div
                       key={emp.id}
-                      onClick={() => handleToggleEmp(emp.id)}
-                      className={`flex items-center justify-between p-3 rounded-2xl border text-xs font-medium text-left transition-all ${
+                      className={`flex items-center justify-between p-3 rounded-2xl border text-xs font-medium transition-all ${
                         active
-                          ? "bg-purple-500/15 border-purple-400/30 text-purple-400"
-                          : "bg-white/[0.03] border-white/[0.05] text-white/50 hover:bg-white/[0.06]"
+                          ? "bg-purple-500/10 border-purple-500/30 text-purple-400"
+                          : "bg-white/[0.03] border-white/[0.05] text-white/50"
                       }`}
                     >
-                      <span>{emp.name}</span>
-                      {active ? <Check size={12} weight="bold" /> : <Plus size={10} />}
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleEmp(emp.id)}
+                        className="flex items-center gap-3 flex-1 text-left"
+                      >
+                        <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
+                          active
+                            ? "bg-purple-500 border-purple-400 text-white"
+                            : "border-white/20 bg-transparent text-transparent"
+                        }`}>
+                          <Check size={12} weight="bold" />
+                        </div>
+                        <span className={active ? "text-white font-semibold" : "text-white/75"}>{emp.name}</span>
+                      </button>
+
+                      {active && (
+                        <div className="flex bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden p-0.5 ml-2">
+                          <button
+                            type="button"
+                            onClick={() => setEmployeeRoles((prev) => ({ ...prev, [emp.id]: "admin" }))}
+                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                              role === "admin"
+                                ? "bg-purple-600 text-white"
+                                : "text-white/40 hover:text-white/60"
+                            }`}
+                          >
+                            Админ
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEmployeeRoles((prev) => ({ ...prev, [emp.id]: "installer" }))}
+                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                              role === "installer"
+                                ? "bg-purple-600 text-white"
+                                : "text-white/40 hover:text-white/60"
+                            }`}
+                          >
+                            Оклейщик
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -814,6 +1034,14 @@ const OkleykaHomePage: React.FC = () => {
                   <Users size={18} className="text-purple-400" />
                   <h4 className="font-bold text-white text-sm">Сотрудники в смене</h4>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setEditCrewOpen(true)}
+                  className="p-1.5 hover:bg-white/5 rounded-lg text-white/40 hover:text-white transition-colors"
+                  title="Изменить состав"
+                >
+                  <Gear size={16} weight="bold" />
+                </button>
               </div>
 
               <div className="space-y-2">
@@ -821,12 +1049,22 @@ const OkleykaHomePage: React.FC = () => {
                   const emp = state.employees.find((e) => e.id === empId);
                   if (!emp) return null;
                   const payout = shift.salaryPayouts[empId] || 0;
+                  const role = shift.employeeRoles?.[empId] || "installer";
 
                   return (
                     <div key={empId} className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/[0.03] rounded-2xl">
-                      <div className="text-left">
-                        <p className="font-bold text-white text-xs leading-none">{emp.name}</p>
-                        <p className="text-[9px] text-white/40 mt-1 font-semibold">Выплачено: {payout} BYN</p>
+                      <div className="text-left space-y-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-bold text-white text-xs leading-none">{emp.name}</p>
+                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full border leading-none ${
+                            role === "admin"
+                              ? "bg-purple-500/10 border-purple-500/20 text-purple-400"
+                              : "bg-zinc-800 border-zinc-700 text-zinc-400"
+                          }`}>
+                            {role === "admin" ? "Админ" : "Оклейщик"}
+                          </span>
+                        </div>
+                        <p className="text-[9px] text-white/40 font-semibold">Выплачено: {payout} BYN</p>
                       </div>
                       <button
                         onClick={() => {
@@ -910,6 +1148,16 @@ const OkleykaHomePage: React.FC = () => {
           employeeName={payoutEmployee.name}
           maxAmount={payoutMax}
           onPaid={handlePayoutSubmit}
+        />
+      )}
+
+      {editCrewOpen && shift && (
+        <EditCrewModal
+          isOpen={editCrewOpen}
+          onClose={() => setEditCrewOpen(false)}
+          shift={shift}
+          employees={state.employees}
+          onSave={handleSaveCrew}
         />
       )}
     </div>

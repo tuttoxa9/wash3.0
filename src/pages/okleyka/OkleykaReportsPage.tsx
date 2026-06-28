@@ -2,7 +2,7 @@ import type React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
-import { okleykaOrderService, okleykaShiftService, okleykaDebtService } from "@/lib/services/okleykaService";
+import { okleykaOrderService, okleykaShiftService, okleykaDebtService, okleykaSettingsService } from "@/lib/services/okleykaService";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
@@ -300,6 +300,53 @@ const OkleykaReportsPage: React.FC = () => {
               isPaid: !!w.is_paid,
             });
           }
+        });
+      }
+
+      // Fetch okleyka settings
+      let settings = state.settings;
+      if (!settings) {
+        try {
+          settings = await okleykaSettingsService.get();
+        } catch (err) {
+          console.error("Error fetching settings in report:", err);
+        }
+      }
+
+      if (settings && settings.adminSalaryValue > 0) {
+        shifts.forEach(shift => {
+          const roles = shift.employeeRoles || {};
+          Object.entries(roles).forEach(([empId, role]) => {
+            if (role === "admin") {
+              let dailyAdminSalary = 0;
+              let dailyRevenue = 0;
+              if (settings!.adminSalaryType === "fixed") {
+                dailyAdminSalary = settings!.adminSalaryValue;
+              } else if (settings!.adminSalaryType === "percent") {
+                const dailyCompletedOrders = completed.filter(
+                  o => o.shiftDate === shift.date || (!o.shiftDate && o.dateStart === shift.date)
+                );
+                dailyRevenue = dailyCompletedOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+                dailyAdminSalary = dailyRevenue * (settings!.adminSalaryValue / 100);
+              }
+
+              if (dailyAdminSalary > 0) {
+                employeeEarnings[empId] = (employeeEarnings[empId] || 0) + dailyAdminSalary;
+                detailsList.push({
+                  id: `admin-${shift.id}-${empId}`,
+                  employeeId: empId,
+                  date: shift.date,
+                  carInfo: "Администрирование смены",
+                  serviceName: settings!.adminSalaryType === "fixed"
+                    ? "Фиксированная ставка"
+                    : `Процент от выручки (${settings!.adminSalaryValue}%)`,
+                  price: dailyRevenue,
+                  salary: dailyAdminSalary,
+                  isPaid: false,
+                });
+              }
+            }
+          });
         });
       }
 

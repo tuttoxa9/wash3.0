@@ -300,11 +300,11 @@ export const okleykaOrderService = {
       dateStart: updates.dateStart,
       dateEnd: updates.dateEnd,
       carInfo: updates.carInfo,
-      clientName: updates.clientName || null,
-      clientPhone: updates.clientPhone || null,
+      clientName: updates.clientName || undefined,
+      clientPhone: updates.clientPhone || undefined,
       paymentMethod: updates.paymentMethod,
       totalPrice: updates.totalPrice,
-      notes: updates.notes || null,
+      notes: updates.notes || undefined,
     });
     if (!ok) return false;
 
@@ -537,6 +537,7 @@ const mapShift = (r: any): OkleykaShift => ({
   id: r.id,
   date: r.date,
   employeeIds: Array.isArray(r.employee_ids) ? r.employee_ids : (JSON.parse(r.employee_ids || "[]")),
+  employeeRoles: r.employee_roles || {},
   startOfDayCash: Number(r.start_of_day_cash || 0),
   actualEndCash: r.actual_end_cash !== null && r.actual_end_cash !== undefined ? Number(r.actual_end_cash) : null,
   salaryPayouts: r.salary_payouts || {},
@@ -558,12 +559,18 @@ export const okleykaShiftService = {
     return mapShift(data);
   },
 
-  async open(date: string, employeeIds: string[], startOfDayCash: number): Promise<OkleykaShift | null> {
+  async open(
+    date: string,
+    employeeIds: string[],
+    employeeRoles: Record<string, "admin" | "installer">,
+    startOfDayCash: number
+  ): Promise<OkleykaShift | null> {
     const { data, error } = await supabase
       .from("okleyka_shifts")
       .upsert({
         date,
         employee_ids: employeeIds,
+        employee_roles: employeeRoles,
         start_of_day_cash: startOfDayCash,
         actual_end_cash: null,
         salary_payouts: {},
@@ -580,6 +587,7 @@ export const okleykaShiftService = {
       .from("okleyka_shifts")
       .update({
         employee_ids: shift.employeeIds,
+        employee_roles: shift.employeeRoles,
         start_of_day_cash: shift.startOfDayCash,
         actual_end_cash: shift.actualEndCash ?? null,
         salary_payouts: shift.salaryPayouts,
@@ -638,6 +646,15 @@ export const okleykaShiftService = {
       .order("date", { ascending: false });
     if (error) { log("getByDateRange shifts", error); return []; }
     return (data || []).map(mapShift);
+  },
+
+  async deleteByDate(date: string): Promise<boolean> {
+    const { error } = await supabase
+      .from("okleyka_shifts")
+      .delete()
+      .eq("date", date);
+    if (error) { log("deleteByDate shift", error); return false; }
+    return true;
   },
 };
 
@@ -764,4 +781,16 @@ export const okleykaAppointmentService = {
     if (error) { log("delete appointment", error); return false; }
     return true;
   },
+};
+
+export const okleykaSettingsService = {
+  async get(): Promise<{ adminSalaryType: 'percent' | 'fixed'; adminSalaryValue: number } | null> {
+    const { data, error } = await supabase.from('settings').select('data').eq('key', 'okleykaSettings').single();
+    if (error) return null;
+    return data?.data || null;
+  },
+  async save(settings: { adminSalaryType: 'percent' | 'fixed'; adminSalaryValue: number }): Promise<boolean> {
+    const { error } = await supabase.from('settings').upsert({ key: 'okleykaSettings', data: settings }, { onConflict: 'key' });
+    return !error;
+  }
 };
