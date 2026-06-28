@@ -312,7 +312,7 @@ const OkleykaReportsPage: React.FC = () => {
                   Общая выручка
                 </span>
                 <h3 className="text-3xl font-extrabold mt-1 tracking-tight">
-                  {totalRevenue.toLocaleString("ru-RU")} ₽
+                  {totalRevenue.toLocaleString("ru-RU")} BYN
                 </h3>
               </div>
               <div className="flex items-center justify-between mt-6 pt-3 border-t border-white/20 text-xs text-white/80">
@@ -338,7 +338,7 @@ const OkleykaReportsPage: React.FC = () => {
               </div>
               <div className="mt-4">
                 <h4 className="text-lg font-bold text-foreground">
-                  {revenueCash.toLocaleString("ru-RU")} ₽
+                  {revenueCash.toLocaleString("ru-RU")} BYN
                 </h4>
                 <p className="text-[10px] text-muted-foreground mt-0.5">В кассе & выплачено</p>
               </div>
@@ -359,7 +359,7 @@ const OkleykaReportsPage: React.FC = () => {
               </div>
               <div className="mt-4">
                 <h4 className="text-lg font-bold text-foreground">
-                  {revenueCard.toLocaleString("ru-RU")} ₽
+                  {revenueCard.toLocaleString("ru-RU")} BYN
                 </h4>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Безналичный расчет</p>
               </div>
@@ -380,7 +380,7 @@ const OkleykaReportsPage: React.FC = () => {
               </div>
               <div className="mt-4">
                 <h4 className="text-lg font-bold text-foreground">
-                  {revenueOrg.toLocaleString("ru-RU")} ₽
+                  {revenueOrg.toLocaleString("ru-RU")} BYN
                 </h4>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Юридические лица</p>
               </div>
@@ -401,7 +401,7 @@ const OkleykaReportsPage: React.FC = () => {
               </div>
               <div className="mt-4">
                 <h4 className="text-lg font-bold text-foreground">
-                  {revenueDebt.toLocaleString("ru-RU")} ₽
+                  {revenueDebt.toLocaleString("ru-RU")} BYN
                 </h4>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Созданные долги</p>
               </div>
@@ -439,10 +439,10 @@ const OkleykaReportsPage: React.FC = () => {
                         <div className="text-[10px] text-muted-foreground mt-0.5">{row.position}</div>
                       </td>
                       <td className="py-3 px-2 text-right font-bold text-foreground tabular-nums">
-                        {row.earned.toLocaleString("ru-RU")} ₽
+                        {row.earned.toLocaleString("ru-RU")} BYN
                       </td>
                       <td className="py-3 px-2 text-right font-semibold text-muted-foreground tabular-nums">
-                        {row.paid.toLocaleString("ru-RU")} ₽
+                        {row.paid.toLocaleString("ru-RU")} BYN
                       </td>
                       <td className={`py-3 px-2 text-right font-bold tabular-nums ${
                         row.balance > 0 
@@ -451,7 +451,7 @@ const OkleykaReportsPage: React.FC = () => {
                             ? "text-red-500" 
                             : "text-muted-foreground"
                       }`}>
-                        {row.balance > 0 ? "+" : ""}{row.balance.toLocaleString("ru-RU")} ₽
+                        {row.balance > 0 ? "+" : ""}{row.balance.toLocaleString("ru-RU")} BYN
                       </td>
                     </tr>
                   ))}
@@ -475,7 +475,7 @@ const OkleykaReportsPage: React.FC = () => {
                           ? "bg-red-500/10 text-red-500 border border-red-500/20" 
                           : "bg-muted text-muted-foreground"
                     }`}>
-                      {row.balance > 0 ? "Долг: " : ""}{row.balance.toLocaleString("ru-RU")} ₽
+                      {row.balance > 0 ? "Долг: " : ""}{row.balance.toLocaleString("ru-RU")} BYN
                     </span>
                   </div>
 
@@ -484,13 +484,13 @@ const OkleykaReportsPage: React.FC = () => {
                       <span className="text-[10px] text-muted-foreground block uppercase font-medium">
                         Начислено
                       </span>
-                      <span className="font-semibold text-foreground">{row.earned.toLocaleString("ru-RU")} ₽</span>
+                      <span className="font-semibold text-foreground">{row.earned.toLocaleString("ru-RU")} BYN</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground block uppercase font-medium">
                         Выплачено
                       </span>
-                      <span className="font-semibold text-foreground">{row.paid.toLocaleString("ru-RU")} ₽</span>
+                      <span className="font-semibold text-foreground">{row.paid.toLocaleString("ru-RU")} BYN</span>
                     </div>
                   </div>
                 </div>

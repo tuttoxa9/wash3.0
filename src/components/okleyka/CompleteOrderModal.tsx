@@ -180,7 +180,7 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
                       <div key={item.id} className="flex justify-between items-center">
                         <span className="text-sm text-white/70">{item.name}</span>
                         <span className="text-sm font-semibold text-white">
-                          {item.price.toLocaleString("ru-RU")} ₽
+                          {item.price.toLocaleString("ru-RU")} BYN
                         </span>
                       </div>
                     ))}
@@ -195,7 +195,7 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold text-emerald-300">
-                      {order.totalPrice.toLocaleString("ru-RU")} ₽
+                      {order.totalPrice.toLocaleString("ru-RU")} BYN
                     </p>
                     {order.paymentMethod && (
                       <p className="text-xs text-white/40">

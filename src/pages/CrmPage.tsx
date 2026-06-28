@@ -844,7 +844,7 @@ const CrmPage: React.FC = () => {
       updatedHistory.push({
         id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
         type: "price",
-        text: `Стоимость изменена: ${selectedLead.price} руб. ➔ ${detailForm.price} руб.`,
+        text: `Стоимость изменена: ${selectedLead.price} BYN ➔ ${detailForm.price} BYN`,
         createdAt: new Date().toISOString(),
         author: userAuthor,
         fromValue: String(selectedLead.price),
@@ -2165,7 +2165,7 @@ const CrmPage: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (руб.)</label>
+                      <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (BYN)</label>
                       <input
                         type="number"
                         value={detailForm.price || ""}
@@ -2480,7 +2480,7 @@ const CrmPage: React.FC = () => {
               </datalist>
             </div>
             <div>
-              <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (руб.)</label>
+              <label className="text-[10px] text-white/50 block mb-0.5 font-semibold">Стоимость (BYN)</label>
               <input
                 type="number"
                 value={newLeadForm.price || ""}

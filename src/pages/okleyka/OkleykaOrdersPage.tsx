@@ -99,7 +99,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, employees, onComplete, onE
           </span>
         )}
         <span className="ml-auto text-base font-bold tabular-nums">
-          {order.totalPrice.toLocaleString("ru-RU")} ₽
+          {order.totalPrice.toLocaleString("ru-RU")} BYN
         </span>
       </div>
 

@@ -92,7 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           (car ? `🚗 <b>Автомобиль:</b> ${car}\n` : "") +
           `📡 <b>Источник:</b> ${leadSource}\n` +
           (service ? `🛠 <b>Услуга:</b> ${service}\n` : "") +
-          (leadPrice > 0 ? `💰 <b>Стоимость:</b> ${leadPrice} руб.\n` : "") +
+          (leadPrice > 0 ? `💰 <b>Стоимость:</b> ${leadPrice} BYN\n` : "") +
           (notes ? `📝 <b>Заметка:</b> ${notes}\n` : "");
 
         await fetch(`https://api.telegram.org/bot${crmSettings.telegramBotToken}/sendMessage`, {

@@ -575,7 +575,7 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
                   <div className="flex justify-between items-center px-4 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20">
                     <span className="text-sm text-white/60">Итого</span>
                     <span className="text-lg font-bold text-violet-300">
-                      {totalPrice.toLocaleString("ru-RU")} ₽
+                      {totalPrice.toLocaleString("ru-RU")} BYN
                     </span>
                   </div>
                 </section>
@@ -652,7 +652,7 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
                                           className="w-full pl-3 pr-8 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/25 text-xs focus:outline-none focus:border-violet-500/50 transition-all"
                                         />
                                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 text-xs">
-                                          ₽
+                                          BYN
                                         </span>
                                       </div>
                                     </motion.div>
@@ -725,7 +725,7 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
                       className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs"
                     >
                       <WarningCircle size={16} weight="fill" className="shrink-0" />
-                      Будет создан долг на сумму {totalPrice.toLocaleString("ru-RU")} ₽
+                      Будет создан долг на сумму {totalPrice.toLocaleString("ru-RU")} BYN
                     </motion.div>
                   )}
                 </section>

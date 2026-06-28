@@ -70,7 +70,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Сумма выплаты (₽)</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Сумма выплаты (BYN)</label>
             <input
               type="number"
               min="1"
@@ -198,7 +198,7 @@ const OkleykaPayoutsPage: React.FC = () => {
       );
 
       if (okMod) {
-        toast.success(`Выплачено ${amount} ₽ сотруднику ${payoutTarget.name}`);
+        toast.success(`Выплачено ${amount} BYN сотруднику ${payoutTarget.name}`);
         setPayoutTarget(null);
         await refreshShift(currentShift.date);
       } else {
@@ -259,7 +259,7 @@ const OkleykaPayoutsPage: React.FC = () => {
   };
 
   const handleDeleteModification = async (mod: OkleykaCashModification) => {
-    if (!confirm(`Удалить операцию «${mod.reason}» на сумму ${mod.amount} ₽?`)) return;
+    if (!confirm(`Удалить операцию «${mod.reason}» на сумму ${mod.amount} BYN?`)) return;
 
     try {
       // If it matches a salary payout, we should adjust the employee salaryPayouts too
@@ -318,7 +318,7 @@ const OkleykaPayoutsPage: React.FC = () => {
             <h3 className="text-sm font-bold">Состояние кассы оклейки</h3>
           </div>
           <span className="text-2xl font-extrabold text-foreground tabular-nums">
-            {estimatedCash.toLocaleString("ru-RU")} ₽
+            {estimatedCash.toLocaleString("ru-RU")} BYN
           </span>
         </div>
 
@@ -326,21 +326,21 @@ const OkleykaPayoutsPage: React.FC = () => {
           <div className="bg-background/40 border border-border/20 p-3 rounded-xl">
             <span className="text-muted-foreground block mb-0.5">Начало смены</span>
             <span className="font-semibold text-foreground tabular-nums">
-              {currentShift.startOfDayCash.toLocaleString("ru-RU")} ₽
+              {currentShift.startOfDayCash.toLocaleString("ru-RU")} BYN
             </span>
           </div>
 
           <div className="bg-background/40 border border-border/20 p-3 rounded-xl">
             <span className="text-muted-foreground block mb-0.5">Заказы (нал)</span>
             <span className="font-semibold text-foreground tabular-nums text-emerald-500">
-              +{completedCashOrdersSum.toLocaleString("ru-RU")} ₽
+              +{completedCashOrdersSum.toLocaleString("ru-RU")} BYN
             </span>
           </div>
 
           <div className="bg-background/40 border border-border/20 p-3 rounded-xl">
             <span className="text-muted-foreground block mb-0.5">Выплачено ЗП</span>
             <span className="font-semibold text-foreground tabular-nums text-red-500">
-              -{totalPayouts.toLocaleString("ru-RU")} ₽
+              -{totalPayouts.toLocaleString("ru-RU")} BYN
             </span>
           </div>
 
@@ -348,7 +348,7 @@ const OkleykaPayoutsPage: React.FC = () => {
             <span className="text-muted-foreground block mb-0.5">Коррекции (прочее)</span>
             {/* Find modifications that are not payouts */}
             <span className={`font-semibold tabular-nums ${totalModifications >= 0 ? "text-foreground" : "text-red-400"}`}>
-              {totalModifications.toLocaleString("ru-RU")} ₽
+              {totalModifications.toLocaleString("ru-RU")} BYN
             </span>
           </div>
         </div>
@@ -410,7 +410,7 @@ const OkleykaPayoutsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-medium text-muted-foreground mb-1">Сумма (₽)</label>
+                  <label className="block text-[10px] font-medium text-muted-foreground mb-1">Сумма (BYN)</label>
                   <input
                     type="number"
                     min="1"
@@ -485,7 +485,7 @@ const OkleykaPayoutsPage: React.FC = () => {
                     <div>
                       <p className="text-sm font-bold">{emp.name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Выплачено: <span className="font-semibold text-foreground">{paid.toLocaleString("ru-RU")} ₽</span>
+                        Выплачено: <span className="font-semibold text-foreground">{paid.toLocaleString("ru-RU")} BYN</span>
                       </p>
                     </div>
 
@@ -545,7 +545,7 @@ const OkleykaPayoutsPage: React.FC = () => {
                           ) : (
                             <ArrowUpRight className="w-3 h-3 shrink-0" />
                           )}
-                          {Math.abs(mod.amount).toLocaleString("ru-RU")} ₽
+                          {Math.abs(mod.amount).toLocaleString("ru-RU")} BYN
                         </span>
 
                         <button

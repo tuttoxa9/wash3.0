@@ -74,7 +74,7 @@ const SalaryModal: React.FC<SalaryModalProps> = ({ worker, onClose, onConfirm, s
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Сумма (₽)</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Сумма (BYN)</label>
             <input
               type="number"
               min="0"
