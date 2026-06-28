@@ -1,11 +1,17 @@
 import type React from "react";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
-import { okleykaShiftService } from "@/lib/services/okleykaService";
+import {
+  okleykaShiftService,
+  okleykaOrderService,
+  okleykaDebtService,
+  okleykaSettingsService,
+} from "@/lib/services/okleykaService";
 import type { OkleykaEmployee, OkleykaCashModification } from "@/lib/types/okleyka";
 import { toast } from "sonner";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, startOfMonth, endOfMonth } from "date-fns";
+import { supabase } from "@/lib/supabase";
 import {
   Wallet,
   ArrowDownLeft,
@@ -24,6 +30,7 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 
 interface PayoutModalProps {
   employee: OkleykaEmployee;
+  balance: number;
   onClose: () => void;
   onConfirm: (amount: number, comment: string) => Promise<void>;
   submitting: boolean;
@@ -31,6 +38,7 @@ interface PayoutModalProps {
 
 const PayoutModal: React.FC<PayoutModalProps> = ({
   employee,
+  balance,
   onClose,
   onConfirm,
   submitting,
@@ -43,6 +51,10 @@ const PayoutModal: React.FC<PayoutModalProps> = ({
     const val = parseFloat(amount);
     if (isNaN(val) || val <= 0) {
       toast.error("Введите корректную сумму");
+      return;
+    }
+    if (val > balance) {
+      toast.error(`Сумма превышает баланс сотрудника (доступно: ${balance} BYN)`);
       return;
     }
     await onConfirm(val, comment.trim());
@@ -66,6 +78,9 @@ const PayoutModal: React.FC<PayoutModalProps> = ({
         <div className="space-y-1 mb-4 p-3 bg-muted/40 rounded-xl text-sm">
           <p className="font-semibold text-foreground">{employee.name}</p>
           {employee.position && <p className="text-muted-foreground text-xs">{employee.position}</p>}
+          <p className="text-xs text-muted-foreground mt-1">
+            Баланс (остаток к выплате): <span className="font-bold text-primary">{balance.toLocaleString("ru-RU")} BYN</span>
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -132,6 +147,119 @@ const OkleykaPayoutsPage: React.FC = () => {
   const [modReason, setModReason] = useState("");
   const [modType, setModType] = useState<"expense" | "income">("expense");
   const [modSaving, setModSaving] = useState(false);
+
+  const [loadingBalances, setLoadingBalances] = useState(true);
+  const [employeeBalances, setEmployeeBalances] = useState<Record<string, number>>({});
+  const [employeeEarnings, setEmployeeEarnings] = useState<Record<string, number>>({});
+  const [employeePaid, setEmployeePaid] = useState<Record<string, number>>({});
+
+  const fetchBalances = useCallback(async () => {
+    if (!currentShift) return;
+    setLoadingBalances(true);
+    try {
+      const dateObj = parseISO(currentShift.date);
+      const start = format(startOfMonth(dateObj), "yyyy-MM-dd");
+      const end = format(endOfMonth(dateObj), "yyyy-MM-dd");
+
+      const [shifts, allOrders, closedDebts, settings] = await Promise.all([
+        okleykaShiftService.getByDateRange(start, end),
+        okleykaOrderService.getByDateRange(start, end),
+        okleykaDebtService.getByDateRange(start, end),
+        state.settings ? Promise.resolve(state.settings) : okleykaSettingsService.get(),
+      ]);
+
+      const completed = allOrders.filter(o => o.status === "completed");
+
+      const paidMap: Record<string, number> = {};
+      shifts.forEach(shift => {
+        if (shift.salaryPayouts) {
+          Object.entries(shift.salaryPayouts).forEach(([empId, amount]) => {
+            paidMap[empId] = (paidMap[empId] || 0) + amount;
+          });
+        }
+      });
+
+      const earnedMap: Record<string, number> = {};
+      if (completed.length > 0) {
+        const completedIds = completed.map(o => o.id);
+        const chunkSize = 100;
+        let workersData: any[] = [];
+        
+        for (let i = 0; i < completedIds.length; i += chunkSize) {
+          const chunk = completedIds.slice(i, i + chunkSize);
+          const { data, error } = await supabase
+            .from("okleyka_order_workers")
+            .select("employee_id, salary")
+            .in("order_id", chunk);
+
+          if (error) {
+            console.error("Error fetching order workers in payouts:", error);
+          } else if (data) {
+            workersData = [...workersData, ...data];
+          }
+        }
+
+        workersData.forEach(w => {
+          if (w.salary !== null) {
+            earnedMap[w.employee_id] = (earnedMap[w.employee_id] || 0) + Number(w.salary);
+          }
+        });
+      }
+
+      const closedDebtsFiltered = closedDebts.filter(
+        d => d.isClosed && d.closedAt && d.closedAt.slice(0, 10) >= start && d.closedAt.slice(0, 10) <= end
+      );
+      closedDebtsFiltered.forEach(d => {
+        if (d.employeePayouts) {
+          Object.entries(d.employeePayouts).forEach(([empId, amount]) => {
+            earnedMap[empId] = (earnedMap[empId] || 0) + amount;
+          });
+        }
+      });
+
+      if (settings && settings.adminSalaryValue > 0) {
+        shifts.forEach(shift => {
+          const roles = shift.employeeRoles || {};
+          Object.entries(roles).forEach(([empId, role]) => {
+            if (role === "admin") {
+              let dailyAdminSalary = 0;
+              if (settings.adminSalaryType === "fixed") {
+                dailyAdminSalary = settings.adminSalaryValue;
+              } else if (settings.adminSalaryType === "percent") {
+                const dailyCompletedOrders = completed.filter(
+                  o => o.shiftDate === shift.date || (!o.shiftDate && o.dateStart === shift.date)
+                );
+                const dailyRevenue = dailyCompletedOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+                dailyAdminSalary = dailyRevenue * (settings.adminSalaryValue / 100);
+              }
+              if (dailyAdminSalary > 0) {
+                earnedMap[empId] = (earnedMap[empId] || 0) + dailyAdminSalary;
+              }
+            }
+          });
+        });
+      }
+
+      const balances: Record<string, number> = {};
+      employees.forEach(emp => {
+        const earned = earnedMap[emp.id] || 0;
+        const paid = paidMap[emp.id] || 0;
+        balances[emp.id] = earned - paid;
+      });
+
+      setEmployeeEarnings(earnedMap);
+      setEmployeePaid(paidMap);
+      setEmployeeBalances(balances);
+    } catch (err) {
+      console.error("Error calculating payouts balances:", err);
+    } finally {
+      setLoadingBalances(false);
+    }
+  }, [currentShift, employees, state.settings]);
+
+  useEffect(() => {
+    fetchBalances();
+  }, [fetchBalances]);
 
   if (!currentShift || !currentShift.isOpen) {
     return (
@@ -201,6 +329,7 @@ const OkleykaPayoutsPage: React.FC = () => {
         toast.success(`Выплачено ${amount} BYN сотруднику ${payoutTarget.name}`);
         setPayoutTarget(null);
         await refreshShift(currentShift.date);
+        await fetchBalances();
       } else {
         toast.error("Не удалось списать средства из кассы смены");
       }
@@ -477,6 +606,7 @@ const OkleykaPayoutsPage: React.FC = () => {
             <div className="space-y-3">
               {shiftEmployees.map((emp) => {
                 const paid = currentShift.salaryPayouts[emp.id] || 0;
+                const balance = employeeBalances[emp.id] || 0;
                 return (
                   <div
                     key={emp.id}
@@ -484,9 +614,11 @@ const OkleykaPayoutsPage: React.FC = () => {
                   >
                     <div>
                       <p className="text-sm font-bold">{emp.name}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Выплачено: <span className="font-semibold text-foreground">{paid.toLocaleString("ru-RU")} BYN</span>
-                      </p>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-x-3 text-xs text-muted-foreground mt-0.5">
+                        <span>Выплачено: <span className="font-semibold text-foreground">{paid.toLocaleString("ru-RU")} BYN</span></span>
+                        <span className="hidden sm:inline text-border">|</span>
+                        <span>Баланс: <span className={`font-semibold ${balance > 0 ? "text-amber-500" : "text-muted-foreground"}`}>{balance.toLocaleString("ru-RU")} BYN</span></span>
+                      </div>
                     </div>
 
                     <button
@@ -569,6 +701,7 @@ const OkleykaPayoutsPage: React.FC = () => {
         {payoutTarget && (
           <PayoutModal
             employee={payoutTarget}
+            balance={employeeBalances[payoutTarget.id] || 0}
             onClose={() => setPayoutTarget(null)}
             onConfirm={handlePayoutConfirm}
             submitting={submitting}
