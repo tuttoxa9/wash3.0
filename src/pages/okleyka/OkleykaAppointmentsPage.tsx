@@ -191,7 +191,7 @@ const OkleykaAppointmentsPage: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6"
+      className="p-4 sm:p-6 w-full mx-auto space-y-6"
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

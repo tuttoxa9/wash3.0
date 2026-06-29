@@ -757,7 +757,7 @@ const OkleykaHomePage: React.FC = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] gap-6">
           {/* Left Column - Employees */}
           <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden">
             <div className="p-5 sm:p-6 border-b border-border/50 bg-muted/20">
