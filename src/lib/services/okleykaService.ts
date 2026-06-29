@@ -868,5 +868,36 @@ export const okleykaSettingsService = {
   async save(settings: { adminSalaryType: 'percent' | 'fixed'; adminSalaryValue: number }): Promise<boolean> {
     const { error } = await supabase.from('settings').upsert({ key: 'okleykaSettings', data: settings }, { onConflict: 'key' });
     return !error;
-  }
+  },
+
+  async clearDatabase(options: {
+    employees: boolean;
+    organizations: boolean;
+    appointments: boolean;
+    ordersAndDebts: boolean;
+  }) {
+    try {
+      if (options.ordersAndDebts) {
+        // delete in correct foreign key order
+        await supabase.from('okleyka_debts').delete().neq('id', '0');
+        await supabase.from('okleyka_order_workers').delete().neq('id', '0');
+        await supabase.from('okleyka_order_items').delete().neq('id', '0');
+        await supabase.from('okleyka_orders').delete().neq('id', '0');
+        await supabase.from('okleyka_shifts').delete().neq('id', '0');
+      }
+      if (options.appointments) {
+        await supabase.from('okleyka_appointments').delete().neq('id', '0');
+      }
+      if (options.employees) {
+        await supabase.from('okleyka_employees').delete().neq('id', '0');
+      }
+      if (options.organizations) {
+        await supabase.from('okleyka_organizations').delete().neq('id', '0');
+      }
+      return { success: true };
+    } catch (e) {
+      console.error(e);
+      return { success: false };
+    }
+  },
 };

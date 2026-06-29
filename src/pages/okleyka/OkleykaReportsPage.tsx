@@ -5,10 +5,11 @@ import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import { okleykaOrderService, okleykaShiftService, okleykaDebtService, okleykaSettingsService } from "@/lib/services/okleykaService";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import OkleykaOrganizationsReport from "@/components/okleyka/OkleykaOrganizationsReport";
+import OkleykaGeneralRevenueReport from "@/components/okleyka/OkleykaGeneralRevenueReport";
 import PasswordAuth from "@/components/ui/PasswordAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Building,
   format,
   startOfMonth,
   endOfMonth,
@@ -639,6 +640,7 @@ const OkleykaReportsPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="general-revenue" className="space-y-5">
+            <OkleykaGeneralRevenueReport records={filteredOrders} />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Revenue Card */}
             <motion.div
@@ -748,13 +750,7 @@ const OkleykaReportsPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="organizations" className="space-y-5">
-            <div className="bg-card border border-border/50 rounded-2xl p-8 shadow-sm flex flex-col items-center justify-center text-center">
-              <Building className="w-12 h-12 text-muted-foreground mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Отчёты по организациям</h3>
-              <p className="text-sm text-muted-foreground max-w-md">
-                В данном разделе в будущем будет доступна детальная статистика по всем организациям в Оклейке, аналогично автомойке.
-              </p>
-            </div>
+            <OkleykaOrganizationsReport />
           </TabsContent>
         </Tabs>
       )}

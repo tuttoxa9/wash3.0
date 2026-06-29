@@ -21,7 +21,7 @@ import {
   X,
   Check,
   Loader2,
-  Coins,
+  Coins, Database,
   AlertTriangle,
 } from "lucide-react";
 
@@ -749,6 +749,124 @@ const SalarySettingsTab: React.FC = () => {
 };
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
+
+const OkleykaDataManagement: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  
+  const [clearEmployees, setClearEmployees] = useState(false);
+  const [clearOrgs, setClearOrgs] = useState(false);
+  const [clearAppointments, setClearAppointments] = useState(false);
+  const [clearOrders, setClearOrders] = useState(false);
+
+  const handleClearDatabase = async () => {
+    if (!clearEmployees && !clearOrgs && !clearAppointments && !clearOrders) {
+      toast.error("Выберите данные для удаления");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await okleykaSettingsService.clearDatabase({
+        employees: clearEmployees,
+        organizations: clearOrgs,
+        appointments: clearAppointments,
+        ordersAndDebts: clearOrders,
+      });
+
+      if (result.success) {
+        toast.success("Данные успешно удалены");
+        setShowConfirmation(false);
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        toast.error("Ошибка при удалении данных");
+      }
+    } catch (error) {
+      toast.error("Сбой соединения");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-destructive/5 border border-destructive/20 rounded-2xl p-6 shadow-sm space-y-4">
+      <div className="flex items-start gap-3">
+        <div className="p-2 bg-destructive/10 text-destructive rounded-xl mt-0.5">
+          <AlertTriangle className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-base font-semibold text-destructive">Стереть данные Оклейки</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Безвозвратное удаление выбранных данных. Действие отменить нельзя.
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-3 pt-4 border-t border-destructive/10">
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${clearOrders ? "bg-destructive border-destructive text-white" : "border-border bg-background"}`}>
+            {clearOrders && <Check className="w-3.5 h-3.5" />}
+          </div>
+          <span className="text-sm font-medium">Заказы, смены и долги</span>
+          <input type="checkbox" className="hidden" checked={clearOrders} onChange={(e) => setClearOrders(e.target.checked)} />
+        </label>
+        
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${clearAppointments ? "bg-destructive border-destructive text-white" : "border-border bg-background"}`}>
+            {clearAppointments && <Check className="w-3.5 h-3.5" />}
+          </div>
+          <span className="text-sm font-medium">Записи календаря</span>
+          <input type="checkbox" className="hidden" checked={clearAppointments} onChange={(e) => setClearAppointments(e.target.checked)} />
+        </label>
+
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${clearEmployees ? "bg-destructive border-destructive text-white" : "border-border bg-background"}`}>
+            {clearEmployees && <Check className="w-3.5 h-3.5" />}
+          </div>
+          <span className="text-sm font-medium">Сотрудники</span>
+          <input type="checkbox" className="hidden" checked={clearEmployees} onChange={(e) => setClearEmployees(e.target.checked)} />
+        </label>
+        
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${clearOrgs ? "bg-destructive border-destructive text-white" : "border-border bg-background"}`}>
+            {clearOrgs && <Check className="w-3.5 h-3.5" />}
+          </div>
+          <span className="text-sm font-medium">Организации</span>
+          <input type="checkbox" className="hidden" checked={clearOrgs} onChange={(e) => setClearOrgs(e.target.checked)} />
+        </label>
+      </div>
+
+      <div className="pt-2 flex justify-end">
+        {!showConfirmation ? (
+          <button
+            onClick={() => setShowConfirmation(true)}
+            className="px-4 py-2.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" /> Удалить выбранное
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setShowConfirmation(false)}
+              disabled={loading}
+              className="flex-1 sm:flex-none px-4 py-2.5 bg-muted text-foreground hover:bg-muted/80 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50"
+            >
+              Отмена
+            </button>
+            <button
+              onClick={handleClearDatabase}
+              disabled={loading}
+              className="flex-1 sm:flex-none px-4 py-2.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Подтверждаю удаление"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const OkleykaSettingsPage: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -764,7 +882,7 @@ const OkleykaSettingsPage: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 sm:p-6 max-w-2xl mx-auto space-y-5"
+      className="p-4 sm:p-6 max-w-7xl mx-auto space-y-5"
     >
       <div>
         <h1 className="text-xl font-bold">Настройки</h1>
@@ -782,6 +900,7 @@ const OkleykaSettingsPage: React.FC = () => {
           <TabsTrigger value="salary" className="flex-1 flex items-center gap-1.5">
             <Coins className="w-3.5 h-3.5" /> Оплата труда
           </TabsTrigger>
+          <TabsTrigger value="data" className="flex-1 flex items-center gap-1.5"><Database className="w-3.5 h-3.5" /> Данные</TabsTrigger>
           <TabsTrigger value="safe" className="flex-1 flex items-center gap-1.5">
             Сейф
           </TabsTrigger>
@@ -798,6 +917,8 @@ const OkleykaSettingsPage: React.FC = () => {
         <TabsContent value="salary" className="mt-4">
           <SalarySettingsTab />
         </TabsContent>
+
+        <TabsContent value="data" className="mt-4"><OkleykaDataManagement /></TabsContent>
 
         <TabsContent value="safe" className="mt-4">
           <OkleykaSafeSettings />

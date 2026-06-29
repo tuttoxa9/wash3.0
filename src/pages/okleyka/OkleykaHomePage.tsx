@@ -6,7 +6,7 @@ import OkleykaPendingWrapsWidget from "@/components/okleyka/OkleykaPendingWrapsW
 import OkleykaTimelineWidget from "@/components/okleyka/OkleykaTimelineWidget";
 import OkleykaMonthCalendarModal from "@/components/okleyka/OkleykaMonthCalendarModal";
 import { Loader2, ArrowRight } from "lucide-react";
-import { ListBullets, Gear, ShieldCheck } from "@phosphor-icons/react";
+
 import {
   okleykaShiftService,
   okleykaOrderService,
