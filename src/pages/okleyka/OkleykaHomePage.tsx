@@ -435,7 +435,15 @@ const OkleykaHomePage: React.FC = () => {
   useEffect(() => {
     const loadPendingWraps = async () => {
       try {
-        const wraps = await dailyReportService.getActiveWraps();
+        const reports = await dailyReportService.getActiveWraps();
+        const wraps: any[] = [];
+        reports.forEach((report: any) => {
+          report.records.forEach((record: any) => {
+            if (record.serviceType === "wrap_sale" && !record.isExecuted) {
+              wraps.push({ reportId: report.id, record });
+            }
+          });
+        });
         setPendingWraps(wraps);
       } catch (e) {
         console.error("Failed to load wraps", e);
