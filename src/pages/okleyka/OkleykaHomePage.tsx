@@ -718,6 +718,7 @@ const OkleykaHomePage: React.FC = () => {
       (o) =>
         o.boxNumber === boxNum &&
         o.status !== "cancelled" &&
+        o.status !== "completed" &&
         o.dateStart <= selectedDate &&
         o.dateEnd >= selectedDate
     );
