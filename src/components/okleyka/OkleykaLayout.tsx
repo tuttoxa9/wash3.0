@@ -116,7 +116,7 @@ const OkleykaLayout: React.FC = () => {
 
           {/* Page content */}
           <div className="flex-1 p-3 sm:p-4 md:p-6">
-            <div className="w-full md:max-w-6xl md:mx-auto">
+            <div className="w-full xl:max-w-7xl 2xl:max-w-[1600px] md:mx-auto">
               <Outlet />
             </div>
           </div>

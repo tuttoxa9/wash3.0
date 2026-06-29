@@ -10,6 +10,8 @@ import {
 } from "@/lib/services/okleykaService";
 import type { OkleykaEmployee, OkleykaOrganization } from "@/lib/types/okleyka";
 import { toast } from "sonner";
+import PasswordAuth from "@/components/ui/PasswordAuth";
+import { OkleykaSafeSettings } from "@/components/okleyka/OkleykaSafeSettings";
 import {
   Users,
   Building,
@@ -748,6 +750,16 @@ const SalarySettingsTab: React.FC = () => {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const OkleykaSettingsPage: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-4">
+        <PasswordAuth onSuccess={() => setIsAuthenticated(true)} />
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -768,7 +780,10 @@ const OkleykaSettingsPage: React.FC = () => {
             <Building className="w-3.5 h-3.5" /> Организации
           </TabsTrigger>
           <TabsTrigger value="salary" className="flex-1 flex items-center gap-1.5">
-            <Coins className="w-3.5 h-3.5" /> Настройки ЗП
+            <Coins className="w-3.5 h-3.5" /> Оплата труда
+          </TabsTrigger>
+          <TabsTrigger value="safe" className="flex-1 flex items-center gap-1.5">
+            Сейф
           </TabsTrigger>
         </TabsList>
 
@@ -782,6 +797,10 @@ const OkleykaSettingsPage: React.FC = () => {
 
         <TabsContent value="salary" className="mt-4">
           <SalarySettingsTab />
+        </TabsContent>
+
+        <TabsContent value="safe" className="mt-4">
+          <OkleykaSafeSettings />
         </TabsContent>
       </Tabs>
     </motion.div>

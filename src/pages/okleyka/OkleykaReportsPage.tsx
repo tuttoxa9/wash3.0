@@ -5,6 +5,7 @@ import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import { okleykaOrderService, okleykaShiftService, okleykaDebtService, okleykaSettingsService } from "@/lib/services/okleykaService";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import PasswordAuth from "@/components/ui/PasswordAuth";
 import {
   format,
   startOfMonth,
@@ -148,6 +149,7 @@ const EmployeeOkleykaRecordsModal: React.FC<EmployeeOkleykaRecordsModalProps> = 
 type PresetRange = "today" | "yesterday" | "this_week" | "this_month" | "last_month";
 
 const OkleykaReportsPage: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { state } = useOkleykaContext();
   
   // Date filters
@@ -416,6 +418,14 @@ const OkleykaReportsPage: React.FC = () => {
       return `${startDate} - ${endDate}`;
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-4">
+        <PasswordAuth onSuccess={() => setIsAuthenticated(true)} />
+      </div>
+    );
+  }
 
   return (
     <motion.div

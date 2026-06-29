@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
-import { format, addDays, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay } from "date-fns";
+import React, { useMemo, useState, useEffect } from "react";
+import { format, addDays, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
 import { ru } from "date-fns/locale";
 import type { OkleykaOrder } from "@/lib/types/okleyka";
-import { X } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface OkleykaMonthCalendarModalProps {
   isOpen: boolean;
@@ -19,11 +19,17 @@ const OkleykaMonthCalendarModal: React.FC<OkleykaMonthCalendarModalProps> = ({
   orders,
   onDateClick,
 }) => {
+  const [currentMonth, setCurrentMonth] = useState(() => baseDate ? parseISO(baseDate) : new Date());
+
+  useEffect(() => {
+    if (isOpen && baseDate) {
+      setCurrentMonth(parseISO(baseDate));
+    }
+  }, [isOpen, baseDate]);
+
   const days = useMemo(() => {
-    if (!baseDate) return [];
-    const date = parseISO(baseDate);
-    const monthStart = startOfMonth(date);
-    const monthEnd = endOfMonth(date);
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
@@ -34,7 +40,7 @@ const OkleykaMonthCalendarModal: React.FC<OkleykaMonthCalendarModalProps> = ({
       current = addDays(current, 1);
     }
     return calendarDays;
-  }, [baseDate]);
+  }, [currentMonth]);
 
   const getOrdersForDate = (dateStr: string) => {
     return orders.filter(o => o.status !== "cancelled" && o.dateStart <= dateStr && o.dateEnd >= dateStr);
@@ -46,7 +52,19 @@ const OkleykaMonthCalendarModal: React.FC<OkleykaMonthCalendarModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-card border border-border/50 p-4 sm:p-6 rounded-3xl w-full max-w-4xl flex flex-col gap-4 sm:gap-6 shadow-xl max-h-[95vh]" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between pb-4 border-b border-border/50">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Календарь (Весь месяц)</h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground capitalize">
+              {format(currentMonth, "LLLL yyyy", { locale: ru })}
+            </h2>
+            <div className="flex items-center gap-1 bg-muted/20 p-1 rounded-lg border border-border/50">
+              <button onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} className="p-1 rounded-md hover:bg-background shadow-sm transition-colors text-muted-foreground hover:text-foreground">
+                <ChevronLeft size={18} />
+              </button>
+              <button onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} className="p-1 rounded-md hover:bg-background shadow-sm transition-colors text-muted-foreground hover:text-foreground">
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-accent/50 text-muted-foreground transition-colors">
             <X size={20} />
           </button>
