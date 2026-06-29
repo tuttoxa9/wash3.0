@@ -26,16 +26,16 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
     e.preventDefault();
     const numAmount = Number.parseFloat(amount);
     if (!numAmount || numAmount <= 0) {
-      toast.error("╨Т╨▓╨╡╨┤╨╕╤В╨╡ ╨║╨╛╤А╤А╨╡╨║╤В╨╜╤Г╤О ╤Б╤Г╨╝╨╝╤Г");
+      toast.error("Введите корректную сумму");
       return;
     }
     if (!comment.trim()) {
-      toast.error("╨Ф╨╛╨▒╨░╨▓╤М╤В╨╡ ╨║╨╛╨╝╨╝╨╡╨╜╤В╨░╤А╨╕╨╣");
+      toast.error("Добавьте комментарий");
       return;
     }
 
     if (transactionType === "out" && numAmount > safeBalance) {
-      toast.error("╨б╤Г╨╝╨╝╨░ ╨╕╨╖╤К╤П╤В╨╕╤П ╨┐╤А╨╡╨▓╤Л╤И╨░╨╡╤В ╨▒╨░╨╗╨░╨╜╤Б ╤Б╨╡╨╣╤Д╨░!");
+      toast.error("Сумма изъятия превышает баланс сейфа!");
       return;
     }
 
@@ -60,16 +60,16 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
         onTransactionComplete(transaction, result.newBalance ?? newBalance);
         
         toast.success(
-          transactionType === "in" ? "╨б╤А╨╡╨┤╤Б╤В╨▓╨░ ╨▓╨╜╨╡╤Б╨╡╨╜╤Л" : "╨б╤А╨╡╨┤╤Б╤В╨▓╨░ ╨╕╨╖╤К╤П╤В╤Л"
+          transactionType === "in" ? "Средства внесены" : "Средства изъяты"
         );
         setAmount("");
         setComment("");
       } else {
-        throw new Error("╨Ю╤И╨╕╨▒╨║╨░ ╨┐╤А╨╕ ╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╕ ╤Б╨╡╨╣╤Д╨░");
+        throw new Error("Ошибка при обновлении сейфа");
       }
     } catch (error) {
       console.error(error);
-      toast.error("╨Я╤А╨╛╨╕╨╖╨╛╤И╨╗╨░ ╨╛╤И╨╕╨▒╨║╨░");
+      toast.error("Произошла ошибка");
     } finally {
       setLoading(false);
     }
@@ -77,20 +77,20 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
 
   const exportToCsv = () => {
     if (safeTransactions.length === 0) {
-      toast.error("╨Э╨╡╤В ╤В╤А╨░╨╜╨╖╨░╨║╤Ж╨╕╨╣ ╨┤╨╗╤П ╤Н╨║╤Б╨┐╨╛╤А╤В╨░");
+      toast.error("Нет транзакций для экспорта");
       return;
     }
 
     const csvRows = [];
-    // ╨Ч╨░╨│╨╛╨╗╨╛╨▓╨║╨╕
-    csvRows.push(["╨Ф╨░╤В╨░", "╨Т╤А╨╡╨╝╤П", "╨в╨╕╨┐", "╨б╤Г╨╝╨╝╨░ (BYN)", "╨Ъ╨╛╨╝╨╝╨╡╨╜╤В╨░╤А╨╕╨╣"].join(";"));
+    // Заголовки
+    csvRows.push(["Дата", "Время", "Тип", "Сумма (BYN)", "Комментарий"].join(";"));
 
     safeTransactions.forEach((tx) => {
       const date = new Date(tx.date);
       const row = [
         format(date, "dd.MM.yyyy"),
         format(date, "HH:mm"),
-        tx.type === "in" ? "╨Т╨╜╨╡╤Б╨╡╨╜╨╕╨╡" : "╨Ш╨╖╤К╤П╤В╨╕╨╡",
+        tx.type === "in" ? "Внесение" : "Изъятие",
         tx.amount.toFixed(2),
         `"${tx.comment.replace(/"/g, '""')}"`
       ];
@@ -99,7 +99,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
 
     const bom = "\uFEFF";
     const blob = new Blob([bom + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
-    const fileName = `╨б╨╡╨╣╤Д_${format(new Date(), "dd-MM-yyyy")}.csv`;
+    const fileName = `Сейф_${format(new Date(), "dd-MM-yyyy")}.csv`;
 
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -109,7 +109,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success("CSV ╤Г╤Б╨┐╨╡╤И╨╜╨╛ ╤Н╨║╤Б╨┐╨╛╤А╤В╨╕╤А╨╛╨▓╨░╨╜");
+    toast.success("CSV успешно экспортирован");
   };
 
   const filteredTransactions = safeTransactions.filter((tx) => {
@@ -136,10 +136,10 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
     <div className="flex flex-col animate-in fade-in duration-300">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4">
 
-        {/* ╨Ы╨╡╨▓╨░╤П ╨║╨╛╨╗╨╛╨╜╨║╨░ (╨С╨░╨╗╨░╨╜╤Б + ╨д╨╛╤А╨╝╨░) */}
+        {/* Левая колонка (Баланс + Форма) */}
         <div className="flex flex-col gap-4">
 
-          {/* ╨У╨╗╨░╨▓╨╜╤Л╨╣ ╨▒╨░╨╗╨░╨╜╤Б */}
+          {/* Главный баланс */}
           <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col justify-center gap-2 relative overflow-hidden">
             <div className="absolute -right-6 -top-6 text-green-500/5 rotate-12">
               <Wallet className="w-40 h-40" />
@@ -148,16 +148,16 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
               <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-600">
                 <Wallet className="w-5 h-5" />
               </div>
-              <p className="text-sm font-medium text-muted-foreground">╨С╨░╨╗╨░╨╜╤Б ╤Б╨╡╨╣╤Д╨░</p>
+              <p className="text-sm font-medium text-muted-foreground">Баланс сейфа</p>
             </div>
             <h2 className="text-3xl font-bold text-foreground relative z-10 mt-2">
               {safeBalance.toFixed(2)} <span className="text-xl text-muted-foreground font-semibold">BYN</span>
             </h2>
           </div>
 
-          {/* ╨д╨╛╤А╨╝╨░ */}
+          {/* Форма */}
           <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col">
-            <h3 className="text-lg font-bold mb-4">╨Э╨╛╨▓╨░╤П ╨╛╨┐╨╡╤А╨░╤Ж╨╕╤П</h3>
+            <h3 className="text-lg font-bold mb-4">Новая операция</h3>
           <div className="flex bg-muted/50 p-1 rounded-xl gap-1 mb-5">
             <button
               onClick={() => setTransactionType("in")}
@@ -167,7 +167,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                   : "text-muted-foreground hover:bg-background/50"
               }`}
             >
-              ╨Т╨╜╨╡╤Б╤В╨╕
+              Внести
             </button>
             <button
               onClick={() => setTransactionType("out")}
@@ -177,14 +177,14 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                   : "text-muted-foreground hover:bg-background/50"
               }`}
             >
-              ╨Ш╨╖╤К╤П╤В╤М
+              Изъять
             </button>
           </div>
 
           <form onSubmit={handleTransaction} className="space-y-4 flex-1 flex flex-col">
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-                ╨б╤Г╨╝╨╝╨░ (BYN)
+                Сумма (BYN)
               </label>
               <input
                 type="number"
@@ -199,20 +199,20 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
             </div>
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-                ╨Ъ╨╛╨╝╨╝╨╡╨╜╤В╨░╤А╨╕╨╣
+                Комментарий
               </label>
               <input
                 type="text"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="╨Я╤А╨╕╤З╨╕╨╜╨░ ╨╛╨┐╨╡╤А╨░╤Ж╨╕╨╕"
+                placeholder="Причина операции"
                 className="w-full px-4 py-3 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm"
                 required
               />
             </div>
             {transactionType === "out" && Number.parseFloat(amount) > safeBalance && (
               <p className="text-sm text-destructive font-medium mt-2">
-                ╨б╤Г╨╝╨╝╨░ ╨╕╨╖╤К╤П╤В╨╕╤П ╨╜╨╡ ╨╝╨╛╨╢╨╡╤В ╨┐╤А╨╡╨▓╤Л╤И╨░╤В╤М ╨▒╨░╨╗╨░╨╜╤Б ╤Б╨╡╨╣╤Д╨░ ({safeBalance.toFixed(2)} BYN)
+                Сумма изъятия не может превышать баланс сейфа ({safeBalance.toFixed(2)} BYN)
               </p>
             )}
             <div className="mt-auto pt-4">
@@ -230,22 +230,22 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                 ) : (
                   <ArrowUpRight className="w-5 h-5" />
                 )}
-                {transactionType === "in" ? "╨Я╨╛╨┐╨╛╨╗╨╜╨╕╤В╤М ╤Б╨╡╨╣╤Д" : "╨Ш╨╖╤К╤П╤В╤М ╤Б╤А╨╡╨┤╤Б╤В╨▓╨░"}
+                {transactionType === "in" ? "Пополнить сейф" : "Изъять средства"}
               </button>
             </div>
           </form>
           </div>
         </div>
 
-        {/* ╨Ш╤Б╤В╨╛╤А╨╕╤П (╨Я╤А╨░╨▓╨░╤П ╨║╨╛╨╗╨╛╨╜╨║╨░) */}
+        {/* История (Правая колонка) */}
         <div className="p-6 border border-border/50 rounded-2xl bg-card shadow-sm flex flex-col h-[500px] lg:h-auto lg:min-h-[600px]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold">╨Ш╤Б╤В╨╛╤А╨╕╤П ╨╛╨┐╨╡╤А╨░╤Ж╨╕╨╣</h3>
+              <h3 className="text-lg font-bold">История операций</h3>
               <button
                 onClick={exportToCsv}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                title="╨н╨║╤Б╨┐╨╛╤А╤В ╨▓ CSV"
+                title="Экспорт в CSV"
               >
                 <FileDown className="w-4 h-4" />
               </button>
@@ -258,7 +258,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                   filter === "all" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
                 }`}
               >
-                ╨Т╤Б╨╡
+                Все
               </button>
               <button
                 onClick={() => setFilter("in")}
@@ -266,7 +266,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                   filter === "in" ? "bg-background shadow-sm text-green-600" : "text-muted-foreground hover:bg-background/50"
                 }`}
               >
-                ╨Т╨╜╨╡╤Б╨╡╨╜╨╕╤П
+                Внесения
               </button>
               <button
                 onClick={() => setFilter("out")}
@@ -274,7 +274,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                   filter === "out" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/50"
                 }`}
               >
-                ╨Ш╨╖╤К╤П╤В╨╕╤П
+                Изъятия
               </button>
             </div>
           </div>
@@ -284,7 +284,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                <input
                  type="text"
-                 placeholder="╨Я╨╛╨╕╤Б╨║..."
+                 placeholder="Поиск..."
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
                  className="w-full pl-9 pr-3 py-2 bg-background border border-input rounded-xl focus:outline-none focus:ring-1 focus:ring-primary text-sm transition-colors"
@@ -299,7 +299,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                     ? "bg-primary/10 border-primary text-primary"
                     : "bg-background border-input text-muted-foreground hover:bg-muted/50"
                 }`}
-                title={selectedDate ? "╨Ю╤З╨╕╤Б╤В╨╕╤В╤М ╨┤╨░╤В╤Г" : "╨Т╤Л╨▒╤А╨░╤В╤М ╨┤╨░╤В╤Г"}
+                title={selectedDate ? "Очистить дату" : "Выбрать дату"}
               >
                 <CalendarIcon className="w-4 h-4" />
                 {selectedDate && (
@@ -331,7 +331,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
             {filteredTransactions.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm">
                 <Wallet className="w-12 h-12 text-muted/30 mb-3" />
-                <p>╨в╤А╨░╨╜╨╖╨░╨║╤Ж╨╕╨╕ ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╤Л</p>
+                <p>Транзакции не найдены</p>
               </div>
             ) : (
               <>
@@ -339,7 +339,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                   <div key={dateStr} className="space-y-2">
                     <div className="sticky top-0 z-10 bg-card py-1">
                       <div className="inline-block px-3 py-1 rounded-lg bg-muted/50 border border-border/50 text-xs font-semibold text-muted-foreground shadow-sm">
-                        {dateStr === format(new Date(), "dd.MM.yyyy") ? "╨б╨╡╨│╨╛╨┤╨╜╤П" : dateStr}
+                        {dateStr === format(new Date(), "dd.MM.yyyy") ? "Сегодня" : dateStr}
                       </div>
                     </div>
                     {txs.map((tx) => (
@@ -370,7 +370,7 @@ export const SharedSafeSettings: React.FC<SharedSafeSettingsProps> = ({ safeBala
                     onClick={() => setDisplayCount((prev) => prev + 15)}
                     className="w-full py-3 rounded-xl border border-input bg-background hover:bg-muted/50 transition-colors text-sm font-medium text-foreground mt-4"
                   >
-                    ╨Х╤Й╤С
+                    Ещё
                   </button>
                 )}
               </>
