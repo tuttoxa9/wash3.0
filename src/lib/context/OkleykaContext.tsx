@@ -116,7 +116,7 @@ interface OkleykaContextType {
   dispatch: React.Dispatch<OkleykaAction>;
   refreshUnpaidCount: () => Promise<void>;
   refreshShift: (date: string) => Promise<void>;
-  refreshOrders: () => Promise<void>;
+  refreshOrders: (date?: string) => Promise<void>;
   refreshDebts: () => Promise<void>;
 }
 
@@ -125,7 +125,7 @@ const OkleykaContext = createContext<OkleykaContextType>({
   dispatch: () => null,
   refreshUnpaidCount: async () => {},
   refreshShift: async () => {},
-  refreshOrders: async () => {},
+  refreshOrders: async (date?: string) => {},
   refreshDebts: async () => {},
 });
 
@@ -147,10 +147,10 @@ export function OkleykaProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_SHIFT", payload: shift });
   }, []);
 
-  const refreshOrders = useCallback(async () => {
-    const now = new Date();
-    const start = format(startOfMonth(now), "yyyy-MM-dd");
-    const end = format(endOfMonth(now), "yyyy-MM-dd");
+  const refreshOrders = useCallback(async (date?: string) => {
+    const d = date ? new Date(date) : new Date();
+    const start = format(startOfMonth(d), "yyyy-MM-dd");
+    const end = format(endOfMonth(d), "yyyy-MM-dd");
     const orders = await okleykaOrderService.getByDateRange(start, end);
     dispatch({ type: "SET_ORDERS", payload: orders });
   }, []);

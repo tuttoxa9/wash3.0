@@ -95,11 +95,10 @@ const OkleykaLayout: React.FC = () => {
                 <ArrowLeft size={20} />
               </button>
 
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-purple-500/20 border border-purple-400/30 flex items-center justify-center">
-                  <span className="text-purple-300 text-[9px] font-bold">ОК</span>
+              <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center group">
+                <div className="bg-transparent px-3 py-1.5 rounded-xl transition-colors select-none pointer-events-none relative z-10">
+                  <img src="/logo.png" alt="Detail Lab" className="h-5 w-auto object-contain select-none pointer-events-none" draggable="false" />
                 </div>
-                <span className="text-sm font-bold text-foreground">Оклейка</span>
               </div>
 
               <button
@@ -143,11 +142,8 @@ const OkleykaLayout: React.FC = () => {
                 className="fixed right-0 top-0 bottom-0 w-72 bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] border-l border-border z-50 flex flex-col py-5 px-3 gap-1 md:hidden shadow-xl"
               >
                 <div className="flex items-center justify-between px-2 mb-4">
-                  <div className="flex items-center gap-2 text-foreground">
-                    <div className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-400/30 flex items-center justify-center">
-                      <span className="text-purple-300 text-[10px] font-bold">ОК</span>
-                    </div>
-                    <span className="text-sm font-bold">Оклейка</span>
+                  <div className="bg-transparent px-3 py-1.5 select-none pointer-events-none">
+                    <img src="/logo.png" alt="Detail Lab" className="h-5 w-auto object-contain" draggable="false" />
                   </div>
                   <button
                     onClick={() => setMobileNavOpen(false)}
