@@ -10,6 +10,7 @@ import {
   Tag,
   Bell,
   Clock,
+  Check,
 } from "@phosphor-icons/react";
 import { okleykaOrderService } from "@/lib/services/okleykaService";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
@@ -219,20 +220,23 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
                         Контрольный осмотр
                       </h3>
                     </div>
-                    {/* Toggle */}
+                    {/* Custom Checkbox */}
                     <button
                       type="button"
                       onClick={() => setScheduleInspection((v) => !v)}
-                      className={`relative w-11 h-6 rounded-full transition-all ${
-                        scheduleInspection ? "bg-blue-500" : "bg-white/15"
+                      className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${
+                        scheduleInspection
+                          ? "bg-blue-500 border-blue-400 text-white"
+                          : "border-white/20 hover:border-white/30 bg-transparent text-transparent"
                       }`}
                     >
-                      <motion.span
-                        layout
-                        className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md"
-                        animate={{ x: scheduleInspection ? 22 : 2 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
+                      <motion.div
+                        initial={false}
+                        animate={{ scale: scheduleInspection ? 1 : 0.8 }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <Check size={14} weight="bold" />
+                      </motion.div>
                     </button>
                   </div>
                   <p className="text-xs text-white/40 mt-1">

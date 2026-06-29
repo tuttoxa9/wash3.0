@@ -393,6 +393,7 @@ const OkleykaHomePage: React.FC = () => {
   const [payoutEmployee, setPayoutEmployee] = useState<{ id: string; name: string } | null>(null);
   const [payoutMax, setPayoutMax] = useState(0);
   const [editCrewOpen, setEditCrewOpen] = useState(false);
+  const [paymentFilter, setPaymentFilter] = useState<"all" | "cash" | "card" | "organization" | "debt">("all");
 
   const refreshAll = useCallback(async () => {
     await Promise.all([
@@ -424,6 +425,17 @@ const OkleykaHomePage: React.FC = () => {
     };
     setSelectedOrder(fullOrder);
     setEditOrderOpen(true);
+  };
+
+  const handleCancelOrder = async (order: OkleykaOrder) => {
+    if (!confirm("Вы уверены, что хотите отменить этот заказ?")) return;
+    const ok = await okleykaOrderService.update(order.id, { status: "cancelled" });
+    if (ok) {
+      toast.success("Заказ отменен");
+      refreshAll();
+    } else {
+      toast.error("Не удалось отменить заказ");
+    }
   };
 
   if (!state.isInitialized) {
@@ -635,6 +647,11 @@ const OkleykaHomePage: React.FC = () => {
         o.dateEnd >= selectedDate
     );
   };
+  const dailyOrders = state.orders.filter((o) => o.shiftDate === selectedDate);
+  const filteredDailyOrders = dailyOrders.filter((o) => {
+    if (paymentFilter === "all") return true;
+    return o.paymentMethod?.type === paymentFilter;
+  });
 
   return (
     <div className="space-y-6">
@@ -869,6 +886,155 @@ const OkleykaHomePage: React.FC = () => {
                   </div>
                 );
               })}
+            </div>
+
+            {/* DAILY STATEMENT WIDGET */}
+            <div className="bg-card border border-border/50 p-5 rounded-3xl space-y-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-3">
+                <div className="text-left">
+                  <h4 className="font-bold text-foreground text-sm flex items-center gap-1.5">
+                    <ListBullets size={18} className="text-purple-400" />
+                    Ежедневная ведомость
+                  </h4>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Всего услуг: {dailyOrders.length} • Сумма:{" "}
+                    <span className="font-bold text-foreground">
+                      {dailyOrders.reduce((sum, o) => sum + o.totalPrice, 0).toLocaleString("ru-RU")} BYN
+                    </span>
+                  </p>
+                </div>
+
+                {/* Filter tabs */}
+                <div className="flex flex-wrap gap-1">
+                  {(["all", "cash", "card", "organization", "debt"] as const).map((filter) => {
+                    const label = {
+                      all: "Все",
+                      cash: "Нал",
+                      card: "Карта",
+                      organization: "Безнал",
+                      debt: "Долг",
+                    }[filter];
+
+                    return (
+                      <button
+                        key={filter}
+                        onClick={() => setPaymentFilter(filter)}
+                        className={`px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-all border ${
+                          paymentFilter === filter
+                            ? "bg-purple-600 border-purple-500 text-white shadow-sm"
+                            : "bg-background border-border/50 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Table / List */}
+              {filteredDailyOrders.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic py-3 text-center">Записей по выбранному фильтру нет</p>
+              ) : (
+                <div className="overflow-x-auto pr-1">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/50 text-muted-foreground font-semibold">
+                        <th className="py-2 pr-2 text-[10px] uppercase">Бокс</th>
+                        <th className="py-2 pr-2 text-[10px] uppercase">Авто</th>
+                        <th className="py-2 pr-2 text-[10px] uppercase">Услуги</th>
+                        <th className="py-2 pr-2 text-[10px] uppercase">Исполнители</th>
+                        <th className="py-2 pr-2 text-[10px] uppercase">Оплата</th>
+                        <th className="py-2 pr-2 text-right text-[10px] uppercase">Сумма</th>
+                        <th className="py-2 pl-2 text-right text-[10px] uppercase">Действия</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredDailyOrders.map((order) => {
+                        const orderItemNames = (order.items || []).map((i) => i.name).join(", ") || "—";
+                        const orderWorkerNames = (order.workers || [])
+                          .map((w) => state.employees.find((e) => e.id === w.employeeId)?.name)
+                          .filter(Boolean)
+                          .join(", ") || "—";
+
+                        const pmType = order.paymentMethod?.type;
+                        const pmLabel = pmType
+                          ? {
+                              cash: "Наличные",
+                              card: "Карта",
+                              organization: order.paymentMethod?.organizationName || "Безнал",
+                              debt: "Долг",
+                            }[pmType]
+                          : "—";
+
+                        return (
+                          <tr key={order.id} className="border-b border-border/40 hover:bg-muted/10 last:border-b-0 transition-colors">
+                            <td className="py-3 pr-2 font-medium">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                order.boxNumber === 1
+                                  ? "bg-violet-500/10 text-violet-400"
+                                  : "bg-orange-500/10 text-orange-400"
+                              }`}>
+                                {order.boxNumber}
+                              </span>
+                            </td>
+                            <td className="py-3 pr-2 font-bold text-foreground">{order.carInfo}</td>
+                            <td className="py-3 pr-2 text-muted-foreground truncate max-w-[120px]" title={orderItemNames}>
+                              {orderItemNames}
+                            </td>
+                            <td className="py-3 pr-2 text-muted-foreground truncate max-w-[120px]" title={orderWorkerNames}>
+                              {orderWorkerNames}
+                            </td>
+                            <td className="py-3 pr-2">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                pmType === "cash"
+                                  ? "bg-emerald-500/10 text-emerald-400"
+                                  : pmType === "card"
+                                  ? "bg-blue-500/10 text-blue-400"
+                                  : pmType === "debt"
+                                  ? "bg-red-500/10 text-red-400"
+                                  : "bg-muted text-muted-foreground"
+                              }`}>
+                                {pmLabel}
+                              </span>
+                            </td>
+                            <td className="py-3 pr-2 text-right font-extrabold text-foreground">
+                              {order.totalPrice.toLocaleString("ru-RU")} BYN
+                            </td>
+                            <td className="py-3 pl-2 text-right">
+                              <div className="flex justify-end gap-1.5">
+                                {order.status === "active" && (
+                                  <button
+                                    onClick={() => { setSelectedOrder(order); setCompleteOrderOpen(true); }}
+                                    className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl transition-colors"
+                                    title="Завершить"
+                                  >
+                                    <Check size={12} weight="bold" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => { setSelectedOrder(order); setEditOrderOpen(true); }}
+                                  className="p-1.5 bg-background border border-border/50 hover:bg-accent text-foreground rounded-xl transition-colors"
+                                  title="Изменить"
+                                >
+                                  <Gear size={12} weight="bold" />
+                                </button>
+                                <button
+                                  onClick={() => handleCancelOrder(order)}
+                                  className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-colors"
+                                  title="Отменить заказ"
+                                >
+                                  <X size={12} weight="bold" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
             {/* LOWER GRID: CASH & EMPLOYEES */}
