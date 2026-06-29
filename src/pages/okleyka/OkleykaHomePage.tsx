@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { OkleykaPreShiftScreen } from "@/components/okleyka/OkleykaPreShiftScreen";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import OkleykaCashStateWidget from "@/components/okleyka/OkleykaCashStateWidget";
