@@ -20,6 +20,7 @@ import type {
   OkleykaPaymentMethod,
   OkleykaEmployee,
 } from "@/lib/types/okleyka";
+import { dailyReportService } from "@/lib/services/supabaseService";
 import {
   Play,
   UserPlus,
@@ -427,6 +428,21 @@ const OkleykaHomePage: React.FC = () => {
   const [completeOrderOpen, setCompleteOrderOpen] = useState(false);
   const [editOrderOpen, setEditOrderOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OkleykaOrder | null>(null);
+
+  const [pendingWraps, setPendingWraps] = useState<any[]>([]);
+
+  // Load pending wraps
+  useEffect(() => {
+    const loadPendingWraps = async () => {
+      try {
+        const wraps = await dailyReportService.getActiveWraps();
+        setPendingWraps(wraps);
+      } catch (e) {
+        console.error("Failed to load wraps", e);
+      }
+    };
+    loadPendingWraps();
+  }, []);
 
   // Debts
   const [closeDebtOpen, setCloseDebtOpen] = useState(false);
@@ -1056,7 +1072,11 @@ const OkleykaHomePage: React.FC = () => {
 
         {/* RIGHT COLUMN: Boxes, Debts, Upcoming */}
         <div className="space-y-6">
-          <OkleykaPendingWrapsWidget />
+          <OkleykaPendingWrapsWidget
+            pendingWraps={pendingWraps}
+            onExecute={() => toast.info("Скоро будет реализовано")}
+            onDelete={() => toast.info("Скоро будет реализовано")}
+          />
 
           {/* BOX CARDS */}
           <div className="grid grid-cols-1 gap-4">
