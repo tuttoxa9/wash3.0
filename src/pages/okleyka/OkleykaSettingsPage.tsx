@@ -462,6 +462,107 @@ const OrganizationsTab: React.FC = () => {
   );
 };
 
+// ── Delete Shift Modal ────────────────────────────────────────────────────────
+interface DeleteShiftModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (date: string) => Promise<void>;
+  deleting: boolean;
+}
+
+const DeleteShiftModal: React.FC<DeleteShiftModalProps> = ({ isOpen, onClose, onConfirm, deleting }) => {
+  const [dateVal, setDateVal] = useState("");
+  const [confirmDateVal, setConfirmDateVal] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dateVal) {
+      toast.error("Выберите дату");
+      return;
+    }
+    if (dateVal !== confirmDateVal) {
+      toast.error("Введенные даты не совпадают!");
+      return;
+    }
+    await onConfirm(dateVal);
+    setDateVal("");
+    setConfirmDateVal("");
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-card border border-border/50 rounded-3xl shadow-xl w-full max-w-sm p-6 space-y-4"
+      >
+        <div className="flex items-center justify-between pb-2 border-b border-border/20">
+          <h3 className="text-base font-semibold text-destructive flex items-center gap-2">
+            ⚠️ Удаление смены
+          </h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          ВНИМАНИЕ! Это действие полностью удалит смену за указанную дату, включая кассовые операции и выплаты этой смены. Действие необратимо.
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1.5 pl-0.5">
+              Выберите дату смены
+            </label>
+            <input
+              type="date"
+              value={dateVal}
+              onChange={(e) => setDateVal(e.target.value)}
+              className="w-full px-4 py-2.5 bg-background border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-destructive/30"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1.5 pl-0.5">
+              Введите дату вручную для подтверждения (ГГГГ-ММ-ДД)
+            </label>
+            <input
+              type="text"
+              placeholder="Например: 2026-06-28"
+              value={confirmDateVal}
+              onChange={(e) => setConfirmDateVal(e.target.value)}
+              className="w-full px-4 py-2.5 bg-background border border-border/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-destructive/30"
+              required
+            />
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl border border-border/50 text-sm font-medium hover:bg-muted transition-colors"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              disabled={deleting || !dateVal || dateVal !== confirmDateVal}
+              className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              Удалить
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
+
 // ── Salary Settings Tab ───────────────────────────────────────────────────────
 const SalarySettingsTab: React.FC = () => {
   const { state, dispatch } = useOkleykaContext();
@@ -473,6 +574,7 @@ const SalarySettingsTab: React.FC = () => {
   );
   const [saving, setSaving] = useState(false);
   const [deletingShift, setDeletingShift] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -504,31 +606,14 @@ const SalarySettingsTab: React.FC = () => {
     }
   };
 
-  const handleDeleteShift = async () => {
-    const dateInput = prompt(
-      "Введите дату смены для удаления в формате ГГГГ-ММ-ДД (например, 2026-06-28):"
-    );
-    if (!dateInput) return;
-
-    const regex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!regex.test(dateInput)) {
-      toast.error("Неверный формат даты. Используйте ГГГГ-ММ-ДД");
-      return;
-    }
-
-    const confirmInput = prompt(
-      `ВНИМАНИЕ! Это полностью удалит смену за ${dateInput} и ВСЕ связанные выплаты/данные смены.\nДля подтверждения введите дату еще раз:`
-    );
-    if (confirmInput !== dateInput) {
-      toast.error("Введенная дата не совпадает. Операция отменена.");
-      return;
-    }
-
+  const handleConfirmDeleteShift = async (dateInput: string) => {
     setDeletingShift(true);
     try {
       const ok = await okleykaShiftService.deleteByDate(dateInput);
       if (ok) {
+        dispatch({ type: "DELETE_SHIFT", payload: dateInput });
         toast.success(`Смена за ${dateInput} успешно удалена`);
+        setIsDeleteModalOpen(false);
       } else {
         toast.error(`Не удалось удалить смену за ${dateInput}`);
       }
@@ -603,10 +688,10 @@ const SalarySettingsTab: React.FC = () => {
           <button
             type="submit"
             disabled={saving}
-            className="w-full sm:w-auto px-6 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-            Сохранить
+            Сохранить настройки
           </button>
         </form>
       </div>
@@ -633,7 +718,7 @@ const SalarySettingsTab: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={handleDeleteShift}
+            onClick={() => setIsDeleteModalOpen(true)}
             disabled={deletingShift}
             className="px-4 py-2.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground text-xs font-semibold rounded-xl transition-colors shrink-0 disabled:opacity-60 flex items-center justify-center gap-1.5"
           >
@@ -646,6 +731,17 @@ const SalarySettingsTab: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isDeleteModalOpen && (
+          <DeleteShiftModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={handleConfirmDeleteShift}
+            deleting={deletingShift}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

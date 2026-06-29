@@ -724,6 +724,7 @@ const mapAppointment = (r: any): OkleykaAppointment => ({
   service: r.service,
   boxNumber: r.box_number,
   status: r.status,
+  assignedEmployeeId: r.assigned_employee_id ?? undefined,
   createdAt: r.created_at,
 });
 
@@ -777,8 +778,23 @@ export const okleykaAppointmentService = {
   },
 
   async delete(id: string): Promise<boolean> {
-    const { error } = await supabase.from("okleyka_appointments").delete().eq("id", id);
-    if (error) { log("delete appointment", error); return false; }
+    const { error } = await supabase.from('okleyka_appointments').delete().eq('id', id);
+    if (error) { log('delete appointment', error); return false; }
+    return true;
+  },
+
+  async updateStatus(id: string, status: string): Promise<boolean> {
+    const { error } = await supabase.from('okleyka_appointments').update({ status }).eq('id', id);
+    if (error) { log('updateStatus appointment', error); return false; }
+    return true;
+  },
+
+  async assignEmployee(id: string, employeeId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('okleyka_appointments')
+      .update({ assigned_employee_id: employeeId })
+      .eq('id', id);
+    if (error) { log('assignEmployee appointment', error); return false; }
     return true;
   },
 };

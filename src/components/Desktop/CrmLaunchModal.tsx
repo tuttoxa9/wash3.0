@@ -48,7 +48,8 @@ const CrmLaunchModal: React.FC<CrmLaunchModalProps> = ({ isOpen, onClose }) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" />
+          {/* Solid dark overlay — no backdrop-blur */}
+          <div className="absolute inset-0 bg-black/75" />
           <div className="relative z-10 flex flex-col items-center gap-3">
             <div className="w-10 h-10 border-[3px] border-white/20 border-t-white rounded-full animate-spin" />
             <p className="text-white/60 text-sm">Открываю CRM...</p>

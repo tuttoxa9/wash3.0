@@ -75,9 +75,10 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Solid dark backdrop — no blur */}
           <motion.div
             key="tg-backdrop"
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
+            className="fixed inset-0 z-40 bg-black/60"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -94,7 +95,8 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
               exit={{ scale: 0.92, opacity: 0, y: 8 }}
               transition={{ type: "spring", stiffness: 360, damping: 28 }}
             >
-              <div className="relative bg-white/[0.04] backdrop-blur-[32px] rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)] text-white flex flex-col gap-4 border border-white/[0.08]">
+              {/* Solid card — no glass/blur */}
+              <div className="relative bg-zinc-900 rounded-3xl p-5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] text-white flex flex-col gap-4 border border-zinc-800">
                 <button
                   onClick={onClose}
                   className="absolute top-3 right-3 p-1.5 rounded-full text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all"
@@ -103,8 +105,8 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
                 </button>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-400/20 flex items-center justify-center flex-shrink-0">
-                    <PaperPlane size={20} weight="duotone" className="text-sky-300" />
+                  <div className="w-10 h-10 rounded-2xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center flex-shrink-0">
+                    <PaperPlane size={20} weight="duotone" className="text-sky-400" />
                   </div>
                   <div>
                     <p className="font-semibold text-sm">Telegram-бот</p>
@@ -124,13 +126,13 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
                       onClick={() => setSettings(p => ({ ...p, telegramEnabled: !p.telegramEnabled }))}
                       className={`flex items-center justify-between w-full px-3.5 py-2.5 rounded-2xl border transition-all text-xs font-medium ${
                         settings.telegramEnabled
-                          ? "bg-sky-500/15 border-sky-400/30 text-sky-300"
-                          : "bg-white/[0.04] border-white/[0.08] text-white/50"
+                          ? "bg-sky-500/20 border-sky-500/40 text-sky-300"
+                          : "bg-zinc-800 border-zinc-700 text-white/50"
                       }`}
                     >
                       <span>Уведомления включены</span>
                       <div className={`w-8 h-4 rounded-full transition-colors relative ${
-                        settings.telegramEnabled ? "bg-sky-500" : "bg-white/20"
+                        settings.telegramEnabled ? "bg-sky-500" : "bg-zinc-600"
                       }`}>
                         <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${
                           settings.telegramEnabled ? "right-0.5" : "left-0.5"
@@ -145,7 +147,7 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
                         placeholder="Bot Token"
                         value={settings.telegramBotToken}
                         onChange={(e) => setSettings(p => ({ ...p, telegramBotToken: e.target.value }))}
-                        className="w-full px-3.5 py-2.5 pr-9 bg-white/[0.04] border border-white/[0.08] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:border-white/20 transition-all"
+                        className="w-full px-3.5 py-2.5 pr-9 bg-zinc-800 border border-zinc-700 rounded-2xl text-white placeholder-white/30 text-xs focus:outline-none focus:border-zinc-500 transition-all"
                       />
                       <button
                         type="button"
@@ -162,7 +164,7 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
                       placeholder="Chat ID"
                       value={settings.telegramChatId}
                       onChange={(e) => setSettings(p => ({ ...p, telegramChatId: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-2xl text-white placeholder-white/20 text-xs focus:outline-none focus:border-white/20 transition-all"
+                      className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-2xl text-white placeholder-white/30 text-xs focus:outline-none focus:border-zinc-500 transition-all"
                     />
 
                     <div className="flex gap-2 pt-1">
@@ -170,7 +172,7 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
                         type="button"
                         onClick={handleTest}
                         disabled={testing || !settings.telegramBotToken || !settings.telegramChatId}
-                        className="flex-1 py-2 bg-white/[0.07] hover:bg-white/[0.12] active:scale-[0.97] transition-all text-xs font-medium rounded-2xl text-white/70 border border-white/[0.08] disabled:opacity-40 flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 active:scale-[0.97] transition-all text-xs font-medium rounded-2xl text-white/70 border border-zinc-700 disabled:opacity-40 flex items-center justify-center gap-1.5"
                       >
                         {testing ? <Loader2 size={12} className="animate-spin" /> : <PaperPlane size={12} />}
                         Тест
@@ -178,7 +180,7 @@ const TelegramSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
                       <button
                         type="submit"
                         disabled={saving}
-                        className="flex-[2] py-2 bg-white/[0.12] hover:bg-white/[0.18] active:scale-[0.97] active:bg-white/[0.22] transition-all text-xs font-bold rounded-2xl text-white border-0 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                        className="flex-[2] py-2 bg-zinc-700 hover:bg-zinc-600 active:scale-[0.97] transition-all text-xs font-bold rounded-2xl text-white border-0 disabled:opacity-50 flex items-center justify-center gap-1.5"
                       >
                         {saving ? (
                           <Loader2 size={12} className="animate-spin" />
@@ -240,7 +242,8 @@ const WashLaunchOverlay: React.FC<{ visible: boolean }> = ({ visible }) => (
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" />
+        {/* Solid dark overlay — no backdrop-blur */}
+        <div className="absolute inset-0 bg-black/75" />
         <div className="relative z-10 flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-[3px] border-white/20 border-t-white rounded-full animate-spin" />
           <p className="text-white/60 text-sm">Открываю Мойку...</p>
@@ -280,31 +283,52 @@ const DesktopPage: React.FC = () => {
     {
       id: "wash",
       label: "Мойка",
-      icon: <Waves size={38} weight="duotone" className="text-blue-300" />,
-      color: "bg-blue-500/40",
+      icon: <Waves size={40} weight="fill" className="text-white" />,
+      gradient: "from-blue-400 to-blue-600",
       onClick: handleWashClick,
     },
     {
       id: "crm",
       label: "Реклама",
-      icon: <Megaphone size={38} weight="duotone" className="text-amber-300" />,
-      color: "bg-amber-500/40",
+      icon: <Megaphone size={40} weight="fill" className="text-white" />,
+      gradient: "from-amber-400 to-amber-600",
       onClick: () => setCrmModalOpen(true),
     },
     {
       id: "okleyka",
       label: "Оклейка",
-      icon: <Palette size={38} weight="duotone" className="text-purple-300" />,
-      color: "bg-purple-500/40",
+      icon: <Palette size={40} weight="fill" className="text-white" />,
+      gradient: "from-violet-500 to-purple-700",
       onClick: handleOkleykaClick,
+    },
+    {
+      id: "settings",
+      label: "Настройки",
+      icon: <Gear size={40} weight="fill" className="text-white" />,
+      gradient: "from-slate-500 to-slate-700",
+      onClick: () => setTgModalOpen(true),
     },
   ];
 
   return (
     <div className="min-h-[100dvh] w-full overflow-hidden relative bg-black select-none">
 
-      {/* ── Wallpaper background ── */}
-      <div className="absolute inset-0 z-0">
+      {/* ── Mobile video background (< md) ── */}
+      <div className="absolute inset-0 z-0 md:hidden">
+        <video
+          src="/main.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Subtle dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/30" />
+      </div>
+
+      {/* ── Desktop wallpaper background (md+) ── */}
+      <div className="absolute inset-0 z-0 hidden md:block">
         <img
           src="/wallpapers/desktop_bg.webp"
           alt=""
@@ -314,7 +338,7 @@ const DesktopPage: React.FC = () => {
         <div className="absolute inset-0 bg-black/20" />
       </div>
 
-      {/* ── Top bar: logo left, TG settings + clock right ── */}
+      {/* ── Top bar: logo left, clock right ── */}
       <div className="relative z-10 flex items-center justify-between px-6 pt-5 pb-2">
         <div className="flex items-center gap-2.5 pointer-events-none">
           <img
@@ -324,18 +348,7 @@ const DesktopPage: React.FC = () => {
             draggable="false"
           />
         </div>
-        <div className="flex items-center gap-3">
-          {/* Telegram settings button */}
-          <button
-            onClick={() => setTgModalOpen(true)}
-            className="p-2 rounded-xl text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all active:scale-95"
-            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}
-            title="Настройки Telegram-бота"
-          >
-            <Gear size={18} weight="bold" />
-          </button>
-          <ClockWidget />
-        </div>
+        <ClockWidget />
       </div>
 
       {/* ── App icons — top-left grid ── */}
@@ -360,7 +373,7 @@ const DesktopPage: React.FC = () => {
               <AppIcon
                 icon={app.icon}
                 label={app.label}
-                color={app.color}
+                gradient={app.gradient}
                 onClick={app.onClick}
               />
             </motion.div>

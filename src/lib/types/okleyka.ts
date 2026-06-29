@@ -109,6 +109,7 @@ export interface OkleykaAppointment {
   service?: string;
   boxNumber?: 1 | 2;
   status: "scheduled" | "completed" | "cancelled";
+  assignedEmployeeId?: string; // Assigned worker for the appointment
   createdAt: string;
 }
 
