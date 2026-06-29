@@ -258,6 +258,7 @@ export const okleykaOrderService = {
     paymentMethod?: OkleykaPaymentMethod;
     inspectionDate?: string | null;
     completedAt?: string | null;
+    shiftDate?: string;
   }): Promise<boolean> {
     const payload: any = {};
     if (updates.carInfo !== undefined) payload.car_info = updates.carInfo;
@@ -272,6 +273,7 @@ export const okleykaOrderService = {
     if (updates.paymentMethod !== undefined) payload.payment_method = updates.paymentMethod;
     if (updates.inspectionDate !== undefined) payload.inspection_date = updates.inspectionDate;
     if (updates.completedAt !== undefined) payload.completed_at = updates.completedAt;
+    if (updates.shiftDate !== undefined) payload.shift_date = updates.shiftDate;
 
     const { error } = await supabase.from("okleyka_orders").update(payload).eq("id", orderId);
     if (error) { log("update order", error); return false; }
@@ -290,6 +292,7 @@ export const okleykaOrderService = {
       paymentMethod?: OkleykaPaymentMethod;
       totalPrice: number;
       notes?: string;
+      shiftDate?: string;
       items: { name: string; price: number }[];
       workers: { itemIndex: number; employeeId: string; salary: number | null }[];
     }
@@ -305,6 +308,7 @@ export const okleykaOrderService = {
       paymentMethod: updates.paymentMethod,
       totalPrice: updates.totalPrice,
       notes: updates.notes || undefined,
+      shiftDate: updates.shiftDate,
     });
     if (!ok) return false;
 

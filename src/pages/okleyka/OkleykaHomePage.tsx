@@ -403,10 +403,28 @@ const OkleykaHomePage: React.FC = () => {
     ]);
   }, [refreshOrders, refreshDebts, refreshUnpaidCount, refreshShift, selectedDate]);
 
-  // Load shift when selected date changes
   useEffect(() => {
     refreshAll();
   }, [selectedDate, refreshAll]);
+
+  const handleInitiateCloseDebt = async (debt: OkleykaDebt) => {
+    if (!debt.orderId) {
+      toast.error("Не найден ID заказа для этого долга");
+      return;
+    }
+    const orderDetails = await okleykaOrderService.getWithItems(debt.orderId);
+    if (!orderDetails) {
+      toast.error("Не удалось загрузить данные заказа");
+      return;
+    }
+    const fullOrder: OkleykaOrder = {
+      ...orderDetails.order,
+      items: orderDetails.items,
+      workers: orderDetails.workers,
+    };
+    setSelectedOrder(fullOrder);
+    setEditOrderOpen(true);
+  };
 
   if (!state.isInitialized) {
     return (
@@ -1077,7 +1095,7 @@ const OkleykaHomePage: React.FC = () => {
                         <p className="text-[10px] text-muted-foreground mt-1 font-semibold">{debt.amount} BYN</p>
                       </div>
                       <button
-                        onClick={() => { setSelectedDebt(debt); setCloseDebtOpen(true); }}
+                        onClick={() => handleInitiateCloseDebt(debt)}
                         className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 rounded-xl text-[10px] font-bold text-amber-500 transition-colors"
                       >
                         Закрыть
@@ -1153,6 +1171,7 @@ const OkleykaHomePage: React.FC = () => {
           shiftEmployees={shift ? shift.employeeIds : []}
           employees={state.employees}
           organizations={state.organizations}
+          shiftDate={selectedDate}
           onUpdated={(order) => {
             dispatch({ type: "UPDATE_ORDER", payload: order });
             refreshAll();
@@ -1171,15 +1190,7 @@ const OkleykaHomePage: React.FC = () => {
         />
       )}
 
-      <OkleykaCloseDebtModal
-        isOpen={closeDebtOpen}
-        onClose={() => { setCloseDebtOpen(false); setSelectedDebt(null); }}
-        debt={selectedDebt}
-        organizations={state.organizations}
-        onClosed={() => {
-          refreshAll();
-        }}
-      />
+
 
       {payoutOpen && payoutEmployee && (
         <PayoutModal

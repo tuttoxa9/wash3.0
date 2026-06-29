@@ -42,6 +42,7 @@ interface EditOrderModalProps {
   employees: { id: string; name: string }[];
   organizations: { id: string; name: string }[];
   onUpdated: (order: OkleykaOrder) => void;
+  shiftDate?: string;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -64,6 +65,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
   employees,
   organizations,
   onUpdated,
+  shiftDate,
 }) => {
   const { dispatch } = useOkleykaContext();
 
@@ -322,6 +324,11 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
         });
       });
 
+      // If we are paying off a debt, update shiftDate to the current shift date
+      const originalIsDebt = order.paymentMethod?.type === "debt";
+      const newIsDebt = paymentType === "debt";
+      const nextShiftDate = (originalIsDebt && !newIsDebt && shiftDate) ? shiftDate : undefined;
+
       const success = await okleykaOrderService.updateWithItems(order.id, {
         boxNumber,
         dateStart,
@@ -332,6 +339,7 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({
         paymentMethod,
         totalPrice,
         notes: notes.trim() || undefined,
+        shiftDate: nextShiftDate,
         items: serviceItems.map((s) => ({
           name: s.name.trim(),
           price: parseFloat(s.price) || 0,
