@@ -6,7 +6,9 @@ import { okleykaOrderService, okleykaShiftService, okleykaDebtService, okleykaSe
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import PasswordAuth from "@/components/ui/PasswordAuth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Building,
   format,
   startOfMonth,
   endOfMonth,
@@ -513,9 +515,131 @@ const OkleykaReportsPage: React.FC = () => {
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* Revenue Overview Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <Tabs defaultValue="employee-earnings" className="w-full relative z-10">
+          <div className="mb-4 overflow-x-auto">
+            <TabsList className="flex w-max min-w-full">
+              <TabsTrigger value="employee-earnings" className="flex items-center gap-2 whitespace-nowrap">
+                Зарплата
+              </TabsTrigger>
+              <TabsTrigger value="organizations" className="flex items-center gap-2 whitespace-nowrap">
+                <Building className="h-4 w-4" />
+                Отчёт по организациям
+              </TabsTrigger>
+              <TabsTrigger value="general-revenue" className="flex items-center gap-2 whitespace-nowrap">
+                <TrendingUp className="h-4 w-4" />
+                Общий отчёт по выручке
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="employee-earnings" className="space-y-5">
+            {/* Employee Performance & Balances */}
+          <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold">Взаиморасчеты с сотрудниками</h3>
+                <p className="text-xs text-muted-foreground">Начисленные зарплаты и выплаты за выбранный период</p>
+              </div>
+              <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center">
+                <Users className="w-4 h-4 text-muted-foreground" />
+              </div>
+            </div>
+
+            {/* Desktop Table */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-border/50 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+                    <th className="py-3 px-2">Сотрудник</th>
+                    <th className="py-3 px-2 text-right">Начислено (ЗП)</th>
+                    <th className="py-3 px-2 text-right">Выплачено</th>
+                    <th className="py-3 px-2 text-right">Баланс (остаток)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/30">
+                  {employeeRows.map((row) => (
+                    <tr
+                      key={row.id}
+                      onClick={() => handleRowClick(row.id)}
+                      className="hover:bg-muted/10 cursor-pointer transition-colors"
+                    >
+                      <td className="py-3 px-2">
+                        <div className="font-semibold text-foreground">{row.name}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{row.position}</div>
+                      </td>
+                      <td className="py-3 px-2 text-right font-bold text-foreground tabular-nums">
+                        {row.earned.toLocaleString("ru-RU")} BYN
+                      </td>
+                      <td className="py-3 px-2 text-right font-semibold text-muted-foreground tabular-nums">
+                        {row.paid.toLocaleString("ru-RU")} BYN
+                      </td>
+                      <td className={`py-3 px-2 text-right font-bold tabular-nums ${
+                        row.balance > 0 
+                          ? "text-amber-500 dark:text-amber-400" 
+                          : row.balance < 0 
+                            ? "text-red-500" 
+                            : "text-muted-foreground"
+                      }`}>
+                        {row.balance > 0 ? "+" : ""}{row.balance.toLocaleString("ru-RU")} BYN
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Stack View */}
+            <div className="sm:hidden space-y-3">
+              {employeeRows.map((row) => (
+                <div
+                  key={row.id}
+                  onClick={() => handleRowClick(row.id)}
+                  className="bg-background border border-border/30 p-3 rounded-xl space-y-2 cursor-pointer active:bg-muted/10 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-bold">{row.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{row.position}</p>
+                    </div>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${
+                      row.balance > 0 
+                        ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" 
+                        : row.balance < 0 
+                          ? "bg-red-500/10 text-red-500 border border-red-500/20" 
+                          : "bg-muted text-muted-foreground"
+                    }`}>
+                      {row.balance > 0 ? "Долг: " : ""}{row.balance.toLocaleString("ru-RU")} BYN
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-border/10">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block uppercase font-medium">
+                        Начислено
+                      </span>
+                      <span className="font-semibold text-foreground">{row.earned.toLocaleString("ru-RU")} BYN</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block uppercase font-medium">
+                        Выплачено
+                      </span>
+                      <span className="font-semibold text-foreground">{row.paid.toLocaleString("ru-RU")} BYN</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {employeeRows.length === 0 && (
+              <div className="text-center py-6 text-muted-foreground">
+                <p className="text-xs">Сотрудники не найдены</p>
+              </div>
+            )}
+          </div>
+          </TabsContent>
+
+          <TabsContent value="general-revenue" className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Revenue Card */}
             <motion.div
               whileHover={{ y: -2 }}
@@ -621,111 +745,18 @@ const OkleykaReportsPage: React.FC = () => {
               </div>
             </motion.div>
           </div>
+          </TabsContent>
 
-          {/* Employee Performance & Balances */}
-          <div className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold">Взаиморасчеты с сотрудниками</h3>
-                <p className="text-xs text-muted-foreground">Начисленные зарплаты и выплаты за выбранный период</p>
-              </div>
-              <div className="w-9 h-9 bg-muted rounded-xl flex items-center justify-center">
-                <Users className="w-4 h-4 text-muted-foreground" />
-              </div>
+          <TabsContent value="organizations" className="space-y-5">
+            <div className="bg-card border border-border/50 rounded-2xl p-8 shadow-sm flex flex-col items-center justify-center text-center">
+              <Building className="w-12 h-12 text-muted-foreground mb-4 opacity-50" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">Отчёты по организациям</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                В данном разделе в будущем будет доступна детальная статистика по всем организациям в Оклейке, аналогично автомойке.
+              </p>
             </div>
-
-            {/* Desktop Table */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr className="border-b border-border/50 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
-                    <th className="py-3 px-2">Сотрудник</th>
-                    <th className="py-3 px-2 text-right">Начислено (ЗП)</th>
-                    <th className="py-3 px-2 text-right">Выплачено</th>
-                    <th className="py-3 px-2 text-right">Баланс (остаток)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/30">
-                  {employeeRows.map((row) => (
-                    <tr
-                      key={row.id}
-                      onClick={() => handleRowClick(row.id)}
-                      className="hover:bg-muted/10 cursor-pointer transition-colors"
-                    >
-                      <td className="py-3 px-2">
-                        <div className="font-semibold text-foreground">{row.name}</div>
-                        <div className="text-[10px] text-muted-foreground mt-0.5">{row.position}</div>
-                      </td>
-                      <td className="py-3 px-2 text-right font-bold text-foreground tabular-nums">
-                        {row.earned.toLocaleString("ru-RU")} BYN
-                      </td>
-                      <td className="py-3 px-2 text-right font-semibold text-muted-foreground tabular-nums">
-                        {row.paid.toLocaleString("ru-RU")} BYN
-                      </td>
-                      <td className={`py-3 px-2 text-right font-bold tabular-nums ${
-                        row.balance > 0 
-                          ? "text-amber-500 dark:text-amber-400" 
-                          : row.balance < 0 
-                            ? "text-red-500" 
-                            : "text-muted-foreground"
-                      }`}>
-                        {row.balance > 0 ? "+" : ""}{row.balance.toLocaleString("ru-RU")} BYN
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Stack View */}
-            <div className="sm:hidden space-y-3">
-              {employeeRows.map((row) => (
-                <div
-                  key={row.id}
-                  onClick={() => handleRowClick(row.id)}
-                  className="bg-background border border-border/30 p-3 rounded-xl space-y-2 cursor-pointer active:bg-muted/10 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-bold">{row.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{row.position}</p>
-                    </div>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${
-                      row.balance > 0 
-                        ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" 
-                        : row.balance < 0 
-                          ? "bg-red-500/10 text-red-500 border border-red-500/20" 
-                          : "bg-muted text-muted-foreground"
-                    }`}>
-                      {row.balance > 0 ? "Долг: " : ""}{row.balance.toLocaleString("ru-RU")} BYN
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-border/10">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground block uppercase font-medium">
-                        Начислено
-                      </span>
-                      <span className="font-semibold text-foreground">{row.earned.toLocaleString("ru-RU")} BYN</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-muted-foreground block uppercase font-medium">
-                        Выплачено
-                      </span>
-                      <span className="font-semibold text-foreground">{row.paid.toLocaleString("ru-RU")} BYN</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {employeeRows.length === 0 && (
-              <div className="text-center py-6 text-muted-foreground">
-                <p className="text-xs">Сотрудники не найдены</p>
-              </div>
-            )}
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       )}
 
       {/* Employee records detail modal */}

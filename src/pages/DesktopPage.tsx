@@ -254,9 +254,10 @@ const WashLaunchOverlay: React.FC<{ visible: boolean }> = ({ visible }) => (
 );
 
 // ─── Main Desktop Page ────────────────────────────────────────────
-const DesktopPage: React.FC = () => {
-  const navigate = useNavigate();
+const DesktopPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [wallpaperLoaded, setWallpaperLoaded] = useState(false);
 
   const [crmModalOpen, setCrmModalOpen] = useState(false);
   const [tgModalOpen, setTgModalOpen] = useState(false);
@@ -329,11 +330,15 @@ const DesktopPage: React.FC = () => {
 
       {/* ── Desktop wallpaper background (md+) ── */}
       <div className="absolute inset-0 z-0 hidden md:block">
-        <img
+        <motion.img
+          initial={{ opacity: 0 }}
+          animate={{ opacity: wallpaperLoaded ? 1 : 0 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
           src="/wallpapers/desktop_bg.webp"
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           draggable="false"
+          onLoad={() => setWallpaperLoaded(true)}
         />
         <div className="absolute inset-0 bg-black/20" />
       </div>
@@ -351,10 +356,10 @@ const DesktopPage: React.FC = () => {
         <ClockWidget />
       </div>
 
-      {/* ── App icons — top-left grid ── */}
-      <div className="relative z-10 px-6 pt-8">
+      {/* ── App icons ── */}
+      <div className="relative z-10 px-4 sm:px-6 pt-6 sm:pt-8">
         <motion.div
-          className="flex flex-row flex-wrap gap-5"
+          className="grid grid-cols-4 sm:flex sm:flex-row sm:flex-wrap gap-x-2 gap-y-6 sm:gap-5 justify-items-center"
           initial="hidden"
           animate="visible"
           variants={{
