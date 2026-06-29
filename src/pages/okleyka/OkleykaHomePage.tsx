@@ -808,9 +808,33 @@ const OkleykaHomePage: React.FC = () => {
           </button>
         </motion.div>
       ) : (
+        <div className="flex flex-col gap-5">
+          {/* Top actions */}
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+            <button
+              onClick={() => {
+                setPaymentFilter("all");
+                setDailyReportOpen(true);
+              }}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 border border-zinc-800/80 text-white transition-all shadow-sm active:scale-95"
+            >
+              <ListBullets size={16} className="text-purple-400" />
+              <span>Ежедневная ведомость</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveBoxNum(1);
+                setAddOrderOpen(true);
+              }}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white transition-all shadow-sm active:scale-95"
+            >
+              <Plus size={16} />
+              <span>Добавить заказ</span>
+            </button>
+          </div>
 
-        /* ── ACTIVE SHIFT MAIN GRID ── */
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ── ACTIVE SHIFT MAIN GRID ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* LEFT 2 COLUMNS: BOXES & BOTTOM INFO */}
           <div className="lg:col-span-2 space-y-6">
@@ -1195,7 +1219,8 @@ const OkleykaHomePage: React.FC = () => {
           </div>
 
         </div>
-      )}
+      </div>
+    )}
 
       {/* ── MODALS INTEGRATION ── */}
       {addOrderOpen && (
