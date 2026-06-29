@@ -46,6 +46,7 @@ import AddOrderModal from "@/components/okleyka/AddOrderModal";
 import CompleteOrderModal from "@/components/okleyka/CompleteOrderModal";
 import EditOrderModal from "@/components/okleyka/EditOrderModal";
 import MessengerLinks from "@/components/okleyka/MessengerLinks";
+import OkleykaDailyReportModal from "@/components/okleyka/OkleykaDailyReportModal";
 
 // ── Simple DatePicker stub to avoid importing DayPicker which can be complex ──
 const CustomDatePicker: React.FC<{ value: string; onChange: (v: string) => void }> = ({ value, onChange }) => {
@@ -394,6 +395,7 @@ const OkleykaHomePage: React.FC = () => {
   const [payoutMax, setPayoutMax] = useState(0);
   const [editCrewOpen, setEditCrewOpen] = useState(false);
   const [paymentFilter, setPaymentFilter] = useState<"all" | "cash" | "card" | "organization" | "debt">("all");
+  const [dailyReportOpen, setDailyReportOpen] = useState(false);
 
   const refreshAll = useCallback(async () => {
     await Promise.all([
@@ -888,155 +890,6 @@ const OkleykaHomePage: React.FC = () => {
               })}
             </div>
 
-            {/* DAILY STATEMENT WIDGET */}
-            <div className="bg-card border border-border/50 p-5 rounded-3xl space-y-4 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-3">
-                <div className="text-left">
-                  <h4 className="font-bold text-foreground text-sm flex items-center gap-1.5">
-                    <ListBullets size={18} className="text-purple-400" />
-                    Ежедневная ведомость
-                  </h4>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Всего услуг: {dailyOrders.length} • Сумма:{" "}
-                    <span className="font-bold text-foreground">
-                      {dailyOrders.reduce((sum, o) => sum + o.totalPrice, 0).toLocaleString("ru-RU")} BYN
-                    </span>
-                  </p>
-                </div>
-
-                {/* Filter tabs */}
-                <div className="flex flex-wrap gap-1">
-                  {(["all", "cash", "card", "organization", "debt"] as const).map((filter) => {
-                    const label = {
-                      all: "Все",
-                      cash: "Нал",
-                      card: "Карта",
-                      organization: "Безнал",
-                      debt: "Долг",
-                    }[filter];
-
-                    return (
-                      <button
-                        key={filter}
-                        onClick={() => setPaymentFilter(filter)}
-                        className={`px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-all border ${
-                          paymentFilter === filter
-                            ? "bg-purple-600 border-purple-500 text-white shadow-sm"
-                            : "bg-background border-border/50 text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Table / List */}
-              {filteredDailyOrders.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic py-3 text-center">Записей по выбранному фильтру нет</p>
-              ) : (
-                <div className="overflow-x-auto pr-1">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-border/50 text-muted-foreground font-semibold">
-                        <th className="py-2 pr-2 text-[10px] uppercase">Бокс</th>
-                        <th className="py-2 pr-2 text-[10px] uppercase">Авто</th>
-                        <th className="py-2 pr-2 text-[10px] uppercase">Услуги</th>
-                        <th className="py-2 pr-2 text-[10px] uppercase">Исполнители</th>
-                        <th className="py-2 pr-2 text-[10px] uppercase">Оплата</th>
-                        <th className="py-2 pr-2 text-right text-[10px] uppercase">Сумма</th>
-                        <th className="py-2 pl-2 text-right text-[10px] uppercase">Действия</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredDailyOrders.map((order) => {
-                        const orderItemNames = (order.items || []).map((i) => i.name).join(", ") || "—";
-                        const orderWorkerNames = (order.workers || [])
-                          .map((w) => state.employees.find((e) => e.id === w.employeeId)?.name)
-                          .filter(Boolean)
-                          .join(", ") || "—";
-
-                        const pmType = order.paymentMethod?.type;
-                        const pmLabel = pmType
-                          ? {
-                              cash: "Наличные",
-                              card: "Карта",
-                              organization: order.paymentMethod?.organizationName || "Безнал",
-                              debt: "Долг",
-                            }[pmType]
-                          : "—";
-
-                        return (
-                          <tr key={order.id} className="border-b border-border/40 hover:bg-muted/10 last:border-b-0 transition-colors">
-                            <td className="py-3 pr-2 font-medium">
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                order.boxNumber === 1
-                                  ? "bg-violet-500/10 text-violet-400"
-                                  : "bg-orange-500/10 text-orange-400"
-                              }`}>
-                                {order.boxNumber}
-                              </span>
-                            </td>
-                            <td className="py-3 pr-2 font-bold text-foreground">{order.carInfo}</td>
-                            <td className="py-3 pr-2 text-muted-foreground truncate max-w-[120px]" title={orderItemNames}>
-                              {orderItemNames}
-                            </td>
-                            <td className="py-3 pr-2 text-muted-foreground truncate max-w-[120px]" title={orderWorkerNames}>
-                              {orderWorkerNames}
-                            </td>
-                            <td className="py-3 pr-2">
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                pmType === "cash"
-                                  ? "bg-emerald-500/10 text-emerald-400"
-                                  : pmType === "card"
-                                  ? "bg-blue-500/10 text-blue-400"
-                                  : pmType === "debt"
-                                  ? "bg-red-500/10 text-red-400"
-                                  : "bg-muted text-muted-foreground"
-                              }`}>
-                                {pmLabel}
-                              </span>
-                            </td>
-                            <td className="py-3 pr-2 text-right font-extrabold text-foreground">
-                              {order.totalPrice.toLocaleString("ru-RU")} BYN
-                            </td>
-                            <td className="py-3 pl-2 text-right">
-                              <div className="flex justify-end gap-1.5">
-                                {order.status === "active" && (
-                                  <button
-                                    onClick={() => { setSelectedOrder(order); setCompleteOrderOpen(true); }}
-                                    className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl transition-colors"
-                                    title="Завершить"
-                                  >
-                                    <Check size={12} weight="bold" />
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => { setSelectedOrder(order); setEditOrderOpen(true); }}
-                                  className="p-1.5 bg-background border border-border/50 hover:bg-accent text-foreground rounded-xl transition-colors"
-                                  title="Изменить"
-                                >
-                                  <Gear size={12} weight="bold" />
-                                </button>
-                                <button
-                                  onClick={() => handleCancelOrder(order)}
-                                  className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-colors"
-                                  title="Отменить заказ"
-                                >
-                                  <X size={12} weight="bold" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
             {/* LOWER GRID: CASH & EMPLOYEES */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -1056,27 +909,59 @@ const OkleykaHomePage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-left">
-                  <div className="bg-background p-3 rounded-2xl border border-border/50">
+                  <div
+                    onClick={() => {
+                      setPaymentFilter("all");
+                      setDailyReportOpen(true);
+                    }}
+                    className="bg-background hover:bg-accent/5 cursor-pointer p-3 rounded-2xl border border-border/50 transition-colors"
+                  >
                     <span className="text-[9px] text-muted-foreground block font-semibold uppercase">Начало</span>
                     <span className="font-bold text-foreground text-sm">{shift.startOfDayCash} BYN</span>
                   </div>
-                  <div className="bg-background p-3 rounded-2xl border border-border/50">
+                  <div
+                    onClick={() => {
+                      setPaymentFilter("cash");
+                      setDailyReportOpen(true);
+                    }}
+                    className="bg-background hover:bg-accent/5 cursor-pointer p-3 rounded-2xl border border-border/50 transition-colors"
+                  >
                     <span className="text-[9px] text-muted-foreground block font-semibold uppercase">Наличные</span>
                     <span className="font-bold text-foreground text-sm">{getCashRevenue()} BYN</span>
                   </div>
-                  <div className="bg-background p-3 rounded-2xl border border-border/50">
+                  <div
+                    onClick={() => {
+                      setPaymentFilter("card");
+                      setDailyReportOpen(true);
+                    }}
+                    className="bg-background hover:bg-accent/5 cursor-pointer p-3 rounded-2xl border border-border/50 transition-colors"
+                  >
                     <span className="text-[9px] text-muted-foreground block font-semibold uppercase">Карта</span>
                     <span className="font-bold text-foreground text-sm">{getCardRevenue()} BYN</span>
                   </div>
-                  <div className="bg-background p-3 rounded-2xl border border-border/50">
-                    <span className="text-[9px] text-muted-foreground block font-semibold uppercase">Движение</span>
-                    <span className={`font-bold text-sm ${getModificationsSum() < 0 ? "text-red-500" : "text-emerald-500"}`}>
-                      {getModificationsSum() > 0 ? "+" : ""}{getModificationsSum()} BYN
+                  <div
+                    onClick={() => {
+                      setPaymentFilter("organization");
+                      setDailyReportOpen(true);
+                    }}
+                    className="bg-background hover:bg-accent/5 cursor-pointer p-3 rounded-2xl border border-border/50 transition-colors"
+                  >
+                    <span className="text-[9px] text-muted-foreground block font-semibold uppercase">Безнал</span>
+                    <span className="font-bold text-foreground text-sm">
+                      {ordersCompletedToday
+                        .filter((o) => o.paymentMethod?.type === "organization")
+                        .reduce((sum, o) => sum + o.totalPrice, 0)} BYN
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-emerald-500/5 border border-emerald-500/10 p-3.5 rounded-2xl flex items-center justify-between">
+                <div
+                  onClick={() => {
+                    setPaymentFilter("all");
+                    setDailyReportOpen(true);
+                  }}
+                  className="bg-emerald-500/5 hover:bg-emerald-500/10 cursor-pointer border border-emerald-500/10 p-3.5 rounded-2xl flex items-center justify-between transition-colors"
+                >
                   <div>
                     <span className="text-[9px] text-emerald-500 block font-bold uppercase tracking-wider">Ожидается в кассе</span>
                     <span className="font-extrabold text-emerald-500 text-lg leading-none mt-1 inline-block">
@@ -1355,6 +1240,25 @@ const OkleykaHomePage: React.FC = () => {
           }}
         />
       )}
+
+      <OkleykaDailyReportModal
+        isOpen={dailyReportOpen}
+        onClose={() => setDailyReportOpen(false)}
+        orders={dailyOrders}
+        employees={state.employees}
+        selectedDate={selectedDate}
+        paymentFilter={paymentFilter}
+        onPaymentFilterChange={setPaymentFilter}
+        onEditOrder={(order) => {
+          setSelectedOrder(order);
+          setEditOrderOpen(true);
+        }}
+        onCompleteOrder={(order) => {
+          setSelectedOrder(order);
+          setCompleteOrderOpen(true);
+        }}
+        onCancelOrder={handleCancelOrder}
+      />
 
 
 
