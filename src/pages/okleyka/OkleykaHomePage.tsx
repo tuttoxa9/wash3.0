@@ -43,6 +43,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AddOrderModal from "@/components/okleyka/AddOrderModal";
 import CompleteOrderModal from "@/components/okleyka/CompleteOrderModal";
 import EditOrderModal from "@/components/okleyka/EditOrderModal";
+import MessengerLinks from "@/components/okleyka/MessengerLinks";
 
 // ── Simple DatePicker stub to avoid importing DayPicker which can be complex ──
 const CustomDatePicker: React.FC<{ value: string; onChange: (v: string) => void }> = ({ value, onChange }) => {
@@ -868,9 +869,12 @@ const OkleykaHomePage: React.FC = () => {
                               {date ? format(date, "d MMM HH:mm", { locale: ru }) : ""}
                             </span>
                             {order.clientPhone && (
-                              <a href={`tel:${order.clientPhone}`} className="text-[9px] text-white/40 hover:underline">
-                                {order.clientPhone}
-                              </a>
+                              <span className="flex items-center gap-1">
+                                <a href={`tel:${order.clientPhone}`} className="text-[9px] text-white/40 hover:underline">
+                                  {order.clientPhone}
+                                </a>
+                                <MessengerLinks phone={order.clientPhone} />
+                              </span>
                             )}
                           </div>
                         </div>

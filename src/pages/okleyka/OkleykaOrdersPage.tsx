@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import CompleteOrderModal from "@/components/okleyka/CompleteOrderModal";
 import EditOrderModal from "@/components/okleyka/EditOrderModal";
+import MessengerLinks from "@/components/okleyka/MessengerLinks";
 
 type StatusFilter = "all" | "active" | "completed" | "cancelled";
 type BoxFilter = "all" | "1" | "2";
@@ -110,10 +111,16 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, employees, onComplete, onE
           {order.carInfo}
         </div>
         {order.clientName && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
             <User className="w-3.5 h-3.5 shrink-0" />
             {order.clientName}
-            {order.clientPhone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{order.clientPhone}</span>}
+            {order.clientPhone && (
+              <span className="flex items-center gap-1">
+                <Phone className="w-3 h-3" />
+                {order.clientPhone}
+                <MessengerLinks phone={order.clientPhone} />
+              </span>
+            )}
           </div>
         )}
       </div>
