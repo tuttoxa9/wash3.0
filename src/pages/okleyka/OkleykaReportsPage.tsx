@@ -640,7 +640,7 @@ const OkleykaReportsPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="general-revenue" className="space-y-5">
-            <OkleykaGeneralRevenueReport records={filteredOrders} />
+            <OkleykaGeneralRevenueReport />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Revenue Card */}
             <motion.div

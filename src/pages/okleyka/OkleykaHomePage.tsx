@@ -1,5 +1,6 @@
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
+import { OkleykaPreShiftScreen } from "@/components/okleyka/OkleykaPreShiftScreen";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import OkleykaCashStateWidget from "@/components/okleyka/OkleykaCashStateWidget";
 import OkleykaPendingWrapsWidget from "@/components/okleyka/OkleykaPendingWrapsWidget";
@@ -417,6 +418,44 @@ const OkleykaCloseDebtModal: React.FC<{
 
 // ── Main Home Page ─────────────────────────────────────────────────────────
 const OkleykaHomePage: React.FC = () => {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isShiftSectionHighlighted, setIsShiftSectionHighlighted] = useState(false);
+  const [previousDayCash, setPreviousDayCash] = useState<number | undefined>(undefined);
+  const calendarRef = useRef<HTMLDivElement | null>(null);
+  const shiftSectionRef = useRef<HTMLDivElement | null>(null);
+
+  // Fetch previous day cash balance
+  useEffect(() => {
+    const fetchPreviousDayCash = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("okleyka_shifts")
+          .select("*")
+          .lt("date", selectedDate)
+          .order("date", { ascending: false })
+          .limit(1);
+
+        if (error) throw error;
+        if (data && data.length > 0) {
+          const prev = data[0];
+          setPreviousDayCash(prev.actual_end_cash !== null ? Number(prev.actual_end_cash) : undefined);
+        } else {
+          setPreviousDayCash(undefined);
+        }
+      } catch (e) {
+        console.error("Error fetching previous shift cash:", e);
+        setPreviousDayCash(undefined);
+      }
+    };
+    fetchPreviousDayCash();
+  }, [selectedDate]);
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(format(date, "yyyy-MM-dd"));
+      setIsCalendarOpen(false);
+    }
+  };
   const { state, dispatch, refreshShift, refreshOrders, refreshDebts, refreshUnpaidCount } = useOkleykaContext();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [shiftEmployees, setShiftEmployees] = useState<string[]>([]);
@@ -746,198 +785,44 @@ const OkleykaHomePage: React.FC = () => {
   });
 
   
+  
+  // Filter appointments for pre-shift screen
+  const todayAppointments = state.appointments.filter(app => app.date === selectedDate);
+  const totalAppointmentsToday = todayAppointments.length;
+  const isDateToday = selectedDate === format(new Date(), "yyyy-MM-dd");
+
+  const upcomingAppointments = todayAppointments.filter(app => {
+    if (!isDateToday) return true;
+    const [hours, minutes] = app.time.split(":").map(Number);
+    const appTimeMinutes = hours * 60 + minutes;
+    const now = new Date();
+    const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+    return appTimeMinutes >= currentTimeMinutes && appTimeMinutes <= currentTimeMinutes + 120;
+  });
+
   if (!shift) {
     return (
-      <div className="min-h-[85dvh] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 animate-in fade-in duration-500 bg-background/50">
-        {/* Header Section */}
-        <div className="text-center mb-10 w-full max-w-2xl">
-          <div className="inline-flex items-center justify-center p-3 rounded-xl bg-primary/10 text-primary mb-5 border border-primary/20 shadow-sm">
-            <Calendar className="w-6 h-6 sm:w-8 sm:h-8" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-4">
-            Открытие смены
-          </h1>
-
-          {/* Interactive Date Selector */}
-          <div className="flex justify-center items-center gap-2 text-muted-foreground text-sm sm:text-base">
-            <span>Дата смены:</span>
-            <div className="relative">
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-semibold text-foreground bg-card border border-border/50 hover:bg-accent/50 transition-colors shadow-sm focus:outline-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] gap-6">
-          {/* Left Column - Employees */}
-          <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden">
-            <div className="p-5 sm:p-6 border-b border-border/50 bg-muted/20">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                  <Users className="w-5 h-5" />
-                </div>
-                <h2 className="text-xl font-bold text-foreground">Сотрудники</h2>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Выберите сотрудников, работающих в эту смену, и назначьте им роли
-              </p>
-            </div>
-
-            <div className="p-5 sm:p-6">
-              {state.employees.length === 0 ? (
-                <div className="text-center py-10 bg-accent/30 rounded-xl border border-dashed border-border">
-                  <Users className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground font-medium">Нет сотрудников</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-2">
-                  {state.employees.map((employee) => {
-                    const isSelected = shiftEmployees.includes(employee.id);
-                    const currentRole = employeeRoles[employee.id] || "installer";
-
-                    return (
-                      <div
-                        key={employee.id}
-                        className={`relative flex flex-col p-3 rounded-xl border transition-all duration-200 ${
-                          isSelected
-                            ? "bg-primary/5 border-primary/30 shadow-sm"
-                            : "bg-background border-border hover:border-border/80 hover:bg-accent/5"
-                        }`}
-                      >
-                        <label className="flex items-center gap-3 cursor-pointer select-none">
-                          <div
-                            className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
-                              isSelected
-                                ? "bg-primary border-primary text-white"
-                                : "border-input bg-background"
-                            }`}
-                          >
-                            {isSelected && <Check className="w-3.5 h-3.5" />}
-                          </div>
-                          <input
-                            type="checkbox"
-                            className="hidden"
-                            checked={isSelected}
-                            onChange={() => handleToggleEmp(employee.id)}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className={`text-sm font-medium truncate transition-colors ${
-                                isSelected ? "text-foreground" : "text-muted-foreground"
-                              }`}
-                            >
-                              {employee.name}
-                            </p>
-                          </div>
-                        </label>
-
-                        <div
-                          className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                            isSelected ? "max-h-24 opacity-100 mt-3" : "max-h-0 opacity-0 mt-0"
-                          }`}
-                        >
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center bg-background rounded-lg border border-border/50 p-1">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEmployeeRoles({
-                                    ...employeeRoles,
-                                    [employee.id]: "installer",
-                                  });
-                                }}
-                                className={`flex-1 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
-                                  currentRole === "installer"
-                                    ? "bg-primary text-primary-foreground shadow-sm"
-                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                                }`}
-                              >
-                                Оклейщик
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEmployeeRoles({
-                                    ...employeeRoles,
-                                    [employee.id]: "admin",
-                                  });
-                                }}
-                                className={`flex-1 flex items-center justify-center gap-1.5 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
-                                  currentRole === "admin"
-                                    ? "bg-amber-500 text-white shadow-sm"
-                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                                }`}
-                              >
-                                Админ
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column - Summary & Action */}
-          <div className="flex flex-col gap-6">
-            <div className="bg-card rounded-2xl border border-border/50 shadow-sm p-5 sm:p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-foreground">Сводка по смене</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-border/30">
-                  <span className="text-sm text-muted-foreground">Выбрано сотрудников</span>
-                  <span className="font-bold text-foreground">
-                    {shiftEmployees.length}
-                  </span>
-                </div>
-                
-                <div>
-                  <label className="text-[10px] text-muted-foreground block mb-1 font-semibold uppercase tracking-wider pl-1">
-                    Наличные на начало (касса)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={startCash}
-                      onChange={(e) => setStartCash(e.target.value)}
-                      className="w-full px-4 py-3.5 bg-background border border-border/50 rounded-2xl text-foreground font-bold pr-12 focus:outline-none"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">BYN</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={handleOpenShift}
-              disabled={opening || shiftEmployees.length === 0}
-              className="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-bold rounded-2xl text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all shadow-sm shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-              <span className="flex items-center gap-2 relative z-10">
-                {opening ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    Открыть смену
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <OkleykaPreShiftScreen
+        selectedDate={selectedDate}
+        isCalendarOpen={isCalendarOpen}
+        setIsCalendarOpen={setIsCalendarOpen}
+        calendarRef={calendarRef}
+        handleDateSelect={handleDateSelect}
+        shiftSectionRef={shiftSectionRef}
+        isShiftSectionHighlighted={isShiftSectionHighlighted}
+        employees={state.employees}
+        shiftEmployees={shiftEmployees}
+        handleEmployeeSelection={handleToggleEmp}
+        employeeRoles={employeeRoles}
+        setEmployeeRoles={setEmployeeRoles}
+        startShift={handleOpenShift}
+        startOfDayCash={startCash}
+        setStartOfDayCash={setStartCash}
+        previousDayCash={previousDayCash}
+        loading={{ savingShift: opening, employees: false }}
+        upcomingAppointments={upcomingAppointments}
+        totalAppointmentsToday={totalAppointmentsToday}
+      />
     );
   }
 

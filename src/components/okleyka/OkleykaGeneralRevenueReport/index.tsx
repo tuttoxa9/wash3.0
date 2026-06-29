@@ -2,10 +2,9 @@ import { createSalaryCalculator } from "@/components/SalaryCalculator";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import { useToast } from "@/lib/hooks/useToast";
 import {
-  carWashService,
-  dailyReportService,
-  dailyRolesService,
-} from "@/lib/services/supabaseService";
+  okleykaOrderService,
+  okleykaShiftService,
+} from "@/lib/services/okleykaService";
 import type { OkleykaOrder } from "@/lib/services/okleykaService";
 import { determineEmployeeRole } from "@/lib/employee-utils";
 import { format, isBefore, isEqual, parseISO } from "date-fns";
@@ -97,10 +96,9 @@ const OkleykaGeneralRevenueReport: React.FC = () => {
       const startStr = format(generalStartDate, "yyyy-MM-dd");
       const endStr = format(generalEndDate, "yyyy-MM-dd");
 
-      const [allRecords, rolesMap, reportsList] = await Promise.all([
-        carWashService.getByDateRange(startStr, endStr),
-        dailyRolesService.getDailyRolesByDateRange(startStr, endStr),
-        dailyReportService.getByDateRange(startStr, endStr),
+      const [allRecords, reportsList] = await Promise.all([
+        okleykaOrderService.getByDateRange(startStr, endStr),
+        okleykaShiftService.getByDateRange(startStr, endStr),
       ]);
 
       const reportsMap: Record<string, any> = {};
@@ -242,9 +240,9 @@ const OkleykaGeneralRevenueReport: React.FC = () => {
         const recordsByDate: Record<string, CarWashRecord[]> = {};
         allRecords.forEach((rec) => {
           const recDate =
-            typeof rec.date === "string"
-              ? rec.date
-              : format(rec.date, "yyyy-MM-dd");
+            typeof rec.date_start === "string"
+              ? rec.date_start
+              : format(rec.date_start, "yyyy-MM-dd");
           if (!recordsByDate[recDate]) {
             recordsByDate[recDate] = [];
           }
@@ -254,8 +252,8 @@ const OkleykaGeneralRevenueReport: React.FC = () => {
         dateRange.forEach((dateStr) => {
           const recordsForDay = recordsByDate[dateStr] || [];
 
-          const dayRoles = rolesMap[dateStr] || {};
-          const employeeRolesForDay: Record<string, "admin" | "washer"> = {};
+          const dayRoles = reportsMap[dateStr]?.employeeRoles || {};
+          const employeeRolesForDay: Record<string, "admin" | "installer"> = {};
           const minimumOverrideForDay: Record<string, boolean> = {};
 
           const participantIds = new Set<string>();

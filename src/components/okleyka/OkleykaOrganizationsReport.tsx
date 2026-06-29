@@ -81,9 +81,9 @@ const OkleykaOrganizationsReport: React.FC<OrganizationsReportProps> = () => {
         filteredRecords.sort((a, b) => {
           try {
             const dateA =
-              typeof a.date === "string" ? parseISO(a.date) : new Date(a.date);
+              typeof a.date_start === "string" ? parseISO(a.date_start) : new Date(a.date_start);
             const dateB =
-              typeof b.date === "string" ? parseISO(b.date) : new Date(b.date);
+              typeof b.date_start === "string" ? parseISO(b.date_start) : new Date(b.date_start);
 
             // Проверяем валидность дат
             if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
