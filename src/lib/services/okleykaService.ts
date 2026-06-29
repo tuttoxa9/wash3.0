@@ -181,7 +181,7 @@ export const okleykaOrderService = {
       .from("okleyka_orders")
       .select("*")
       .eq("box_number", boxNumber)
-      .neq("status", "cancelled")
+      .eq("status", "active")
       .lte("date_start", dateEnd)
       .gte("date_end", dateStart);
 
