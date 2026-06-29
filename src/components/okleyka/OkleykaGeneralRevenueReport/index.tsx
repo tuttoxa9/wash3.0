@@ -1,4 +1,3 @@
-import { createSalaryCalculator } from "@/components/SalaryCalculator";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import { useToast } from "@/lib/hooks/useToast";
 import {
@@ -6,7 +5,6 @@ import {
   okleykaShiftService,
 } from "@/lib/services/okleykaService";
 import type { OkleykaOrder } from "@/lib/services/okleykaService";
-import { determineEmployeeRole } from "@/lib/employee-utils";
 import { format, isBefore, isEqual, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
@@ -152,7 +150,7 @@ const OkleykaGeneralRevenueReport: React.FC = () => {
       });
 
       allRecords.forEach((record) => {
-        const recordDate = record.date_start;
+        const recordDate = record.dateStart;
         if (!dailyBreakdown[recordDate]) {
           dailyBreakdown[recordDate] = {
             cash: 0,
@@ -166,13 +164,13 @@ const OkleykaGeneralRevenueReport: React.FC = () => {
 
         dailyBreakdown[recordDate].recordsCount++;
 
-        if (record.payment_method === "cash") {
+        if (record.paymentMethod?.type === "cash") {
           totalCash += record.totalPrice;
           dailyBreakdown[recordDate].cash += record.totalPrice;
-        } else if (record.payment_method === "card") {
+        } else if (record.paymentMethod?.type === "card") {
           totalCard += record.totalPrice;
           dailyBreakdown[recordDate].card += record.totalPrice;
-        } else if (record.payment_method === "organization") {
+        } else if (record.paymentMethod?.type === "organization") {
           totalOrganizations += record.totalPrice;
           dailyBreakdown[recordDate].organizations += record.totalPrice;
           const orgName =
@@ -183,10 +181,10 @@ const OkleykaGeneralRevenueReport: React.FC = () => {
             "Неизвестная организация";
           organizationBreakdown[orgName] =
             (organizationBreakdown[orgName] || 0) + record.totalPrice;
-        } else if (record.payment_method === "debt") {
+        } else if (record.paymentMethod?.type === "debt") {
           totalDebt += record.totalPrice;
           dailyBreakdown[recordDate].debt += record.totalPrice;
-        } else if (record.payment_method === "certificate") {
+        } else if (record.paymentMethod?.type === "certificate") {
           totalCertificate += record.totalPrice;
           dailyBreakdown[recordDate].certificate += record.totalPrice;
         }
@@ -234,77 +232,13 @@ const OkleykaGeneralRevenueReport: React.FC = () => {
       );
 
       let totalSalaries = 0;
-      if (state.salaryCalculationMethod === "minimumWithPercentage") {
-        const aggregatedGeneralMinFlags: Record<string, boolean> = {};
+      reportsList.forEach((shift) => {
+        if (shift.salaryPayouts) {
+          totalSalaries += Object.values(shift.salaryPayouts).reduce((sum, amount) => sum + (amount as number), 0);
+        }
+      });
 
-        const recordsByDate: Record<string, CarWashRecord[]> = {};
-        allRecords.forEach((rec) => {
-          const recDate =
-            typeof rec.date_start === "string"
-              ? rec.date_start
-              : format(rec.date_start, "yyyy-MM-dd");
-          if (!recordsByDate[recDate]) {
-            recordsByDate[recDate] = [];
-          }
-          recordsByDate[recDate].push(rec);
-        });
 
-        dateRange.forEach((dateStr) => {
-          const recordsForDay = recordsByDate[dateStr] || [];
-
-          const dayRoles = reportsMap[dateStr]?.employeeRoles || {};
-          const employeeRolesForDay: Record<string, "admin" | "installer"> = {};
-          const minimumOverrideForDay: Record<string, boolean> = {};
-
-          const participantIds = new Set<string>();
-          Object.keys(dayRoles).forEach((key) => {
-            if (!key.startsWith("min_")) participantIds.add(key);
-          });
-          recordsForDay.forEach((rec) =>
-            rec.employeeIds.forEach((id) => participantIds.add(id)),
-          );
-
-          participantIds.forEach((empId) => {
-            employeeRolesForDay[empId] = determineEmployeeRole(
-              empId,
-              dateStr,
-              dayRoles,
-              state.employees,
-            );
-
-            const minKey = `min_${empId}`;
-            const minVal = dayRoles[minKey];
-            minimumOverrideForDay[empId] = minVal !== false;
-
-            if (minimumOverrideForDay[empId])
-              aggregatedGeneralMinFlags[empId] = true;
-          });
-
-          const salaryCalculator = createSalaryCalculator(
-            state.minimumPaymentSettings,
-            recordsForDay,
-            employeeRolesForDay,
-            state.employees,
-            minimumOverrideForDay,
-          );
-
-          const dailyResults = salaryCalculator.calculateSalaries();
-          const dayReport = reportsMap[dateStr];
-
-          dailyResults.forEach((res) => {
-            let salary = res.calculatedSalary;
-            if (
-              dayReport?.manualSalaries &&
-              dayReport.manualSalaries[res.employeeId] !== undefined
-            ) {
-              salary = dayReport.manualSalaries[res.employeeId];
-            }
-            totalSalaries += salary;
-          });
-        });
-
-        setGeneralMinimumFlags(aggregatedGeneralMinFlags);
-      }
 
       setGeneralReportData({
         totalCash,
