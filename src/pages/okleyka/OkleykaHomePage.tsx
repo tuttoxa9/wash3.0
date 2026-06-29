@@ -426,6 +426,7 @@ const OkleykaHomePage: React.FC = () => {
 
   // Active state modals
   const [addOrderOpen, setAddOrderOpen] = useState(false);
+  const [addOrderDate, setAddOrderDate] = useState<string | undefined>(undefined);
   const [activeBoxNum, setActiveBoxNum] = useState<1 | 2>(1);
   const [completeOrderOpen, setCompleteOrderOpen] = useState(false);
   const [editOrderOpen, setEditOrderOpen] = useState(false);
@@ -1082,7 +1083,7 @@ const OkleykaHomePage: React.FC = () => {
             orders={timelineOrders}
             onAddAppointment={(boxNum, date) => {
               setActiveBoxNum(boxNum);
-              setSelectedDate(date);
+              setAddOrderDate(date);
               setAddOrderOpen(true);
             }}
             onOrderClick={(order) => setActionOrder(order)}
@@ -1113,80 +1114,6 @@ const OkleykaHomePage: React.FC = () => {
             onExecute={() => toast.info("Скоро будет реализовано")}
             onDelete={() => toast.info("Скоро будет реализовано")}
           />
-
-          {/* BOX CARDS */}
-          <div className="grid grid-cols-1 gap-4">
-            {([1, 2] as const).map((boxNum) => {
-              const activeOrders = boxOrders(boxNum);
-              const isOccupied = activeOrders.length > 0;
-              const active = activeOrders[0];
-
-              return (
-                <div
-                  key={boxNum}
-                  className={`p-4 rounded-3xl border transition-all ${
-                    isOccupied
-                      ? "bg-card border-primary/30 shadow-sm"
-                      : "bg-card border-border/50 shadow-sm"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold ${
-                        isOccupied ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-500"
-                      }`}>
-                        {boxNum}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-foreground text-sm">Бокс {boxNum}</h4>
-                      </div>
-                    </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                      isOccupied ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-500"
-                    }`}>
-                      {isOccupied ? "Занят" : "Свободен"}
-                    </span>
-                  </div>
-
-                  {isOccupied && active ? (
-                    <div className="space-y-3">
-                      <div className="bg-background border border-border/50 p-3.5 rounded-2xl">
-                        <p className="text-xs text-muted-foreground">Автомобиль</p>
-                        <p className="font-bold text-foreground text-sm mt-0.5">{active.carInfo}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">
-                          {active.dateStart} – {active.dateEnd}
-                        </p>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => { setSelectedOrder(active); setEditOrderOpen(true); }}
-                          className="flex-1 py-2 bg-background border border-border/50 hover:bg-accent rounded-xl text-[10px] font-bold text-foreground"
-                        >
-                          Изменить
-                        </button>
-                        <button
-                          onClick={() => { setSelectedOrder(active); setCompleteOrderOpen(true); }}
-                          className="flex-1 py-2 bg-primary hover:bg-primary/90 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1.5 shadow-sm"
-                        >
-                          <Check size={10} weight="bold" />
-                          Завершить
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => { setActiveBoxNum(boxNum); setAddOrderOpen(true); }}
-                      className="w-full h-20 border border-dashed border-border hover:border-primary/40 hover:bg-primary/5 rounded-2xl flex items-center justify-center text-muted-foreground hover:text-primary gap-1.5 transition-all"
-                    >
-                      <Plus size={18} />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">Создать заказ</span>
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
 
           {/* DEBTS WIDGET */}
           <div className="bg-card border border-border/50 p-5 rounded-3xl space-y-4 shadow-sm">
@@ -1225,6 +1152,7 @@ const OkleykaHomePage: React.FC = () => {
           isOpen={addOrderOpen}
           onClose={() => setAddOrderOpen(false)}
           preSelectedBox={activeBoxNum}
+          initialDateStart={addOrderDate}
           shiftDate={selectedDate}
           shiftEmployees={shift ? shift.employeeIds : []}
           employees={state.employees}
@@ -1262,6 +1190,18 @@ const OkleykaHomePage: React.FC = () => {
           }}
         />
       )}
+
+      <OkleykaMonthCalendarModal
+        isOpen={monthCalendarOpen}
+        onClose={() => setMonthCalendarOpen(false)}
+        baseDate={selectedDate}
+        orders={timelineOrders}
+        onDateClick={(date) => {
+          setMonthCalendarOpen(false);
+          setAddOrderDate(date);
+          setAddOrderOpen(true);
+        }}
+      />
 
       <OkleykaDailyReportModal
         isOpen={dailyReportOpen}

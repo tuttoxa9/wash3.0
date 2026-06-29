@@ -40,6 +40,7 @@ interface AddOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   preSelectedBox?: 1 | 2;
+  initialDateStart?: string;
   shiftDate: string;
   shiftEmployees: string[];
   employees: { id: string; name: string }[];
@@ -63,6 +64,7 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
   isOpen,
   onClose,
   preSelectedBox,
+  initialDateStart,
   shiftDate,
   shiftEmployees,
   employees,
@@ -103,8 +105,8 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
     setClientPhone(formatted);
   };
   const [boxNumber, setBoxNumber] = useState<1 | 2>(preSelectedBox ?? 1);
-  const [dateStart, setDateStart] = useState(today());
-  const [dateEnd, setDateEnd] = useState(today());
+  const [dateStart, setDateStart] = useState(initialDateStart || today());
+  const [dateEnd, setDateEnd] = useState(initialDateStart || today());
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([
     { id: uid(), name: "", price: "" },
   ]);
@@ -162,8 +164,8 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
       setClientName("");
       setClientPhone("");
       setBoxNumber(preSelectedBox ?? 1);
-      setDateStart(today());
-      setDateEnd(today());
+      setDateStart(initialDateStart || today());
+      setDateEnd(initialDateStart || today());
       setServiceItems([{ id: uid(), name: "", price: "" }]);
       setWorkersMap({});
       setPaymentType("cash");

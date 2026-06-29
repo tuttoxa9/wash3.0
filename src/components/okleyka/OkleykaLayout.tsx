@@ -21,7 +21,6 @@ import { motion, AnimatePresence } from "framer-motion";
 const navItems = [
   { to: "/okleyka", label: "Главная", icon: House, exact: true },
   { to: "/okleyka/orders", label: "Заказы", icon: ClipboardText, exact: false },
-  { to: "/okleyka/appointments", label: "Записи", icon: Calendar, exact: false },
   { to: "/okleyka/reports", label: "Отчёты", icon: ChartBar, exact: false },
   { to: "/okleyka/payouts", label: "Выплаты", icon: WalletCardsIcon, exact: false },
   { to: "/okleyka/unpaid", label: "Неоплаченные", icon: Warning, exact: false, badge: true },
