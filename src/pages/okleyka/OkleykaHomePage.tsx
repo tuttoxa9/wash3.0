@@ -929,17 +929,7 @@ const OkleykaHomePage: React.FC = () => {
                           {role === "admin" ? "Админ" : "Оклейщик"}
                         </span>
                       </div>
-                      <button
-                        onClick={() => {
-                          setPayoutEmployee(employee);
-                          setPayoutMax(500); 
-                          setPayoutOpen(true);
-                        }}
-                        className="shrink-0 px-2 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors text-primary text-xs font-bold"
-                        title="Выплата"
-                      >
-                        Выплата
-                      </button>
+                      {/* Выплата кнопка убрана по запросу */}
                     </div>
 
                     <div className="flex items-center gap-4 mt-1">
