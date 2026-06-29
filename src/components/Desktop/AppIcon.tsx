@@ -21,10 +21,6 @@ const AppIcon: React.FC<AppIconProps> = ({ icon, label, gradient, onClick, disab
       aria-label={label}
     >
       <div className="relative">
-        {/* Glow shadow behind icon */}
-        <div
-          className={`absolute inset-0 rounded-[22px] bg-gradient-to-br ${gradient} blur-[14px] opacity-50 scale-110`}
-        />
         {/* Solid icon background */}
         <div
           className={`relative w-[88px] h-[88px] rounded-[22px] bg-gradient-to-br ${gradient} flex items-center justify-center
