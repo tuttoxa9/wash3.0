@@ -134,6 +134,11 @@ export function useOkleykaContext() {
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────
+function OkleykaRealtimeSyncWrapper({ children }: { children: ReactNode }) {
+  useOkleykaRealtimeSync();
+  return <>{children}</>;
+}
+
 export function OkleykaProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 

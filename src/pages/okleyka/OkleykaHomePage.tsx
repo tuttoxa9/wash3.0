@@ -1,6 +1,10 @@
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
+import OkleykaCashStateWidget from "@/components/okleyka/OkleykaCashStateWidget";
+import OkleykaPendingWrapsWidget from "@/components/okleyka/OkleykaPendingWrapsWidget";
+import { Loader2, ArrowRight } from "lucide-react";
+import { ListBullets, Gear, ShieldCheck } from "@phosphor-icons/react";
 import {
   okleykaShiftService,
   okleykaOrderService,
@@ -55,7 +59,7 @@ const CustomDatePicker: React.FC<{ value: string; onChange: (v: string) => void 
       type="date"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-purple-500/50 text-white font-medium"
+      className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-primary/50 text-white font-medium"
     />
   );
 };
@@ -85,7 +89,7 @@ const PayoutModal: React.FC<{
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-white font-semibold focus:outline-none focus:border-purple-500"
+              className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-white font-semibold focus:outline-none focus:border-primary"
             />
           </div>
           <div className="flex gap-2">
@@ -102,7 +106,7 @@ const PayoutModal: React.FC<{
                 onPaid(val);
                 onClose();
               }}
-              className="flex-1 py-3 rounded-xl bg-purple-600 text-white hover:bg-purple-500 text-xs font-semibold"
+              className="flex-1 py-3 rounded-xl bg-primary text-white hover:bg-primary text-xs font-semibold"
             >
               Выплатить
             </button>
@@ -166,88 +170,133 @@ const EditCrewModal: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-3xl w-full max-w-md space-y-4 max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between pb-2 border-b border-white/[0.04]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+      <div className="bg-card border border-border/50 p-6 rounded-3xl w-full max-w-xl flex flex-col gap-6 max-h-[90vh] shadow-xl">
+        <div className="flex items-center justify-between pb-4 border-b border-border/50">
           <div>
-            <h3 className="font-bold text-base text-white">Изменить состав смены</h3>
-            <p className="text-[10px] text-white/40">Добавление/удаление сотрудников и смена ролей</p>
+            <h3 className="font-bold text-xl text-foreground">Изменить состав смены</h3>
+            <p className="text-xs text-muted-foreground mt-1">Добавление/удаление сотрудников и смена ролей</p>
           </div>
-          <button onClick={onClose} className="p-1 text-white/40 hover:text-white rounded-lg">
-            <X size={16} />
+          <button onClick={onClose} className="p-2 text-muted-foreground hover:bg-accent rounded-full transition-colors">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="space-y-2 py-2">
-          {employees.map((emp) => {
-            const active = selectedIds.includes(emp.id);
-            const role = roles[emp.id] || "installer";
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto pr-2">
+          {employees.map((employee) => {
+            const isSelected = selectedIds.includes(employee.id);
+            const currentRole = roles[employee.id] || "installer";
+
             return (
               <div
-                key={emp.id}
-                className={`flex items-center justify-between p-3 rounded-2xl border text-xs font-medium transition-all ${
-                  active
-                    ? "bg-purple-500/10 border-purple-500/30 text-purple-400"
-                    : "bg-white/[0.03] border-white/[0.05] text-white/50"
+                key={employee.id}
+                className={`relative flex flex-col p-3 rounded-xl border transition-all duration-200 ${
+                  isSelected
+                    ? "bg-primary/5 border-primary/30 shadow-sm"
+                    : "bg-background border-border hover:border-border/80 hover:bg-accent/5"
                 }`}
               >
-                <button
-                  type="button"
-                  onClick={() => handleToggle(emp.id)}
-                  className="flex items-center gap-3 flex-1 text-left"
-                >
-                  <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
-                    active
-                      ? "bg-purple-500 border-purple-400 text-white"
-                      : "border-white/20 bg-transparent text-transparent"
-                  }`}>
-                    <Check size={12} weight="bold" />
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <div
+                    className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                      isSelected
+                        ? "bg-primary border-primary text-white"
+                        : "border-input bg-background"
+                    }`}
+                  >
+                    {isSelected && <Check className="w-3.5 h-3.5" />}
                   </div>
-                  <span className={active ? "text-white font-semibold" : "text-white/75"}>{emp.name}</span>
-                </button>
+                  <input
+                    type="checkbox"
+                    className="hidden"
+                    checked={isSelected}
+                    onChange={() => handleToggle(employee.id)}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-sm font-medium truncate transition-colors ${
+                        isSelected ? "text-foreground" : "text-muted-foreground"
+                      }`}
+                    >
+                      {employee.name}
+                    </p>
+                  </div>
+                </label>
 
-                {active && (
-                  <div className="flex bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden p-0.5 ml-2">
-                    <button
-                      type="button"
-                      onClick={() => handleSetRole(emp.id, "admin")}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-                        role === "admin"
-                          ? "bg-purple-600 text-white"
-                          : "text-white/40 hover:text-white/60"
-                      }`}
-                    >
-                      Админ
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSetRole(emp.id, "installer")}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-                        role === "installer"
-                          ? "bg-purple-600 text-white"
-                          : "text-white/40 hover:text-white/60"
-                      }`}
-                    >
-                      Оклейщик
-                    </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                    isSelected ? "max-h-24 opacity-100 mt-3" : "max-h-0 opacity-0 mt-0"
+                  }`}
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center bg-background rounded-lg border border-border/50 p-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSetRole(employee.id, "installer");
+                        }}
+                        className={`flex-1 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                          currentRole === "installer"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        }`}
+                      >
+                        Оклейщик
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSetRole(employee.id, "admin");
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-1.5 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                          currentRole === "admin"
+                            ? "bg-amber-500 text-white shadow-sm"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        }`}
+                      >
+                        Админ
+                      </button>
+                    </div>
+
+                    {/* Min Payment Toggle */}
+                    <label className="flex items-center gap-2 px-1 py-0.5 cursor-pointer group w-fit">
+                      <div
+                        className={`flex-shrink-0 w-3.5 h-3.5 rounded-[4px] border flex items-center justify-center transition-colors ${
+                          (roles as any)?.[`min_${employee.id}`] !== false
+                            ? "bg-primary border-primary text-primary-foreground"
+                            : "border-input bg-background"
+                        }`}
+                      >
+                        {(roles as any)?.[`min_${employee.id}`] !== false && <Check className="w-2.5 h-2.5" />}
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="hidden"
+                        checked={(roles as any)?.[`min_${employee.id}`] !== false}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setRoles({
+                            ...roles,
+                            [`min_${employee.id}`]: e.target.checked ? true : false,
+                          } as any);
+                        }}
+                      />
+                      <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors select-none">
+                        Учитывать минималку
+                      </span>
+                    </label>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
         </div>
 
-        <div className="flex gap-2 pt-2">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 rounded-xl bg-zinc-900 text-white/70 hover:bg-zinc-800 text-xs font-semibold"
-          >
-            Отмена
-          </button>
+        <div className="pt-4 border-t border-border/50 flex flex-col gap-3">
           <button
             onClick={handleConfirm}
             disabled={saving}
-            className="flex-1 py-3 rounded-xl bg-purple-600 text-white hover:bg-purple-500 text-xs font-semibold disabled:opacity-40"
+            className="flex-1 py-3 rounded-xl bg-primary text-white hover:bg-primary text-xs font-semibold disabled:opacity-40"
           >
             Сохранить
           </button>
@@ -317,7 +366,7 @@ const OkleykaCloseDebtModal: React.FC<{
                 onClick={() => setPayMethod(m)}
                 className={`flex-1 py-2.5 rounded-xl border text-[11px] font-bold capitalize transition-all ${
                   payMethod === m
-                    ? "bg-purple-500/15 border-purple-400/30 text-purple-400"
+                    ? "bg-primary/15 border-primary/30 text-primary"
                     : "bg-zinc-900 border-zinc-800 text-white/40 hover:text-white/60"
                 }`}
               >
@@ -352,7 +401,7 @@ const OkleykaCloseDebtModal: React.FC<{
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-3 rounded-xl bg-purple-600 text-white hover:bg-purple-500 text-xs font-semibold disabled:opacity-40"
+              className="flex-1 py-3 rounded-xl bg-primary text-white hover:bg-primary text-xs font-semibold disabled:opacity-40"
             >
               Подтвердить
             </button>
@@ -443,7 +492,7 @@ const OkleykaHomePage: React.FC = () => {
   if (!state.isInitialized) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
-        <div className="w-8 h-8 border-2 border-purple-500/20 border-t-purple-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
@@ -655,574 +704,466 @@ const OkleykaHomePage: React.FC = () => {
     return o.paymentMethod?.type === paymentFilter;
   });
 
-  return (
-    <div className="space-y-6">
+  
+  if (!shift) {
+    return (
+      <div className="min-h-[85dvh] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 animate-in fade-in duration-500 bg-background/50">
+        {/* Header Section */}
+        <div className="text-center mb-10 w-full max-w-2xl">
+          <div className="inline-flex items-center justify-center p-3 rounded-xl bg-primary/10 text-primary mb-5 border border-primary/20 shadow-sm">
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8" />
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-4">
+            Открытие смены
+          </h1>
 
-      {/* ── HEADER & DATE SELECTOR ── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border/50">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">
-            Главная страница
-          </h2>
-          <p className="text-xs text-muted-foreground">Календарь боксов, транзакции и отчёты</p>
+          {/* Interactive Date Selector */}
+          <div className="flex justify-center items-center gap-2 text-muted-foreground text-sm sm:text-base">
+            <span>Дата смены:</span>
+            <div className="relative">
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-semibold text-foreground bg-card border border-border/50 hover:bg-accent/50 transition-colors shadow-sm focus:outline-none"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Date Selector with CaretLeft and CaretRight */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              const d = new Date(selectedDate);
-              d.setDate(d.getDate() - 1);
-              setSelectedDate(format(d, "yyyy-MM-dd"));
-            }}
-            className="p-2 rounded-xl bg-background border border-border/50 hover:bg-accent text-foreground transition-colors"
-          >
-            <CaretLeft size={16} weight="bold" />
-          </button>
-          <div className="w-36">
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl text-xs focus:outline-none text-foreground font-semibold text-center [color-scheme:dark]"
-            />
+        {/* Main Content Area */}
+        <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+          {/* Left Column - Employees */}
+          <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-border/50 bg-muted/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <Users className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground">Сотрудники</h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Выберите сотрудников, работающих в эту смену, и назначьте им роли
+              </p>
+            </div>
+
+            <div className="p-5 sm:p-6">
+              {state.employees.length === 0 ? (
+                <div className="text-center py-10 bg-accent/30 rounded-xl border border-dashed border-border">
+                  <Users className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground font-medium">Нет сотрудников</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-2">
+                  {state.employees.map((employee) => {
+                    const isSelected = shiftEmployees.includes(employee.id);
+                    const currentRole = employeeRoles[employee.id] || "installer";
+
+                    return (
+                      <div
+                        key={employee.id}
+                        className={`relative flex flex-col p-3 rounded-xl border transition-all duration-200 ${
+                          isSelected
+                            ? "bg-primary/5 border-primary/30 shadow-sm"
+                            : "bg-background border-border hover:border-border/80 hover:bg-accent/5"
+                        }`}
+                      >
+                        <label className="flex items-center gap-3 cursor-pointer select-none">
+                          <div
+                            className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? "bg-primary border-primary text-white"
+                                : "border-input bg-background"
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3.5 h-3.5" />}
+                          </div>
+                          <input
+                            type="checkbox"
+                            className="hidden"
+                            checked={isSelected}
+                            onChange={() => handleToggleEmp(employee.id)}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-sm font-medium truncate transition-colors ${
+                                isSelected ? "text-foreground" : "text-muted-foreground"
+                              }`}
+                            >
+                              {employee.name}
+                            </p>
+                          </div>
+                        </label>
+
+                        <div
+                          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                            isSelected ? "max-h-24 opacity-100 mt-3" : "max-h-0 opacity-0 mt-0"
+                          }`}
+                        >
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center bg-background rounded-lg border border-border/50 p-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEmployeeRoles({
+                                    ...employeeRoles,
+                                    [employee.id]: "installer",
+                                  });
+                                }}
+                                className={`flex-1 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                                  currentRole === "installer"
+                                    ? "bg-primary text-primary-foreground shadow-sm"
+                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                }`}
+                              >
+                                Оклейщик
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEmployeeRoles({
+                                    ...employeeRoles,
+                                    [employee.id]: "admin",
+                                  });
+                                }}
+                                className={`flex-1 flex items-center justify-center gap-1.5 text-xs py-1.5 px-2 rounded-md font-medium transition-all ${
+                                  currentRole === "admin"
+                                    ? "bg-amber-500 text-white shadow-sm"
+                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                }`}
+                              >
+                                Админ
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Right Column - Summary & Action */}
+          <div className="flex flex-col gap-6">
+            <div className="bg-card rounded-2xl border border-border/50 shadow-sm p-5 sm:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-foreground">Сводка по смене</h3>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-2 border-b border-border/30">
+                  <span className="text-sm text-muted-foreground">Выбрано сотрудников</span>
+                  <span className="font-bold text-foreground">
+                    {shiftEmployees.length}
+                  </span>
+                </div>
+                
+                <div>
+                  <label className="text-[10px] text-muted-foreground block mb-1 font-semibold uppercase tracking-wider pl-1">
+                    Наличные на начало (касса)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={startCash}
+                      onChange={(e) => setStartCash(e.target.value)}
+                      className="w-full px-4 py-3.5 bg-background border border-border/50 rounded-2xl text-foreground font-bold pr-12 focus:outline-none"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">BYN</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleOpenShift}
+              disabled={opening || shiftEmployees.length === 0}
+              className="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-bold rounded-2xl text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all shadow-sm shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+              <span className="flex items-center gap-2 relative z-10">
+                {opening ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    Открыть смену
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ACTIVE SHIFT VIEW
+  return (
+    <div className="bg-card rounded-[2rem] p-4 sm:p-6 shadow-sm border border-border/50 min-h-[85dvh] flex flex-col gap-6">
+      {/* ── HEADER ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border/50">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+          <h2 className="text-2xl font-bold text-foreground">
+            Главная страница
+          </h2>
+
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+              <Calendar className="h-4 w-4" />
+            </div>
+            <span className="text-sm text-muted-foreground font-medium hidden sm:inline">
+              Дата:
+            </span>
+            <div className="relative">
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="flex h-9 items-center rounded-lg border border-border/50 bg-card px-3 py-1.5 text-sm cursor-pointer hover:bg-accent/50 transition-colors focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
           <button
             onClick={() => {
-              const d = new Date(selectedDate);
-              d.setDate(d.getDate() + 1);
-              setSelectedDate(format(d, "yyyy-MM-dd"));
+              setPaymentFilter("all");
+              setDailyReportOpen(true);
             }}
-            className="p-2 rounded-xl bg-background border border-border/50 hover:bg-accent text-foreground transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors border border-border"
           >
-            <CaretRight size={16} weight="bold" />
+            <ListBullets className="w-4 h-4" />
+            <span className="hidden sm:inline">Ежедневная ведомость</span>
+            <span className="sm:hidden">Ведомость</span>
+          </button>
+          <button
+            onClick={() => {
+              setActiveBoxNum(1);
+              setAddOrderOpen(true);
+            }}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Добавить заказ</span>
+            <span className="sm:hidden">Добавить</span>
           </button>
         </div>
       </div>
 
-      {/* ── PRE-SHIFT SCREEN (IF NO SHIFT OPENED) ── */}
-      {!shift ? (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-xl mx-auto p-6 bg-card border border-border/50 rounded-3xl space-y-5 shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border border-purple-400/20 flex items-center justify-center">
-              <Play size={20} weight="duotone" className="text-purple-300" />
-            </div>
-            <div>
-              <h3 className="font-bold text-foreground text-sm">Смена не открыта</h3>
-              <p className="text-[11px] text-muted-foreground">Откройте смену для управления оклейкой на {selectedDate}</p>
-            </div>
-          </div>
-
-          {/* Employees Multi-check */}
-          <div className="space-y-2">
-            <label className="text-[10px] text-muted-foreground block font-semibold uppercase tracking-wider pl-1">Выберите сотрудников в смену</label>
-            {state.employees.length === 0 ? (
-              <p className="text-xs text-muted-foreground italic pl-1">Сотрудники отсутствуют. Добавьте в настройках.</p>
-            ) : (
-              <div className="grid grid-cols-1 gap-2">
-                {state.employees.map((emp) => {
-                  const active = shiftEmployees.includes(emp.id);
-                  const role = employeeRoles[emp.id] || "installer";
-                  return (
-                    <div
-                      key={emp.id}
-                      className={`flex items-center justify-between p-3 rounded-2xl border text-xs font-medium transition-all ${
-                        active
-                          ? "bg-purple-500/10 border-purple-500/30 text-purple-400"
-                          : "bg-background border-border/50 text-muted-foreground"
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleToggleEmp(emp.id)}
-                        className="flex items-center gap-3 flex-1 text-left"
-                      >
-                        <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
-                          active
-                            ? "bg-purple-500 border-purple-400 text-white"
-                            : "border-white/20 bg-transparent text-transparent"
-                        }`}>
-                          <Check size={12} weight="bold" />
-                        </div>
-                        <span className={active ? "text-foreground font-semibold" : "text-muted-foreground"}>{emp.name}</span>
-                      </button>
-
-                      {active && (
-                        <div className="flex bg-background border border-border/50 rounded-xl overflow-hidden p-0.5 ml-2">
-                          <button
-                            type="button"
-                            onClick={() => setEmployeeRoles((prev) => ({ ...prev, [emp.id]: "admin" }))}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-                              role === "admin"
-                                ? "bg-purple-600 text-white"
-                                : "text-muted-foreground hover:text-foreground"
-                            }`}
-                          >
-                            Админ
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEmployeeRoles((prev) => ({ ...prev, [emp.id]: "installer" }))}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-                              role === "installer"
-                                ? "bg-purple-600 text-white"
-                                : "text-muted-foreground hover:text-foreground"
-                            }`}
-                          >
-                            Оклейщик
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Start Cash */}
+      {/* ── MAIN GRID ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
+        
+        {/* LEFT COLUMN: Employees, Earnings, Totals */}
+        <div className="flex flex-col gap-6">
+          {/* Employees */}
           <div>
-            <label className="text-[10px] text-muted-foreground block mb-1 font-semibold uppercase tracking-wider pl-1">Наличные на начало смены (касса)</label>
-            <div className="relative">
-              <input
-                type="number"
-                value={startCash}
-                onChange={(e) => setStartCash(e.target.value)}
-                className="w-full px-4 py-3.5 bg-background border border-border/50 rounded-2xl text-foreground font-bold pr-12 focus:outline-none"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">BYN</span>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Users className="w-5 h-5 text-primary" />
+                <h3 className="text-lg sm:text-xl font-bold">Сотрудники</h3>
+              </div>
+              <button
+                onClick={() => setEditCrewOpen(true)}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-background hover:bg-accent transition-colors text-sm font-medium shadow-sm"
+              >
+                <Gear className="w-3.5 h-3.5" />
+                Изменить состав
+              </button>
             </div>
-          </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+              {shift.employeeIds.map((empId) => {
+                const employee = state.employees.find((e) => e.id === empId);
+                if (!employee) return null;
+                const role = shift.employeeRoles?.[empId] || "installer";
+                const payout = shift.salaryPayouts[empId] || 0;
 
-          <button
-            onClick={handleOpenShift}
-            disabled={opening}
-            className="w-full py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm transition-all disabled:opacity-40 flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(147,51,234,0.3)]"
-          >
-            {opening ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Play size={16} weight="fill" />}
-            Открыть смену
-          </button>
-        </motion.div>
-      ) : (
-        <div className="flex flex-col gap-5">
-          {/* Top actions */}
-          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-            <button
-              onClick={() => {
-                setPaymentFilter("all");
-                setDailyReportOpen(true);
-              }}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 border border-zinc-800/80 text-white transition-all shadow-sm active:scale-95"
-            >
-              <ListBullets size={16} className="text-purple-400" />
-              <span>Ежедневная ведомость</span>
-            </button>
-            <button
-              onClick={() => {
-                setActiveBoxNum(1);
-                setAddOrderOpen(true);
-              }}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white transition-all shadow-sm active:scale-95"
-            >
-              <Plus size={16} />
-              <span>Добавить заказ</span>
-            </button>
-          </div>
-
-          {/* ── ACTIVE SHIFT MAIN GRID ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* LEFT 2 COLUMNS: BOXES & BOTTOM INFO */}
-          <div className="lg:col-span-2 space-y-6">
-
-            {/* BOX CARDS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {([1, 2] as const).map((boxNum) => {
-                const activeOrders = boxOrders(boxNum);
-                const isOccupied = activeOrders.length > 0;
-                const active = activeOrders[0];
+                const empOrders = ordersCompletedToday.filter(o => o.workers?.some(w => w.employeeId === empId));
+                const carCount = empOrders.length;
+                const totalServicesAmount = empOrders.reduce((sum, o) => sum + o.totalPrice, 0);
 
                 return (
                   <div
-                    key={boxNum}
-                    className={`p-5 rounded-3xl border transition-all ${
-                      isOccupied
-                        ? "bg-card border-purple-500/30 shadow-sm"
-                        : "bg-card border-border/50 shadow-sm"
-                    }`}
+                    key={empId}
+                    className="relative group rounded-xl p-4 transition-all duration-200 border bg-background hover:bg-accent/5 w-full flex flex-col gap-3 border-border/50 shadow-sm hover:border-primary/30"
                   >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold ${
-                          isOccupied ? "bg-purple-500/10 text-purple-400" : "bg-emerald-500/10 text-emerald-400"
+                    <div className="flex items-start justify-between gap-2 w-full">
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <h4 className="font-semibold text-base text-foreground truncate">{employee.name}</h4>
+                        <span className={`mt-1 w-fit px-2 py-0.5 rounded-full text-xs font-medium border ${
+                          role === "admin"
+                            ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                            : "bg-primary/10 text-primary border-primary/20"
                         }`}>
-                          {boxNum}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-foreground text-sm">Бокс {boxNum}</h4>
-                          <p className="text-[10px] text-muted-foreground">Календарь бокса</p>
-                        </div>
+                          {role === "admin" ? "Админ" : "Оклейщик"}
+                        </span>
                       </div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                        isOccupied ? "bg-purple-500/10 text-purple-400" : "bg-emerald-500/10 text-emerald-400"
-                      }`}>
-                        {isOccupied ? "Занят" : "Свободен"}
-                      </span>
+                      <button
+                        onClick={() => {
+                          setPayoutEmployee(employee);
+                          setPayoutMax(500); 
+                          setPayoutOpen(true);
+                        }}
+                        className="shrink-0 px-2 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors text-primary text-xs font-bold"
+                        title="Выплата"
+                      >
+                        Выплата
+                      </button>
                     </div>
 
-                    {isOccupied && active ? (
-                      <div className="space-y-3">
-                        <div className="bg-background border border-border/50 p-3.5 rounded-2xl">
-                          <p className="text-xs text-muted-foreground">Автомобиль</p>
-                          <p className="font-bold text-foreground text-sm mt-0.5">{active.carInfo}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1">
-                            {format(new Date(active.dateStart), "dd MMM", { locale: ru })} – {format(new Date(active.dateEnd), "dd MMM", { locale: ru })}
-                          </p>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => { setSelectedOrder(active); setEditOrderOpen(true); }}
-                            className="flex-1 py-2 bg-background border border-border/50 hover:bg-accent rounded-xl text-[10px] font-bold text-foreground"
-                          >
-                            Изменить
-                          </button>
-                          <button
-                            onClick={() => { setSelectedOrder(active); setCompleteOrderOpen(true); }}
-                            className="flex-1 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1.5 shadow-sm"
-                          >
-                            <Check size={10} weight="bold" />
-                            Завершить
-                          </button>
-                        </div>
+                    <div className="flex items-center gap-4 mt-1">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">Машин</span>
+                        <span className="font-semibold text-sm sm:text-base text-card-foreground">{carCount}</span>
                       </div>
-                    ) : (
-                      <button
-                        onClick={() => { setActiveBoxNum(boxNum); setAddOrderOpen(true); }}
-                        className="w-full h-28 border border-dashed border-border hover:border-purple-500/40 hover:bg-purple-500/[0.02] rounded-2xl flex flex-col items-center justify-center text-muted-foreground hover:text-purple-400 gap-1.5 transition-all"
-                      >
-                        <Plus size={18} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Создать заказ</span>
-                      </button>
-                    )}
+                      <div className="w-px h-8 bg-border/40" />
+                      <div className="flex flex-col">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">Сумма</span>
+                        <span className="font-semibold text-sm sm:text-base text-card-foreground">{totalServicesAmount.toFixed(2)} BYN</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-auto pt-3 border-t border-border/50 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground font-medium">Выплачено</span>
+                      <span className="font-bold text-lg tabular-nums text-primary">{payout.toFixed(2)} BYN</span>
+                    </div>
                   </div>
                 );
               })}
             </div>
+          </div>
+          
+          <OkleykaCashStateWidget
+            shift={shift}
+            totalServicesCash={getCashRevenue()}
+            onCloseCash={handleCloseShift}
+            onPayout={() => {
+               if (shift.employeeIds.length > 0) {
+                 const emp = state.employees.find((e) => e.id === shift.employeeIds[0]);
+                 if (emp) {
+                   setPayoutEmployee(emp);
+                   setPayoutMax(500);
+                   setPayoutOpen(true);
+                 }
+               }
+            }}
+          />
+        </div>
 
-            {/* LOWER GRID: CASH & EMPLOYEES */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* RIGHT COLUMN: Boxes, Debts, Upcoming */}
+        <div className="space-y-6">
+          <OkleykaPendingWrapsWidget />
 
-              {/* CASH REGISTER WIDGET */}
-              <div className="bg-card border border-border/50 p-5 rounded-3xl space-y-4 shadow-sm">
-                <div className="flex items-center justify-between border-b border-border/50 pb-3">
-                  <div className="flex items-center gap-2">
-                    <Coins size={18} className="text-emerald-500" />
-                    <h4 className="font-bold text-foreground text-sm">Касса смены</h4>
-                  </div>
-                  <button
-                    onClick={handleCloseShift}
-                    className="px-3 py-1 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 rounded-xl text-[9px] font-bold text-red-400 uppercase tracking-wider"
-                  >
-                    Закрыть смену
-                  </button>
-                </div>
+          {/* BOX CARDS */}
+          <div className="grid grid-cols-1 gap-4">
+            {([1, 2] as const).map((boxNum) => {
+              const activeOrders = boxOrders(boxNum);
+              const isOccupied = activeOrders.length > 0;
+              const active = activeOrders[0];
 
-                <div className="grid grid-cols-2 gap-3 text-left">
-                  <div
-                    onClick={() => {
-                      setPaymentFilter("all");
-                      setDailyReportOpen(true);
-                    }}
-                    className="bg-background hover:bg-accent/5 cursor-pointer p-3 rounded-2xl border border-border/50 transition-colors"
-                  >
-                    <span className="text-[9px] text-muted-foreground block font-semibold uppercase">Начало</span>
-                    <span className="font-bold text-foreground text-sm">{shift.startOfDayCash} BYN</span>
-                  </div>
-                  <div
-                    onClick={() => {
-                      setPaymentFilter("cash");
-                      setDailyReportOpen(true);
-                    }}
-                    className="bg-background hover:bg-accent/5 cursor-pointer p-3 rounded-2xl border border-border/50 transition-colors"
-                  >
-                    <span className="text-[9px] text-muted-foreground block font-semibold uppercase">Наличные</span>
-                    <span className="font-bold text-foreground text-sm">{getCashRevenue()} BYN</span>
-                  </div>
-                  <div
-                    onClick={() => {
-                      setPaymentFilter("card");
-                      setDailyReportOpen(true);
-                    }}
-                    className="bg-background hover:bg-accent/5 cursor-pointer p-3 rounded-2xl border border-border/50 transition-colors"
-                  >
-                    <span className="text-[9px] text-muted-foreground block font-semibold uppercase">Карта</span>
-                    <span className="font-bold text-foreground text-sm">{getCardRevenue()} BYN</span>
-                  </div>
-                  <div
-                    onClick={() => {
-                      setPaymentFilter("organization");
-                      setDailyReportOpen(true);
-                    }}
-                    className="bg-background hover:bg-accent/5 cursor-pointer p-3 rounded-2xl border border-border/50 transition-colors"
-                  >
-                    <span className="text-[9px] text-muted-foreground block font-semibold uppercase">Безнал</span>
-                    <span className="font-bold text-foreground text-sm">
-                      {ordersCompletedToday
-                        .filter((o) => o.paymentMethod?.type === "organization")
-                        .reduce((sum, o) => sum + o.totalPrice, 0)} BYN
-                    </span>
-                  </div>
-                </div>
-
+              return (
                 <div
-                  onClick={() => {
-                    setPaymentFilter("all");
-                    setDailyReportOpen(true);
-                  }}
-                  className="bg-emerald-500/5 hover:bg-emerald-500/10 cursor-pointer border border-emerald-500/10 p-3.5 rounded-2xl flex items-center justify-between transition-colors"
+                  key={boxNum}
+                  className={`p-4 rounded-3xl border transition-all ${
+                    isOccupied
+                      ? "bg-card border-primary/30 shadow-sm"
+                      : "bg-card border-border/50 shadow-sm"
+                  }`}
                 >
-                  <div>
-                    <span className="text-[9px] text-emerald-500 block font-bold uppercase tracking-wider">Ожидается в кассе</span>
-                    <span className="font-extrabold text-emerald-500 text-lg leading-none mt-1 inline-block">
-                      {expectedCashTotal()} BYN
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold ${
+                        isOccupied ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-500"
+                      }`}>
+                        {boxNum}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-foreground text-sm">Бокс {boxNum}</h4>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                      isOccupied ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-500"
+                    }`}>
+                      {isOccupied ? "Занят" : "Свободен"}
                     </span>
                   </div>
-                  <Coins size={28} className="text-emerald-500/20" />
-                </div>
 
-                {/* QUICK TRANSACTION FORM */}
-                <form onSubmit={handleAddMod} className="space-y-3 pt-2 border-t border-border/50">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Быстрая транзакция</p>
-
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="Сумма"
-                      value={modAmount}
-                      onChange={(e) => setModAmount(e.target.value)}
-                      className="w-24 px-3 py-2 bg-background border border-border/50 rounded-xl text-xs text-foreground focus:outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Причина"
-                      value={modReason}
-                      onChange={(e) => setModReason(e.target.value)}
-                      className="flex-1 px-3 py-2 bg-background border border-border/50 rounded-xl text-xs text-foreground focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex gap-2 text-[10px] font-semibold">
-                    {/* In / Out */}
-                    <div className="flex-1 flex rounded-xl overflow-hidden border border-border/50">
-                      <button
-                        type="button"
-                        onClick={() => setModType("in")}
-                        className={`flex-1 py-1.5 transition-colors ${modType === "in" ? "bg-emerald-500/10 text-emerald-500 font-bold" : "bg-background text-muted-foreground"}`}
-                      >
-                        Приход
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setModType("out")}
-                        className={`flex-1 py-1.5 transition-colors ${modType === "out" ? "bg-red-500/10 text-red-500 font-bold" : "bg-background text-muted-foreground"}`}
-                      >
-                        Расход
-                      </button>
-                    </div>
-
-                    {/* Cash / Card */}
-                    <div className="flex-1 flex rounded-xl overflow-hidden border border-border/50">
-                      <button
-                        type="button"
-                        onClick={() => setModMethod("cash")}
-                        className={`flex-1 py-1.5 transition-colors ${modMethod === "cash" ? "bg-purple-500/10 text-purple-400 font-bold" : "bg-background text-muted-foreground"}`}
-                      >
-                        Нал
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setModMethod("card")}
-                        className={`flex-1 py-1.5 transition-colors ${modMethod === "card" ? "bg-purple-500/10 text-purple-400 font-bold" : "bg-background text-muted-foreground"}`}
-                      >
-                        Безнал
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-2 bg-background hover:bg-accent border border-border/50 rounded-xl text-[10px] font-bold text-foreground uppercase tracking-wider"
-                  >
-                    Внести
-                  </button>
-                </form>
-
-                {/* TRANSACTIONS LOG */}
-                {shift.cashModifications.length > 0 && (
-                  <div className="space-y-1.5 max-h-36 overflow-y-auto border-t border-border/50 pt-3">
-                    {shift.cashModifications.map((m) => (
-                      <div key={m.id} className="flex items-center justify-between text-[11px] p-2 bg-background rounded-xl border border-border/50">
-                        <div className="text-left">
-                          <p className="font-medium text-foreground leading-none">{m.reason}</p>
-                          <span className="text-[9px] text-muted-foreground mt-0.5 inline-block font-mono capitalize">
-                            {m.method === "cash" ? "нал" : "безнал"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`font-bold ${m.amount < 0 ? "text-red-500" : "text-emerald-500"}`}>
-                            {m.amount > 0 ? "+" : ""}{m.amount} BYN
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveMod(m.id)}
-                            className="text-muted-foreground hover:text-foreground p-0.5 rounded"
-                          >
-                            <X size={10} />
-                          </button>
-                        </div>
+                  {isOccupied && active ? (
+                    <div className="space-y-3">
+                      <div className="bg-background border border-border/50 p-3.5 rounded-2xl">
+                        <p className="text-xs text-muted-foreground">Автомобиль</p>
+                        <p className="font-bold text-foreground text-sm mt-0.5">{active.carInfo}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          {active.dateStart} – {active.dateEnd}
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
 
-              {/* ACTIVE SHIFT EMPLOYEES */}
-              <div className="bg-card border border-border/50 p-5 rounded-3xl space-y-4 shadow-sm">
-                <div className="flex items-center justify-between pb-1 border-b border-border/50">
-                  <div className="flex items-center gap-2">
-                    <Users size={18} className="text-purple-500" />
-                    <h4 className="font-bold text-foreground text-sm">Сотрудники в смене</h4>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setEditCrewOpen(true)}
-                    className="p-1.5 hover:bg-accent rounded-lg text-muted-foreground hover:text-foreground transition-colors"
-                    title="Изменить состав"
-                  >
-                    <Gear size={16} weight="bold" />
-                  </button>
-                </div>
-
-                <div className="space-y-2">
-                  {shift.employeeIds.map((empId) => {
-                    const emp = state.employees.find((e) => e.id === empId);
-                    if (!emp) return null;
-                    const payout = shift.salaryPayouts[empId] || 0;
-                    const role = shift.employeeRoles?.[empId] || "installer";
-
-                    return (
-                      <div key={empId} className="flex items-center justify-between p-3 bg-background border border-border/50 rounded-2xl">
-                        <div className="text-left space-y-1">
-                          <div className="flex items-center gap-1.5">
-                            <p className="font-bold text-foreground text-xs leading-none">{emp.name}</p>
-                            <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full border leading-none ${
-                              role === "admin"
-                                ? "bg-purple-500/10 border-purple-500/20 text-purple-400"
-                                : "bg-muted border-border/50 text-muted-foreground"
-                            }`}>
-                              {role === "admin" ? "Админ" : "Оклейщик"}
-                            </span>
-                          </div>
-                          <p className="text-[9px] text-muted-foreground font-semibold">Выплачено: {payout} BYN</p>
-                        </div>
+                      <div className="flex gap-2">
                         <button
-                          onClick={() => {
-                            setPayoutEmployee(emp);
-                            setPayoutMax(500); // placeholder max
-                            setPayoutOpen(true);
-                          }}
-                          className="px-2.5 py-1.5 bg-purple-500/10 border border-purple-500/25 hover:bg-purple-500/20 rounded-xl text-[10px] font-bold text-purple-400"
+                          onClick={() => { setSelectedOrder(active); setEditOrderOpen(true); }}
+                          className="flex-1 py-2 bg-background border border-border/50 hover:bg-accent rounded-xl text-[10px] font-bold text-foreground"
                         >
-                          Выплата
+                          Изменить
+                        </button>
+                        <button
+                          onClick={() => { setSelectedOrder(active); setCompleteOrderOpen(true); }}
+                          className="flex-1 py-2 bg-primary hover:bg-primary/90 rounded-xl text-[10px] font-bold text-white flex items-center justify-center gap-1.5 shadow-sm"
+                        >
+                          <Check size={10} weight="bold" />
+                          Завершить
                         </button>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setActiveBoxNum(boxNum); setAddOrderOpen(true); }}
+                      className="w-full h-20 border border-dashed border-border hover:border-primary/40 hover:bg-primary/5 rounded-2xl flex items-center justify-center text-muted-foreground hover:text-primary gap-1.5 transition-all"
+                    >
+                      <Plus size={18} />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Создать заказ</span>
+                    </button>
+                  )}
                 </div>
-              </div>
-
-            </div>
-
+              );
+            })}
           </div>
 
-          {/* RIGHT COLUMN: DEBTS & CONTROL INSPECTIONS */}
-          <div className="space-y-6">
-
-            {/* DEBTS WIDGET */}
-            <div className="bg-card border border-border/50 p-5 rounded-3xl space-y-4 shadow-sm">
-              <div className="flex items-center gap-2 border-b border-border/50 pb-2">
-                <Warning size={18} className="text-amber-500" />
-                <h4 className="font-bold text-foreground text-sm">Активные долги ({state.debts.length})</h4>
-              </div>
-              {state.debts.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic py-2 pl-1">Долгов нет</p>
-              ) : (
-                <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
-                  {state.debts.map((debt) => (
-                    <div key={debt.id} className="flex items-center justify-between p-3 bg-background border border-border/50 rounded-2xl">
-                      <div>
-                        <p className="font-bold text-foreground text-xs leading-none">{debt.carInfo}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 font-semibold">{debt.amount} BYN</p>
-                      </div>
-                      <button
-                        onClick={() => handleInitiateCloseDebt(debt)}
-                        className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 rounded-xl text-[10px] font-bold text-amber-500 transition-colors"
-                      >
-                        Закрыть
-                      </button>
+          {/* DEBTS WIDGET */}
+          <div className="bg-card border border-border/50 p-5 rounded-3xl space-y-4 shadow-sm">
+            <div className="flex items-center gap-2 border-b border-border/50 pb-2">
+              <Warning size={18} className="text-amber-500" />
+              <h4 className="font-bold text-foreground text-sm">Долги ({state.debts.length})</h4>
+            </div>
+            {state.debts.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic py-2 pl-1">Долгов нет</p>
+            ) : (
+              <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+                {state.debts.map((debt) => (
+                  <div key={debt.id} className="flex items-center justify-between p-3 bg-background border border-border/50 rounded-2xl">
+                    <div>
+                      <p className="font-bold text-foreground text-xs leading-none">{debt.carInfo}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1 font-semibold">{debt.amount} BYN</p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* INSPECTIONS WIDGET */}
-            <div className="bg-card border border-border/50 p-5 rounded-3xl space-y-4 shadow-sm">
-              <div className="flex items-center gap-2 border-b border-border/50 pb-2">
-                <ShieldCheck size={18} className="text-purple-500" />
-                <h4 className="font-bold text-foreground text-sm">Контрольный осмотр ({state.upcomingInspections.length})</h4>
+                    <button
+                      onClick={() => handleInitiateCloseDebt(debt)}
+                      className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 rounded-xl text-[10px] font-bold text-amber-500 transition-colors"
+                    >
+                      Закрыть
+                    </button>
+                  </div>
+                ))}
               </div>
-              {state.upcomingInspections.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic py-2 pl-1">Осмотры не запланированы</p>
-              ) : (
-                <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
-                  {state.upcomingInspections.map((order) => {
-                    const date = order.inspectionDate ? new Date(order.inspectionDate) : null;
-                    return (
-                      <div key={order.id} className="p-3 bg-background border border-border/50 rounded-2xl">
-                        <p className="font-bold text-foreground text-xs leading-none">{order.carInfo}</p>
-                        <div className="flex items-center justify-between mt-2 flex-wrap gap-1">
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-400/20">
-                            {date ? format(date, "d MMM HH:mm", { locale: ru }) : ""}
-                          </span>
-                          {order.clientPhone && (
-                            <span className="flex items-center gap-1 ml-auto">
-                              <a href={`tel:${order.clientPhone}`} className="text-[9px] text-muted-foreground hover:underline">
-                                {order.clientPhone}
-                              </a>
-                              <MessengerLinks phone={order.clientPhone} />
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
+            )}
           </div>
 
         </div>
       </div>
-    )}
 
-      {/* ── MODALS INTEGRATION ── */}
+{/* ── MODALS INTEGRATION ── */}
       {addOrderOpen && (
         <AddOrderModal
           isOpen={addOrderOpen}
