@@ -879,25 +879,33 @@ export const okleykaSettingsService = {
     try {
       if (options.ordersAndDebts) {
         // delete in correct foreign key order
-        await supabase.from('okleyka_debts').delete().neq('id', '0');
-        await supabase.from('okleyka_order_workers').delete().neq('id', '0');
-        await supabase.from('okleyka_order_items').delete().neq('id', '0');
-        await supabase.from('okleyka_orders').delete().neq('id', '0');
-        await supabase.from('okleyka_shifts').delete().neq('id', '0');
+        const r1 = await supabase.from('okleyka_debts').delete().not('id', 'is', null);
+        if (r1.error) throw r1.error;
+        const r2 = await supabase.from('okleyka_order_workers').delete().not('id', 'is', null);
+        if (r2.error) throw r2.error;
+        const r3 = await supabase.from('okleyka_order_items').delete().not('id', 'is', null);
+        if (r3.error) throw r3.error;
+        const r4 = await supabase.from('okleyka_orders').delete().not('id', 'is', null);
+        if (r4.error) throw r4.error;
+        const r5 = await supabase.from('okleyka_shifts').delete().not('id', 'is', null);
+        if (r5.error) throw r5.error;
       }
       if (options.appointments) {
-        await supabase.from('okleyka_appointments').delete().neq('id', '0');
+        const r = await supabase.from('okleyka_appointments').delete().not('id', 'is', null);
+        if (r.error) throw r.error;
       }
       if (options.employees) {
-        await supabase.from('okleyka_employees').delete().neq('id', '0');
+        const r = await supabase.from('okleyka_employees').delete().not('id', 'is', null);
+        if (r.error) throw r.error;
       }
       if (options.organizations) {
-        await supabase.from('okleyka_organizations').delete().neq('id', '0');
+        const r = await supabase.from('okleyka_organizations').delete().not('id', 'is', null);
+        if (r.error) throw r.error;
       }
       return { success: true };
     } catch (e) {
-      console.error(e);
-      return { success: false };
+      console.error('Clear database error:', e);
+      return { success: false, error: e };
     }
   },
 };
