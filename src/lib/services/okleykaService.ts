@@ -109,6 +109,40 @@ const mapOrder = (r: any): OkleykaOrder => ({
   createdAt: r.created_at,
 });
 
+async function populateOrderRelations(ordersData: any[]): Promise<OkleykaOrder[]> {
+  const orderIds = ordersData.map(o => o.id);
+  
+  const [itemsRes, workersRes] = await Promise.all([
+    supabase.from("okleyka_order_items").select("*").in("order_id", orderIds),
+    supabase.from("okleyka_order_workers").select("*").in("order_id", orderIds),
+  ]);
+
+  const allItems = itemsRes.data || [];
+  const allWorkers = workersRes.data || [];
+
+  return ordersData.map((o) => {
+    const order = mapOrder(o);
+    order.items = allItems
+      .filter((i: any) => i.order_id === order.id)
+      .map((i: any) => ({
+        id: i.id,
+        orderId: i.order_id,
+        name: i.name,
+        price: Number(i.price),
+      }));
+    order.workers = allWorkers
+      .filter((w: any) => w.order_id === order.id)
+      .map((w: any) => ({
+        id: w.id,
+        orderId: w.order_id,
+        itemIndex: w.item_index,
+        employeeId: w.employee_id,
+        salary: w.salary !== null ? Number(w.salary) : null,
+      }));
+    return order;
+  });
+}
+
 export const okleykaOrderService = {
   async getByDateRange(startDate: string, endDate: string): Promise<OkleykaOrder[]> {
     const { data, error } = await supabase
@@ -118,11 +152,12 @@ export const okleykaOrderService = {
       .lte("date_end", endDate)
       .order("created_at", { ascending: false });
     if (error) { log("getByDateRange orders", error); return []; }
-    return (data || []).map(mapOrder);
+    if (!data || data.length === 0) return [];
+    
+    return await populateOrderRelations(data);
   },
 
   async getActiveForDate(date: string): Promise<OkleykaOrder[]> {
-    // Заказы, которые пересекаются с указанной датой и не отменены
     const { data, error } = await supabase
       .from("okleyka_orders")
       .select("*")
@@ -130,7 +165,9 @@ export const okleykaOrderService = {
       .gte("date_end", date)
       .neq("status", "cancelled");
     if (error) { log("getActiveForDate orders", error); return []; }
-    return (data || []).map(mapOrder);
+    if (!data || data.length === 0) return [];
+    
+    return await populateOrderRelations(data);
   },
 
   // Проверить, свободен ли бокс в указанном диапазоне дат
