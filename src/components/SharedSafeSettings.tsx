@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { ArrowDownRight, ArrowUpRight, Calendar as CalendarIcon, Download, Loader2, RefreshCw, Search, Check } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Calendar as CalendarIcon, Download, Loader2, RefreshCw, Search, Check, Wallet } from "lucide-react";
 import { settingsService } from "@/lib/services/supabaseService";
 
 export interface SharedSafeSettingsProps {

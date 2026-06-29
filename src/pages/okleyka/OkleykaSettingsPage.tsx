@@ -759,9 +759,18 @@ const OkleykaDataManagement: React.FC = () => {
   const [clearAppointments, setClearAppointments] = useState(false);
   const [clearOrders, setClearOrders] = useState(false);
 
+  const allSelected = clearEmployees && clearOrgs && clearAppointments && clearOrders;
+
+  const handleToggleAll = (checked: boolean) => {
+    setClearEmployees(checked);
+    setClearOrgs(checked);
+    setClearAppointments(checked);
+    setClearOrders(checked);
+  };
+
   const handleClearDatabase = async () => {
     if (!clearEmployees && !clearOrgs && !clearAppointments && !clearOrders) {
-      toast.error("Выберите данные для удаления");
+      toast.error("Выберите пункты для удаления");
       return;
     }
 
@@ -779,10 +788,10 @@ const OkleykaDataManagement: React.FC = () => {
         setShowConfirmation(false);
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        toast.error("Ошибка при удалении данных");
+        toast.error("Не удалось удалить данные");
       }
     } catch (error) {
-      toast.error("Сбой соединения");
+      toast.error("Ошибка при удалении");
     } finally {
       setLoading(false);
     }
@@ -795,14 +804,22 @@ const OkleykaDataManagement: React.FC = () => {
           <AlertTriangle className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-base font-semibold text-destructive">Стереть данные Оклейки</h3>
+          <h3 className="text-base font-semibold text-destructive">Очистка базы данных оклейки</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Безвозвратное удаление выбранных данных. Действие отменить нельзя.
+            Внимание! Выберите, какие данные вы хотите безвозвратно стереть. Это действие нельзя отменить.
           </p>
         </div>
       </div>
 
       <div className="space-y-3 pt-4 border-t border-destructive/10">
+        <label className="flex items-center gap-3 cursor-pointer group pb-2 border-b border-destructive/10">
+          <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${allSelected ? "bg-destructive border-destructive text-white" : "border-border bg-background"}`}>
+            {allSelected && <Check className="w-3.5 h-3.5" />}
+          </div>
+          <span className="text-sm font-bold text-destructive">Выбрать ВСЁ для оклейки</span>
+          <input type="checkbox" className="hidden" checked={allSelected} onChange={(e) => handleToggleAll(e.target.checked)} />
+        </label>
+
         <label className="flex items-center gap-3 cursor-pointer group">
           <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${clearOrders ? "bg-destructive border-destructive text-white" : "border-border bg-background"}`}>
             {clearOrders && <Check className="w-3.5 h-3.5" />}
@@ -842,7 +859,7 @@ const OkleykaDataManagement: React.FC = () => {
             onClick={() => setShowConfirmation(true)}
             className="px-4 py-2.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2"
           >
-            <Trash2 className="w-4 h-4" /> Удалить выбранное
+            <Trash2 className="w-4 h-4" /> Удалить выбранные данные
           </button>
         ) : (
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -858,7 +875,7 @@ const OkleykaDataManagement: React.FC = () => {
               disabled={loading}
               className="flex-1 sm:flex-none px-4 py-2.5 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Подтверждаю удаление"}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Подтвердить удаление"}
             </button>
           </div>
         )}
