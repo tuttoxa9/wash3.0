@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import OkleykaCashStateWidget from "@/components/okleyka/OkleykaCashStateWidget";
 import OkleykaPendingWrapsWidget from "@/components/okleyka/OkleykaPendingWrapsWidget";
+import OkleykaTimelineWidget from "@/components/okleyka/OkleykaTimelineWidget";
+import OkleykaMonthCalendarModal from "@/components/okleyka/OkleykaMonthCalendarModal";
 import { Loader2, ArrowRight } from "lucide-react";
 import { ListBullets, Gear, ShieldCheck } from "@phosphor-icons/react";
 import {
@@ -470,14 +472,27 @@ const OkleykaHomePage: React.FC = () => {
   const [paymentFilter, setPaymentFilter] = useState<"all" | "cash" | "card" | "organization" | "debt">("all");
   const [dailyReportOpen, setDailyReportOpen] = useState(false);
 
+  // Timeline State
+  const [timelineOrders, setTimelineOrders] = useState<OkleykaOrder[]>([]);
+  const [monthCalendarOpen, setMonthCalendarOpen] = useState(false);
+  const [actionOrder, setActionOrder] = useState<OkleykaOrder | null>(null);
+
+  const refreshTimeline = useCallback(async (baseDate: string) => {
+    const start = baseDate;
+    const end = new Date(new Date(baseDate).getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const orders = await okleykaOrderService.getOverlappingForDateRange(start, end);
+    setTimelineOrders(orders);
+  }, []);
+
   const refreshAll = useCallback(async () => {
     await Promise.all([
       refreshOrders(selectedDate),
       refreshDebts(),
       refreshUnpaidCount(),
       refreshShift(selectedDate),
+      refreshTimeline(selectedDate),
     ]);
-  }, [refreshOrders, refreshDebts, refreshUnpaidCount, refreshShift, selectedDate]);
+  }, [refreshOrders, refreshDebts, refreshUnpaidCount, refreshShift, selectedDate, refreshTimeline]);
 
   useEffect(() => {
     refreshAll();
@@ -973,8 +988,8 @@ const OkleykaHomePage: React.FC = () => {
             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Добавить заказ</span>
-            <span className="sm:hidden">Добавить</span>
+            <span className="hidden sm:inline">Добавить запись</span>
+            <span className="sm:hidden">Запись</span>
           </button>
         </div>
       </div>
@@ -1062,6 +1077,18 @@ const OkleykaHomePage: React.FC = () => {
             </div>
           </div>
           
+          <OkleykaTimelineWidget
+            startDate={selectedDate}
+            orders={timelineOrders}
+            onAddAppointment={(boxNum, date) => {
+              setActiveBoxNum(boxNum);
+              setSelectedDate(date);
+              setAddOrderOpen(true);
+            }}
+            onOrderClick={(order) => setActionOrder(order)}
+            onExpand={() => setMonthCalendarOpen(true)}
+          />
+
           <OkleykaCashStateWidget
             shift={shift}
             totalServicesCash={getCashRevenue()}

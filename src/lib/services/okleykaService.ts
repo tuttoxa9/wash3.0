@@ -157,6 +157,19 @@ export const okleykaOrderService = {
     return await populateOrderRelations(data);
   },
 
+  async getOverlappingForDateRange(startDate: string, endDate: string): Promise<OkleykaOrder[]> {
+    const { data, error } = await supabase
+      .from("okleyka_orders")
+      .select("*")
+      .lte("date_start", endDate)
+      .gte("date_end", startDate)
+      .neq("status", "cancelled");
+    if (error) { log("getOverlappingForDateRange orders", error); return []; }
+    if (!data || data.length === 0) return [];
+    
+    return await populateOrderRelations(data);
+  },
+
   async getActiveForDate(date: string): Promise<OkleykaOrder[]> {
     const { data, error } = await supabase
       .from("okleyka_orders")
