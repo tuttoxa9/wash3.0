@@ -797,6 +797,12 @@ export const okleykaAppointmentService = {
     if (error) { log('assignEmployee appointment', error); return false; }
     return true;
   },
+
+  async deleteById(id: string): Promise<boolean> {
+    const { error } = await supabase.from('okleyka_appointments').delete().eq('id', id);
+    if (error) { log('delete appointment', error); return false; }
+    return true;
+  },
 };
 
 export const okleykaSettingsService = {

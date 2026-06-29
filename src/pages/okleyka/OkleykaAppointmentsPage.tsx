@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useOkleykaContext } from "@/lib/context/OkleykaContext";
 import { okleykaAppointmentService } from "@/lib/services/okleykaService";
 import type { OkleykaAppointment } from "@/lib/types/okleyka";
+import OkleykaWeeklyView from "@/components/okleyka/OkleykaWeeklyView";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, parseISO, addMonths, subMonths } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -39,6 +40,7 @@ const OkleykaAppointmentsPage: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [viewMode, setViewMode] = useState<"month" | "day">("month");
+  const [displayMode, setDisplayMode] = useState<"week" | "month">("week");
 
   // Appointments state
   const [appointments, setAppointments] = useState<OkleykaAppointment[]>([]);
@@ -198,26 +200,48 @@ const OkleykaAppointmentsPage: React.FC = () => {
           <p className="text-sm text-muted-foreground mt-0.5">Управление будущими записями на оклейку</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* View Toggle */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Display mode toggle (week / month+day) */}
           <div className="flex bg-muted p-1 rounded-xl">
             <button
-              onClick={() => setViewMode("month")}
+              onClick={() => setDisplayMode("week")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                viewMode === "month" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"
+                displayMode === "week" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              Неделя
+            </button>
+            <button
+              onClick={() => setDisplayMode("month")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                displayMode === "month" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"
               }`}
             >
               Месяц
             </button>
-            <button
-              onClick={() => setViewMode("day")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                viewMode === "day" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"
-              }`}
-            >
-              День
-            </button>
           </div>
+
+          {/* Month/Day sub-toggle (only in month display mode) */}
+          {displayMode === "month" && (
+            <div className="flex bg-muted p-1 rounded-xl">
+              <button
+                onClick={() => setViewMode("month")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  viewMode === "month" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"
+                }`}
+              >
+                Все даты
+              </button>
+              <button
+                onClick={() => setViewMode("day")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  viewMode === "day" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"
+                }`}
+              >
+                День
+              </button>
+            </div>
+          )}
 
           <button
             onClick={() => {
@@ -456,66 +480,76 @@ const OkleykaAppointmentsPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Loading state */}
-      {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : filtered.length === 0 ? (
-        /* Empty state */
-        <div className="text-center py-20 bg-card border border-border/50 rounded-2xl">
-          <CalendarIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-30" />
-          <p className="text-base font-semibold">Нет записей</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            На выбранный период нет запланированных записей или они не соответствуют фильтрам
-          </p>
-        </div>
-      ) : (
-        /* Appointments List */
-        <div className="space-y-6">
-          {viewMode === "month" ? (
-            // Monthly view grouped by date
-            sortedDates.map((dateStr) => {
-              const dayAppts = groupedByDate[dateStr];
-              const dateObj = parseISO(dateStr);
-              return (
-                <div key={dateStr} className="space-y-2">
-                  <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 py-1.5 flex items-center gap-2 border-b border-border/30">
-                    <span className="text-sm font-bold text-foreground capitalize">
-                      {format(dateObj, "EEEE, d MMMM", { locale: ru })}
-                    </span>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                      {dayAppts.length}
-                    </span>
-                  </div>
+      {/* Weekly view (displayMode === 'week') */}
+      {displayMode === "week" && (
+        <OkleykaWeeklyView
+          appointments={appointments}
+          onRefresh={fetchAppointments}
+        />
+      )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {dayAppts.map((appt) => (
-                      <AppointmentCard
-                        key={appt.id}
-                        appt={appt}
-                        onStatusChange={handleStatusChange}
-                        onDelete={handleDelete}
-                      />
-                    ))}
+      {/* Month / Day views (displayMode === 'month') */}
+      {displayMode === "month" && (
+        loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : filtered.length === 0 ? (
+          /* Empty state */
+          <div className="text-center py-20 bg-card border border-border/50 rounded-2xl">
+            <CalendarIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-30" />
+            <p className="text-base font-semibold">Нет записей</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              На выбранный период нет запланированных записей или они не соответствуют фильтрам
+            </p>
+          </div>
+        ) : (
+          /* Appointments List */
+          <div className="space-y-6">
+            {viewMode === "month" ? (
+              // Monthly view grouped by date
+              sortedDates.map((dateStr) => {
+                const dayAppts = groupedByDate[dateStr];
+                const dateObj = parseISO(dateStr);
+                return (
+                  <div key={dateStr} className="space-y-2">
+                    <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 py-1.5 flex items-center gap-2 border-b border-border/30">
+                      <span className="text-sm font-bold text-foreground capitalize">
+                        {format(dateObj, "EEEE, d MMMM", { locale: ru })}
+                      </span>
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        {dayAppts.length}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {dayAppts.map((appt) => (
+                        <AppointmentCard
+                          key={appt.id}
+                          appt={appt}
+                          onStatusChange={handleStatusChange}
+                          onDelete={handleDelete}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          ) : (
-            // Day view (just list of that selected day's appointments)
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {filtered.map((appt) => (
-                <AppointmentCard
-                  key={appt.id}
-                  appt={appt}
-                  onStatusChange={handleStatusChange}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+                );
+              })
+            ) : (
+              // Day view
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {filtered.map((appt) => (
+                  <AppointmentCard
+                    key={appt.id}
+                    appt={appt}
+                    onStatusChange={handleStatusChange}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )
       )}
     </motion.div>
   );
