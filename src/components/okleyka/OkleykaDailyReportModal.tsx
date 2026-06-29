@@ -131,10 +131,10 @@ const OkleykaDailyReportModal: React.FC<OkleykaDailyReportModalProps> = ({
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order, index) => {
                   const orderItemNames = (order.items || []).map((i) => i.name).join(", ") || "—";
-                  const orderWorkerNames = (order.workers || [])
+                  const workerNames = (order.workers || [])
                     .map((w) => employees.find((e) => e.id === w.employeeId)?.name)
-                    .filter(Boolean)
-                    .join(", ") || "—";
+                    .filter(Boolean);
+                  const orderWorkerNames = Array.from(new Set(workerNames)).join(", ") || "—";
                   
                   const pmType = order.paymentMethod?.type;
                   const pmLabel = pmType
