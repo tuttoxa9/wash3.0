@@ -418,6 +418,13 @@ const OkleykaCloseDebtModal: React.FC<{
 
 // ── Main Home Page ─────────────────────────────────────────────────────────
 const OkleykaHomePage: React.FC = () => {
+  const { state, dispatch, refreshShift, refreshOrders, refreshDebts, refreshUnpaidCount } = useOkleykaContext();
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [shiftEmployees, setShiftEmployees] = useState<string[]>([]);
+  const [employeeRoles, setEmployeeRoles] = useState<Record<string, "admin" | "installer">>({});
+  const [startCash, setStartCash] = useState("0");
+  const [opening, setOpening] = useState(false);
+
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isShiftSectionHighlighted, setIsShiftSectionHighlighted] = useState(false);
   const [previousDayCash, setPreviousDayCash] = useState<number | undefined>(undefined);
@@ -456,12 +463,6 @@ const OkleykaHomePage: React.FC = () => {
       setIsCalendarOpen(false);
     }
   };
-  const { state, dispatch, refreshShift, refreshOrders, refreshDebts, refreshUnpaidCount } = useOkleykaContext();
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [shiftEmployees, setShiftEmployees] = useState<string[]>([]);
-  const [employeeRoles, setEmployeeRoles] = useState<Record<string, "admin" | "installer">>({});
-  const [startCash, setStartCash] = useState("0");
-  const [opening, setOpening] = useState(false);
 
   // Active state modals
   const [addOrderOpen, setAddOrderOpen] = useState(false);
