@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { ru } from "date-fns/locale";
 import { toast } from "sonner";
 import { ArrowDownRight, ArrowUpRight, Loader2, Download, Search, RefreshCw, Calendar as CalendarIcon } from "lucide-react";
 import { settingsService } from "@/lib/services/supabaseService"; // the global wash settings
@@ -304,7 +305,7 @@ export const OkleykaSafeSettings: React.FC = () => {
                     <div className="sticky top-0 bg-card/95 backdrop-blur-sm py-2 z-10 flex items-center gap-3">
                       <div className="h-px flex-1 bg-border/50" />
                       <h4 className="text-sm font-semibold text-muted-foreground">
-                        {format(new Date(dateStr), "dd MMMM yyyy", { locale: require("date-fns/locale").ru })}
+                        {format(new Date(dateStr), "dd MMMM yyyy", { locale: ru })}
                       </h4>
                       <div className="h-px flex-1 bg-border/50" />
                     </div>
