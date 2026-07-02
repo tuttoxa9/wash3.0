@@ -1648,7 +1648,7 @@ const RealtimeSettings: React.FC = () => {
 
 export default function SettingsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const { dispatch } = useAppContext();
+  const { state, dispatch } = useAppContext();
 
   useEffect(() => {
     if (isAuthenticated) {
