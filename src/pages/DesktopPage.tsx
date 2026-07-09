@@ -266,6 +266,10 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
         setStage("message");
       }, 3500);
       return () => clearTimeout(timer);
+    } else {
+      // Reset state immediately when closed so it doesn't flash on reopen
+      setStage("loading");
+      setRequestId("");
     }
   }, [isOpen]);
 
@@ -316,63 +320,66 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
           <div className="absolute inset-0 bg-black/90 animate-in fade-in duration-500" />
 
           {/* Static window (no animations) */}
-          <div className="relative z-10 flex flex-col items-center max-w-md w-full px-6">
+          <div className="relative z-10 flex flex-col items-center justify-center px-4 w-full h-full max-w-[340px] max-h-[360px]">
             <div
-              className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center text-center gap-6 min-h-[300px] w-full"
+              className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl flex flex-col items-center justify-center text-center w-full h-full"
             >
               {stage === "loading" && (
-                <div className="flex flex-col items-center justify-center">
+                <div className="flex flex-col items-center justify-center w-full h-full">
                   {/* Simple custom loader */}
-                  <div className="w-16 h-16 border-4 border-zinc-700 border-t-white rounded-full animate-spin" />
+                  <div className="w-12 h-12 border-4 border-zinc-700 border-t-white rounded-full animate-spin" />
                 </div>
               )}
 
               {stage === "message" && (
-                <div className="flex flex-col items-center text-center gap-6 w-full">
-                  <h2 className="text-xl font-semibold text-white">Доступ ограничен</h2>
+                <div className="flex flex-col items-center justify-between text-center w-full h-full py-2">
+                  <h2 className="text-lg font-semibold text-white">Доступ ограничен</h2>
 
-                  <p className="text-white/70 text-sm leading-relaxed">
+                  <p className="text-white/70 text-xs leading-relaxed my-4">
                     Приложение автоматически отключено по причине отсутствия активных сессий, для восстановления базы данных и доступа отправьте запрос на восстановление
                   </p>
 
-                  <button
-                    onClick={handleSendRequest}
-                    disabled={isSending}
-                    className="mt-2 w-full py-3.5 bg-white hover:bg-zinc-200 text-black font-semibold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
-                  >
-                    {isSending ? <Loader2 size={18} className="animate-spin" /> : <PaperPlane size={18} />}
-                    Отправить запрос
-                  </button>
+                  <div className="w-full flex flex-col gap-3 mt-auto">
+                    <button
+                      onClick={handleSendRequest}
+                      disabled={isSending}
+                      className="w-full py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-sm font-medium rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                    >
+                      {isSending ? <Loader2 size={14} className="animate-spin" /> : <PaperPlane size={14} />}
+                      Отправить запрос
+                    </button>
 
-                  <button
-                    onClick={onClose}
-                    className="text-white/40 hover:text-white/80 text-xs transition-colors mt-2"
-                  >
-                    Закрыть
-                  </button>
+                    <button
+                      onClick={onClose}
+                      className="text-white/40 hover:text-white/80 text-xs transition-colors"
+                    >
+                      Закрыть
+                    </button>
+                  </div>
                 </div>
               )}
 
               {stage === "success" && (
-                <div className="flex flex-col items-center text-center gap-6 w-full">
-                  <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-2">
-                    <Check size={32} weight="bold" className="text-green-500" />
+                <div className="flex flex-col items-center justify-between text-center w-full h-full py-2">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center">
+                      <Check size={24} weight="bold" className="text-green-500" />
+                    </div>
+                    <h2 className="text-lg font-semibold text-white">Запрос отправлен</h2>
                   </div>
 
-                  <h2 className="text-xl font-semibold text-white">Запрос отправлен</h2>
-
-                  <div className="bg-black/50 p-4 rounded-2xl w-full border border-white/10">
-                    <p className="text-white/70 text-sm">
+                  <div className="bg-black/50 p-3 rounded-xl w-full border border-white/10 my-4">
+                    <p className="text-white/70 text-[11px]">
                       Запрос был отправлен, его номер:
                     </p>
-                    <p className="text-2xl font-mono font-bold text-white mt-2">
+                    <p className="text-xl font-mono font-bold text-white mt-1">
                       #{requestId}
                     </p>
                   </div>
 
                   <button
                     onClick={onClose}
-                    className="mt-2 w-full py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition-all"
+                    className="mt-auto w-full py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-sm font-medium rounded-xl transition-all"
                   >
                     Закрыть
                   </button>
