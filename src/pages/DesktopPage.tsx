@@ -323,45 +323,18 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
           <div className="absolute inset-0 bg-black/90" />
 
           <div className="relative z-10 flex flex-col items-center max-w-md w-full px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div
               className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center text-center gap-6 min-h-[300px] w-full"
             >
               {stage === "loading" && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="flex flex-col items-center justify-center"
-                >
-                  {/* Custom animated loader */}
-                  <div className="relative w-20 h-20">
-                    <motion.div
-                      className="absolute inset-0 border-4 border-transparent border-t-red-500 rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-                    />
-                    <motion.div
-                      className="absolute inset-2 border-4 border-transparent border-r-orange-500 rounded-full"
-                      animate={{ rotate: -360 }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                    />
-                    <motion.div
-                      className="absolute inset-4 border-4 border-transparent border-b-yellow-500 rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    />
-                  </div>
-                </motion.div>
+                <div className="flex flex-col items-center justify-center">
+                  {/* Simple custom loader */}
+                  <div className="w-16 h-16 border-4 border-zinc-700 border-t-white rounded-full animate-spin" />
+                </div>
               )}
 
               {stage === "message" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col items-center text-center gap-6 w-full"
-                >
+                <div className="flex flex-col items-center text-center gap-6 w-full">
                   <h2 className="text-xl font-semibold text-white">Доступ ограничен</h2>
 
                   <p className="text-white/70 text-sm leading-relaxed">
@@ -383,15 +356,11 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
                   >
                     Закрыть
                   </button>
-                </motion.div>
+                </div>
               )}
 
               {stage === "success" && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="flex flex-col items-center text-center gap-6 w-full"
-                >
+                <div className="flex flex-col items-center text-center gap-6 w-full">
                   <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-2">
                     <Check size={32} weight="bold" className="text-green-500" />
                   </div>
@@ -413,9 +382,9 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
                   >
                     Закрыть
                   </button>
-                </motion.div>
+                </div>
               )}
-            </motion.div>
+            </div>
           </div>
         </motion.div>
       )}
