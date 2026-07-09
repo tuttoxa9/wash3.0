@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import type React from "react";
+import { useMemo } from "react";
 import { format, addDays, parseISO, isSameDay } from "date-fns";
 import { ru } from "date-fns/locale";
 import type { OkleykaOrder } from "@/lib/types/okleyka";
