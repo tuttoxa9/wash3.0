@@ -253,6 +253,139 @@ const WashLaunchOverlay: React.FC<{ visible: boolean }> = ({ visible }) => (
   </AnimatePresence>
 );
 
+// ─── Blocked App Modal ────────────────────────────────────────────
+const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const [stage, setStage] = useState<"loading" | "message" | "success">("loading");
+  const [requestId, setRequestId] = useState<string>("");
+  const [isSending, setIsSending] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setStage("loading");
+      const timer = setTimeout(() => {
+        setStage("message");
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  const handleSendRequest = async () => {
+    setIsSending(true);
+
+    // Fetch CRM settings to get Telegram bot token and chat ID
+    let settings: CRMSettings | null = null;
+    try {
+      settings = await crmService.getSettings();
+    } catch (e) {
+      console.error("Error fetching CRM settings:", e);
+    }
+
+    const newRequestId = Math.floor(10000 + Math.random() * 90000).toString();
+
+    if (settings && settings.telegramBotToken && settings.telegramChatId) {
+      try {
+        const customMessage = `🚨 <b>Запрос на восстановление базы данных</b>\n\n` +
+          `🔒 <b>Причина:</b> Приложение автоматически отключено по причине отсутствия активных сессий.\n` +
+          `🆔 <b>Номер запроса:</b> #${newRequestId}\n` +
+          `📅 <b>Дата:</b> ${new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" })} (МСК)`;
+
+        await fetch("/api/test-telegram", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            botToken: settings.telegramBotToken,
+            chatId: settings.telegramChatId,
+            customMessage
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to send telegram notification:", err);
+      }
+    }
+
+    setRequestId(newRequestId);
+    setStage("success");
+    setIsSending(false);
+  };
+
+  return (
+    <>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center">
+          {/* Smooth dark background (animated) */}
+          <div className="absolute inset-0 bg-black/90 animate-in fade-in duration-500" />
+
+          {/* Static window (no animations) */}
+          <div className="relative z-10 flex flex-col items-center max-w-md w-full px-6">
+            <div
+              className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center text-center gap-6 min-h-[300px] w-full"
+            >
+              {stage === "loading" && (
+                <div className="flex flex-col items-center justify-center">
+                  {/* Simple custom loader */}
+                  <div className="w-16 h-16 border-4 border-zinc-700 border-t-white rounded-full animate-spin" />
+                </div>
+              )}
+
+              {stage === "message" && (
+                <div className="flex flex-col items-center text-center gap-6 w-full">
+                  <h2 className="text-xl font-semibold text-white">Доступ ограничен</h2>
+
+                  <p className="text-white/70 text-sm leading-relaxed">
+                    Приложение автоматически отключено по причине отсутствия активных сессий, для восстановления базы данных и доступа отправьте запрос на восстановление
+                  </p>
+
+                  <button
+                    onClick={handleSendRequest}
+                    disabled={isSending}
+                    className="mt-2 w-full py-3.5 bg-white hover:bg-zinc-200 text-black font-semibold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                  >
+                    {isSending ? <Loader2 size={18} className="animate-spin" /> : <PaperPlane size={18} />}
+                    Отправить запрос
+                  </button>
+
+                  <button
+                    onClick={onClose}
+                    className="text-white/40 hover:text-white/80 text-xs transition-colors mt-2"
+                  >
+                    Закрыть
+                  </button>
+                </div>
+              )}
+
+              {stage === "success" && (
+                <div className="flex flex-col items-center text-center gap-6 w-full">
+                  <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-2">
+                    <Check size={32} weight="bold" className="text-green-500" />
+                  </div>
+
+                  <h2 className="text-xl font-semibold text-white">Запрос отправлен</h2>
+
+                  <div className="bg-black/50 p-4 rounded-2xl w-full border border-white/10">
+                    <p className="text-white/70 text-sm">
+                      Запрос был отправлен, его номер:
+                    </p>
+                    <p className="text-2xl font-mono font-bold text-white mt-2">
+                      #{requestId}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={onClose}
+                    className="mt-2 w-full py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition-all"
+                  >
+                    Закрыть
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 // ─── Main Desktop Page ────────────────────────────────────────────
 const DesktopPage = () => {
   const { user } = useAuth();
@@ -262,19 +395,12 @@ const DesktopPage = () => {
   const [crmModalOpen, setCrmModalOpen] = useState(false);
   const [tgModalOpen, setTgModalOpen] = useState(false);
   const [washLaunching, setWashLaunching] = useState(false);
+  const [blockedModalOpen, setBlockedModalOpen] = useState(false);
 
   const handleWashClick = () => {
     if (user) {
       setWashLaunching(true);
       setTimeout(() => navigate("/wash"), 600);
-    } else {
-      navigate("/login");
-    }
-  };
-
-  const handleOkleykaClick = () => {
-    if (user) {
-      navigate("/okleyka");
     } else {
       navigate("/login");
     }
@@ -293,21 +419,21 @@ const DesktopPage = () => {
       label: "Реклама",
       icon: <Megaphone size={40} weight="fill" className="text-white" />,
       gradient: "from-amber-400 to-amber-600",
-      onClick: () => setCrmModalOpen(true),
+      onClick: () => setBlockedModalOpen(true),
     },
     {
       id: "okleyka",
       label: "Оклейка",
       icon: <Palette size={40} weight="fill" className="text-white" />,
       gradient: "from-violet-500 to-purple-700",
-      onClick: handleOkleykaClick,
+      onClick: () => setBlockedModalOpen(true),
     },
     {
       id: "settings",
       label: "Настройки",
       icon: <Gear size={40} weight="fill" className="text-white" />,
       gradient: "from-slate-500 to-slate-700",
-      onClick: () => setTgModalOpen(true),
+      onClick: () => setBlockedModalOpen(true),
     },
   ];
 
@@ -390,6 +516,7 @@ const DesktopPage = () => {
       <CrmLaunchModal isOpen={crmModalOpen} onClose={() => setCrmModalOpen(false)} />
       <WashLaunchOverlay visible={washLaunching} />
       <TelegramSettingsModal isOpen={tgModalOpen} onClose={() => setTgModalOpen(false)} />
+      <BlockedAppModal isOpen={blockedModalOpen} onClose={() => setBlockedModalOpen(false)} />
     </div>
   );
 };
