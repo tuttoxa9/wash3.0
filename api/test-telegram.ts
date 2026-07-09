@@ -21,16 +21,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { botToken, chatId } = req.body || {};
+    const { botToken, chatId, customMessage } = req.body || {};
 
     if (!botToken || !chatId) {
       return res.status(400).json({ error: "botToken and chatId are required" });
     }
 
-    const message = 
+    const message = customMessage || (
       `🔔 <b>Тестовое сообщение CRM</b>\n\n` +
       `✅ Telegram-бот успешно настроен и подключен через прокси-сервер!\n` +
-      `📅 Время проверки: ${new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" })} (МСК)`;
+      `📅 Время проверки: ${new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" })} (МСК)`
+    );
 
     const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
