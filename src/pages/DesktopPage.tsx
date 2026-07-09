@@ -309,19 +309,13 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div
-          key="blocked-app-overlay"
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-        >
-          {/* Smooth dark background */}
-          <div className="absolute inset-0 bg-black/90" />
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center">
+          {/* Smooth dark background (animated) */}
+          <div className="absolute inset-0 bg-black/90 animate-in fade-in duration-500" />
 
+          {/* Static window (no animations) */}
           <div className="relative z-10 flex flex-col items-center max-w-md w-full px-6">
             <div
               className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center text-center gap-6 min-h-[300px] w-full"
@@ -386,9 +380,9 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
               )}
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 };
 
