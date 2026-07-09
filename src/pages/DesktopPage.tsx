@@ -266,6 +266,10 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
         setStage("message");
       }, 3500);
       return () => clearTimeout(timer);
+    } else {
+      // Reset state immediately when closed so it doesn't flash on reopen
+      setStage("loading");
+      setRequestId("");
     }
   }, [isOpen]);
 
