@@ -323,97 +323,99 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
           <div className="absolute inset-0 bg-black/90" />
 
           <div className="relative z-10 flex flex-col items-center max-w-md w-full px-6">
-            {stage === "loading" && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="flex flex-col items-center gap-6"
-              >
-                {/* Custom animated loader */}
-                <div className="relative w-20 h-20">
-                  <motion.div
-                    className="absolute inset-0 border-4 border-transparent border-t-red-500 rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-                  />
-                  <motion.div
-                    className="absolute inset-2 border-4 border-transparent border-r-orange-500 rounded-full"
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                  />
-                  <motion.div
-                    className="absolute inset-4 border-4 border-transparent border-b-yellow-500 rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  />
-                </div>
-              </motion.div>
-            )}
-
-            {stage === "message" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center gap-6"
-              >
-                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-2">
-                  <X size={32} weight="bold" className="text-red-500" />
-                </div>
-
-                <h2 className="text-xl font-semibold text-white">Доступ ограничен</h2>
-
-                <p className="text-white/70 text-sm leading-relaxed">
-                  Приложение автоматически отключено по причине отсутствия активных сессий, для восстановления базы данных и доступа отправьте запрос на восстановление
-                </p>
-
-                <button
-                  onClick={handleSendRequest}
-                  disabled={isSending}
-                  className="mt-2 w-full py-3.5 bg-white hover:bg-zinc-200 text-black font-semibold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center text-center gap-6 min-h-[300px] w-full"
+            >
+              {stage === "loading" && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="flex flex-col items-center justify-center"
                 >
-                  {isSending ? <Loader2 size={18} className="animate-spin" /> : <PaperPlane size={18} />}
-                  Отправить запрос
-                </button>
+                  {/* Custom animated loader */}
+                  <div className="relative w-20 h-20">
+                    <motion.div
+                      className="absolute inset-0 border-4 border-transparent border-t-red-500 rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                    />
+                    <motion.div
+                      className="absolute inset-2 border-4 border-transparent border-r-orange-500 rounded-full"
+                      animate={{ rotate: -360 }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                    />
+                    <motion.div
+                      className="absolute inset-4 border-4 border-transparent border-b-yellow-500 rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    />
+                  </div>
+                </motion.div>
+              )}
 
-                <button
-                  onClick={onClose}
-                  className="text-white/40 hover:text-white/80 text-xs transition-colors mt-2"
+              {stage === "message" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col items-center text-center gap-6 w-full"
                 >
-                  Закрыть
-                </button>
-              </motion.div>
-            )}
+                  <h2 className="text-xl font-semibold text-white">Доступ ограничен</h2>
 
-            {stage === "success" && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center gap-6"
-              >
-                <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-2">
-                  <Check size={32} weight="bold" className="text-green-500" />
-                </div>
-
-                <h2 className="text-xl font-semibold text-white">Запрос отправлен</h2>
-
-                <div className="bg-black/50 p-4 rounded-2xl w-full border border-white/10">
-                  <p className="text-white/70 text-sm">
-                    Запрос был отправлен, его номер:
+                  <p className="text-white/70 text-sm leading-relaxed">
+                    Приложение автоматически отключено по причине отсутствия активных сессий, для восстановления базы данных и доступа отправьте запрос на восстановление
                   </p>
-                  <p className="text-2xl font-mono font-bold text-white mt-2">
-                    #{requestId}
-                  </p>
-                </div>
 
-                <button
-                  onClick={onClose}
-                  className="mt-2 w-full py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition-all"
+                  <button
+                    onClick={handleSendRequest}
+                    disabled={isSending}
+                    className="mt-2 w-full py-3.5 bg-white hover:bg-zinc-200 text-black font-semibold rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                  >
+                    {isSending ? <Loader2 size={18} className="animate-spin" /> : <PaperPlane size={18} />}
+                    Отправить запрос
+                  </button>
+
+                  <button
+                    onClick={onClose}
+                    className="text-white/40 hover:text-white/80 text-xs transition-colors mt-2"
+                  >
+                    Закрыть
+                  </button>
+                </motion.div>
+              )}
+
+              {stage === "success" && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center text-center gap-6 w-full"
                 >
-                  Закрыть
-                </button>
-              </motion.div>
-            )}
+                  <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-2">
+                    <Check size={32} weight="bold" className="text-green-500" />
+                  </div>
+
+                  <h2 className="text-xl font-semibold text-white">Запрос отправлен</h2>
+
+                  <div className="bg-black/50 p-4 rounded-2xl w-full border border-white/10">
+                    <p className="text-white/70 text-sm">
+                      Запрос был отправлен, его номер:
+                    </p>
+                    <p className="text-2xl font-mono font-bold text-white mt-2">
+                      #{requestId}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={onClose}
+                    className="mt-2 w-full py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition-all"
+                  >
+                    Закрыть
+                  </button>
+                </motion.div>
+              )}
+            </motion.div>
           </div>
         </motion.div>
       )}
