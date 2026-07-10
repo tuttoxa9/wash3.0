@@ -40,7 +40,7 @@ const SalaryModal: React.FC<SalaryModalProps> = ({ worker, onClose, onConfirm, s
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const val = parseFloat(amount);
+    const val = Number.parseFloat(amount);
     if (isNaN(val) || val < 0) { toast.error("Введите корректную сумму"); return; }
     await onConfirm(worker.worker.id, val);
   };

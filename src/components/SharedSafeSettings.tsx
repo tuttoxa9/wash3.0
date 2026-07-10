@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import type React from "react";
+import { useState, useRef } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ArrowDownRight, ArrowDownLeft, ArrowUpRight, Calendar as CalendarIcon, Download, FileDown, Loader2, RefreshCw, Search, Check, Wallet } from "lucide-react";

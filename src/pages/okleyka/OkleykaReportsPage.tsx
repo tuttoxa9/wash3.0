@@ -247,8 +247,8 @@ const OkleykaReportsPage: React.FC = () => {
       });
 
       // 3. Fetch worker records from completed orders to calculate earnings
-      let employeeEarnings: Record<string, number> = {};
-      let detailsList: WorkerOrderDetail[] = [];
+      const employeeEarnings: Record<string, number> = {};
+      const detailsList: WorkerOrderDetail[] = [];
 
       if (completed.length > 0) {
         const completedIds = completed.map(o => o.id);

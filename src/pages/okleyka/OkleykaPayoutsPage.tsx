@@ -48,7 +48,7 @@ const PayoutModal: React.FC<PayoutModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const val = parseFloat(amount);
+    const val = Number.parseFloat(amount);
     if (isNaN(val) || val <= 0) {
       toast.error("Введите корректную сумму");
       return;
@@ -343,7 +343,7 @@ const OkleykaPayoutsPage: React.FC = () => {
 
   const handleAddModification = async (e: React.FormEvent) => {
     e.preventDefault();
-    const val = parseFloat(modAmount);
+    const val = Number.parseFloat(modAmount);
     if (isNaN(val) || val <= 0) {
       toast.error("Введите корректную сумму");
       return;

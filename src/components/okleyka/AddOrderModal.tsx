@@ -195,7 +195,7 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
       // Shift keys above idx
       const shifted: WorkersMap = {};
       Object.entries(next).forEach(([k, v]) => {
-        const ki = parseInt(k);
+        const ki = Number.parseInt(k);
         shifted[ki > idx ? ki - 1 : ki] = v;
       });
       return shifted;
@@ -203,7 +203,7 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
   };
 
   const totalPrice = serviceItems.reduce(
-    (sum, s) => sum + (parseFloat(s.price) || 0),
+    (sum, s) => sum + (Number.parseFloat(s.price) || 0),
     0
   );
 
@@ -281,7 +281,7 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
           workers.push({
             itemIndex: idx,
             employeeId: w.employeeId,
-            salary: w.salary ? parseFloat(w.salary) : null,
+            salary: w.salary ? Number.parseFloat(w.salary) : null,
           });
         });
       });
@@ -299,7 +299,7 @@ const AddOrderModal: React.FC<AddOrderModalProps> = ({
         shiftDate,
         items: serviceItems.map((s) => ({
           name: s.name.trim(),
-          price: parseFloat(s.price) || 0,
+          price: Number.parseFloat(s.price) || 0,
         })),
         workers,
       });

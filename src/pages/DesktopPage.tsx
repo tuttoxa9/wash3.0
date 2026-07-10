@@ -393,6 +393,42 @@ const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ i
   );
 };
 
+// ─── Smooth Video Background (Mobile) ─────────────────────────────
+const SmoothVideoBackground: React.FC = () => {
+  const [fadeToBlack, setFadeToBlack] = useState(false);
+
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    const video = e.currentTarget;
+    // When less than 0.4 seconds remain, trigger the black fade overlay
+    if (video.duration - video.currentTime <= 0.4) {
+      setFadeToBlack(true);
+    } else if (video.currentTime > 0.4 && video.currentTime < 1.0 && fadeToBlack) {
+      // Remove fade when video safely restarted
+      setFadeToBlack(false);
+    }
+  };
+
+  return (
+    <div className="absolute inset-0 z-0 md:hidden bg-black">
+      <video
+        src="/main.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        onTimeUpdate={handleTimeUpdate}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      {/* Black overlay for crossfade loop effect */}
+      <div
+        className={`absolute inset-0 bg-black transition-opacity duration-500 pointer-events-none ${
+          fadeToBlack ? "opacity-100" : "opacity-30" // opacity-30 replaces the original static bg-black/30
+        }`}
+      />
+    </div>
+  );
+};
+
 // ─── Main Desktop Page ────────────────────────────────────────────
 const DesktopPage = () => {
   const { user } = useAuth();
@@ -448,18 +484,7 @@ const DesktopPage = () => {
     <div className="min-h-[100dvh] w-full overflow-hidden relative bg-black select-none">
 
       {/* ── Mobile video background (< md) ── */}
-      <div className="absolute inset-0 z-0 md:hidden">
-        <video
-          src="/main.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        {/* Subtle dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/30" />
-      </div>
+      <SmoothVideoBackground />
 
       {/* ── Desktop wallpaper background (md+) ── */}
       <div className="absolute inset-0 z-0 hidden md:block">
