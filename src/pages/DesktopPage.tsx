@@ -230,12 +230,12 @@ const ClockWidget: React.FC = () => {
   );
 };
 
-// ─── Wash launching overlay ───────────────────────────────────────
-const WashLaunchOverlay: React.FC<{ visible: boolean }> = ({ visible }) => (
+// ─── App launching overlay ───────────────────────────────────────
+const AppLaunchOverlay: React.FC<{ visible: boolean; appName: string }> = ({ visible, appName }) => (
   <AnimatePresence>
     {visible && (
       <motion.div
-        key="wash-launching"
+        key="app-launching"
         className="fixed inset-0 z-[60] flex flex-col items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -246,152 +246,13 @@ const WashLaunchOverlay: React.FC<{ visible: boolean }> = ({ visible }) => (
         <div className="absolute inset-0 bg-black/75" />
         <div className="relative z-10 flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-[3px] border-white/20 border-t-white rounded-full animate-spin" />
-          <p className="text-white/60 text-sm">Открываю Мойку...</p>
+          <p className="text-white/60 text-sm">Открываю {appName}...</p>
         </div>
       </motion.div>
     )}
   </AnimatePresence>
 );
 
-// ─── Blocked App Modal ────────────────────────────────────────────
-const BlockedAppModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
-  const [stage, setStage] = useState<"loading" | "message" | "success">("loading");
-  const [requestId, setRequestId] = useState<string>("");
-  const [isSending, setIsSending] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setStage("loading");
-      const timer = setTimeout(() => {
-        setStage("message");
-      }, 3500);
-      return () => clearTimeout(timer);
-    } else {
-      // Reset state immediately when closed so it doesn't flash on reopen
-      setStage("loading");
-      setRequestId("");
-    }
-  }, [isOpen]);
-
-  const handleSendRequest = async () => {
-    setIsSending(true);
-
-    // Fetch CRM settings to get Telegram bot token and chat ID
-    let settings: CRMSettings | null = null;
-    try {
-      settings = await crmService.getSettings();
-    } catch (e) {
-      console.error("Error fetching CRM settings:", e);
-    }
-
-    const newRequestId = Math.floor(10000 + Math.random() * 90000).toString();
-
-    if (settings && settings.telegramBotToken && settings.telegramChatId) {
-      try {
-        const customMessage = `🚨 <b>Запрос на восстановление базы данных</b>\n\n` +
-          `🔒 <b>Причина:</b> Приложение автоматически отключено по причине отсутствия активных сессий.\n` +
-          `🆔 <b>Номер запроса:</b> #${newRequestId}\n` +
-          `📅 <b>Дата:</b> ${new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" })} (МСК)`;
-
-        await fetch("/api/test-telegram", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            botToken: settings.telegramBotToken,
-            chatId: settings.telegramChatId,
-            customMessage
-          }),
-        });
-      } catch (err) {
-        console.error("Failed to send telegram notification:", err);
-      }
-    }
-
-    setRequestId(newRequestId);
-    setStage("success");
-    setIsSending(false);
-  };
-
-  return (
-    <>
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center">
-          {/* Smooth dark background (animated) */}
-          <div className="absolute inset-0 bg-black/90 animate-in fade-in duration-500" />
-
-          {/* Static window (no animations) */}
-          <div className="relative z-10 flex flex-col items-center justify-center px-4 w-full h-full max-w-[340px] max-h-[360px]">
-            <div
-              className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl flex flex-col items-center justify-center text-center w-full h-full"
-            >
-              {stage === "loading" && (
-                <div className="flex flex-col items-center justify-center w-full h-full">
-                  {/* Simple custom loader */}
-                  <div className="w-12 h-12 border-4 border-zinc-700 border-t-white rounded-full animate-spin" />
-                </div>
-              )}
-
-              {stage === "message" && (
-                <div className="flex flex-col items-center justify-between text-center w-full h-full py-2">
-                  <h2 className="text-lg font-semibold text-white">Доступ ограничен</h2>
-
-                  <p className="text-white/70 text-xs leading-relaxed my-4">
-                    Приложение автоматически отключено по причине отсутствия активных сессий, для восстановления базы данных и доступа отправьте запрос на восстановление
-                  </p>
-
-                  <div className="w-full flex flex-col gap-3 mt-auto">
-                    <button
-                      onClick={handleSendRequest}
-                      disabled={isSending}
-                      className="w-full py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-sm font-medium rounded-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2"
-                    >
-                      {isSending ? <Loader2 size={14} className="animate-spin" /> : <PaperPlane size={14} />}
-                      Отправить запрос
-                    </button>
-
-                    <button
-                      onClick={onClose}
-                      className="text-white/40 hover:text-white/80 text-xs transition-colors"
-                    >
-                      Закрыть
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {stage === "success" && (
-                <div className="flex flex-col items-center justify-between text-center w-full h-full py-2">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center">
-                      <Check size={24} weight="bold" className="text-green-500" />
-                    </div>
-                    <h2 className="text-lg font-semibold text-white">Запрос отправлен</h2>
-                  </div>
-
-                  <div className="bg-black/50 p-3 rounded-xl w-full border border-white/10 my-4">
-                    <p className="text-white/70 text-[11px]">
-                      Запрос был отправлен, его номер:
-                    </p>
-                    <p className="text-xl font-mono font-bold text-white mt-1">
-                      #{requestId}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={onClose}
-                    className="mt-auto w-full py-2.5 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white text-sm font-medium rounded-xl transition-all"
-                  >
-                    Закрыть
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-};
 
 // ─── Smooth Video Background (Mobile) ─────────────────────────────
 const SmoothVideoBackground: React.FC = () => {
@@ -517,13 +378,12 @@ const DesktopPage = () => {
 
   const [crmModalOpen, setCrmModalOpen] = useState(false);
   const [tgModalOpen, setTgModalOpen] = useState(false);
-  const [washLaunching, setWashLaunching] = useState(false);
-  const [blockedModalOpen, setBlockedModalOpen] = useState(false);
+  const [launchingApp, setLaunchingApp] = useState<{ visible: boolean; appName: string }>({ visible: false, appName: "" });
 
-  const handleWashClick = () => {
+  const handleAppLaunch = (path: string, appName: string) => {
     if (user) {
-      setWashLaunching(true);
-      setTimeout(() => navigate("/wash"), 600);
+      setLaunchingApp({ visible: true, appName });
+      setTimeout(() => navigate(path), 600);
     } else {
       navigate("/login");
     }
@@ -535,28 +395,28 @@ const DesktopPage = () => {
       label: "Мойка",
       icon: <Waves size={40} weight="fill" className="text-white" />,
       gradient: "from-blue-400 to-blue-600",
-      onClick: handleWashClick,
+      onClick: () => handleAppLaunch("/wash", "Мойку"),
     },
     {
       id: "crm",
       label: "Реклама",
       icon: <Megaphone size={40} weight="fill" className="text-white" />,
       gradient: "from-amber-400 to-amber-600",
-      onClick: () => setBlockedModalOpen(true),
+      onClick: () => handleAppLaunch("/crm", "Рекламу"),
     },
     {
       id: "okleyka",
       label: "Оклейка",
       icon: <Palette size={40} weight="fill" className="text-white" />,
       gradient: "from-violet-500 to-purple-700",
-      onClick: () => setBlockedModalOpen(true),
+      onClick: () => handleAppLaunch("/okleyka", "Оклейку"),
     },
     {
       id: "settings",
       label: "Настройки",
       icon: <Gear size={40} weight="fill" className="text-white" />,
       gradient: "from-slate-500 to-slate-700",
-      onClick: () => setBlockedModalOpen(true),
+      onClick: () => setTgModalOpen(true),
     },
   ];
 
@@ -626,9 +486,8 @@ const DesktopPage = () => {
 
       {/* ── Modals ── */}
       <CrmLaunchModal isOpen={crmModalOpen} onClose={() => setCrmModalOpen(false)} />
-      <WashLaunchOverlay visible={washLaunching} />
+      <AppLaunchOverlay visible={launchingApp.visible} appName={launchingApp.appName} />
       <TelegramSettingsModal isOpen={tgModalOpen} onClose={() => setTgModalOpen(false)} />
-      <BlockedAppModal isOpen={blockedModalOpen} onClose={() => setBlockedModalOpen(false)} />
     </div>
   );
 };
