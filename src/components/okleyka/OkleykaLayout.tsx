@@ -52,14 +52,6 @@ const OkleykaLayout: React.FC = () => {
 
             {/* Navigation */}
             <nav className="flex-1 space-y-2 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar pr-1">
-              <button
-                onClick={() => navigate("/")}
-                className="sidebar-link w-full text-left"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>На рабочий стол</span>
-              </button>
-
               {navItems.map(({ to, label, icon: Icon, exact, badge }) => (
                 <NavLink
                   key={to}
@@ -87,12 +79,8 @@ const OkleykaLayout: React.FC = () => {
           {/* Mobile header */}
           <div className="md:hidden sticky top-0 bg-background/95 backdrop-blur-sm z-20 border-b border-border/20">
             <div className="flex items-center justify-between px-4 py-3">
-              <button
-                onClick={() => navigate("/")}
-                className="p-2 -ml-1 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft size={20} />
-              </button>
+              <div className="w-10">
+              </div>
 
               <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center group">
                 <div className="bg-transparent px-3 py-1.5 rounded-xl transition-colors select-none pointer-events-none relative z-10">
@@ -172,15 +160,6 @@ const OkleykaLayout: React.FC = () => {
                   </NavLink>
                 ))}
 
-                <div className="mt-auto pt-4 border-t border-border/50">
-                  <button
-                    onClick={() => { navigate("/"); setMobileNavOpen(false); }}
-                    className="sidebar-link w-full text-left"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span>На рабочий стол</span>
-                  </button>
-                </div>
               </motion.div>
             </>
           )}
