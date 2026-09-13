@@ -233,15 +233,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Навигация */}
       <nav className="flex-1 space-y-2 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar pr-1">
-        <a
-          href="/"
-          className="sidebar-link"
-          onClick={() => isMobileOpen && toggleMobileSidebar()}
-        >
-          <LayoutDashboard className="w-5 h-5" />
-          <span>Рабочий стол</span>
-        </a>
-
         <NavLink
           to="/wash"
           className={({ isActive }) =>

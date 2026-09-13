@@ -20,7 +20,7 @@ import OkleykaPayoutsPage from "@/pages/okleyka/OkleykaPayoutsPage";
 import OkleykaUnpaidPage from "@/pages/okleyka/OkleykaUnpaidPage";
 import OkleykaAppointmentsPage from "@/pages/okleyka/OkleykaAppointmentsPage";
 import OkleykaSettingsPage from "@/pages/okleyka/OkleykaSettingsPage";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { RouterProvider, createBrowserRouter, Navigate } from "react-router-dom";
 
 // Okleyka protected route wrapper with its own provider
 const OkleykaProtectedRoute = () => {
@@ -31,6 +31,10 @@ const OkleykaProtectedRoute = () => {
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <Navigate to="/wash" replace />
+  },
+  {
+    path: "/menu",
     element: <DesktopPage />,
   },
   {
